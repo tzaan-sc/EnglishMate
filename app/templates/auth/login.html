@@ -1,0 +1,6 @@
+{% extends "base.html" %}{% from "macros.html" import field %}
+{% block title %}Đăng nhập · EnglishMate{% endblock %}
+{% block content %}
+<section class="auth-shell"><div class="auth-card"><div class="auth-copy"><span class="eyebrow">WELCOME BACK</span><h1>Tiếp tục hành trình của bạn.</h1><p>Mỗi lần quay lại là thêm một bước gần hơn đến sự tự tin.</p><div class="quote">“Small steps every day lead to big changes.”</div></div><div class="auth-form"><h2>Đăng nhập</h2><p class="text-secondary">Chào mừng bạn trở lại EnglishMate.</p><form method="post">{{ form.hidden_tag() }}{{ field(form.email) }}{{ field(form.password) }}<div class="form-check mb-4">{{ form.remember(class="form-check-input") }} {{ form.remember.label(class="form-check-label") }}</div>{{ form.submit(class="btn btn-primary w-100 btn-lg") }}</form><p class="text-center mt-4 mb-0">Chưa có tài khoản? <a href="{{ url_for('auth.register') }}">Đăng ký ngay</a></p></div></div></section>
+{% endblock %}
+

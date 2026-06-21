@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block title %}Dashboard · EnglishMate{% endblock %}
+{% block content %}<section class="page-section"><div class="container">
+  <div class="page-heading d-flex flex-wrap justify-content-between align-items-end gap-3"><div><span class="eyebrow">MY LEARNING</span><h1>Chào {{ current_user.username }}, sẵn sàng học chưa? 👋</h1><p>Đây là bức tranh học tập của bạn hôm nay.</p></div><a class="btn btn-primary" href="{{ url_for('learning.lessons') }}">Tiếp tục học →</a></div>
+  <div class="row g-3 stat-grid">
+    {% for value,label,icon in [(completed,'Bài đã hoàn thành','✓'),(attempts,'Quiz đã làm','?'),(average ~ '%','Điểm quiz trung bình','↗'),(learned,'Từ vựng đã học','Aa')] %}<div class="col-6 col-lg-3"><div class="stat-card"><span class="stat-icon">{{ icon }}</span><strong>{{ value }}</strong><small>{{ label }}</small></div></div>{% endfor %}
+  </div>
+  {% if next_lesson %}<div class="next-lesson mt-4"><div><span class="eyebrow light">GỢI Ý TIẾP THEO</span><h3>{{ next_lesson.title }}</h3><p>{{ next_lesson.short_description }}</p><span class="badge-soft">{{ next_lesson.level }}</span> <span class="badge-soft">{{ next_lesson.skill }}</span></div><a class="btn btn-light" href="{{ url_for('learning.lesson_detail', lesson_id=next_lesson.id) }}">Học bài này →</a></div>{% endif %}
+  <div class="section-title mt-5"><h2>Không gian học tập</h2><p>Chọn hoạt động phù hợp với năng lượng của bạn.</p></div>
+  <div class="row g-3">{% set links=[('Bài học','Kiến thức được chia thành từng phần dễ tiêu hóa.','learning.lessons','01'),('Từ vựng','Tra cứu và lưu những từ quan trọng.','learning.vocabulary','02'),('Flashcard','Ôn nhanh, nhớ lâu bằng thẻ lật.','learning.flashcards','03'),('Quiz','Kiểm tra kiến thức trong 10 câu.','learning.quiz','04'),('Tiến độ','Nhìn lại thành quả của riêng bạn.','learning.progress','05')] %}{% for title,text,endpoint,num in links %}<div class="col-md-6 {{ 'col-lg-4' if loop.index < 4 else 'col-lg-6' }}"><a class="learning-card" href="{{ url_for(endpoint) }}"><span>{{ num }}</span><div><h4>{{ title }}</h4><p>{{ text }}</p></div><b>→</b></a></div>{% endfor %}</div>
+</div></section>{% endblock %}
+

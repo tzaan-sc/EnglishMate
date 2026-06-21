@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block title %}EnglishMate · Học tiếng Anh theo nhịp của bạn{% endblock %}
+{% block body_class %}landing-page{% endblock %}
+{% block content %}
+<section class="hero overflow-hidden">
+  <div class="container position-relative">
+    <div class="hero-blob blob-one"></div><div class="hero-blob blob-two"></div>
+    <div class="row align-items-center g-5 py-5">
+      <div class="col-lg-6 py-lg-5">
+        <span class="eyebrow">✦ Mỗi ngày 15 phút, tiến bộ thật</span>
+        <h1 class="display-3 fw-800 mt-3">Tiếng Anh dễ vào guồng hơn khi có <span>đúng người bạn.</span></h1>
+        <p class="lead text-secondary my-4">Bài học vừa sức, flashcard thông minh và quiz ngắn gọn giúp bạn biến việc học thành một thói quen đáng mong chờ.</p>
+        <div class="d-flex flex-wrap gap-3">
+          <a class="btn btn-primary btn-lg" href="{{ url_for('main.dashboard') if current_user.is_authenticated else url_for('auth.register') }}">Bắt đầu học <span>→</span></a>
+          <a class="btn btn-light btn-lg border" href="{{ url_for('auth.login') }}">Đăng nhập</a>
+        </div>
+        <div class="hero-proof mt-4"><span class="avatar-stack"><i>A</i><i>M</i><i>L</i></span><span><b>60+ từ vựng</b><br><small>Dữ liệu mẫu sẵn sàng để luyện tập</small></span></div>
+      </div>
+      <div class="col-lg-6">
+        <div class="hero-visual">
+          <div class="daily-card">
+            <div class="d-flex justify-content-between align-items-start"><div><small>BÀI HỌC HÔM NAY</small><h3>Talking about routines</h3></div><span class="level-chip">A1</span></div>
+            <div class="progress mt-4"><div class="progress-bar" style="width: 68%"></div></div>
+            <div class="d-flex justify-content-between mt-2"><small>Tiến độ</small><strong>68%</strong></div>
+          </div>
+          <div class="word-float"><span class="sound-dot">♪</span><div><b>confident</b><small>/ˈkɒn.fɪ.dənt/</small></div><span>tự tin</span></div>
+          <div class="streak-float"><span>🔥</span><div><b>7 ngày</b><small>Chuỗi học liên tục</small></div></div>
+          <div class="hero-orbit"><span>Hello!</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+<section class="feature-section py-5">
+  <div class="container py-5">
+    <div class="section-heading text-center mx-auto"><span class="eyebrow">MỘT NƠI, ĐỦ MỌI KỸ NĂNG</span><h2>Học đúng cách. Nhớ lâu hơn.</h2><p>Những công cụ thiết yếu được sắp xếp trong một hành trình rõ ràng.</p></div>
+    <div class="row g-4 mt-4">
+      {% set features = [('01','Từ vựng theo chủ đề','Khám phá từ mới theo cấp độ, chủ đề và đánh dấu những từ bạn đã thuộc.'),('02','Bài học thực tế','Ngữ pháp, đọc hiểu và giao tiếp được giải thích bằng ví dụ gần gũi.'),('03','Flashcard tương tác','Lật thẻ, tự đánh giá và ôn lại những từ còn chưa chắc.'),('04','Quiz tức thì','10 câu hỏi ngắn, chấm điểm ngay và giải thích từng đáp án.'),('05','Tiến độ rõ ràng','Theo dõi bài đã học, điểm số và thành tích qua từng ngày.') ] %}
+      {% for num, title, text in features %}<div class="col-md-6 {{ 'col-lg-4' if loop.index < 4 else 'col-lg-6' }}"><article class="feature-card h-100"><span>{{ num }}</span><h4>{{ title }}</h4><p>{{ text }}</p><a href="{{ url_for('auth.register') }}">Khám phá <b>→</b></a></article></div>{% endfor %}
+    </div>
+  </div>
+</section>
+<section class="container pb-5"><div class="cta-panel"><div><span class="eyebrow light">SẴN SÀNG CHƯA?</span><h2>Biến “một ngày nào đó” thành hôm nay.</h2><p>Tạo tài khoản miễn phí và bắt đầu bài học đầu tiên.</p></div><a class="btn btn-light btn-lg" href="{{ url_for('auth.register') }}">Đăng ký miễn phí →</a></div></section>
+{% endblock %}
+

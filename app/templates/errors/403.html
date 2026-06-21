@@ -1,0 +1,2 @@
+{% extends "base.html" %}{% block title %}Không có quyền · EnglishMate{% endblock %}{% block content %}<section class="error-page"><div><span>403</span><h1>Khu vực này không dành cho bạn.</h1><p>Tài khoản hiện tại không có quyền truy cập trang này.</p><a class="btn btn-primary" href="{{ url_for('main.dashboard') if current_user.is_authenticated else url_for('main.index') }}">Quay lại an toàn</a></div></section>{% endblock %}
+

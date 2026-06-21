@@ -1,0 +1,8 @@
+{% extends "base.html" %}{% block title %}{{ lesson.title }} · EnglishMate{% endblock %}
+{% block content %}<section class="page-section"><div class="container lesson-layout">
+  <a class="back-link" href="{{ url_for('learning.lessons') }}">← Thư viện bài học</a>
+  <div class="lesson-header"><div><div class="mb-3"><span class="badge-soft">{{ lesson.level }}</span><span class="badge-soft">{{ lesson.skill }}</span></div><h1>{{ lesson.title }}</h1><p>{{ lesson.short_description }}</p></div><span class="lesson-header-mark">Aa</span></div>
+  <article class="lesson-content"><div class="content-label">NỘI DUNG BÀI HỌC</div><div class="prose">{{ lesson.content }}</div><div class="example-box"><h3>Ví dụ thực tế</h3>{% for example in lesson.examples.splitlines() if example.strip() %}<p><span>{{ loop.index }}</span>{{ example }}</p>{% endfor %}</div></article>
+  <div class="lesson-complete">{% if completed %}<div><span class="complete-check">✓</span><b>Bạn đã hoàn thành bài này</b><small>Tiếp tục giữ nhịp học nhé!</small></div><a class="btn btn-outline-primary" href="{{ url_for('learning.lessons') }}">Chọn bài tiếp theo</a>{% else %}<div><b>Đã nắm được nội dung?</b><small>Đánh dấu để cập nhật tiến độ của bạn.</small></div><form method="post" action="{{ url_for('learning.complete_lesson', lesson_id=lesson.id) }}">{{ form.hidden_tag() }}<button class="btn btn-primary btn-lg">✓ Đánh dấu hoàn thành</button></form>{% endif %}</div>
+</div></section>{% endblock %}
+

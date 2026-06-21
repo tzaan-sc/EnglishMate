@@ -1,0 +1,6 @@
+{% extends "base.html" %}{% from "macros.html" import field %}
+{% block title %}Đăng ký · EnglishMate{% endblock %}
+{% block content %}
+<section class="auth-shell"><div class="auth-card"><div class="auth-copy auth-copy-green"><span class="eyebrow">START TODAY</span><h1>Tạo một thói quen đáng tự hào.</h1><p>EnglishMate sẽ giúp bạn chia mục tiêu lớn thành từng bước nhỏ, dễ thực hiện.</p><ul><li>✓ Học theo cấp độ của bạn</li><li>✓ Theo dõi tiến bộ tự động</li><li>✓ Hoàn toàn miễn phí</li></ul></div><div class="auth-form"><h2>Tạo tài khoản</h2><p class="text-secondary">Bắt đầu chỉ trong chưa đầy một phút.</p><form method="post">{{ form.hidden_tag() }}{{ field(form.username) }}{{ field(form.email) }}<div class="row"><div class="col-md-6">{{ field(form.password) }}</div><div class="col-md-6">{{ field(form.confirm_password) }}</div></div>{{ form.submit(class="btn btn-primary w-100 btn-lg") }}</form><p class="text-center mt-4 mb-0">Đã có tài khoản? <a href="{{ url_for('auth.login') }}">Đăng nhập</a></p></div></div></section>
+{% endblock %}
+
