@@ -172,11 +172,11 @@
               
               <div class="passage-questions">
                 {% for q in passage.questions %}
-                <div class="question-box border-bottom py-3 {% if loop.last %}border-0{% endif %}" id="question-box-{{ q.question_number }}" data-qnum="{{ q.question_number }}">
+                <div class="question-box card border rounded-3 p-3 mb-3 bg-white shadow-sm" id="question-box-{{ q.question_number }}" data-qnum="{{ q.question_number }}">
                   <div class="d-flex align-items-start gap-2">
-                    <span class="badge bg-mint text-green p-1 px-2 rounded-2 fw-bold fs-6">Câu {{ q.question_number }}</span>
+                    <span class="badge bg-mint text-green p-2 px-3 rounded-2 fw-bold fs-6">Câu {{ q.question_number }}</span>
                     <div class="flex-grow-1 ms-2">
-                      <h6 class="lh-base mb-3 fw-bold">{{ q.question_text }}</h6>
+                      <h5 class="lh-base mb-3 fw-bold">{{ q.question_text | replace(q.question_number ~ '. ', '') | replace(q.question_number ~ ' ', '') | replace(q.question_number ~ '.  ', '') }}</h5>
                       
                       <div class="answer-choices row g-2">
                         <div class="col-md-6">

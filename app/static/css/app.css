@@ -189,4 +189,8 @@
     font-size: 0.98rem;
     line-height: 1.85;
 }
+.bg-navy {
+    background-color: var(--navy) !important;
+}
+
 
