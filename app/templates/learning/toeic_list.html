@@ -1,0 +1,108 @@
+{% extends "base.html" %}
+
+{% block title %}Thi thử TOEIC Reading - EnglishMate{% endblock %}
+
+{% block content %}
+<div class="page-section">
+  <div class="container">
+    
+    <div class="page-heading">
+      <span class="eyebrow">Practice Zone</span>
+      <h1>Luyện thi TOEIC Reading</h1>
+      <p>Thử sức với đề thi đầy đủ cấu trúc phần Đọc hiểu TOEIC (Part 5, 6, 7) trong 75 phút.</p>
+    </div>
+
+    <div class="row g-4 mb-5">
+      {% for test in tests %}
+      <div class="col-md-6 col-lg-4">
+        <div class="lesson-card d-flex flex-column justify-content-between h-100">
+          <div>
+            <div class="d-flex justify-content-between align-items-center mb-3">
+              <span class="lesson-num">#{{ loop.index }}</span>
+              <span class="topic-chip">TOEIC Reading</span>
+            </div>
+            
+            <h3 class="mb-2">{{ test.title }}</h3>
+            <p class="text-muted small mb-4">Luyện tập đầy đủ 100 câu hỏi từ câu 101 đến câu 200, bao gồm ngữ pháp, điền từ vào đoạn văn và đọc hiểu.</p>
+            
+            <div class="d-flex flex-wrap gap-2 mb-4">
+              <span class="badge-soft">100 Câu hỏi</span>
+              <span class="badge-soft">75 Phút</span>
+              <span class="badge-soft">Cấp độ A1 - B2</span>
+            </div>
+          </div>
+
+          <div>
+            {% if test.id in best_scores %}
+            <div class="alert alert-info py-2 px-3 border-0 rounded-3 mb-3 d-flex justify-content-between align-items-center">
+              <span class="small text-secondary">Điểm cao nhất:</span>
+              <strong class="text-primary">{{ best_scores[test.id] }}/100</strong>
+            </div>
+            {% endif %}
+            
+            <form action="{{ url_for('learning.toeic_start', test_id=test.id) }}" method="post">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+              <button type="submit" class="btn btn-primary w-100 py-3">Bắt đầu làm bài</button>
+            </form>
+          </div>
+        </div>
+      </div>
+      {% else %}
+      <div class="col-12">
+        <div class="empty-state text-center py-5">
+          <span class="fs-1">📝</span>
+          <h3 class="mt-3">Chưa có đề thi TOEIC nào được tạo</h3>
+          <p class="text-muted">Vui lòng chạy seed script để tải đề thi mẫu.</p>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+
+    <!-- History panel -->
+    <div class="panel">
+      <h3 class="mb-4">Lịch sử làm bài</h3>
+      {% if attempts %}
+      <div class="table-responsive">
+        <table class="table table-hover align-middle">
+          <thead>
+            <tr>
+              <th>Đề thi</th>
+              <th>Ngày hoàn thành</th>
+              <th>Thời gian làm</th>
+              <th>Điểm số</th>
+              <th class="text-end">Hành động</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for attempt in attempts %}
+            <tr>
+              <td><strong>{{ attempt.test.title }}</strong></td>
+              <td>{{ attempt.completed_at.strftime('%d/%m/%Y %H:%M') if attempt.completed_at else attempt.created_at.strftime('%d/%m/%Y %H:%M') }}</td>
+              <td>
+                {% set mins = (attempt.time_spent // 60) %}
+                {% set secs = (attempt.time_spent % 60) %}
+                {{ mins }} phút {{ secs }} giây
+              </td>
+              <td>
+                <span class="badge bg-{{ 'success' if attempt.score >= 70 else 'warning' if attempt.score >= 50 else 'danger' }} px-3 py-2">
+                  {{ attempt.score }}/100
+                </span>
+              </td>
+              <td class="text-end">
+                <a href="{{ url_for('learning.toeic_result', attempt_id=attempt.id) }}" class="btn btn-outline-primary btn-sm">Xem chi tiết</a>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+      <div class="empty-mini text-center py-4">
+        <p class="text-muted mb-0">Bạn chưa thực hiện bài thi thử nào. Hãy chọn một đề thi phía trên và bắt đầu!</p>
+      </div>
+      {% endif %}
+    </div>
+
+  </div>
+</div>
+{% endblock %}

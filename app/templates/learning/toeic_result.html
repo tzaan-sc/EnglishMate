@@ -1,0 +1,342 @@
+{% extends "base.html" %}
+
+{% block title %}{{ test.title }} - Kết quả bài thi - EnglishMate{% endblock %}
+
+{% block content %}
+<div class="page-section bg-light">
+  <div class="container-fluid px-lg-5">
+    
+    <!-- Top Result Banner -->
+    <div class="card border-0 shadow-sm rounded-4 mb-4 p-4 text-white" style="background: linear-gradient(135deg, var(--green) 0%, var(--green-2) 100%);">
+      <div class="row align-items-center g-4">
+        <div class="col-md-3 text-center border-end border-light border-opacity-25">
+          <div class="d-inline-block p-3 rounded-circle bg-white bg-opacity-10 mb-2">
+            <span class="fs-1">🏆</span>
+          </div>
+          <h5 class="opacity-75 mb-0 text-uppercase small" style="letter-spacing: 0.1em;">Điểm số đạt được</h5>
+          <h1 class="display-3 fw-bold mb-0">{{ attempt.score }}<span class="fs-4 fw-normal opacity-75">/100</span></h1>
+        </div>
+        
+        <div class="col-md-6 border-end border-light border-opacity-25">
+          <h2 class="fw-bold mb-2">Kết quả: {% if attempt.score >= 80 %}Xuất sắc!{% elif attempt.score >= 60 %}Khá tốt!{% else %}Cần cố gắng thêm!{% endif %}</h2>
+          <p class="mb-3 opacity-90">Cảm ơn bạn đã thực hiện bài thi thử. Hãy phân tích chi tiết câu trả lời và xem giải thích bên dưới để củng cố kiến thức của mình.</p>
+          
+          <div class="row g-2">
+            <div class="col-sm-4">
+              <div class="bg-white bg-opacity-10 p-2 rounded text-center">
+                <span class="d-block small opacity-75">Thời gian làm bài</span>
+                {% set mins = (attempt.time_spent // 60) %}
+                {% set secs = (attempt.time_spent % 60) %}
+                <strong>{{ mins }}p {{ secs }}s</strong>
+              </div>
+            </div>
+            <div class="col-sm-4">
+              <div class="bg-white bg-opacity-10 p-2 rounded text-center">
+                <span class="d-block small opacity-75">Tỉ lệ đúng</span>
+                <strong>{{ (attempt.score / 100 * 100)|round|int }}%</strong>
+              </div>
+            </div>
+            <div class="col-sm-4">
+              <div class="bg-white bg-opacity-10 p-2 rounded text-center">
+                <span class="d-block small opacity-75">Đề thi</span>
+                <strong>TOEIC Reading</strong>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="col-md-3">
+          <h5 class="fw-bold mb-2">Phân tích từng phần</h5>
+          <div class="small">
+            <div class="d-flex justify-content-between mb-1">
+              <span>Part 5 (Grammar & Vocab)</span>
+              <strong>{{ part_stats[5]['correct'] }}/{{ part_stats[5]['total'] }}</strong>
+            </div>
+            <div class="progress mb-2" style="height: 6px;">
+              {% set p5_pct = (part_stats[5]['correct'] / part_stats[5]['total'] * 100) if part_stats[5]['total'] else 0 %}
+              <div class="progress-bar bg-lime" style="width: {{ p5_pct }}%"></div>
+            </div>
+            
+            <div class="d-flex justify-content-between mb-1">
+              <span>Part 6 (Cloze Passage)</span>
+              <strong>{{ part_stats[6]['correct'] }}/{{ part_stats[6]['total'] }}</strong>
+            </div>
+            <div class="progress mb-2" style="height: 6px;">
+              {% set p6_pct = (part_stats[6]['correct'] / part_stats[6]['total'] * 100) if part_stats[6]['total'] else 0 %}
+              <div class="progress-bar bg-lime" style="width: {{ p6_pct }}%"></div>
+            </div>
+            
+            <div class="d-flex justify-content-between mb-1">
+              <span>Part 7 (Reading Comprehension)</span>
+              <strong>{{ part_stats[7]['correct'] }}/{{ part_stats[7]['total'] }}</strong>
+            </div>
+            <div class="progress" style="height: 6px;">
+              {% set p7_pct = (part_stats[7]['correct'] / part_stats[7]['total'] * 100) if part_stats[7]['total'] else 0 %}
+              <div class="progress-bar bg-lime" style="width: {{ p7_pct }}%"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Review Section -->
+    <div class="row g-4">
+      
+      <!-- Left Column: Questions in Review Mode -->
+      <div class="col-lg-9">
+        
+        <!-- PART 5 Review -->
+        <div class="toeic-section-header mb-4 p-3 bg-green text-white rounded-3 shadow-sm">
+          <h4 class="mb-1 fw-bold">Xem lại PART 5</h4>
+          <p class="mb-0 small opacity-90">Xem chi tiết đáp án và lời giải của phần hoàn thành câu.</p>
+        </div>
+
+        <div class="questions-stack">
+          {% for ans in part5_answers %}
+          {% set q = ans.question %}
+          <div class="card border-0 shadow-sm rounded-4 p-4 mb-3 question-box" id="question-box-{{ q.question_number }}">
+            <div class="d-flex align-items-start gap-2">
+              <span class="badge bg-{{ 'mint text-green' if ans.is_correct else 'danger bg-opacity-10 text-danger' }} p-2 px-3 rounded-3 fw-bold fs-6">
+                Câu {{ q.question_number }}
+              </span>
+              <div class="flex-grow-1 ms-2">
+                <h5 class="lh-base mb-3" style="font-weight: 650; color: var(--ink);">{{ q.question_text }}</h5>
+                
+                <div class="answer-choices row g-2 mb-3">
+                  <!-- Option A -->
+                  <div class="col-md-6">
+                    <div class="choice-review-box {% if q.correct_option == 'A' %}correct-choice{% elif ans.selected_option == 'A' and not ans.is_correct %}wrong-choice{% endif %}">
+                      <b class="choice-letter">A</b>
+                      <span class="choice-text">{{ q.option_a }}</span>
+                      {% if q.correct_option == 'A' %}<span class="choice-badge ms-auto">✓</span>{% elif ans.selected_option == 'A' %}<span class="choice-badge ms-auto">✗</span>{% endif %}
+                    </div>
+                  </div>
+                  <!-- Option B -->
+                  <div class="col-md-6">
+                    <div class="choice-review-box {% if q.correct_option == 'B' %}correct-choice{% elif ans.selected_option == 'B' and not ans.is_correct %}wrong-choice{% endif %}">
+                      <b class="choice-letter">B</b>
+                      <span class="choice-text">{{ q.option_b }}</span>
+                      {% if q.correct_option == 'B' %}<span class="choice-badge ms-auto">✓</span>{% elif ans.selected_option == 'B' %}<span class="choice-badge ms-auto">✗</span>{% endif %}
+                    </div>
+                  </div>
+                  <!-- Option C -->
+                  <div class="col-md-6">
+                    <div class="choice-review-box {% if q.correct_option == 'C' %}correct-choice{% elif ans.selected_option == 'C' and not ans.is_correct %}wrong-choice{% endif %}">
+                      <b class="choice-letter">C</b>
+                      <span class="choice-text">{{ q.option_c }}</span>
+                      {% if q.correct_option == 'C' %}<span class="choice-badge ms-auto">✓</span>{% elif ans.selected_option == 'C' %}<span class="choice-badge ms-auto">✗</span>{% endif %}
+                    </div>
+                  </div>
+                  <!-- Option D -->
+                  <div class="col-md-6">
+                    <div class="choice-review-box {% if q.correct_option == 'D' %}correct-choice{% elif ans.selected_option == 'D' and not ans.is_correct %}wrong-choice{% endif %}">
+                      <b class="choice-letter">D</b>
+                      <span class="choice-text">{{ q.option_d }}</span>
+                      {% if q.correct_option == 'D' %}<span class="choice-badge ms-auto">✓</span>{% elif ans.selected_option == 'D' %}<span class="choice-badge ms-auto">✗</span>{% endif %}
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Explanation Box -->
+                <div class="explanation-box-toeic p-3 bg-mint text-green border-0 rounded-3">
+                  <div class="d-flex align-items-center mb-1">
+                    <span class="me-2">💡</span>
+                    <strong>Giải thích chi tiết:</strong>
+                  </div>
+                  <p class="mb-0 text-secondary" style="font-size: 0.9rem;">{{ q.explanation }}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+
+        <!-- PART 6 Review -->
+        <div class="toeic-section-header my-5 p-3 bg-green text-white rounded-3 shadow-sm">
+          <h4 class="mb-1 fw-bold">Xem lại PART 6</h4>
+          <p class="mb-0 small opacity-90">Xem chi tiết đáp án và lời giải của phần điền từ vào đoạn văn.</p>
+        </div>
+
+        <div class="passages-stack">
+          {% for passage in part6_passages %}
+          <div class="card border-0 shadow-sm rounded-4 p-4 mb-4">
+            <div class="passage-text-container p-4 bg-cream rounded-3 border-start border-4 border-success mb-4 prose">
+              {{ passage.passage_text }}
+            </div>
+            
+            <div class="passage-questions row g-3">
+              {% for q in passage.questions %}
+              {% set ans = answer_map[q.id] %}
+              <div class="col-12 question-box" id="question-box-{{ q.question_number }}">
+                <div class="p-3 border rounded-3 bg-white">
+                  <div class="d-flex align-items-center mb-2">
+                    <span class="badge bg-{{ 'mint text-green' if ans.is_correct else 'danger bg-opacity-10 text-danger' }} p-1 px-2 rounded-2 fw-bold me-2">
+                      Câu {{ q.question_number }}
+                    </span>
+                  </div>
+                  
+                  <div class="answer-choices row g-2 mb-3">
+                    <div class="col-md-3 col-sm-6">
+                      <div class="choice-review-box {% if q.correct_option == 'A' %}correct-choice{% elif ans.selected_option == 'A' and not ans.is_correct %}wrong-choice{% endif %}">
+                        <b class="choice-letter">A</b>
+                        <span class="choice-text">{{ q.option_a }}</span>
+                      </div>
+                    </div>
+                    <div class="col-md-3 col-sm-6">
+                      <div class="choice-review-box {% if q.correct_option == 'B' %}correct-choice{% elif ans.selected_option == 'B' and not ans.is_correct %}wrong-choice{% endif %}">
+                        <b class="choice-letter">B</b>
+                        <span class="choice-text">{{ q.option_b }}</span>
+                      </div>
+                    </div>
+                    <div class="col-md-3 col-sm-6">
+                      <div class="choice-review-box {% if q.correct_option == 'C' %}correct-choice{% elif ans.selected_option == 'C' and not ans.is_correct %}wrong-choice{% endif %}">
+                        <b class="choice-letter">C</b>
+                        <span class="choice-text">{{ q.option_c }}</span>
+                      </div>
+                    </div>
+                    <div class="col-md-3 col-sm-6">
+                      <div class="choice-review-box {% if q.correct_option == 'D' %}correct-choice{% elif ans.selected_option == 'D' and not ans.is_correct %}wrong-choice{% endif %}">
+                        <b class="choice-letter">D</b>
+                        <span class="choice-text">{{ q.option_d }}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="explanation-box-toeic p-3 bg-mint text-green border-0 rounded-3">
+                    <p class="mb-0 text-secondary" style="font-size: 0.9rem;"><strong>Giải thích:</strong> {{ q.explanation }}</p>
+                  </div>
+                </div>
+              </div>
+              {% endfor %}
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+
+        <!-- PART 7 Review -->
+        <div class="toeic-section-header my-5 p-3 bg-green text-white rounded-3 shadow-sm">
+          <h4 class="mb-1 fw-bold">Xem lại PART 7</h4>
+          <p class="mb-0 small opacity-90">Xem chi tiết đáp án và lời giải của phần đọc hiểu văn bản.</p>
+        </div>
+
+        <div class="passages-stack">
+          {% for passage in part7_passages %}
+          <div class="card border-0 shadow-sm rounded-4 p-4 mb-4">
+            <div class="passage-text-container p-4 bg-cream rounded-3 border-start border-4 border-success mb-4 prose">
+              {{ passage.passage_text }}
+            </div>
+            
+            <div class="passage-questions">
+              {% for q in passage.questions %}
+              {% set ans = answer_map[q.id] %}
+              <div class="question-box border-bottom py-3 {% if loop.last %}border-0{% endif %}" id="question-box-{{ q.question_number }}">
+                <div class="d-flex align-items-start gap-2">
+                  <span class="badge bg-{{ 'mint text-green' if ans.is_correct else 'danger bg-opacity-10 text-danger' }} p-1 px-2 rounded-2 fw-bold fs-6">
+                    Câu {{ q.question_number }}
+                  </span>
+                  <div class="flex-grow-1 ms-2">
+                    <h6 class="lh-base mb-3 fw-bold">{{ q.question_text }}</h6>
+                    
+                    <div class="answer-choices row g-2 mb-3">
+                      <div class="col-md-6">
+                        <div class="choice-review-box {% if q.correct_option == 'A' %}correct-choice{% elif ans.selected_option == 'A' and not ans.is_correct %}wrong-choice{% endif %}">
+                          <b class="choice-letter">A</b>
+                          <span class="choice-text">{{ q.option_a }}</span>
+                        </div>
+                      </div>
+                      <div class="col-md-6">
+                        <div class="choice-review-box {% if q.correct_option == 'B' %}correct-choice{% elif ans.selected_option == 'B' and not ans.is_correct %}wrong-choice{% endif %}">
+                          <b class="choice-letter">B</b>
+                          <span class="choice-text">{{ q.option_b }}</span>
+                        </div>
+                      </div>
+                      <div class="col-md-6">
+                        <div class="choice-review-box {% if q.correct_option == 'C' %}correct-choice{% elif ans.selected_option == 'C' and not ans.is_correct %}wrong-choice{% endif %}">
+                          <b class="choice-letter">C</b>
+                          <span class="choice-text">{{ q.option_c }}</span>
+                        </div>
+                      </div>
+                      <div class="col-md-6">
+                        <div class="choice-review-box {% if q.correct_option == 'D' %}correct-choice{% elif ans.selected_option == 'D' and not ans.is_correct %}wrong-choice{% endif %}">
+                          <b class="choice-letter">D</b>
+                          <span class="choice-text">{{ q.option_d }}</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="explanation-box-toeic p-3 bg-mint text-green border-0 rounded-3">
+                      <p class="mb-0 text-secondary" style="font-size: 0.9rem;"><strong>Giải thích:</strong> {{ q.explanation }}</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              {% endfor %}
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+
+      </div>
+
+      <!-- Right Column: Sticky Navigation Map (Correct/Wrong Color-coded) -->
+      <div class="col-lg-3">
+        <div class="sticky-sidebar">
+          
+          <div class="card border-0 shadow-sm rounded-4 p-4 mb-4">
+            <h5 class="fw-bold mb-3 d-flex align-items-center gap-2">
+              <span>🔍</span> Kết quả làm bài
+            </h5>
+            
+            <div class="d-flex justify-content-between mb-3 small">
+              <span class="text-green">✓ Đúng: {{ attempt.score }}</span>
+              <span class="text-danger">✗ Sai: {{ 100 - attempt.score }}</span>
+            </div>
+
+            <!-- Question Numbers Map (101 - 200) -->
+            <div class="question-map-grid mb-4">
+              {% for i in range(101, 201) %}
+              {% set q = test.questions|selectattr('question_number', 'equalto', i)|first %}
+              {% if q %}
+                {% set ans = answer_map[q.id] %}
+                <button type="button" 
+                        class="btn-map-item btn-map-result {% if ans and ans.is_correct %}correct{% else %}wrong{% endif %}" 
+                        id="btn-map-{{ i }}" 
+                        data-qnum="{{ i }}">{{ i }}</button>
+              {% endif %}
+              {% endfor %}
+            </div>
+            
+            <a href="{{ url_for('learning.toeic') }}" class="btn btn-outline-primary w-100 py-3">
+              Quay lại danh sách đề
+            </a>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+  // Smooth scroll to questions when clicking map items
+  document.querySelectorAll(".btn-map-item").forEach(btn => {
+    btn.addEventListener("click", function() {
+      const qnum = btn.getAttribute("data-qnum");
+      const targetBox = document.getElementById("question-box-" + qnum);
+      if (targetBox) {
+        targetBox.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        
+        // Brief highlight effect
+        targetBox.classList.add("highlight");
+        setTimeout(() => targetBox.classList.remove("highlight"), 1000);
+      }
+    });
+  });
+});
+</script>
+{% endblock %}

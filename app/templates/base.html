@@ -34,6 +34,7 @@
             <li class="nav-item"><a class="nav-link" href="{{ url_for('learning.vocabulary') }}">Từ vựng</a></li>
             <li class="nav-item"><a class="nav-link" href="{{ url_for('learning.flashcards') }}">Flashcard</a></li>
             <li class="nav-item"><a class="nav-link" href="{{ url_for('learning.quiz') }}">Quiz</a></li>
+            <li class="nav-item"><a class="nav-link" href="{{ url_for('learning.toeic') }}">Thi TOEIC</a></li>
             <li class="nav-item"><a class="nav-link" href="{{ url_for('learning.progress') }}">Tiến độ</a></li>
             <li class="nav-item"><form method="post" action="{{ url_for('auth.logout') }}"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button class="btn nav-link" type="submit">Đăng xuất</button></form></li>
           {% endif %}

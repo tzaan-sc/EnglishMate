@@ -1,0 +1,378 @@
+{% extends "base.html" %}
+
+{% block title %}{{ test.title }} - Đang làm bài - EnglishMate{% endblock %}
+
+{% block content %}
+<div class="page-section bg-light">
+  <div class="container-fluid px-lg-5">
+    
+    <div class="row g-4">
+      
+      <!-- Left Column: Questions -->
+      <div class="col-lg-9">
+        <form id="toeic-test-form" action="{{ url_for('learning.toeic_submit', attempt_id=attempt.id) }}" method="post">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <input type="hidden" name="time_spent" id="time-spent" value="0">
+          <input type="hidden" name="is_timer_expired" id="is-timer-expired" value="false">
+
+          <!-- Header summary -->
+          <div class="card border-0 shadow-sm rounded-4 mb-4 p-4">
+            <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+              <div>
+                <span class="badge bg-success px-3 py-1 rounded-pill mb-2">Đang thực hiện</span>
+                <h2 class="mb-1 fw-bold">{{ test.title }}</h2>
+                <p class="text-muted mb-0 small">Vui lòng không tải lại trang hoặc nhấn nút quay lại trong quá trình làm bài.</p>
+              </div>
+              <div class="d-flex align-items-center gap-3">
+                <div class="timer-card text-center p-2 px-3 bg-navy text-white rounded-3 shadow-sm">
+                  <div class="small opacity-75 text-uppercase" style="font-size: 0.65rem; letter-spacing: 0.05em;">Thời gian còn lại</div>
+                  <span id="timer-display" class="fs-4 fw-bold font-monospace">75:00</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- PART 5 -->
+          <div class="toeic-section-header mb-4 p-3 bg-green text-white rounded-3 shadow-sm">
+            <h4 class="mb-1 fw-bold">PART 5</h4>
+            <p class="mb-0 small opacity-90">Directions: A word or phrase is missing in each of the sentences below. Four answer choices are given below each sentence. Select the best answer to complete the sentence.</p>
+          </div>
+
+          <div class="questions-stack">
+            {% for q in part5_questions %}
+            <div class="card border-0 shadow-sm rounded-4 p-4 mb-3 question-box" id="question-box-{{ q.question_number }}" data-qnum="{{ q.question_number }}">
+              <div class="d-flex align-items-start gap-2">
+                <span class="badge bg-mint text-green p-2 px-3 rounded-3 fw-bold fs-6">Câu {{ q.question_number }}</span>
+                <div class="flex-grow-1 ms-2">
+                  <h5 class="lh-base mb-3" style="font-weight: 650; color: var(--ink);">{{ q.question_text }}</h5>
+                  
+                  <div class="answer-choices row g-2">
+                    <div class="col-md-6">
+                      <label class="choice-container w-100">
+                        <input type="radio" name="question_{{ q.id }}" value="A" data-qnum="{{ q.question_number }}">
+                        <span class="choice-box">
+                          <b class="choice-letter">A</b>
+                          <span class="choice-text">{{ q.option_a }}</span>
+                        </span>
+                      </label>
+                    </div>
+                    <div class="col-md-6">
+                      <label class="choice-container w-100">
+                        <input type="radio" name="question_{{ q.id }}" value="B" data-qnum="{{ q.question_number }}">
+                        <span class="choice-box">
+                          <b class="choice-letter">B</b>
+                          <span class="choice-text">{{ q.option_b }}</span>
+                        </span>
+                      </label>
+                    </div>
+                    <div class="col-md-6">
+                      <label class="choice-container w-100">
+                        <input type="radio" name="question_{{ q.id }}" value="C" data-qnum="{{ q.question_number }}">
+                        <span class="choice-box">
+                          <b class="choice-letter">C</b>
+                          <span class="choice-text">{{ q.option_c }}</span>
+                        </span>
+                      </label>
+                    </div>
+                    <div class="col-md-6">
+                      <label class="choice-container w-100">
+                        <input type="radio" name="question_{{ q.id }}" value="D" data-qnum="{{ q.question_number }}">
+                        <span class="choice-box">
+                          <b class="choice-letter">D</b>
+                          <span class="choice-text">{{ q.option_d }}</span>
+                        </span>
+                      </label>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+
+          <!-- PART 6 -->
+          <div class="toeic-section-header my-5 p-3 bg-green text-white rounded-3 shadow-sm">
+            <h4 class="mb-1 fw-bold">PART 6</h4>
+            <p class="mb-0 small opacity-90">Directions: Read the texts that follow. A word, phrase, or sentence is missing in parts of each text. Four answer choices for each question are given below the text. Select the best answer to complete the text.</p>
+          </div>
+
+          <div class="passages-stack">
+            {% for passage in part6_passages %}
+            <div class="card border-0 shadow-sm rounded-4 p-4 mb-4">
+              <div class="passage-text-container p-4 bg-cream rounded-3 border-start border-4 border-success mb-4 prose">
+                {{ passage.passage_text }}
+              </div>
+              
+              <div class="passage-questions row g-3">
+                {% for q in passage.questions %}
+                <div class="col-12 question-box" id="question-box-{{ q.question_number }}" data-qnum="{{ q.question_number }}">
+                  <div class="p-3 border rounded-3 bg-white">
+                    <div class="d-flex align-items-center mb-2">
+                      <span class="badge bg-mint text-green p-1 px-2 rounded-2 fw-bold me-2">Câu {{ q.question_number }}</span>
+                    </div>
+                    
+                    <div class="answer-choices row g-2">
+                      <div class="col-md-3 col-sm-6">
+                        <label class="choice-container w-100">
+                          <input type="radio" name="question_{{ q.id }}" value="A" data-qnum="{{ q.question_number }}">
+                          <span class="choice-box">
+                            <b class="choice-letter">A</b>
+                            <span class="choice-text">{{ q.option_a }}</span>
+                          </span>
+                        </label>
+                      </div>
+                      <div class="col-md-3 col-sm-6">
+                        <label class="choice-container w-100">
+                          <input type="radio" name="question_{{ q.id }}" value="B" data-qnum="{{ q.question_number }}">
+                          <span class="choice-box">
+                            <b class="choice-letter">B</b>
+                            <span class="choice-text">{{ q.option_b }}</span>
+                          </span>
+                        </label>
+                      </div>
+                      <div class="col-md-3 col-sm-6">
+                        <label class="choice-container w-100">
+                          <input type="radio" name="question_{{ q.id }}" value="C" data-qnum="{{ q.question_number }}">
+                          <span class="choice-box">
+                            <b class="choice-letter">C</b>
+                            <span class="choice-text">{{ q.option_c }}</span>
+                          </span>
+                        </label>
+                      </div>
+                      <div class="col-md-3 col-sm-6">
+                        <label class="choice-container w-100">
+                          <input type="radio" name="question_{{ q.id }}" value="D" data-qnum="{{ q.question_number }}">
+                          <span class="choice-box">
+                            <b class="choice-letter">D</b>
+                            <span class="choice-text">{{ q.option_d }}</span>
+                          </span>
+                        </label>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                {% endfor %}
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+
+          <!-- PART 7 -->
+          <div class="toeic-section-header my-5 p-3 bg-green text-white rounded-3 shadow-sm">
+            <h4 class="mb-1 fw-bold">PART 7</h4>
+            <p class="mb-0 small opacity-90">Directions: In this part you will read a selection of texts, such as magazine and newspaper articles, e-mails, and instant messages. Each text or set of texts is followed by several questions. Select the best answer for each question.</p>
+          </div>
+
+          <div class="passages-stack">
+            {% for passage in part7_passages %}
+            <div class="card border-0 shadow-sm rounded-4 p-4 mb-4">
+              <div class="passage-text-container p-4 bg-cream rounded-3 border-start border-4 border-success mb-4 prose">
+                {{ passage.passage_text }}
+              </div>
+              
+              <div class="passage-questions">
+                {% for q in passage.questions %}
+                <div class="question-box border-bottom py-3 {% if loop.last %}border-0{% endif %}" id="question-box-{{ q.question_number }}" data-qnum="{{ q.question_number }}">
+                  <div class="d-flex align-items-start gap-2">
+                    <span class="badge bg-mint text-green p-1 px-2 rounded-2 fw-bold fs-6">Câu {{ q.question_number }}</span>
+                    <div class="flex-grow-1 ms-2">
+                      <h6 class="lh-base mb-3 fw-bold">{{ q.question_text }}</h6>
+                      
+                      <div class="answer-choices row g-2">
+                        <div class="col-md-6">
+                          <label class="choice-container w-100">
+                            <input type="radio" name="question_{{ q.id }}" value="A" data-qnum="{{ q.question_number }}">
+                            <span class="choice-box">
+                              <b class="choice-letter">A</b>
+                              <span class="choice-text">{{ q.option_a }}</span>
+                            </span>
+                          </label>
+                        </div>
+                        <div class="col-md-6">
+                          <label class="choice-container w-100">
+                            <input type="radio" name="question_{{ q.id }}" value="B" data-qnum="{{ q.question_number }}">
+                            <span class="choice-box">
+                              <b class="choice-letter">B</b>
+                              <span class="choice-text">{{ q.option_b }}</span>
+                            </span>
+                          </label>
+                        </div>
+                        <div class="col-md-6">
+                          <label class="choice-container w-100">
+                            <input type="radio" name="question_{{ q.id }}" value="C" data-qnum="{{ q.question_number }}">
+                            <span class="choice-box">
+                              <b class="choice-letter">C</b>
+                              <span class="choice-text">{{ q.option_c }}</span>
+                            </span>
+                          </label>
+                        </div>
+                        <div class="col-md-6">
+                          <label class="choice-container w-100">
+                            <input type="radio" name="question_{{ q.id }}" value="D" data-qnum="{{ q.question_number }}">
+                            <span class="choice-box">
+                              <b class="choice-letter">D</b>
+                              <span class="choice-text">{{ q.option_d }}</span>
+                            </span>
+                          </label>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                {% endfor %}
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+          
+        </form>
+      </div>
+
+      <!-- Right Column: Sticky Navigation Map -->
+      <div class="col-lg-3">
+        <div class="sticky-sidebar">
+          
+          <div class="card border-0 shadow-sm rounded-4 p-4 mb-4">
+            <h5 class="fw-bold mb-3 d-flex align-items-center gap-2">
+              <span>🗺️</span> Bản đồ câu hỏi
+            </h5>
+            
+            <div class="d-flex justify-content-between mb-3 text-secondary small">
+              <span>Đã trả lời: <strong id="answered-count" class="text-green">0</strong>/100</span>
+            </div>
+
+            <!-- Question Numbers Map (101 - 200) -->
+            <div class="question-map-grid mb-4">
+              {% for i in range(101, 201) %}
+              {% set q = test.questions|selectattr('question_number', 'equalto', i)|first %}
+              {% if q %}
+              <button type="button" class="btn-map-item" id="btn-map-{{ i }}" data-qnum="{{ i }}">{{ i }}</button>
+              {% endif %}
+              {% endfor %}
+            </div>
+            
+            <button type="button" class="btn btn-primary w-100 py-3 shadow" data-bs-toggle="modal" data-bs-target="#submitConfirmModal">
+              Nộp bài
+            </button>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+</div>
+
+<!-- Submit Confirmation Modal -->
+<div class="modal fade" id="submitConfirmModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content border-0 rounded-4 shadow">
+      <div class="modal-body p-4 text-center">
+        <span class="fs-1 text-warning">⚠️</span>
+        <h4 class="fw-bold mt-3 mb-2">Bạn muốn nộp bài?</h4>
+        <p class="text-muted mb-4">
+          Bạn đã trả lời <strong id="modal-answered-count" class="text-green">0</strong> trên 100 câu hỏi. 
+          Hãy chắc chắn rằng bạn đã kiểm tra kỹ trước khi nộp.
+        </p>
+        <div class="d-flex gap-3">
+          <button type="button" class="btn btn-light w-50 py-2.5 rounded-3" data-bs-dismiss="modal">Làm tiếp</button>
+          <button type="button" class="btn btn-primary w-50 py-2.5 rounded-3" id="btn-modal-submit">Nộp bài</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+  const TOTAL_TIME = 75 * 60; // 75 minutes in seconds
+  let timeRemaining = TOTAL_TIME;
+  let timeSpent = 0;
+  const timerDisplay = document.getElementById("timer-display");
+  const timeSpentInput = document.getElementById("time-spent");
+  const isTimerExpiredInput = document.getElementById("is-timer-expired");
+  const testForm = document.getElementById("toeic-test-form");
+  
+  // Timer Interval
+  const timerInterval = setInterval(function() {
+    timeRemaining--;
+    timeSpent++;
+    timeSpentInput.value = timeSpent;
+    
+    // Format Display
+    let mins = Math.floor(timeRemaining / 60);
+    let secs = timeRemaining % 60;
+    timerDisplay.textContent = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+    
+    // Warning state when time is low (< 5 minutes)
+    if (timeRemaining < 5 * 60) {
+      document.querySelector(".timer-card").classList.remove("bg-navy");
+      document.querySelector(".timer-card").classList.add("bg-danger");
+    }
+    
+    // Time expired
+    if (timeRemaining <= 0) {
+      clearInterval(timerInterval);
+      isTimerExpiredInput.value = "true";
+      alert("Thời gian làm bài đã hết! Hệ thống tự động nộp bài.");
+      testForm.submit();
+    }
+  }, 1000);
+
+  // Monitor Radio Changes
+  const radios = document.querySelectorAll('input[type="radio"]');
+  const answeredCountSpan = document.getElementById("answered-count");
+  const modalAnsweredCountSpan = document.getElementById("modal-answered-count");
+
+  function updateProgress() {
+    let answeredQuestions = new Set();
+    radios.forEach(radio => {
+      if (radio.checked) {
+        answeredQuestions.add(radio.getAttribute("data-qnum"));
+      }
+    });
+
+    // Update map items status
+    document.querySelectorAll(".btn-map-item").forEach(btn => {
+      const qnum = btn.getAttribute("data-qnum");
+      if (answeredQuestions.has(qnum)) {
+        btn.classList.add("answered");
+      } else {
+        btn.classList.remove("answered");
+      }
+    });
+
+    answeredCountSpan.textContent = answeredQuestions.size;
+    modalAnsweredCountSpan.textContent = answeredQuestions.size;
+  }
+
+  radios.forEach(radio => {
+    radio.addEventListener("change", updateProgress);
+  });
+
+  // Smooth scroll to questions when clicking map items
+  document.querySelectorAll(".btn-map-item").forEach(btn => {
+    btn.addEventListener("click", function() {
+      const qnum = btn.getAttribute("data-qnum");
+      const targetBox = document.getElementById("question-box-" + qnum);
+      if (targetBox) {
+        targetBox.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        
+        // Brief highlight effect
+        targetBox.classList.add("highlight");
+        setTimeout(() => targetBox.classList.remove("highlight"), 1000);
+      }
+    });
+  });
+
+  // Modal Submit Button click handler
+  document.getElementById("btn-modal-submit").addEventListener("click", function() {
+    clearInterval(timerInterval);
+    testForm.submit();
+  });
+});
+</script>
+{% endblock %}
