@@ -1,3 +1,77 @@
-{% extends "base.html" %}{% from "macros.html" import field %}{% block title %}{{ title }} · EnglishMate{% endblock %}
-{% block content %}<section class="page-section"><div class="container">{% include "admin/_nav.html" %}<div class="form-panel"><div class="mb-4"><a class="back-link" href="{{ url_for('admin.lessons') }}">← Danh sách bài học</a><h1>{{ title }}</h1><p>Điền đầy đủ nội dung để người học có trải nghiệm trọn vẹn.</p></div><form method="post">{{ form.hidden_tag() }}{{ field(form.title) }}<div class="row"><div class="col-md-6">{{ field(form.level) }}</div><div class="col-md-6">{{ field(form.skill) }}</div></div>{{ field(form.short_description, 3) }}{{ field(form.content, 9) }}{{ field(form.examples, 5) }}<div class="d-flex gap-2"><button class="btn btn-primary btn-lg">Lưu bài học</button><a class="btn btn-light btn-lg border" href="{{ url_for('admin.lessons') }}">Hủy</a></div></form></div></div></section>{% endblock %}
+{% extends "base.html" %}
+{% block title %}{{ title }} · EnglishMate Admin{% endblock %}
 
+{% block content %}
+<div class="container py-4">
+  {% include "admin/_nav.html" %}
+
+  <div class="card border rounded-4 bg-white p-4 shadow-xs mx-auto" style="max-width: 800px;">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <div>
+        <h4 class="fw-800 text-dark mb-1">{{ title }}</h4>
+        <p class="text-secondary small mb-0">Nhập đầy đủ thông tin bài học ngữ pháp / giao tiếp mới</p>
+      </div>
+      <a class="btn btn-outline-secondary rounded-pill px-3 small" href="{{ url_for('admin.lessons') }}">← Quay lại</a>
+    </div>
+
+    <form method="post">
+      {{ form.csrf_token }}
+
+      <div class="mb-3">
+        <label class="form-label fw-bold text-dark">Tiêu đề bài học</label>
+        {{ form.title(class="form-control rounded-3", placeholder="Ví dụ: Present Simple vs Present Continuous") }}
+        {% if form.title.errors %}
+          <div class="text-danger small mt-1">{{ form.title.errors[0] }}</div>
+        {% endif %}
+      </div>
+
+      <div class="row g-3 mb-3">
+        <div class="col-md-6">
+          <label class="form-label fw-bold text-dark">Cấp độ (Level)</label>
+          {{ form.level(class="form-select rounded-3") }}
+          {% if form.level.errors %}
+            <div class="text-danger small mt-1">{{ form.level.errors[0] }}</div>
+          {% endif %}
+        </div>
+
+        <div class="col-md-6">
+          <label class="form-label fw-bold text-dark">Kỹ năng (Skill)</label>
+          {{ form.skill(class="form-select rounded-3") }}
+          {% if form.skill.errors %}
+            <div class="text-danger small mt-1">{{ form.skill.errors[0] }}</div>
+          {% endif %}
+        </div>
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label fw-bold text-dark">Mô tả ngắn</label>
+        {{ form.short_description(class="form-control rounded-3", rows="2", placeholder="Tóm tắt nội dung chính của bài...") }}
+        {% if form.short_description.errors %}
+          <div class="text-danger small mt-1">{{ form.short_description.errors[0] }}</div>
+        {% endif %}
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label fw-bold text-dark">Nội dung lý thuyết</label>
+        {{ form.content(class="form-control rounded-3", rows="6", placeholder="Nhập lý thuyết chi tiết...") }}
+        {% if form.content.errors %}
+          <div class="text-danger small mt-1">{{ form.content.errors[0] }}</div>
+        {% endif %}
+      </div>
+
+      <div class="mb-4">
+        <label class="form-label fw-bold text-dark">Ví dụ minh họa</label>
+        {{ form.examples(class="form-control rounded-3", rows="4", placeholder="Các câu ví dụ thực tế...") }}
+        {% if form.examples.errors %}
+          <div class="text-danger small mt-1">{{ form.examples.errors[0] }}</div>
+        {% endif %}
+      </div>
+
+      <div class="d-flex justify-content-end gap-2 border-top pt-3">
+        <a class="btn btn-light border rounded-pill px-4" href="{{ url_for('admin.lessons') }}">Hủy</a>
+        <button type="submit" class="btn btn-primary rounded-pill px-4 fw-bold shadow-sm">Lưu bài học</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

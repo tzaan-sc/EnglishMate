@@ -1,3 +1,79 @@
-{% extends "base.html" %}{% block title %}Quản lý bài học · EnglishMate{% endblock %}
-{% block content %}<section class="page-section"><div class="container">{% include "admin/_nav.html" %}<div class="admin-heading"><div><h1>Quản lý bài học</h1><p>{{ lessons|length }} bài học trong hệ thống.</p></div><a class="btn btn-primary" href="{{ url_for('admin.lesson_create') }}">+ Thêm bài học</a></div><div class="panel table-responsive"><table class="table admin-table align-middle"><thead><tr><th>Bài học</th><th>Cấp độ</th><th>Kỹ năng</th><th>Trạng thái</th><th></th></tr></thead><tbody>{% for lesson in lessons %}<tr><td><b>{{ lesson.title }}</b><small>{{ lesson.short_description }}</small></td><td><span class="badge-soft">{{ lesson.level }}</span></td><td>{{ lesson.skill }}</td><td><span class="{{ 'status-active' if lesson.is_active else 'status-off' }}">{{ 'Đang mở' if lesson.is_active else 'Đã ẩn' }}</span></td><td><div class="table-actions"><a href="{{ url_for('admin.lesson_edit', lesson_id=lesson.id) }}">Sửa</a>{% if lesson.is_active %}<form method="post" action="{{ url_for('admin.lesson_delete', lesson_id=lesson.id) }}" onsubmit="return confirm('Ẩn bài học này?')">{{ form.hidden_tag() }}<button>Ẩn</button></form>{% endif %}</div></td></tr>{% endfor %}</tbody></table></div></div></section>{% endblock %}
+{% extends "base.html" %}
+{% block title %}Quản lý Bài học · EnglishMate Admin{% endblock %}
 
+{% block content %}
+<div class="container py-4">
+  {% include "admin/_nav.html" %}
+
+  <div class="card border rounded-4 bg-white p-4 shadow-xs">
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
+      <div>
+        <h4 class="fw-800 text-dark mb-1">Danh sách Bài học</h4>
+        <p class="text-secondary small mb-0">Tất cả {{ lessons|length }} bài học trên hệ thống EnglishMate</p>
+      </div>
+
+      <a class="btn btn-primary rounded-pill px-4 fw-bold shadow-sm" href="{{ url_for('admin.lesson_create') }}">
+        + Thêm bài học mới
+      </a>
+    </div>
+
+    <div class="table-responsive">
+      <table class="table table-hover align-middle border-top">
+        <thead class="bg-light small text-uppercase text-muted">
+          <tr>
+            <th class="py-3 ps-3">Tên bài học & Mô tả</th>
+            <th class="py-3 text-center">Cấp độ</th>
+            <th class="py-3 text-center">Kỹ năng</th>
+            <th class="py-3 text-center">Trạng thái</th>
+            <th class="py-3 text-end pe-3">Hành động</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for lesson in lessons %}
+          <tr>
+            <td class="ps-3">
+              <div>
+                <span class="fw-bold text-dark d-block lead-tight">{{ lesson.title }}</span>
+                <small class="text-muted text-truncate d-block" style="max-width: 380px;">{{ lesson.short_description }}</small>
+              </div>
+            </td>
+            <td class="text-center">
+              <span class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill px-2.5 py-1">{{ lesson.level }}</span>
+            </td>
+            <td class="text-center">
+              <span class="badge bg-purple-subtle text-purple border border-purple-subtle rounded-pill px-2.5 py-1">{{ lesson.skill }}</span>
+            </td>
+            <td class="text-center">
+              {% if lesson.is_active %}
+              <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-2.5 py-1">Đang mở</span>
+              {% else %}
+              <span class="badge bg-secondary-subtle text-secondary border rounded-pill px-2.5 py-1">Đã ẩn</span>
+              {% endif %}
+            </td>
+            <td class="text-end pe-3">
+              <div class="d-inline-flex gap-2">
+                <a class="btn btn-sm btn-outline-primary rounded-pill px-3" href="{{ url_for('admin.lesson_edit', lesson_id=lesson.id) }}">
+                  ✏️ Sửa
+                </a>
+                {% if lesson.is_active %}
+                <form method="post" action="{{ url_for('admin.lesson_delete', lesson_id=lesson.id) }}" onsubmit="return confirm('Bạn có chắc chắn muốn ẩn bài học này không?')" class="m-0">
+                  {{ form.csrf_token }}
+                  <button type="submit" class="btn btn-sm btn-outline-danger rounded-pill px-3">
+                    🗑️ Ẩn
+                  </button>
+                </form>
+                {% endif %}
+              </div>
+            </td>
+          </tr>
+          {% else %}
+          <tr>
+            <td colspan="5" class="text-center py-4 text-muted">Chưa có bài học nào trong hệ thống.</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

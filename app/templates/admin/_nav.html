@@ -1,2 +1,31 @@
-<div class="admin-nav"><div><span class="eyebrow">ADMIN SPACE</span><h2>Quản trị nội dung</h2></div><nav><a class="{{ 'active' if request.endpoint=='admin.dashboard' }}" href="{{ url_for('admin.dashboard') }}">Tổng quan</a><a class="{{ 'active' if request.endpoint and 'lesson' in request.endpoint }}" href="{{ url_for('admin.lessons') }}">Bài học</a><a class="{{ 'active' if request.endpoint and 'vocabulary' in request.endpoint }}" href="{{ url_for('admin.vocabulary') }}">Từ vựng</a><a class="{{ 'active' if request.endpoint=='admin.users' }}" href="{{ url_for('admin.users') }}">Người dùng</a></nav></div>
+<div class="card border rounded-4 bg-white p-3 mb-4 shadow-xs">
+  <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3">
+    <div class="d-flex align-items-center gap-3">
+      <div class="menu-icon-box bg-danger-subtle text-danger" style="width: 44px; height: 44px; font-size: 1.2rem; display: inline-flex; align-items: center; justify-content: center;">
+        🛡️
+      </div>
+      <div>
+        <div class="d-flex align-items-center gap-2">
+          <h5 class="fw-800 text-dark mb-0">Hệ thống Quản trị Admin</h5>
+          <span class="badge bg-danger-subtle text-danger border border-danger-subtle rounded-pill" style="font-size: 0.68rem;">Chế độ Admin</span>
+        </div>
+        <span class="text-muted small">Quản lý bài học, từ vựng và phân quyền tài khoản</span>
+      </div>
+    </div>
 
+    <nav class="nav nav-pills gap-1 bg-light p-1.5 rounded-3">
+      <a class="nav-link px-3 py-1.5 fw-bold small text-secondary {% if request.endpoint=='admin.dashboard' %}bg-white shadow-xs text-danger active{% endif %}" href="{{ url_for('admin.dashboard') }}">
+        📊 Tổng quan
+      </a>
+      <a class="nav-link px-3 py-1.5 fw-bold small text-secondary {% if request.endpoint and 'lesson' in request.endpoint %}bg-white shadow-xs text-danger active{% endif %}" href="{{ url_for('admin.lessons') }}">
+        📚 Bài học
+      </a>
+      <a class="nav-link px-3 py-1.5 fw-bold small text-secondary {% if request.endpoint and 'vocabulary' in request.endpoint %}bg-white shadow-xs text-danger active{% endif %}" href="{{ url_for('admin.vocabulary') }}">
+        📖 Từ vựng
+      </a>
+      <a class="nav-link px-3 py-1.5 fw-bold small text-secondary {% if request.endpoint=='admin.users' %}bg-white shadow-xs text-danger active{% endif %}" href="{{ url_for('admin.users') }}">
+        👥 Người dùng
+      </a>
+    </nav>
+  </div>
+</div>

@@ -34,9 +34,21 @@
 
         <!-- Right Controls: Streak & Pro Upgrade Button -->
         <div class="d-flex align-items-center gap-2">
+          {% if current_user.is_authenticated and current_user.is_admin %}
+            {% if request.path.startswith('/admin') %}
+            <a href="{{ url_for('main.dashboard') }}" class="btn btn-sm btn-outline-dark rounded-pill px-3 fw-bold small d-inline-flex align-items-center gap-1">
+              <span style="font-size: 0.8rem;">←</span> Giao diện Học viên
+            </a>
+            {% else %}
+            <a href="{{ url_for('admin.dashboard') }}" class="btn btn-sm btn-danger rounded-pill px-3 fw-bold small d-inline-flex align-items-center gap-1 shadow-xs">
+              <span style="font-size: 0.85rem;">🛡️</span> Trang Quản trị
+            </a>
+            {% endif %}
+          {% endif %}
+
           <!-- Streak badge -->
-          {% set current_streak_num = current_user.get_current_streak() %}
-          <div class="streak-pill {% if current_streak_num > 0 %}streak-active{% else %}streak-inactive{% endif %}" title="Chuỗi ngày học (Kỷ lục: {{ current_user.longest_streak }} ngày)">
+          {% set current_streak_num = current_user.get_current_streak() if current_user.is_authenticated else 0 %}
+          <div class="streak-pill {% if current_streak_num > 0 %}streak-active{% else %}streak-inactive{% endif %}" title="Chuỗi ngày học (Kỷ lục: {{ current_user.longest_streak if current_user.is_authenticated else 0 }} ngày)">
             <span class="streak-icon" style="font-size: 1rem; line-height: 1;">🔥</span>
             <span class="streak-divider"></span>
             <span class="streak-count">{{ current_streak_num }}</span>

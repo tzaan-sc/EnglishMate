@@ -155,3 +155,19 @@ def user_toggle(user_id):
         flash("Đã cập nhật trạng thái tài khoản.", "success")
     return redirect(url_for("admin.users"))
 
+
+@bp.post("/users/<int:user_id>/toggle-role")
+@admin_required
+def user_toggle_role(user_id):
+    form = ConfirmForm()
+    if not form.validate_on_submit():
+        abort(400)
+    user = db.get_or_404(User, user_id)
+    if user.id == current_user.id:
+        flash("Bạn không thể tự đổi vai trò của chính mình.", "danger")
+    else:
+        user.role = "USER" if user.role == "ADMIN" else "ADMIN"
+        db.session.commit()
+        flash(f"Đã chuyển vai trò tài khoản {user.username} thành {user.role}.", "success")
+    return redirect(url_for("admin.users"))
+

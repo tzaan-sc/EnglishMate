@@ -10,7 +10,7 @@ def test_admin_can_access_admin(client):
     login(client, "admin@test.com", "admin123")
     response = client.get("/admin")
     assert response.status_code == 200
-    assert "Tổng quan hệ thống".encode() in response.data
+    assert "Thống kê hệ thống".encode() in response.data
 
 
 def test_all_admin_pages_render(client):

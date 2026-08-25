@@ -1,3 +1,99 @@
-{% extends "base.html" %}{% block title %}Quản lý người dùng · EnglishMate{% endblock %}
-{% block content %}<section class="page-section"><div class="container">{% include "admin/_nav.html" %}<div class="admin-heading"><div><h1>Người dùng</h1><p>Quản lý quyền truy cập tài khoản.</p></div></div><form class="filter-bar mb-4"><input class="form-control" name="q" value="{{ search }}" placeholder="Tìm username hoặc email..."><button class="btn btn-dark">Tìm kiếm</button></form><div class="panel table-responsive"><table class="table admin-table align-middle"><thead><tr><th>Người dùng</th><th>Vai trò</th><th>Ngày tạo</th><th>Trạng thái</th><th></th></tr></thead><tbody>{% for user in users %}<tr><td><b>{{ user.username }}</b><small>{{ user.email }}</small></td><td><span class="badge-soft">{{ user.role }}</span></td><td>{{ user.created_at.strftime('%d/%m/%Y') }}</td><td><span class="{{ 'status-active' if user.is_active else 'status-off' }}">{{ 'Hoạt động' if user.is_active else 'Đã khóa' }}</span></td><td>{% if user.id != current_user.id %}<form method="post" action="{{ url_for('admin.user_toggle', user_id=user.id) }}">{{ form.hidden_tag() }}<button class="btn btn-sm {{ 'btn-outline-danger' if user.is_active else 'btn-outline-success' }}">{{ 'Khóa' if user.is_active else 'Mở khóa' }}</button></form>{% else %}<small class="text-secondary">Tài khoản hiện tại</small>{% endif %}</td></tr>{% endfor %}</tbody></table></div></div></section>{% endblock %}
+{% extends "base.html" %}
+{% block title %}Quản lý Người dùng · EnglishMate Admin{% endblock %}
 
+{% block content %}
+<div class="container py-4">
+  {% include "admin/_nav.html" %}
+
+  <div class="card border rounded-4 bg-white p-4 shadow-xs">
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
+      <div>
+        <h4 class="fw-800 text-dark mb-1">Danh sách Người dùng</h4>
+        <p class="text-secondary small mb-0">Quản lý quyền truy cập và trạng thái tài khoản hệ thống</p>
+      </div>
+
+      <form method="get" class="d-flex gap-2" style="max-width: 320px;">
+        <input type="text" name="q" value="{{ search }}" class="form-control rounded-pill px-3" placeholder="Tìm tên hoặc email...">
+        <button type="submit" class="btn btn-dark rounded-pill px-3">Tìm</button>
+      </form>
+    </div>
+
+    <div class="table-responsive">
+      <table class="table table-hover align-middle border-top">
+        <thead class="bg-light small text-uppercase text-muted">
+          <tr>
+            <th class="py-3 ps-3">ID & Tài khoản</th>
+            <th class="py-3">Email</th>
+            <th class="py-3 text-center">Vai trò</th>
+            <th class="py-3 text-center">Chuỗi Streak</th>
+            <th class="py-3 text-center">Trạng thái</th>
+            <th class="py-3 text-end pe-3">Hành động</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for u in users %}
+          <tr>
+            <td class="ps-3">
+              <div class="d-flex align-items-center gap-2">
+                <div class="profile-avatar-circle" style="width: 34px; height: 34px; font-size: 0.85rem;">
+                  {{ u.username[0].upper() }}
+                </div>
+                <div>
+                  <span class="fw-bold text-dark d-block leading-tight">{{ u.username }}</span>
+                  <small class="text-muted">ID: #{{ u.id }}</small>
+                </div>
+              </div>
+            </td>
+            <td><span class="text-secondary small">{{ u.email }}</span></td>
+            <td class="text-center">
+              {% if u.is_admin %}
+              <span class="badge bg-danger-subtle text-danger border border-danger-subtle rounded-pill px-2.5 py-1">ADMIN</span>
+              {% else %}
+              <span class="badge bg-secondary-subtle text-secondary border rounded-pill px-2.5 py-1">USER</span>
+              {% endif %}
+            </td>
+            <td class="text-center">
+              <span class="fw-bold text-warning">🔥 {{ u.current_streak or 0 }}</span>
+            </td>
+            <td class="text-center">
+              {% if u.is_active %}
+              <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-2.5 py-1">Hoạt động</span>
+              {% else %}
+              <span class="badge bg-danger-subtle text-danger border border-danger-subtle rounded-pill px-2.5 py-1">Đã khóa</span>
+              {% endif %}
+            </td>
+            <td class="text-end pe-3">
+              <div class="d-inline-flex gap-1">
+                {% if u.id != current_user.id %}
+                <!-- Toggle Role Form -->
+                <form method="post" action="{{ url_for('admin.user_toggle_role', user_id=u.id) }}" class="m-0">
+                  {{ form.csrf_token }}
+                  <button type="submit" class="btn btn-sm btn-outline-secondary rounded-pill px-2.5" title="Đổi vai trò">
+                    {% if u.is_admin %}Thành User{% else %}Thành Admin{% endif %}
+                  </button>
+                </form>
+
+                <!-- Toggle Active Form -->
+                <form method="post" action="{{ url_for('admin.user_toggle', user_id=u.id) }}" class="m-0">
+                  {{ form.csrf_token }}
+                  <button type="submit" class="btn btn-sm {% if u.is_active %}btn-outline-danger{% else %}btn-outline-success{% endif %} rounded-pill px-2.5">
+                    {% if u.is_active %}Khóa{% else %}Mở khóa{% endif %}
+                  </button>
+                </form>
+                {% else %}
+                <span class="badge bg-light text-muted border">Tài khoản hiện tại</span>
+                {% endif %}
+              </div>
+            </td>
+          </tr>
+          {% else %}
+          <tr>
+            <td colspan="6" class="text-center py-4 text-muted">Không tìm thấy người dùng phù hợp.</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

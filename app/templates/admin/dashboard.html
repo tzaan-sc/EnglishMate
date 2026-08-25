@@ -1,3 +1,135 @@
-{% extends "base.html" %}{% block title %}Quản trị · EnglishMate{% endblock %}
-{% block content %}<section class="page-section"><div class="container">{% include "admin/_nav.html" %}<div class="admin-heading"><div><h1>Tổng quan hệ thống</h1><p>Những con số quan trọng của EnglishMate.</p></div><span>Cập nhật theo thời gian thực</span></div><div class="row g-3 stat-grid">{% for value,label,icon in [(stats.users,'Người dùng','U'),(stats.lessons,'Bài học đang mở','L'),(stats.words,'Từ vựng','V'),(stats.questions,'Câu hỏi quiz','Q'),(stats.attempts,'Lượt làm quiz','A')] %}<div class="col-6 col-lg"><div class="stat-card admin-stat"><span class="stat-icon">{{ icon }}</span><strong>{{ value }}</strong><small>{{ label }}</small></div></div>{% endfor %}</div><div class="row g-4 mt-3"><div class="col-md-4"><a class="admin-action" href="{{ url_for('admin.lesson_create') }}"><span>+</span><div><b>Thêm bài học</b><small>Soạn nội dung mới</small></div></a></div><div class="col-md-4"><a class="admin-action" href="{{ url_for('admin.vocabulary_create') }}"><span>+</span><div><b>Thêm từ vựng</b><small>Mở rộng kho từ</small></div></a></div><div class="col-md-4"><a class="admin-action" href="{{ url_for('admin.users') }}"><span>→</span><div><b>Quản lý user</b><small>Kiểm tra tài khoản</small></div></a></div></div></div></section>{% endblock %}
+{% extends "base.html" %}
+{% block title %}Tổng quan Quản trị · EnglishMate{% endblock %}
 
+{% block content %}
+<div class="container py-4">
+  {% include "admin/_nav.html" %}
+
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h4 class="fw-800 text-dark mb-1">Thống kê hệ thống</h4>
+      <p class="text-secondary small mb-0">Dữ liệu thời gian thực của nền tảng EnglishMate</p>
+    </div>
+    <span class="badge bg-light text-muted border px-3 py-2 rounded-pill small fw-bold">Cập nhật tự động</span>
+  </div>
+
+  <!-- Stat Cards Grid -->
+  <div class="row g-3 mb-4">
+    <div class="col-6 col-md">
+      <div class="card border rounded-4 p-3 bg-white shadow-xs h-100">
+        <div class="d-flex align-items-center gap-3">
+          <div class="menu-icon-box bg-primary-subtle text-primary" style="width: 42px; height: 42px; font-size: 1.1rem; display: inline-flex; align-items: center; justify-content: center;">
+            👥
+          </div>
+          <div>
+            <h3 class="fw-800 text-dark mb-0" style="font-size: 1.5rem;">{{ stats.users }}</h3>
+            <span class="text-muted small" style="font-size: 0.78rem;">Người dùng</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-6 col-md">
+      <div class="card border rounded-4 p-3 bg-white shadow-xs h-100">
+        <div class="d-flex align-items-center gap-3">
+          <div class="menu-icon-box bg-purple-subtle text-purple" style="width: 42px; height: 42px; font-size: 1.1rem; display: inline-flex; align-items: center; justify-content: center;">
+            📚
+          </div>
+          <div>
+            <h3 class="fw-800 text-dark mb-0" style="font-size: 1.5rem;">{{ stats.lessons }}</h3>
+            <span class="text-muted small" style="font-size: 0.78rem;">Bài học</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-6 col-md">
+      <div class="card border rounded-4 p-3 bg-white shadow-xs h-100">
+        <div class="d-flex align-items-center gap-3">
+          <div class="menu-icon-box bg-success-subtle text-success" style="width: 42px; height: 42px; font-size: 1.1rem; display: inline-flex; align-items: center; justify-content: center;">
+            📖
+          </div>
+          <div>
+            <h3 class="fw-800 text-dark mb-0" style="font-size: 1.5rem;">{{ stats.words }}</h3>
+            <span class="text-muted small" style="font-size: 0.78rem;">Từ vựng</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-6 col-md">
+      <div class="card border rounded-4 p-3 bg-white shadow-xs h-100">
+        <div class="d-flex align-items-center gap-3">
+          <div class="menu-icon-box bg-warning-subtle text-warning" style="width: 42px; height: 42px; font-size: 1.1rem; display: inline-flex; align-items: center; justify-content: center;">
+            ❓
+          </div>
+          <div>
+            <h3 class="fw-800 text-dark mb-0" style="font-size: 1.5rem;">{{ stats.questions }}</h3>
+            <span class="text-muted small" style="font-size: 0.78rem;">Câu hỏi Quiz</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-6 col-md">
+      <div class="card border rounded-4 p-3 bg-white shadow-xs h-100">
+        <div class="d-flex align-items-center gap-3">
+          <div class="menu-icon-box bg-info-subtle text-info" style="width: 42px; height: 42px; font-size: 1.1rem; display: inline-flex; align-items: center; justify-content: center;">
+            📝
+          </div>
+          <div>
+            <h3 class="fw-800 text-dark mb-0" style="font-size: 1.5rem;">{{ stats.attempts }}</h3>
+            <span class="text-muted small" style="font-size: 0.78rem;">Lượt nộp bài</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Quick Action Cards -->
+  <h5 class="fw-800 text-dark mb-3">Thao tác nhanh</h5>
+  <div class="row g-3">
+    <div class="col-md-4">
+      <a class="card border rounded-4 bg-white p-4 shadow-xs text-decoration-none transition-hover h-100" href="{{ url_for('admin.lesson_create') }}">
+        <div class="d-flex align-items-center gap-3">
+          <div class="rounded-3 bg-primary text-white d-flex align-items-center justify-content-center" style="width: 40px; height: 40px; font-size: 1.2rem; font-weight: bold;">
+            +
+          </div>
+          <div>
+            <h6 class="fw-800 text-dark mb-0">Thêm bài học mới</h6>
+            <span class="text-muted small">Soạn nội dung ngữ pháp & bài đọc</span>
+          </div>
+        </div>
+      </a>
+    </div>
+
+    <div class="col-md-4">
+      <a class="card border rounded-4 bg-white p-4 shadow-xs text-decoration-none transition-hover h-100" href="{{ url_for('admin.vocabulary_create') }}">
+        <div class="d-flex align-items-center gap-3">
+          <div class="rounded-3 bg-success text-white d-flex align-items-center justify-content-center" style="width: 40px; height: 40px; font-size: 1.2rem; font-weight: bold;">
+            +
+          </div>
+          <div>
+            <h6 class="fw-800 text-dark mb-0">Thêm từ vựng mới</h6>
+            <span class="text-muted small">Nạp từ mới, phát âm & ví dụ</span>
+          </div>
+        </div>
+      </a>
+    </div>
+
+    <div class="col-md-4">
+      <a class="card border rounded-4 bg-white p-4 shadow-xs text-decoration-none transition-hover h-100" href="{{ url_for('admin.users') }}">
+        <div class="d-flex align-items-center gap-3">
+          <div class="rounded-3 bg-danger text-white d-flex align-items-center justify-content-center" style="width: 40px; height: 40px; font-size: 1.2rem; font-weight: bold;">
+            👥
+          </div>
+          <div>
+            <h6 class="fw-800 text-dark mb-0">Quản lý người dùng</h6>
+            <span class="text-muted small">Phân quyền, khóa/mở tài khoản</span>
+          </div>
+        </div>
+      </a>
+    </div>
+  </div>
+</div>
+{% endblock %}
