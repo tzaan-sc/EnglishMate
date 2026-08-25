@@ -48,25 +48,67 @@
 </section>
 <section class="feature-section py-5">
   <div class="container py-5">
-    <div class="section-heading text-center mx-auto"><span class="eyebrow">MỘT NƠI, ĐỦ MỌI KỸ NĂNG</span>
-      <h2>Học đúng cách. Nhớ lâu hơn.</h2>
-      <p>Những công cụ thiết yếu được sắp xếp trong một hành trình rõ ràng.</p>
+    <div class="section-heading text-center mx-auto" style="max-width: 600px;">
+      <span class="eyebrow">MỘT NƠI, ĐỦ MỌI KỸ NĂNG</span>
+      <h2 class="display-5 fw-800 mt-2 mb-3">Học đúng cách. Nhớ lâu hơn.</h2>
+      <p class="text-secondary">Những công cụ thiết yếu được sắp xếp trong một hành trình rõ ràng và sinh động.</p>
     </div>
-    <div class="row g-3 g-lg-4 mt-4 row-cols-1 row-cols-md-3 row-cols-lg-5">
+    <div class="row g-3 g-lg-4 mt-4 row-cols-1 row-cols-md-3 row-cols-lg-5 justify-content-center">
       {% set features = [
-      ('01','Từ vựng','Học từ mới theo chủ đề và cấp độ.'),
-      ('02','Bài học','Ngữ pháp và giao tiếp qua ví dụ thực tế.'),
-      ('03','Flashcard','Lật thẻ thông minh, ghi nhớ từ vựng lâu hơn.'),
-      ('04','Quiz nhanh','Trắc nghiệm ngắn, chấm điểm và giải thích ngay.'),
-      ('05','Tiến độ','Theo dõi điểm số và hành trình học mỗi ngày.')
+        (
+          '01',
+          'bg-success-subtle text-success',
+          '<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="currentColor" class="bi bi-journal" viewBox="0 0 16 16"><path d="M3 0h10a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V2a2 2 0 0 1 2-2zm0 1a1 1 0 0 0-1 1v12a1 1 0 0 1 1 1h10a1 1 0 0 1 1-1V2a1 1 0 0 1-1-1H3z"/></svg>',
+          'Từ vựng',
+          'Học từ mới theo chủ đề và cấp độ.'
+        ),
+        (
+          '02',
+          'bg-purple-subtle text-purple',
+          '<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="currentColor" class="bi bi-grid" viewBox="0 0 16 16"><path d="M1 2.5A1.5 1.5 0 0 1 2.5 1h3A1.5 1.5 0 0 1 7 2.5v3A1.5 1.5 0 0 1 5.5 7h-3A1.5 1.5 0 0 1 1 5.5v-3zM2.5 2a.5.5 0 0 0-.5.5v3a.5.5 0 0 0 .5.5h3a.5.5 0 0 0 .5-.5v-3a.5.5 0 0 0-.5-.5h-3zm6.5.5A1.5 1.5 0 0 1 10.5 1h3A1.5 1.5 0 0 1 15 2.5v3A1.5 1.5 0 0 1 13.5 7h-3A1.5 1.5 0 0 1 9 5.5v-3zm1.5-.5a.5.5 0 0 0-.5.5v3a.5.5 0 0 0 .5.5h3a.5.5 0 0 0 .5-.5v-3a.5.5 0 0 0-.5-.5h-3zM1 10.5A1.5 1.5 0 0 1 2.5 9h3A1.5 1.5 0 0 1 7 10.5v3A1.5 1.5 0 0 1 5.5 15h-3A1.5 1.5 0 0 1 1 13.5v-3zm1.5-.5a.5.5 0 0 0-.5.5v3a.5.5 0 0 0 .5.5h3a.5.5 0 0 0 .5-.5v-3a.5.5 0 0 0-.5-.5h-3zm6.5.5A1.5 1.5 0 0 1 10.5 9h3a1.5 1.5 0 0 1 1.5 1.5v3a1.5 1.5 0 0 1-1.5 1.5h-3A1.5 1.5 0 0 1 9 13.5v-3zm1.5-.5a.5.5 0 0 0-.5.5v3a.5.5 0 0 0 .5.5h3a.5.5 0 0 0 .5-.5v-3a.5.5 0 0 0-.5-.5h-3z"/></svg>',
+          'Bài học',
+          'Ngữ pháp và giao tiếp qua ví dụ thực tế.'
+        ),
+        (
+          '03',
+          'bg-warning-subtle text-warning',
+          '<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="currentColor" class="bi bi-lightning" viewBox="0 0 16 16"><path d="M5.52.359A.5.5 0 0 1 6 0h4a.5.5 0 0 1 .474.658L8.694 6H12.5a.5.5 0 0 1 .395.807l-7 9a.5.5 0 0 1-.873-.454L6.823 9.5H3.5a.5.5 0 0 1-.48-.641l2.5-8.5zM6.374 1 4.168 8.5H7.5a.5.5 0 0 1 .478.647L6.292 14.5l5.54-7.128H8.5a.5.5 0 0 1-.479-.652L9.832 1z"/></svg>',
+          'Flashcard',
+          'Lật thẻ thông minh, ghi nhớ từ vựng lâu hơn.'
+        ),
+        (
+          '04',
+          'bg-info-subtle text-info',
+          '<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="currentColor" class="bi bi-check-square" viewBox="0 0 16 16"><path d="M14 1a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1h12zM2 0a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2H2z"/><path d="M10.854 7.854a.5.5 0 0 0-.708-.708L7.5 9.793 6.354 8.646a.5.5 0 1 0-.708.708l1.5 1.5a.5.5 0 0 0 .708 0l3-3z"/></svg>',
+          'Quiz nhanh',
+          'Trắc nghiệm ngắn, chấm điểm và giải thích ngay.'
+        ),
+        (
+          '05',
+          'bg-danger-subtle text-danger',
+          '<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="currentColor" class="bi bi-award" viewBox="0 0 16 16"><path d="M9.669.864 8 0 6.331.864l-1.858.282-.842 1.68-1.337 1.32L2.6 6l-.306 1.854 1.337 1.32.842 1.68 1.858.282L8 16l1.669-.864 1.858-.282.842-1.68 1.337-1.32L13.4 8l.306-1.854-1.337-1.32-.842-1.68-1.858-.282zm1.196 9.53a1.72 1.72 0 0 0-.785-.291 1.72 1.72 0 0 0-.89.24l-1.282.855-.838-1.677a1.72 1.72 0 0 0-.708-.708L5.474 8.16l.855-1.282a1.72 1.72 0 0 0 .24-.89 1.72 1.72 0 0 0-.291-.785l-1.077-1.794 1.794 1.077c.28.168.601.246.92.223.32-.022.623-.138.878-.335l1.677-.838.838 1.677c.168.28.246.601.223.92-.022.32-.138.623-.335.878l-.838 1.677.838.838zm-1.802-5.748L8 6.55 6.937 4.646a.25.25 0 0 0-.433.25l1.16 2.32a.25.25 0 0 0 .433 0l1.16-2.32a.25.25 0 0 0-.433-.25z"/></svg>',
+          'Tiến độ',
+          'Theo dõi điểm số và hành trình học mỗi ngày.'
+        )
       ] %}
-      {% for num, title, text in features %}
+      {% for num, theme, svg, title, text in features %}
       <div class="col">
-        <article class="feature-card h-100">
-          <span>{{ num }}</span>
-          <h4>{{ title }}</h4>
-          <p>{{ text }}</p>
-          <a href="{{ url_for('auth.register') }}">Khám phá <b>→</b></a>
+        <article class="feature-card h-100 p-4 border rounded-4 bg-white shadow-xs position-relative transition-hover d-flex flex-column justify-content-between">
+          <div>
+            <div class="d-flex align-items-center justify-content-between mb-4">
+              <div class="rounded-3 d-flex align-items-center justify-content-center {{ theme }}" style="width: 44px; height: 44px;">
+                {{ svg|safe }}
+              </div>
+              <span class="text-muted small fw-bold font-monospace" style="opacity: 0.5;">{{ num }}</span>
+            </div>
+            <h4 class="fw-800 text-dark mb-2" style="font-size: 1.15rem;">{{ title }}</h4>
+            <p class="text-secondary small mb-3" style="min-height: 48px; font-size: 0.82rem; line-height: 1.5;">{{ text }}</p>
+          </div>
+          <div>
+            <a href="{{ url_for('auth.register') }}" class="stretched-link text-decoration-none fw-bold small d-inline-flex align-items-center gap-1 text-primary">
+              Khám phá <span>→</span>
+            </a>
+          </div>
         </article>
       </div>
       {% endfor %}
