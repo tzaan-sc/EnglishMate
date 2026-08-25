@@ -2,31 +2,59 @@
 {% block title %}Dashboard · EnglishMate{% endblock %}
 {% block content %}
 <div class="container-fluid py-2">
-  
+
+  <!-- PAGE HEADING -->
+  <div class="page-heading d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <span class="eyebrow">DASHBOARD</span>
+      <h1 class="fw-800 text-dark">Chào {{ current_user.username }}, sẵn sàng học chưa? 👋</h1>
+      <p class="text-secondary mb-0">Đây là bức tranh học tập của bạn hôm nay.</p>
+    </div>
+  </div>
+
   <!-- TOP WIDGETS ROW -->
   <div class="row g-3 align-items-stretch">
-    <!-- Welcome Banner Widget -->
-    <div class="col-lg-5">
-      <div class="card border-0 rounded-4 text-white h-100 p-4 d-flex flex-column justify-content-between position-relative overflow-hidden" style="background: linear-gradient(135deg, var(--green) 0%, var(--green-2) 100%); min-height: 200px;">
-        <div style="z-index: 2;">
-          <span class="text-white-50 small fw-bold text-uppercase tracking-wider">Hành trình hôm nay</span>
-          <h2 class="fw-800 mt-2">Chào {{ current_user.username }}! 👋</h2>
-          <p class="text-white-50 mt-1 small">Chào mừng bạn trở lại với EnglishMate. Hãy tiếp tục tích lũy từ vựng và bài học mỗi ngày nhé!</p>
+    <!-- Blank/Custom Decorative Widget Slot -->
+    <div class="col-lg-4">
+      <div id="welcomeBanner" class="card border rounded-4 h-100 d-flex align-items-center justify-content-center position-relative overflow-hidden transition-all" style="background-color: #f1f3f5; border-style: dashed !important; border-color: #cbd5e1 !important; min-height: 180px;">
+        <!-- Media Container Background -->
+        <div id="bannerMediaContainer" class="position-absolute w-100 h-100 top-0 start-0"
+          style="z-index: 1; pointer-events: none;"></div>
+
+        <!-- Dark Overlay (Only active when media is filled) -->
+        <div id="bannerOverlay" class="position-absolute w-100 h-100 top-0 start-0 d-none"
+          style="z-index: 1; background: rgba(0, 0, 0, 0.15); pointer-events: none;"></div>
+
+        <!-- Placeholder instructions inside blank square (completely empty) -->
+        <div id="bannerPlaceholder" class="d-none" style="z-index: 2; pointer-events: none;"></div>
+
+        <!-- Action buttons on top right -->
+        <div class="position-absolute d-flex align-items-center" style="top: 15px; right: 15px; z-index: 10;">
+          <button id="btnResetBanner"
+            class="btn btn-sm btn-danger border-0 d-none me-1 d-flex align-items-center justify-content-center"
+            style="border-radius: 50%; width: 34px; height: 34px; background: rgba(220, 53, 69, 0.45); color: white;"
+            title="Khôi phục ảnh nền mặc định">
+            <svg id="resetBannerSvg" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="#ffffff" viewBox="0 0 16 16">
+              <path d="M2.146 2.854a.5.5 0 1 1 .708-.708L8 7.293l5.146-5.147a.5.5 0 0 1 .708.708L8.707 8l5.147 5.146a.5.5 0 0 1-.708.708L8 8.707l-5.146 5.147a.5.5 0 0 1-.708-.708L7.293 8z"/>
+            </svg>
+          </button>
+          <button id="btnChangeBanner"
+            class="btn btn-sm btn-light border d-flex align-items-center justify-content-center"
+            style="border-radius: 50%; width: 34px; height: 34px; background: #ffffff;"
+            title="Thay đổi ảnh/hình nền động">
+            <svg id="changeBannerSvg" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="#475569" viewBox="0 0 16 16">
+              <path d="M6.002 5.5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0"/>
+              <path d="M2.002 1a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V3a2 2 0 0 0-2-2zm12 1a1 1 0 0 1 1 1v6.5l-3.777-1.947a.5.5 0 0 0-.577.093l-3.71 3.71-2.66-1.772a.5.5 0 0 0-.63.062L1.002 12V3a1 1 0 0 1 1-1z"/>
+            </svg>
+          </button>
         </div>
-        <div style="z-index: 2;" class="mt-3">
-          {% if next_lesson %}
-            <a class="btn btn-light fw-bold btn-sm px-3 rounded-pill" href="{{ url_for('learning.lesson_detail', lesson_id=next_lesson.id) }}">Học tiếp bài mới →</a>
-          {% else %}
-            <a class="btn btn-light fw-bold btn-sm px-3 rounded-pill" href="{{ url_for('learning.lessons') }}">Xem danh sách bài học →</a>
-          {% endif %}
-        </div>
-        <!-- Decorative subtle background circle -->
-        <div class="position-absolute" style="width: 180px; height: 180px; background: rgba(255, 255, 255, 0.08); border-radius: 50%; right: -50px; bottom: -50px; z-index: 1;"></div>
+
+        <input type="file" id="bannerFileInput" accept="image/*,video/*" class="d-none">
       </div>
     </div>
 
     <!-- Middle Stats Widget -->
-    <div class="col-lg-3">
+    <div class="col-lg-4">
       <div class="card border-0 rounded-4 shadow-sm h-100 p-4 bg-white d-flex flex-column justify-content-center">
         <span class="text-muted small fw-bold text-uppercase mb-3 tracking-wider text-center">Thống kê học tập</span>
         <div class="row g-2">
@@ -60,22 +88,25 @@
 
     <!-- Right Streak Widget -->
     <div class="col-lg-4">
-      <div class="card border-0 rounded-4 text-white h-100 p-4 position-relative overflow-hidden" style="background: linear-gradient(135deg, #f57c00 0%, #ff9800 100%);">
+      <div class="card border-0 rounded-4 text-white h-100 p-4 position-relative overflow-hidden"
+        style="background: linear-gradient(135deg, #f57c00 0%, #ff9800 100%);">
         <span class="text-white-50 small fw-bold text-uppercase tracking-wider">Chuỗi ngày học tập</span>
         <div class="d-flex align-items-baseline gap-2 mt-2">
           <h1 class="fw-800 mb-0 display-4">🔥 7</h1>
           <span class="fw-bold">ngày</span>
         </div>
-        
+
         <!-- Days of the week indicator -->
         <div class="d-flex justify-content-between align-items-center mt-3 pt-2 border-top border-white-10">
-          {% for day, active in [('T2', true), ('T3', true), ('T4', true), ('T5', true), ('T6', true), ('T7', false), ('CN', false)] %}
-            <div class="d-flex flex-column align-items-center gap-1">
-              <span class="small" style="font-size: 0.75rem; opacity: 0.8;">{{ day }}</span>
-              <div class="rounded-circle d-flex align-items-center justify-content-center" style="width: 24px; height: 24px; background: {% if active %}#ffffff{% else %}rgba(255, 255, 255, 0.15){% endif %}; color: {% if active %}#f57c00{% else %}#ffffff{% endif %}; font-size: 0.7rem; font-weight: bold;">
-                {% if active %}✓{% else %}{% endif %}
-              </div>
+          {% for day, active in [('T2', true), ('T3', true), ('T4', true), ('T5', true), ('T6', true), ('T7', false),
+          ('CN', false)] %}
+          <div class="d-flex flex-column align-items-center gap-1">
+            <span class="small" style="font-size: 0.75rem; opacity: 0.8;">{{ day }}</span>
+            <div class="rounded-circle d-flex align-items-center justify-content-center"
+              style="width: 24px; height: 24px; background: {% if active %}#ffffff{% else %}rgba(255, 255, 255, 0.15){% endif %}; color: {% if active %}#f57c00{% else %}#ffffff{% endif %}; font-size: 0.7rem; font-weight: bold;">
+              {% if active %}✓{% else %}{% endif %}
             </div>
+          </div>
           {% endfor %}
         </div>
       </div>
@@ -87,27 +118,27 @@
     <h5 class="fw-800 text-muted text-uppercase small tracking-wider mb-3">Truy cập nhanh</h5>
     <div class="row g-3">
       {% set shortcuts = [
-        ('Từ vựng theo chủ đề', 'Học từ vựng theo cấp độ', 'learning.vocabulary', 'bg-primary-subtle text-primary', '📚'),
-        ('Flashcard phản xạ', 'Lật thẻ ghi nhớ thông minh', 'learning.flashcards', 'bg-warning-subtle text-warning', '⚡'),
-        ('Quiz kiểm tra', 'Đánh giá kiến thức nhanh', 'learning.quiz', 'bg-info-subtle text-info', '🎯'),
-        ('Thi thử TOEIC', 'Luyện đề nghe & đọc hiểu', 'learning.toeic', 'bg-secondary-subtle text-secondary', '🏆')
+      ('Từ vựng theo chủ đề', 'Học từ vựng theo cấp độ', 'learning.vocabulary', 'bg-primary-subtle text-primary', '📚'),
+      ('Flashcard phản xạ', 'Lật thẻ ghi nhớ thông minh', 'learning.flashcards', 'bg-warning-subtle text-warning', '⚡'),
+      ('Quiz kiểm tra', 'Đánh giá kiến thức nhanh', 'learning.quiz', 'bg-info-subtle text-info', '🎯'),
+      ('Thi thử TOEIC', 'Luyện đề nghe & đọc hiểu', 'learning.toeic', 'bg-secondary-subtle text-secondary', '🏆')
       ] %}
       {% for title, desc, endpoint, theme, icon in shortcuts %}
-        <div class="col-md-6 col-lg-3">
-          <div class="card border rounded-4 bg-white p-3 shadow-xs position-relative transition-hover h-100">
-            <div class="d-flex align-items-center gap-3">
-              <div class="menu-icon-box {{ theme }}" style="width: 42px; height: 42px; font-size: 1.2rem;">
-                {{ icon }}
-              </div>
-              <div class="text-truncate flex-grow-1">
-                <h6 class="fw-800 text-dark mb-0 text-truncate" style="font-size: 0.92rem;">{{ title }}</h6>
-                <span class="text-muted" style="font-size: 0.75rem;">{{ desc }}</span>
-              </div>
-              <span class="text-muted small">→</span>
+      <div class="col-md-6 col-lg-3">
+        <div class="card border rounded-4 bg-white p-3 shadow-xs position-relative transition-hover h-100">
+          <div class="d-flex align-items-center gap-3">
+            <div class="menu-icon-box {{ theme }}" style="width: 42px; height: 42px; font-size: 1.2rem;">
+              {{ icon }}
             </div>
-            <a href="{{ url_for(endpoint) }}" class="stretched-link"></a>
+            <div class="text-truncate flex-grow-1">
+              <h6 class="fw-800 text-dark mb-0 text-truncate" style="font-size: 0.92rem;">{{ title }}</h6>
+              <span class="text-muted" style="font-size: 0.75rem;">{{ desc }}</span>
+            </div>
+            <span class="text-muted small">→</span>
           </div>
+          <a href="{{ url_for(endpoint) }}" class="stretched-link"></a>
         </div>
+      </div>
       {% endfor %}
     </div>
   </div>
@@ -116,64 +147,414 @@
   <div class="mt-5">
     <div class="d-flex justify-content-between align-items-center mb-3">
       <h5 class="fw-800 text-muted text-uppercase small tracking-wider mb-0">Lộ trình học tập</h5>
-      <span class="badge bg-green-subtle text-green rounded-pill px-3 py-1.5 small fw-bold">Tổng số: {{ lessons|length }} lộ trình</span>
+      <span class="badge bg-green-subtle text-green rounded-pill px-3 py-1.5 small fw-bold">Tổng số: {{ lessons|length
+        }} lộ trình</span>
     </div>
-    
+
     <!-- Level Pills Filter -->
     <div class="d-flex flex-wrap gap-2 mb-4">
       <button class="btn btn-sm btn-primary rounded-pill px-3 py-1.5 fw-bold" type="button">Tất cả</button>
-      <button class="btn btn-sm btn-light border rounded-pill px-3 py-1.5 fw-bold text-secondary" type="button">Cơ bản (A1)</button>
-      <button class="btn btn-sm btn-light border rounded-pill px-3 py-1.5 fw-bold text-secondary" type="button">Sơ cấp (A2)</button>
-      <button class="btn btn-sm btn-light border rounded-pill px-3 py-1.5 fw-bold text-secondary" type="button">Trung cấp (B1)</button>
+      <button class="btn btn-sm btn-light border rounded-pill px-3 py-1.5 fw-bold text-secondary" type="button">Cơ bản
+        (A1)</button>
+      <button class="btn btn-sm btn-light border rounded-pill px-3 py-1.5 fw-bold text-secondary" type="button">Sơ cấp
+        (A2)</button>
+      <button class="btn btn-sm btn-light border rounded-pill px-3 py-1.5 fw-bold text-secondary" type="button">Trung
+        cấp (B1)</button>
     </div>
 
     <!-- Path Cards Grid -->
     <div class="row g-3 row-cols-1 row-cols-md-2 row-cols-lg-4">
       {% for lesson in lessons %}
-        {% set is_completed = lesson.id in completed_ids %}
-        {% set difficulty = 1 %}
-        {% if lesson.level == 'A2' %}{% set difficulty = 2 %}
-        {% elif lesson.level == 'B1' %}{% set difficulty = 3 %}
-        {% elif lesson.level == 'B2' %}{% set difficulty = 4 %}
-        {% endif %}
-        <div class="col">
-          <div class="card border rounded-4 bg-white p-3 shadow-xs h-100 d-flex flex-column justify-content-between position-relative transition-hover">
-            <div>
-              <div class="d-flex justify-content-between align-items-center mb-3">
-                <span class="badge bg-light text-muted border rounded-pill px-2.5 py-1 small fw-bold" style="font-size: 0.68rem;">{{ lesson.skill }}</span>
-                {% if is_completed %}
-                  <span class="badge bg-success-subtle text-success rounded-pill px-2.5 py-1 small fw-bold d-flex align-items-center gap-1" style="font-size: 0.68rem;">
-                    ✓ Hoàn thành
-                  </span>
-                {% else %}
-                  <span class="badge bg-warning-subtle text-warning rounded-pill px-2.5 py-1 small fw-bold" style="font-size: 0.68rem;">Đang học</span>
-                {% endif %}
-              </div>
-              <h5 class="fw-800 text-dark mb-2" style="font-size: 1.05rem; line-height: 1.35;">{{ lesson.title }}</h5>
-              <p class="text-secondary small mb-4 line-clamp-3">{{ lesson.short_description }}</p>
+      {% set is_completed = lesson.id in completed_ids %}
+      {% set difficulty = 1 %}
+      {% if lesson.level == 'A2' %}{% set difficulty = 2 %}
+      {% elif lesson.level == 'B1' %}{% set difficulty = 3 %}
+      {% elif lesson.level == 'B2' %}{% set difficulty = 4 %}
+      {% endif %}
+      <div class="col">
+        <div
+          class="card border rounded-4 bg-white p-3 shadow-xs h-100 d-flex flex-column justify-content-between position-relative transition-hover">
+          <div>
+            <div class="d-flex justify-content-between align-items-center mb-3">
+              <span class="badge bg-light text-muted border rounded-pill px-2.5 py-1 small fw-bold"
+                style="font-size: 0.68rem;">{{ lesson.skill }}</span>
+              {% if is_completed %}
+              <span
+                class="badge bg-success-subtle text-success rounded-pill px-2.5 py-1 small fw-bold d-flex align-items-center gap-1"
+                style="font-size: 0.68rem;">
+                ✓ Hoàn thành
+              </span>
+              {% else %}
+              <span class="badge bg-warning-subtle text-warning rounded-pill px-2.5 py-1 small fw-bold"
+                style="font-size: 0.68rem;">Đang học</span>
+              {% endif %}
             </div>
-            
-            <div>
-              <!-- Difficulty Progress Indicator -->
-              <div class="mb-3">
-                <div class="d-flex justify-content-between align-items-center mb-1">
-                  <span class="text-muted" style="font-size: 0.68rem; font-weight: bold; text-transform: uppercase;">Độ khó</span>
-                  <span class="fw-bold text-dark" style="font-size: 0.72rem;">{{ difficulty }}/5</span>
-                </div>
-                <div class="progress" style="height: 6px; border-radius: 3px;">
-                  <div class="progress-bar {% if is_completed %}bg-success{% else %}bg-green{% endif %}" role="progressbar" style="width: {{ difficulty * 20 }}%;" aria-valuenow="{{ difficulty * 20 }}" aria-valuemin="0" aria-valuemax="100"></div>
-                </div>
+            <h5 class="fw-800 text-dark mb-2" style="font-size: 1.05rem; line-height: 1.35;">{{ lesson.title }}</h5>
+            <p class="text-secondary small mb-4 line-clamp-3">{{ lesson.short_description }}</p>
+          </div>
+
+          <div>
+            <!-- Difficulty Progress Indicator -->
+            <div class="mb-3">
+              <div class="d-flex justify-content-between align-items-center mb-1">
+                <span class="text-muted" style="font-size: 0.68rem; font-weight: bold; text-transform: uppercase;">Độ
+                  khó</span>
+                <span class="fw-bold text-dark" style="font-size: 0.72rem;">{{ difficulty }}/5</span>
               </div>
-              
-              <a href="{{ url_for('learning.lesson_detail', lesson_id=lesson.id) }}" class="btn btn-outline-primary btn-sm w-100 fw-bold rounded-3 stretched-link mt-1">
-                {% if is_completed %}Ôn tập lại{% else %}Học bài này{% endif %}
-              </a>
+              <div class="progress" style="height: 6px; border-radius: 3px;">
+                <div class="progress-bar {% if is_completed %}bg-success{% else %}bg-green{% endif %}"
+                  role="progressbar" style="width: {{ difficulty * 20 }}%;" aria-valuenow="{{ difficulty * 20 }}"
+                  aria-valuemin="0" aria-valuemax="100"></div>
+              </div>
             </div>
+
+            <a href="{{ url_for('learning.lesson_detail', lesson_id=lesson.id) }}"
+              class="btn btn-outline-primary btn-sm w-100 fw-bold rounded-3 stretched-link mt-1">
+              {% if is_completed %}Ôn tập lại{% else %}Học bài này{% endif %}
+            </a>
           </div>
         </div>
+      </div>
       {% endfor %}
     </div>
   </div>
 
 </div>
+
+<!-- Video/Image Background Customization Modal -->
+<div class="modal fade" id="bannerTrimModal" data-bs-backdrop="static" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content rounded-4 border-0 shadow-lg">
+      <div class="modal-header border-bottom-0 pb-0">
+        <h5 class="modal-title fw-800 text-dark">Thiết lập hình động nền</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <p class="text-secondary small">Vui lòng chọn khoảng thời gian lặp lại của video (tối đa 5 giây) để tạo ảnh
+          chuyển động làm hình nền.</p>
+
+        <div
+          class="video-preview-wrapper bg-black rounded-3 overflow-hidden position-relative mb-3 d-flex justify-content-center align-items-center"
+          style="height: 200px;">
+          <video id="trimVideoPlayer" class="w-100 h-100" style="object-fit: contain;" muted playsinline></video>
+        </div>
+
+        <div class="row g-2">
+          <div class="col-6">
+            <label class="form-label small fw-bold text-uppercase text-muted" style="font-size: 0.65rem;">Điểm bắt đầu
+              (giây)</label>
+            <input type="number" id="trimStartInput" class="form-control form-control-sm" value="0" min="0" step="0.1">
+          </div>
+          <div class="col-6">
+            <label class="form-label small fw-bold text-uppercase text-muted" style="font-size: 0.65rem;">Điểm kết thúc
+              (giây)</label>
+            <input type="number" id="trimEndInput" class="form-control form-control-sm" value="5" min="0.1" step="0.1">
+          </div>
+        </div>
+
+        <div class="mt-3 text-center text-secondary small fw-bold" id="videoDurationLabel">
+          Thời lượng video gốc: --
+        </div>
+      </div>
+      <div class="modal-footer border-top-0 pt-0">
+        <button type="button" class="btn btn-light rounded-pill px-3 py-1.5 small" data-bs-dismiss="modal">Hủy</button>
+        <button type="button" id="btnSaveTrimed" class="btn btn-primary rounded-pill px-4 py-1.5 small fw-bold">Lưu hình
+          động</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const DB_NAME = 'EnglishMateDB';
+    const DB_VERSION = 1;
+    const STORE_NAME = 'bannerMedia';
+
+    const welcomeBanner = document.getElementById('welcomeBanner');
+    const bannerPlaceholder = document.getElementById('bannerPlaceholder');
+
+    const bannerMediaContainer = document.getElementById('bannerMediaContainer');
+    const bannerOverlay = document.getElementById('bannerOverlay');
+    const btnChangeBanner = document.getElementById('btnChangeBanner');
+    const btnResetBanner = document.getElementById('btnResetBanner');
+    const bannerFileInput = document.getElementById('bannerFileInput');
+
+    const bannerTrimModalEl = document.getElementById('bannerTrimModal');
+    const bannerTrimModal = new bootstrap.Modal(bannerTrimModalEl);
+    const trimVideoPlayer = document.getElementById('trimVideoPlayer');
+    const trimStartInput = document.getElementById('trimStartInput');
+    const trimEndInput = document.getElementById('trimEndInput');
+    const videoDurationLabel = document.getElementById('videoDurationLabel');
+    const btnSaveTrimed = document.getElementById('btnSaveTrimed');
+
+    let activeUrls = [];
+    let pendingVideoFile = null;
+
+    function cleanActiveUrls() {
+      activeUrls.forEach(url => URL.revokeObjectURL(url));
+      activeUrls = [];
+    }
+
+    function createCleanUrl(blob) {
+      const url = URL.createObjectURL(blob);
+      activeUrls.push(url);
+      return url;
+    }
+
+    // Open IndexedDB database
+    function getDB() {
+      return new Promise((resolve, reject) => {
+        const request = indexedDB.open(DB_NAME, DB_VERSION);
+        request.onupgradeneeded = (e) => {
+          const db = e.target.result;
+          if (!db.objectStoreNames.contains(STORE_NAME)) {
+            db.createObjectStore(STORE_NAME);
+          }
+        };
+        request.onsuccess = (e) => resolve(e.target.result);
+        request.onerror = (e) => reject(e.target.error);
+      });
+    }
+
+    // Save to Database
+    async function saveMedia(blob, metadata) {
+      const db = await getDB();
+      return new Promise((resolve, reject) => {
+        const transaction = db.transaction(STORE_NAME, 'readwrite');
+        const store = transaction.objectStore(STORE_NAME);
+        const request = store.put({ blob, metadata }, 'currentBanner');
+        request.onsuccess = () => resolve();
+        request.onerror = () => reject(request.error);
+      });
+    }
+
+    // Retrieve from Database
+    async function getMedia() {
+      const db = await getDB();
+      return new Promise((resolve, reject) => {
+        const transaction = db.transaction(STORE_NAME, 'readonly');
+        const store = transaction.objectStore(STORE_NAME);
+        const request = store.get('currentBanner');
+        request.onsuccess = (e) => resolve(e.target.result);
+        request.onerror = () => reject(request.error);
+      });
+    }
+
+    // Delete custom banner
+    async function deleteMedia() {
+      const db = await getDB();
+      return new Promise((resolve, reject) => {
+        const transaction = db.transaction(STORE_NAME, 'readwrite');
+        const store = transaction.objectStore(STORE_NAME);
+        const request = store.delete('currentBanner');
+        request.onsuccess = () => resolve();
+        request.onerror = () => reject(request.error);
+      });
+    }
+
+    // Apply Saved Cover Media
+    // Apply Saved Cover Media
+    async function applyBannerMedia() {
+      cleanActiveUrls();
+      bannerMediaContainer.innerHTML = '';
+
+      try {
+        const data = await getMedia();
+        if (data && data.blob) {
+          const { blob, metadata } = data;
+          const mediaUrl = createCleanUrl(blob);
+
+          bannerOverlay.classList.remove('d-none');
+          bannerPlaceholder.classList.add('d-none');
+          btnResetBanner.classList.remove('d-none');
+
+          // Apply filled layout state
+          welcomeBanner.style.backgroundColor = 'transparent';
+          welcomeBanner.style.borderStyle = 'solid';
+          welcomeBanner.style.borderColor = 'transparent';
+
+          btnChangeBanner.className = 'btn btn-sm btn-light border-0 d-flex align-items-center justify-content-center';
+          btnChangeBanner.style.background = 'rgba(255, 255, 255, 0.25)';
+          const changeSvg = btnChangeBanner.querySelector('svg');
+          if (changeSvg) changeSvg.setAttribute('fill', '#ffffff');
+
+          btnResetBanner.className = 'btn btn-sm btn-danger border-0 me-1 d-flex align-items-center justify-content-center';
+          btnResetBanner.classList.remove('d-none');
+          const resetSvg = btnResetBanner.querySelector('svg');
+          if (resetSvg) resetSvg.setAttribute('fill', '#ffffff');
+
+          if (metadata.type === 'image') {
+            const img = document.createElement('img');
+            img.src = mediaUrl;
+            img.style.width = '100%';
+            img.style.height = '100%';
+            img.style.objectFit = 'cover';
+            img.style.position = 'absolute';
+            img.style.top = '0';
+            img.style.left = '0';
+            bannerMediaContainer.appendChild(img);
+          } else if (metadata.type === 'video') {
+            const video = document.createElement('video');
+            video.src = mediaUrl;
+            video.muted = true;
+            video.playsInline = true;
+            video.autoplay = true;
+            video.style.width = '100%';
+            video.style.height = '100%';
+            video.style.objectFit = 'cover';
+            video.style.position = 'absolute';
+            video.style.top = '0';
+            video.style.left = '0';
+
+            bannerMediaContainer.appendChild(video);
+
+            const start = parseFloat(metadata.start || 0);
+            const end = parseFloat(metadata.end || 5);
+
+            video.addEventListener('loadedmetadata', () => {
+              video.currentTime = start;
+              video.play().catch(err => console.log('Autoplay blocked:', err));
+            });
+
+            video.addEventListener('timeupdate', function () {
+              if (this.currentTime >= end || this.currentTime < start) {
+                this.currentTime = start;
+                this.play().catch(err => console.log(err));
+              }
+            });
+          }
+        } else {
+          bannerOverlay.classList.add('d-none');
+          bannerPlaceholder.classList.add('d-none'); // Completely hidden empty state placeholder
+
+          btnResetBanner.className = 'btn btn-sm btn-danger border-0 d-none me-1 d-flex align-items-center justify-content-center';
+
+          // Apply default empty layout state
+          welcomeBanner.style.backgroundColor = '#f1f3f5';
+          welcomeBanner.style.borderStyle = 'dashed';
+          welcomeBanner.style.borderColor = '#cbd5e1';
+
+          btnChangeBanner.className = 'btn btn-sm btn-light border d-flex align-items-center justify-content-center';
+          btnChangeBanner.style.background = '#ffffff';
+          const changeSvg = btnChangeBanner.querySelector('svg');
+          if (changeSvg) changeSvg.setAttribute('fill', '#475569');
+        }
+      } catch (err) {
+        console.error('Failed to load banner media:', err);
+      }
+    }
+
+    // Trigger File Input Upload
+    btnChangeBanner.addEventListener('click', () => {
+      bannerFileInput.click();
+    });
+
+    // File selection handler
+    bannerFileInput.addEventListener('change', async (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      // Size limit: 15MB
+      const MAX_SIZE = 15 * 1024 * 1024;
+      if (file.size > MAX_SIZE) {
+        alert('Tệp tải lên quá lớn! Vui lòng chọn ảnh hoặc video có dung lượng dưới 15MB.');
+        bannerFileInput.value = '';
+        return;
+      }
+
+      if (file.type.startsWith('image/')) {
+        // Save image directly
+        await saveMedia(file, { type: 'image' });
+        applyBannerMedia();
+        bannerFileInput.value = '';
+      } else if (file.type.startsWith('video/')) {
+        // Trim video before saving
+        pendingVideoFile = file;
+        const videoUrl = URL.createObjectURL(file);
+        trimVideoPlayer.src = videoUrl;
+
+        trimVideoPlayer.onloadedmetadata = () => {
+          const duration = trimVideoPlayer.duration;
+          videoDurationLabel.textContent = `Thời lượng video gốc: ${duration.toFixed(1)} giây`;
+          trimStartInput.value = '0';
+          trimEndInput.value = Math.min(5, duration).toFixed(1);
+          trimStartInput.max = duration;
+          trimEndInput.max = duration;
+
+          bannerTrimModal.show();
+        };
+      } else {
+        alert('Định dạng tệp không hỗ trợ! Vui lòng chỉ tải lên hình ảnh hoặc video.');
+        bannerFileInput.value = '';
+      }
+    });
+
+    // Play video segment preview inside trim modal
+    let previewInterval = null;
+    bannerTrimModalEl.addEventListener('shown.bs.modal', () => {
+      const start = parseFloat(trimStartInput.value);
+      trimVideoPlayer.currentTime = start;
+      trimVideoPlayer.play();
+
+      previewInterval = setInterval(() => {
+        const startVal = parseFloat(trimStartInput.value);
+        const endVal = parseFloat(trimEndInput.value);
+        if (trimVideoPlayer.currentTime >= endVal || trimVideoPlayer.currentTime < startVal) {
+          trimVideoPlayer.currentTime = startVal;
+          trimVideoPlayer.play();
+        }
+      }, 100);
+    });
+
+    bannerTrimModalEl.addEventListener('hidden.bs.modal', () => {
+      if (previewInterval) clearInterval(previewInterval);
+      trimVideoPlayer.pause();
+      trimVideoPlayer.src = '';
+      pendingVideoFile = null;
+      bannerFileInput.value = '';
+    });
+
+    // Save Trimmed loop parameters
+    btnSaveTrimed.addEventListener('click', async () => {
+      const start = parseFloat(trimStartInput.value);
+      const end = parseFloat(trimEndInput.value);
+
+      if (isNaN(start) || isNaN(end) || start < 0 || end <= start) {
+        alert('Giá trị bắt đầu hoặc kết thúc không hợp lệ.');
+        return;
+      }
+
+      const duration = end - start;
+      if (duration > 5.1) {
+        alert('Hình động nền tối đa chỉ được dài 5 giây. Vui lòng giảm khoảng cách.');
+        return;
+      }
+
+      if (pendingVideoFile) {
+        await saveMedia(pendingVideoFile, {
+          type: 'video',
+          start: start,
+          end: end
+        });
+        bannerTrimModal.hide();
+        applyBannerMedia();
+      }
+    });
+
+    // Reset back to default template background
+    btnResetBanner.addEventListener('click', async () => {
+      if (confirm('Bạn có muốn khôi phục lại hình nền mặc định không?')) {
+        await deleteMedia();
+        applyBannerMedia();
+      }
+    });
+
+    // Initialize Banner layout
+    applyBannerMedia();
+  });
+</script>
 {% endblock %}
