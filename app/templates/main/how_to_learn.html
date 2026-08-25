@@ -1,0 +1,110 @@
+{% extends "base.html" %}
+{% block title %}Cách học hiệu quả · EnglishMate{% endblock %}
+{% block content %}
+<section class="page-section bg-light">
+  <div class="container">
+    <div class="page-heading text-center mx-auto" style="max-width: 720px;">
+      <span class="eyebrow">PHƯƠNG PHÁP HỌC</span>
+      <h1>Học thông minh hơn. Nhớ lâu hơn.</h1>
+      <p class="lead text-secondary mt-3">EnglishMate kết hợp khoa học ghi nhớ và lộ trình thực tế để giúp bạn làm chủ tiếng Anh mỗi ngày chỉ với 15 phút.</p>
+    </div>
+
+    <div class="row g-4 mt-5">
+      <div class="col-md-6 col-lg-4">
+        <div class="card border-0 shadow-sm h-100 p-4 rounded-4 transition-hover">
+          <div class="stat-icon mb-3 bg-danger-subtle text-danger" style="width: 48px; height: 48px; border-radius: 12px; display: grid; place-items: center; font-weight: 800;">01</div>
+          <h4 class="fw-800">Từ vựng thông minh</h4>
+          <p class="text-secondary small mt-2">Học từ mới theo chủ đề thông dụng, chia sẵn theo các cấp độ từ A1 đến B2. Mỗi từ vựng đi kèm phát âm, nghĩa chi tiết và câu ví dụ sinh động.</p>
+        </div>
+      </div>
+      
+      <div class="col-md-6 col-lg-4">
+        <div class="card border-0 shadow-sm h-100 p-4 rounded-4 transition-hover">
+          <div class="stat-icon mb-3 bg-primary-subtle text-primary" style="width: 48px; height: 48px; border-radius: 12px; display: grid; place-items: center; font-weight: 800;">02</div>
+          <h4 class="fw-800">Flashcard tương tác</h4>
+          <p class="text-secondary small mt-2">Áp dụng phương pháp lật thẻ ghi nhớ ngẫu nhiên để kích thích não bộ. Bạn tự đánh giá mức độ ghi nhớ của bản thân để hệ thống tối ưu lượt ôn tập.</p>
+        </div>
+      </div>
+
+      <div class="col-md-6 col-lg-4">
+        <div class="card border-0 shadow-sm h-100 p-4 rounded-4 transition-hover">
+          <div class="stat-icon mb-3 bg-success-subtle text-success" style="width: 48px; height: 48px; border-radius: 12px; display: grid; place-items: center; font-weight: 800;">03</div>
+          <h4 class="fw-800">Bài học thực tế</h4>
+          <p class="text-secondary small mt-2">Học ngữ pháp và cấu trúc câu thông qua các tình huống thực tế. Không học vẹt công thức khô khan, mọi bài học đều được giải thích bằng ví dụ gần gũi nhất.</p>
+        </div>
+      </div>
+
+      <div class="col-md-6 col-lg-4">
+        <div class="card border-0 shadow-sm h-100 p-4 rounded-4 transition-hover">
+          <div class="stat-icon mb-3 bg-warning-subtle text-warning" style="width: 48px; height: 48px; border-radius: 12px; display: grid; place-items: center; font-weight: 800;">04</div>
+          <h4 class="fw-800">Quiz đánh giá nhanh</h4>
+          <p class="text-secondary small mt-2">Sau mỗi đợt học, kiểm tra nhanh với bộ 10 câu hỏi trắc nghiệm ngẫu nhiên để ghi khắc kiến thức. Đáp án có giải thích chi tiết giúp bạn hiểu rõ bản chất.</p>
+        </div>
+      </div>
+
+      <div class="col-md-6 col-lg-4">
+        <div class="card border-0 shadow-sm h-100 p-4 rounded-4 transition-hover">
+          <div class="stat-icon mb-3 bg-info-subtle text-info" style="width: 48px; height: 48px; border-radius: 12px; display: grid; place-items: center; font-weight: 800;">05</div>
+          <h4 class="fw-800">Theo dõi tiến độ</h4>
+          <p class="text-secondary small mt-2">Mỗi bài học bạn vượt qua, mỗi từ vựng bạn ghi nhớ đều được lưu lại và tổng hợp trực quan. Bản đồ tiến độ giúp bạn thấy rõ sự tiến bộ từng ngày.</p>
+        </div>
+      </div>
+
+      <div class="col-md-6 col-lg-4">
+        <div class="card bg-green text-white h-100 p-4 rounded-4 border-0 d-flex flex-column justify-content-between position-relative overflow-hidden" style="background: linear-gradient(135deg, var(--green) 0%, var(--green-2) 100%);">
+          <div>
+            <h4 class="fw-800">Bắt đầu học ngay</h4>
+            <p class="small text-white-50 mt-2">Tất cả các công cụ học tập tiên tiến trên đều hoàn toàn miễn phí tại EnglishMate.</p>
+          </div>
+          <a class="btn btn-light mt-4 w-100 fw-bold rounded-3" href="{{ url_for('auth.register') }}">Đăng ký miễn phí →</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Methodology details section -->
+    <div class="mt-5 pt-5 border-top">
+      <div class="row align-items-center g-5">
+        <div class="col-lg-6">
+          <span class="eyebrow">SRS (Spaced Repetition System)</span>
+          <h2 class="fw-800 mt-2">Bí mật của việc nhớ lâu hơn</h2>
+          <p class="text-secondary mt-3">Thay vì cố gắng nhồi nhét từ vựng trong một thời gian ngắn và mau chóng quên đi, EnglishMate khuyến khích bạn ôn lại từ vựng vào các thời điểm chuẩn bị quên.</p>
+          <p class="text-secondary">Thuật toán ôn tập thông minh sẽ tự động giãn cách thời gian ôn tập đối với các từ bạn đã thuộc lòng, và tăng tần suất xuất hiện với các từ vựng bạn còn chưa chắc chắn. Điều này giúp tối ưu hóa thời gian học tập của bạn.</p>
+        </div>
+        <div class="col-lg-6">
+          <div class="p-4 bg-white rounded-4 border shadow-sm">
+            <h5 class="fw-800 mb-3 text-green">✦ Lịch trình ôn tập tối ưu</h5>
+            <div class="d-flex align-items-center gap-3 py-2 border-bottom">
+              <span class="badge bg-danger rounded-circle p-2" style="width: 24px; height: 24px; display: inline-flex; justify-content: center; align-items: center;">1</span>
+              <div>
+                <strong>Lần đầu gặp từ mới:</strong>
+                <div class="text-muted small">Ôn lại sau 1 ngày (ghi nhớ ban đầu)</div>
+              </div>
+            </div>
+            <div class="d-flex align-items-center gap-3 py-2 border-bottom">
+              <span class="badge bg-warning text-dark rounded-circle p-2" style="width: 24px; height: 24px; display: inline-flex; justify-content: center; align-items: center;">2</span>
+              <div>
+                <strong>Từ đã thuộc sơ bộ:</strong>
+                <div class="text-muted small">Ôn lại sau 3 ngày (củng cố ký ức)</div>
+              </div>
+            </div>
+            <div class="d-flex align-items-center gap-3 py-2 border-bottom">
+              <span class="badge bg-info text-dark rounded-circle p-2" style="width: 24px; height: 24px; display: inline-flex; justify-content: center; align-items: center;">3</span>
+              <div>
+                <strong>Từ đã thuộc tốt:</strong>
+                <div class="text-muted small">Ôn lại sau 7 ngày (ghi nhớ sâu)</div>
+              </div>
+            </div>
+            <div class="d-flex align-items-center gap-3 py-2">
+              <span class="badge bg-success rounded-circle p-2" style="width: 24px; height: 24px; display: inline-flex; justify-content: center; align-items: center;">4</span>
+              <div>
+                <strong>Từ đã ghi nhớ vĩnh viễn:</strong>
+                <div class="text-muted small">Ôn lại sau 30 ngày (đưa vào tiềm thức)</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

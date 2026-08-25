@@ -24,3 +24,13 @@ def dashboard():
     return render_template("main/dashboard.html", completed=completed, attempts=len(attempts), average=average,
                            learned=learned, next_lesson=next_lesson)
 
+
+@bp.get("/how-to-learn")
+def how_to_learn():
+    return render_template("main/how_to_learn.html")
+
+
+@bp.get("/faq")
+def faq():
+    return render_template("main/faq.html")
+
