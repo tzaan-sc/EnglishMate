@@ -1,12 +1,179 @@
 {% extends "base.html" %}
 {% block title %}Dashboard · EnglishMate{% endblock %}
-{% block content %}<section class="page-section"><div class="container">
-  <div class="page-heading d-flex flex-wrap justify-content-between align-items-end gap-3"><div><span class="eyebrow">MY LEARNING</span><h1>Chào {{ current_user.username }}, sẵn sàng học chưa? 👋</h1><p>Đây là bức tranh học tập của bạn hôm nay.</p></div><a class="btn btn-primary" href="{{ url_for('learning.lessons') }}">Tiếp tục học →</a></div>
-  <div class="row g-3 stat-grid">
-    {% for value,label,icon in [(completed,'Bài đã hoàn thành','✓'),(attempts,'Quiz đã làm','?'),(average ~ '%','Điểm quiz trung bình','↗'),(learned,'Từ vựng đã học','Aa')] %}<div class="col-6 col-lg-3"><div class="stat-card"><span class="stat-icon">{{ icon }}</span><strong>{{ value }}</strong><small>{{ label }}</small></div></div>{% endfor %}
-  </div>
-  {% if next_lesson %}<div class="next-lesson mt-4"><div><span class="eyebrow light">GỢI Ý TIẾP THEO</span><h3>{{ next_lesson.title }}</h3><p>{{ next_lesson.short_description }}</p><span class="badge-soft">{{ next_lesson.level }}</span> <span class="badge-soft">{{ next_lesson.skill }}</span></div><a class="btn btn-light" href="{{ url_for('learning.lesson_detail', lesson_id=next_lesson.id) }}">Học bài này →</a></div>{% endif %}
-  <div class="section-title mt-5"><h2>Không gian học tập</h2><p>Chọn hoạt động phù hợp với năng lượng của bạn.</p></div>
-  <div class="row g-3">{% set links=[('Bài học','Kiến thức được chia thành từng phần dễ tiêu hóa.','learning.lessons','01'),('Từ vựng','Tra cứu và lưu những từ quan trọng.','learning.vocabulary','02'),('Flashcard','Ôn nhanh, nhớ lâu bằng thẻ lật.','learning.flashcards','03'),('Quiz','Kiểm tra kiến thức trong 10 câu.','learning.quiz','04'),('Tiến độ','Nhìn lại thành quả của riêng bạn.','learning.progress','05')] %}{% for title,text,endpoint,num in links %}<div class="col-md-6 {{ 'col-lg-4' if loop.index < 4 else 'col-lg-6' }}"><a class="learning-card" href="{{ url_for(endpoint) }}"><span>{{ num }}</span><div><h4>{{ title }}</h4><p>{{ text }}</p></div><b>→</b></a></div>{% endfor %}</div>
-</div></section>{% endblock %}
+{% block content %}
+<div class="container-fluid py-2">
+  
+  <!-- TOP WIDGETS ROW -->
+  <div class="row g-3 align-items-stretch">
+    <!-- Welcome Banner Widget -->
+    <div class="col-lg-5">
+      <div class="card border-0 rounded-4 text-white h-100 p-4 d-flex flex-column justify-content-between position-relative overflow-hidden" style="background: linear-gradient(135deg, var(--green) 0%, var(--green-2) 100%); min-height: 200px;">
+        <div style="z-index: 2;">
+          <span class="text-white-50 small fw-bold text-uppercase tracking-wider">Hành trình hôm nay</span>
+          <h2 class="fw-800 mt-2">Chào {{ current_user.username }}! 👋</h2>
+          <p class="text-white-50 mt-1 small">Chào mừng bạn trở lại với EnglishMate. Hãy tiếp tục tích lũy từ vựng và bài học mỗi ngày nhé!</p>
+        </div>
+        <div style="z-index: 2;" class="mt-3">
+          {% if next_lesson %}
+            <a class="btn btn-light fw-bold btn-sm px-3 rounded-pill" href="{{ url_for('learning.lesson_detail', lesson_id=next_lesson.id) }}">Học tiếp bài mới →</a>
+          {% else %}
+            <a class="btn btn-light fw-bold btn-sm px-3 rounded-pill" href="{{ url_for('learning.lessons') }}">Xem danh sách bài học →</a>
+          {% endif %}
+        </div>
+        <!-- Decorative subtle background circle -->
+        <div class="position-absolute" style="width: 180px; height: 180px; background: rgba(255, 255, 255, 0.08); border-radius: 50%; right: -50px; bottom: -50px; z-index: 1;"></div>
+      </div>
+    </div>
 
+    <!-- Middle Stats Widget -->
+    <div class="col-lg-3">
+      <div class="card border-0 rounded-4 shadow-sm h-100 p-4 bg-white d-flex flex-column justify-content-center">
+        <span class="text-muted small fw-bold text-uppercase mb-3 tracking-wider text-center">Thống kê học tập</span>
+        <div class="row g-2">
+          <div class="col-6">
+            <div class="bg-light p-2.5 rounded-3 text-center border" style="background-color: #f8faf8 !important;">
+              <h3 class="fw-800 text-green mb-0" style="font-size: 1.6rem;">{{ learned }}</h3>
+              <small class="text-muted" style="font-size: 0.72rem;">Từ vựng</small>
+            </div>
+          </div>
+          <div class="col-6">
+            <div class="bg-light p-2.5 rounded-3 text-center border" style="background-color: #f8faf8 !important;">
+              <h3 class="fw-800 text-success mb-0" style="font-size: 1.6rem;">{{ completed }}</h3>
+              <small class="text-muted" style="font-size: 0.72rem;">Bài học</small>
+            </div>
+          </div>
+          <div class="col-6">
+            <div class="bg-light p-2.5 rounded-3 text-center border" style="background-color: #f8faf8 !important;">
+              <h3 class="fw-800 text-info mb-0" style="font-size: 1.6rem;">{{ attempts }}</h3>
+              <small class="text-muted" style="font-size: 0.72rem;">Quiz làm</small>
+            </div>
+          </div>
+          <div class="col-6">
+            <div class="bg-light p-2.5 rounded-3 text-center border" style="background-color: #f8faf8 !important;">
+              <h3 class="fw-800 text-warning mb-0" style="font-size: 1.6rem;">{{ average }}%</h3>
+              <small class="text-muted" style="font-size: 0.72rem;">Điểm trung bình</small>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right Streak Widget -->
+    <div class="col-lg-4">
+      <div class="card border-0 rounded-4 text-white h-100 p-4 position-relative overflow-hidden" style="background: linear-gradient(135deg, #f57c00 0%, #ff9800 100%);">
+        <span class="text-white-50 small fw-bold text-uppercase tracking-wider">Chuỗi ngày học tập</span>
+        <div class="d-flex align-items-baseline gap-2 mt-2">
+          <h1 class="fw-800 mb-0 display-4">🔥 7</h1>
+          <span class="fw-bold">ngày</span>
+        </div>
+        
+        <!-- Days of the week indicator -->
+        <div class="d-flex justify-content-between align-items-center mt-3 pt-2 border-top border-white-10">
+          {% for day, active in [('T2', true), ('T3', true), ('T4', true), ('T5', true), ('T6', true), ('T7', false), ('CN', false)] %}
+            <div class="d-flex flex-column align-items-center gap-1">
+              <span class="small" style="font-size: 0.75rem; opacity: 0.8;">{{ day }}</span>
+              <div class="rounded-circle d-flex align-items-center justify-content-center" style="width: 24px; height: 24px; background: {% if active %}#ffffff{% else %}rgba(255, 255, 255, 0.15){% endif %}; color: {% if active %}#f57c00{% else %}#ffffff{% endif %}; font-size: 0.7rem; font-weight: bold;">
+                {% if active %}✓{% else %}{% endif %}
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- QUICK ACCESS SECTION -->
+  <div class="mt-4 pt-2">
+    <h5 class="fw-800 text-muted text-uppercase small tracking-wider mb-3">Truy cập nhanh</h5>
+    <div class="row g-3">
+      {% set shortcuts = [
+        ('Từ vựng theo chủ đề', 'Học từ vựng theo cấp độ', 'learning.vocabulary', 'bg-primary-subtle text-primary', '📚'),
+        ('Flashcard phản xạ', 'Lật thẻ ghi nhớ thông minh', 'learning.flashcards', 'bg-warning-subtle text-warning', '⚡'),
+        ('Quiz kiểm tra', 'Đánh giá kiến thức nhanh', 'learning.quiz', 'bg-info-subtle text-info', '🎯'),
+        ('Thi thử TOEIC', 'Luyện đề nghe & đọc hiểu', 'learning.toeic', 'bg-secondary-subtle text-secondary', '🏆')
+      ] %}
+      {% for title, desc, endpoint, theme, icon in shortcuts %}
+        <div class="col-md-6 col-lg-3">
+          <div class="card border rounded-4 bg-white p-3 shadow-xs position-relative transition-hover h-100">
+            <div class="d-flex align-items-center gap-3">
+              <div class="menu-icon-box {{ theme }}" style="width: 42px; height: 42px; font-size: 1.2rem;">
+                {{ icon }}
+              </div>
+              <div class="text-truncate flex-grow-1">
+                <h6 class="fw-800 text-dark mb-0 text-truncate" style="font-size: 0.92rem;">{{ title }}</h6>
+                <span class="text-muted" style="font-size: 0.75rem;">{{ desc }}</span>
+              </div>
+              <span class="text-muted small">→</span>
+            </div>
+            <a href="{{ url_for(endpoint) }}" class="stretched-link"></a>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <!-- LEARNING PATHS SECTION -->
+  <div class="mt-5">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <h5 class="fw-800 text-muted text-uppercase small tracking-wider mb-0">Lộ trình học tập</h5>
+      <span class="badge bg-green-subtle text-green rounded-pill px-3 py-1.5 small fw-bold">Tổng số: {{ lessons|length }} lộ trình</span>
+    </div>
+    
+    <!-- Level Pills Filter -->
+    <div class="d-flex flex-wrap gap-2 mb-4">
+      <button class="btn btn-sm btn-primary rounded-pill px-3 py-1.5 fw-bold" type="button">Tất cả</button>
+      <button class="btn btn-sm btn-light border rounded-pill px-3 py-1.5 fw-bold text-secondary" type="button">Cơ bản (A1)</button>
+      <button class="btn btn-sm btn-light border rounded-pill px-3 py-1.5 fw-bold text-secondary" type="button">Sơ cấp (A2)</button>
+      <button class="btn btn-sm btn-light border rounded-pill px-3 py-1.5 fw-bold text-secondary" type="button">Trung cấp (B1)</button>
+    </div>
+
+    <!-- Path Cards Grid -->
+    <div class="row g-3 row-cols-1 row-cols-md-2 row-cols-lg-4">
+      {% for lesson in lessons %}
+        {% set is_completed = lesson.id in completed_ids %}
+        {% set difficulty = 1 %}
+        {% if lesson.level == 'A2' %}{% set difficulty = 2 %}
+        {% elif lesson.level == 'B1' %}{% set difficulty = 3 %}
+        {% elif lesson.level == 'B2' %}{% set difficulty = 4 %}
+        {% endif %}
+        <div class="col">
+          <div class="card border rounded-4 bg-white p-3 shadow-xs h-100 d-flex flex-column justify-content-between position-relative transition-hover">
+            <div>
+              <div class="d-flex justify-content-between align-items-center mb-3">
+                <span class="badge bg-light text-muted border rounded-pill px-2.5 py-1 small fw-bold" style="font-size: 0.68rem;">{{ lesson.skill }}</span>
+                {% if is_completed %}
+                  <span class="badge bg-success-subtle text-success rounded-pill px-2.5 py-1 small fw-bold d-flex align-items-center gap-1" style="font-size: 0.68rem;">
+                    ✓ Hoàn thành
+                  </span>
+                {% else %}
+                  <span class="badge bg-warning-subtle text-warning rounded-pill px-2.5 py-1 small fw-bold" style="font-size: 0.68rem;">Đang học</span>
+                {% endif %}
+              </div>
+              <h5 class="fw-800 text-dark mb-2" style="font-size: 1.05rem; line-height: 1.35;">{{ lesson.title }}</h5>
+              <p class="text-secondary small mb-4 line-clamp-3">{{ lesson.short_description }}</p>
+            </div>
+            
+            <div>
+              <!-- Difficulty Progress Indicator -->
+              <div class="mb-3">
+                <div class="d-flex justify-content-between align-items-center mb-1">
+                  <span class="text-muted" style="font-size: 0.68rem; font-weight: bold; text-transform: uppercase;">Độ khó</span>
+                  <span class="fw-bold text-dark" style="font-size: 0.72rem;">{{ difficulty }}/5</span>
+                </div>
+                <div class="progress" style="height: 6px; border-radius: 3px;">
+                  <div class="progress-bar {% if is_completed %}bg-success{% else %}bg-green{% endif %}" role="progressbar" style="width: {{ difficulty * 20 }}%;" aria-valuenow="{{ difficulty * 20 }}" aria-valuemin="0" aria-valuemax="100"></div>
+                </div>
+              </div>
+              
+              <a href="{{ url_for('learning.lesson_detail', lesson_id=lesson.id) }}" class="btn btn-outline-primary btn-sm w-100 fw-bold rounded-3 stretched-link mt-1">
+                {% if is_completed %}Ôn tập lại{% else %}Học bài này{% endif %}
+              </a>
+            </div>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+
+</div>
+{% endblock %}

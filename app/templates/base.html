@@ -12,47 +12,85 @@
   <link rel="stylesheet" href="{{ url_for('static', filename='css/app.css') }}">
 </head>
 <body class="{% block body_class %}{% endblock %}">
-  <nav class="navbar navbar-expand-lg sticky-top app-navbar">
-    <div class="container">
-      <a class="navbar-brand d-flex align-items-center gap-2" href="{{ url_for('main.index') }}">
-        <span class="brand-mark">E</span><span>English<span class="brand-accent">Mate</span></span>
-      </a>
-      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#appNav"><span class="navbar-toggler-icon"></span></button>
-      <div class="collapse navbar-collapse" id="appNav">
-        <ul class="navbar-nav ms-auto align-items-lg-center gap-lg-1">
-          {% if not current_user.is_authenticated %}
+  {% if current_user.is_authenticated %}
+    <!-- Layout for authenticated users: Left Sidebar layout -->
+    <div class="d-flex min-vh-100">
+      
+      <!-- Desktop Sidebar -->
+      <aside class="app-sidebar d-none d-md-flex flex-column justify-content-between flex-shrink-0">
+        {% include "_sidebar.html" %}
+      </aside>
+
+      <!-- Offcanvas Mobile Sidebar -->
+      <div class="offcanvas offcanvas-start d-md-none" tabindex="-1" id="mobileSidebar" style="width: 260px;">
+        <div class="offcanvas-body d-flex flex-column justify-content-between p-0 h-100">
+          {% include "_sidebar.html" %}
+        </div>
+      </div>
+
+      <!-- Main Content Area Wrapper -->
+      <div class="flex-grow-1 d-flex flex-column min-vh-100 bg-light-subtle overflow-auto">
+        <!-- Mobile Header Topbar -->
+        <header class="mobile-header d-flex d-md-none justify-content-between align-items-center bg-white px-3 py-2 border-bottom">
+          <a class="d-flex align-items-center gap-2 text-decoration-none" href="{{ url_for('main.dashboard') }}">
+            <span class="brand-mark" style="width: 30px; height: 30px; font-size: 1.15rem;">E</span>
+            <span class="fs-6 fw-800 text-dark">English<span class="brand-accent">Mate</span></span>
+          </a>
+          <button class="btn btn-light border p-1" type="button" data-bs-toggle="offcanvas" data-bs-target="#mobileSidebar">
+            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="currentColor" viewBox="0 0 16 16">
+              <path fill-rule="evenodd" d="M2.5 12a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5zm0-4.17a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5zm0-4.17a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5z"/>
+            </svg>
+          </button>
+        </header>
+  {% else %}
+    <!-- Layout for public visitors: Topbar navbar layout -->
+    <nav class="navbar navbar-expand-lg sticky-top app-navbar">
+      <div class="container">
+        <a class="navbar-brand d-flex align-items-center gap-2" href="{{ url_for('main.index') }}">
+          <span class="brand-mark">E</span><span>English<span class="brand-accent">Mate</span></span>
+        </a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#appNav">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="appNav">
+          <ul class="navbar-nav ms-auto align-items-lg-center gap-lg-1">
             <li class="nav-item"><a class="nav-link" href="{{ url_for('main.index') }}">Trang chủ</a></li>
             <li class="nav-item"><a class="nav-link" href="{{ url_for('main.how_to_learn') }}">Cách học</a></li>
             <li class="nav-item"><a class="nav-link" href="{{ url_for('main.faq') }}">FAQ</a></li>
             <li class="nav-item"><a class="nav-link" href="{{ url_for('auth.login') }}">Đăng nhập</a></li>
             <li class="nav-item"><a class="btn btn-primary btn-sm ms-lg-2 px-3" href="{{ url_for('auth.register') }}">Đăng ký miễn phí</a></li>
-          {% elif current_user.is_admin %}
-            <li class="nav-item"><a class="nav-link" href="{{ url_for('main.dashboard') }}">Dashboard</a></li>
-            <li class="nav-item"><a class="nav-link" href="{{ url_for('admin.dashboard') }}">Quản trị</a></li>
-            <li class="nav-item"><form method="post" action="{{ url_for('auth.logout') }}"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button class="btn nav-link" type="submit">Đăng xuất</button></form></li>
-          {% else %}
-            <li class="nav-item"><a class="nav-link" href="{{ url_for('main.dashboard') }}">Dashboard</a></li>
-            <li class="nav-item"><a class="nav-link" href="{{ url_for('learning.lessons') }}">Bài học</a></li>
-            <li class="nav-item"><a class="nav-link" href="{{ url_for('learning.vocabulary') }}">Từ vựng</a></li>
-            <li class="nav-item"><a class="nav-link" href="{{ url_for('learning.flashcards') }}">Flashcard</a></li>
-            <li class="nav-item"><a class="nav-link" href="{{ url_for('learning.quiz') }}">Quiz</a></li>
-            <li class="nav-item"><a class="nav-link" href="{{ url_for('learning.toeic') }}">Thi TOEIC</a></li>
-            <li class="nav-item"><a class="nav-link" href="{{ url_for('learning.progress') }}">Tiến độ</a></li>
-            <li class="nav-item"><form method="post" action="{{ url_for('auth.logout') }}"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button class="btn nav-link" type="submit">Đăng xuất</button></form></li>
-          {% endif %}
-        </ul>
+          </ul>
+        </div>
       </div>
-    </div>
-  </nav>
+    </nav>
+  {% endif %}
 
-  <div class="flash-stack container">
+  <!-- Flash Messages Stack (Unified) -->
+  <div class="{% if current_user.is_authenticated %}flash-stack px-3 mt-3{% else %}flash-stack container mt-3{% endif %}">
     {% for category, message in get_flashed_messages(with_categories=true) %}
-      <div class="alert alert-{{ category }} alert-dismissible fade show shadow-sm" role="alert">{{ message }}<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
+      <div class="alert alert-{{ category }} alert-dismissible fade show shadow-sm" role="alert">
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+      </div>
     {% endfor %}
   </div>
 
-  <main>{% block content %}{% endblock %}</main>
-  <footer class="app-footer"><div class="container d-flex flex-column flex-md-row justify-content-between gap-2"><span>© 2026 EnglishMate</span><span>Học một chút. Tiến bộ mỗi ngày.</span></div></footer>
+  <!-- Unified Block Content Main -->
+  <main class="{% if current_user.is_authenticated %}flex-grow-1 p-3 p-lg-4{% endif %}">
+    {% block content %}{% endblock %}
+  </main>
+
+  {% if current_user.is_authenticated %}
+      </div> <!-- Closes .flex-grow-1 -->
+    </div> <!-- Closes .d-flex -->
+  {% else %}
+    <footer class="app-footer">
+      <div class="container d-flex flex-column flex-md-row justify-content-between gap-2">
+        <span>© 2026 EnglishMate</span>
+        <span>Học một chút. Tiến bộ mỗi ngày.</span>
+      </div>
+    </footer>
+  {% endif %}
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
   <script src="{{ url_for('static', filename='js/app.js') }}"></script>
   {% block scripts %}{% endblock %}
