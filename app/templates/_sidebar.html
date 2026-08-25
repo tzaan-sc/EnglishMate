@@ -1,16 +1,11 @@
 <div class="d-flex flex-column h-100 justify-content-between">
     <div>
-        <div class="sidebar-brand p-4 border-bottom">
-            <a class="d-flex align-items-center gap-2 text-decoration-none" href="{{ url_for('main.dashboard') }}">
-                <span class="brand-mark">E</span><span class="fs-5 fw-800 text-dark">English<span class="brand-accent">Mate</span></span>
-            </a>
-        </div>
         <div class="sidebar-menu p-3">
             <ul class="nav nav-pills flex-column gap-1">
                 <li class="nav-item">
                     <a class="nav-link d-flex align-items-center gap-3 px-3 py-2.5 {% if request.path == url_for('main.dashboard') %}active{% endif %}" href="{{ url_for('main.dashboard') }}">
                         <span class="menu-icon-box bg-primary-subtle text-primary">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="19" height="19" fill="currentColor" viewBox="0 0 16 16">
                                 <path d="M8.707 1.5a1 1 0 0 0-1.414 0L.646 8.146a.5.5 0 0 0 .708.708L2 8.207V13.5A1.5 1.5 0 0 0 3.5 15h9a1.5 1.5 0 0 0 1.5-1.5V8.207l.646.647a.5.5 0 0 0 .708-.708L13 5.793V2.5a.5.5 0 0 0-.5-.5h-1a.5.5 0 0 0-.5.5v1.293L8.707 1.5Z"/>
                                 <path d="m8 3.293 6 6V13.5a.5.5 0 0 1-.5.5h-9a.5.5 0 0 1-.5-.5V9.293l6-6Z"/>
                             </svg>
@@ -20,9 +15,9 @@
                 </li>
                 <li class="nav-item">
                     <a class="nav-link d-flex align-items-center gap-3 px-3 py-2.5 {% if request.path.startswith(url_for('learning.lessons')) %}active{% endif %}" href="{{ url_for('learning.lessons') }}">
-                        <span class="menu-icon-box bg-success-subtle text-success">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                                <path d="M8.211 2.047a.5.5 0 0 0-.422 0l-7.5 3.5a.5.5 0 0 0 .025.917l7.5 3a.5.5 0 0 0 .372 0L14 7.14V13a1 1 0 0 0-1 1v2h3v-2a1 1 0 0 0-1-1V6.739l.648-.259a.5.5 0 0 0-.025-.917l-7.5-3.5z"/>
+                        <span class="menu-icon-box bg-purple-subtle text-purple">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="19" height="19" fill="currentColor" class="bi bi-grid" viewBox="0 0 16 16">
+                                <path d="M1 2.5A1.5 1.5 0 0 1 2.5 1h3A1.5 1.5 0 0 1 7 2.5v3A1.5 1.5 0 0 1 5.5 7h-3A1.5 1.5 0 0 1 1 5.5v-3zM2.5 2a.5.5 0 0 0-.5.5v3a.5.5 0 0 0 .5.5h3a.5.5 0 0 0 .5-.5v-3a.5.5 0 0 0-.5-.5h-3zm6.5.5A1.5 1.5 0 0 1 10.5 1h3A1.5 1.5 0 0 1 15 2.5v3A1.5 1.5 0 0 1 13.5 7h-3A1.5 1.5 0 0 1 9 5.5v-3zm1.5-.5a.5.5 0 0 0-.5.5v3a.5.5 0 0 0 .5.5h3a.5.5 0 0 0 .5-.5v-3a.5.5 0 0 0-.5-.5h-3zM1 10.5A1.5 1.5 0 0 1 2.5 9h3A1.5 1.5 0 0 1 7 10.5v3A1.5 1.5 0 0 1 5.5 15h-3A1.5 1.5 0 0 1 1 13.5v-3zm1.5-.5a.5.5 0 0 0-.5.5v3a.5.5 0 0 0 .5.5h3a.5.5 0 0 0 .5-.5v-3a.5.5 0 0 0-.5-.5h-3zm6.5.5A1.5 1.5 0 0 1 10.5 9h3a1.5 1.5 0 0 1 1.5 1.5v3a1.5 1.5 0 0 1-1.5 1.5h-3A1.5 1.5 0 0 1 9 13.5v-3zm1.5-.5a.5.5 0 0 0-.5.5v3a.5.5 0 0 0 .5.5h3a.5.5 0 0 0 .5-.5v-3a.5.5 0 0 0-.5-.5h-3z"/>
                             </svg>
                         </span>
                         <span>Bài học</span>
@@ -30,10 +25,9 @@
                 </li>
                 <li class="nav-item">
                     <a class="nav-link d-flex align-items-center gap-3 px-3 py-2.5 {% if request.path.startswith(url_for('learning.vocabulary')) %}active{% endif %}" href="{{ url_for('learning.vocabulary') }}">
-                        <span class="menu-icon-box bg-danger-subtle text-danger">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                                <path d="M12 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2zM4 1h8a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1z"/>
-                                <path d="M5.5 4h5a.5.5 0 0 1 0 1h-5a.5.5 0 0 1 0-1zm0 2h5a.5.5 0 0 1 0 1h-5a.5.5 0 0 1 0-1zm0 2h5a.5.5 0 0 1 0 1h-5a.5.5 0 0 1 0-1zm0 2h3a.5.5 0 0 1 0 1h-3a.5.5 0 0 1 0-1z"/>
+                        <span class="menu-icon-box bg-success-subtle text-success">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="19" height="19" fill="currentColor" class="bi bi-journal" viewBox="0 0 16 16">
+                                <path d="M3 0h10a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V2a2 2 0 0 1 2-2zm0 1a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H3z"/>
                             </svg>
                         </span>
                         <span>Từ vựng</span>
@@ -42,9 +36,8 @@
                 <li class="nav-item">
                     <a class="nav-link d-flex align-items-center gap-3 px-3 py-2.5 {% if request.path.startswith(url_for('learning.flashcards')) %}active{% endif %}" href="{{ url_for('learning.flashcards') }}">
                         <span class="menu-icon-box bg-warning-subtle text-warning">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                                <path d="M13 12.5a.5.5 0 0 1-.5.5h-9a.5.5 0 0 1-.5-.5v-9a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 .5.5v9zm-1-8H4v7h8v-7z"/>
-                                <path d="M1.5 0A1.5 1.5 0 0 0 0 1.5v9A1.5 1.5 0 0 0 1.5 12H2V3a2 2 0 0 1 2-2h9v-.5A1.5 1.5 0 0 0 11.5 0h-10z"/>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="19" height="19" fill="currentColor" class="bi bi-lightning" viewBox="0 0 16 16">
+                                <path d="M5.52.359A.5.5 0 0 1 6 0h4a.5.5 0 0 1 .474.658L8.694 6H12.5a.5.5 0 0 1 .395.807l-7 9a.5.5 0 0 1-.873-.454L6.823 9.5H3.5a.5.5 0 0 1-.48-.641l2.5-8.5zM6.374 1 4.168 8.5H7.5a.5.5 0 0 1 .478.647L6.292 14.5l5.54-7.128H8.5a.5.5 0 0 1-.479-.652L9.832 1z"/>
                             </svg>
                         </span>
                         <span>Game phản xạ</span>
@@ -53,7 +46,7 @@
                 <li class="nav-item">
                     <a class="nav-link d-flex align-items-center gap-3 px-3 py-2.5 {% if request.path.startswith(url_for('learning.quiz')) %}active{% endif %}" href="{{ url_for('learning.quiz') }}">
                         <span class="menu-icon-box bg-info-subtle text-info">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="19" height="19" fill="currentColor" class="bi bi-check-square" viewBox="0 0 16 16">
                                 <path d="M14 1a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1h12zM2 0a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2H2z"/>
                                 <path d="M10.854 7.854a.5.5 0 0 0-.708-.708L7.5 9.793 6.354 8.646a.5.5 0 1 0-.708.708l1.5 1.5a.5.5 0 0 0 .708 0l3-3z"/>
                             </svg>
@@ -63,9 +56,9 @@
                 </li>
                 <li class="nav-item">
                     <a class="nav-link d-flex align-items-center gap-3 px-3 py-2.5 {% if request.path.startswith(url_for('learning.toeic')) %}active{% endif %}" href="{{ url_for('learning.toeic') }}">
-                        <span class="menu-icon-box bg-secondary-subtle text-secondary">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                                <path d="M2.5.5A.5.5 0 0 1 3 0h10a.5.5 0 0 1 .5.5c0 .538-.012 1.05-.034 1.536a3 3 0 1 1-1.133 5.89c-.007.118-.015.244-.023.374a3 3 0 1 1-1.042 5.896-.5.5 0 0 1-.278.435L9 15H7l-2.028-.869a.5.5 0 0 1-.278-.435 3 3 0 1 1-1.042-5.896c-.008-.13-.016-.256-.023-.374a3 3 0 1 1-1.133-5.89C2.512 1.55 2.5.538 2.5.5Zm1.058 8.163c.12-.074.258-.129.412-.149A3 3 0 0 1 6.8 3h2.4a3 3 0 0 1 2.83 5.014c.154.02.292.075.412.149a3.003 3.003 0 0 1-5.632 1.62c-.083-.008-.168-.01-.252-.01s-.169.002-.252.01a3.003 3.003 0 0 1-5.632-1.62ZM3.17 2h9.66c.01-.295.019-.588.024-.877a.5.5 0 0 0-.007-.076L12.5 1H3.5l-.347.047a.5.5 0 0 0-.007.076C3.151 1.412 3.16 1.705 3.17 2Z"/>
+                        <span class="menu-icon-box bg-danger-subtle text-danger">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="19" height="19" fill="currentColor" class="bi bi-award" viewBox="0 0 16 16">
+                                <path d="M9.669.864 8 0 6.331.864l-1.858.282-.842 1.68-1.337 1.32L2.6 6l-.306 1.854 1.337 1.32.842 1.68 1.858.282L8 16l1.669-.864 1.858-.282.842-1.68 1.337-1.32L13.4 8l.306-1.854-1.337-1.32-.842-1.68-1.858-.282zm1.196 9.53a1.72 1.72 0 0 0-.785-.291 1.72 1.72 0 0 0-.89.24l-1.282.855-.838-1.677a1.72 1.72 0 0 0-.708-.708L5.474 8.16l.855-1.282a1.72 1.72 0 0 0 .24-.89 1.72 1.72 0 0 0-.291-.785l-1.077-1.794 1.794 1.077c.28.168.601.246.92.223.32-.022.623-.138.878-.335l1.677-.838.838 1.677c.168.28.246.601.223.92-.022.32-.138.623-.335.878l-.838 1.677.838.838zm-1.802-5.748L8 6.55 6.937 4.646a.25.25 0 0 0-.433.25l1.16 2.32a.25.25 0 0 0 .433 0l1.16-2.32a.25.25 0 0 0-.433-.25z"/>
                             </svg>
                         </span>
                         <span>Thi TOEIC</span>
@@ -74,7 +67,7 @@
                 <li class="nav-item">
                     <a class="nav-link d-flex align-items-center gap-3 px-3 py-2.5 {% if request.path.startswith(url_for('learning.progress')) %}active{% endif %}" href="{{ url_for('learning.progress') }}">
                         <span class="menu-icon-box bg-dark-subtle text-dark">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="19" height="19" fill="currentColor" viewBox="0 0 16 16">
                                 <path fill-rule="evenodd" d="M0 0h1v15h15v1H0V0Zm10 3.5a.5.5 0 0 1 .5-.5h4a.5.5 0 0 1 .5.5v4a.5.5 0 0 1-1 0V4.707l-5.3 5.3a.5.5 0 0 1-.708 0L5.3 7.307l-3.8 3.8a.5.5 0 0 1-.708-.708l4.15-4.15a.5.5 0 0 1 .708 0l2.7 2.7L13.293 4H10.5a.5.5 0 0 1-.5-.5z"/>
                             </svg>
                         </span>

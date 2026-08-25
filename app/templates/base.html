@@ -13,35 +13,57 @@
 </head>
 <body class="{% block body_class %}{% endblock %}">
   {% if current_user.is_authenticated %}
-    <!-- Layout for authenticated users: Left Sidebar layout -->
-    <div class="d-flex min-vh-100">
+    <!-- Layout for authenticated users: Full-width Top header + Content area with sidebar below -->
+    <div class="d-flex flex-column min-vh-100">
       
-      <!-- Desktop Sidebar -->
-      <aside class="app-sidebar d-none d-md-flex flex-column justify-content-between flex-shrink-0">
-        {% include "_sidebar.html" %}
-      </aside>
-
-      <!-- Offcanvas Mobile Sidebar -->
-      <div class="offcanvas offcanvas-start d-md-none" tabindex="-1" id="mobileSidebar" style="width: 260px;">
-        <div class="offcanvas-body d-flex flex-column justify-content-between p-0 h-100">
-          {% include "_sidebar.html" %}
-        </div>
-      </div>
-
-      <!-- Main Content Area Wrapper -->
-      <div class="flex-grow-1 d-flex flex-column min-vh-100 bg-light-subtle overflow-auto">
-        <!-- Mobile Header Topbar -->
-        <header class="mobile-header d-flex d-md-none justify-content-between align-items-center bg-white px-3 py-2 border-bottom">
-          <a class="d-flex align-items-center gap-2 text-decoration-none" href="{{ url_for('main.dashboard') }}">
-            <span class="brand-mark" style="width: 30px; height: 30px; font-size: 1.15rem;">E</span>
-            <span class="fs-6 fw-800 text-dark">English<span class="brand-accent">Mate</span></span>
-          </a>
-          <button class="btn btn-light border p-1" type="button" data-bs-toggle="offcanvas" data-bs-target="#mobileSidebar">
-            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="currentColor" viewBox="0 0 16 16">
+      <!-- Unified Top Header for logged-in users -->
+      <header class="app-topbar d-flex justify-content-between align-items-center bg-white px-4 py-2 border-bottom">
+        <div class="d-flex align-items-center gap-2">
+          <!-- Mobile Sidebar Toggle (visible on mobile only) -->
+          <button class="btn btn-light border p-1.5 d-md-none me-1" type="button" data-bs-toggle="offcanvas" data-bs-target="#mobileSidebar">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 16 16">
               <path fill-rule="evenodd" d="M2.5 12a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5zm0-4.17a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5zm0-4.17a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5z"/>
             </svg>
           </button>
-        </header>
+          
+          <!-- Logo Brand Text (Keep Original Name EnglishMate with Green accent) -->
+          <a class="navbar-brand d-flex align-items-center gap-2 text-decoration-none" href="{{ url_for('main.dashboard') }}">
+            <span class="brand-mark">E</span><span>English<span class="brand-accent">Mate</span></span>
+          </a>
+        </div>
+
+        <!-- Right Controls: Streak & Pro Upgrade Button -->
+        <div class="d-flex align-items-center gap-2">
+          <!-- Streak badge -->
+          <div class="streak-pill">
+            <span style="font-size: 1rem; line-height: 1;">🔥</span>
+            <span>7</span>
+          </div>
+
+          <!-- Pro Upgrade button -->
+          <a href="#" class="btn-upgrade-pro text-decoration-none">
+            <span>★</span>
+            <span>NÂNG CẤP PRO</span>
+          </a>
+        </div>
+      </header>
+
+      <!-- Main body split container (Sidebar on left, Content on right) -->
+      <div class="d-flex flex-grow-1 overflow-hidden" style="height: calc(100vh - 60px);">
+        <!-- Desktop Sidebar -->
+        <aside class="app-sidebar d-none d-md-flex flex-column justify-content-between flex-shrink-0" style="height: 100%; border-right: 1px solid var(--line);">
+          {% include "_sidebar.html" %}
+        </aside>
+
+        <!-- Offcanvas Mobile Sidebar -->
+        <div class="offcanvas offcanvas-start d-md-none" tabindex="-1" id="mobileSidebar" style="width: 260px;">
+          <div class="offcanvas-body d-flex flex-column justify-content-between p-0 h-100">
+            {% include "_sidebar.html" %}
+          </div>
+        </div>
+
+        <!-- Main Content Area Wrapper -->
+        <div class="flex-grow-1 bg-light-subtle overflow-auto d-flex flex-column">
   {% else %}
     <!-- Layout for public visitors: Topbar navbar layout -->
     <nav class="navbar navbar-expand-lg sticky-top app-navbar">
@@ -81,8 +103,9 @@
   </main>
 
   {% if current_user.is_authenticated %}
-      </div> <!-- Closes .flex-grow-1 -->
-    </div> <!-- Closes .d-flex -->
+        </div> <!-- Closes .flex-grow-1 (Main Content Area Wrapper) -->
+      </div> <!-- Closes .d-flex (Main body split container) -->
+    </div> <!-- Closes .d-flex (Outer full-height container) -->
   {% else %}
     <footer class="app-footer">
       <div class="container d-flex flex-column flex-md-row justify-content-between gap-2">
@@ -96,4 +119,3 @@
   {% block scripts %}{% endblock %}
 </body>
 </html>
-
