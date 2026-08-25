@@ -7,7 +7,7 @@ from sqlalchemy import func
 from ...extensions import db
 from ...models import (Lesson, LessonProgress, Question, QuizAttempt, QuizAttemptAnswer,
                        Vocabulary, VocabularyProgress, ToeicTest, ToeicPassage, ToeicQuestion,
-                       ToeicAttempt, ToeicAttemptAnswer)
+                       ToeicAttempt, ToeicAttemptAnswer, record_daily_activity)
 from . import bp
 from .forms import ActionForm, QuizStartForm
 
@@ -43,8 +43,10 @@ def complete_lesson(lesson_id):
         abort(400)
     if not LessonProgress.query.filter_by(user_id=current_user.id, lesson_id=lesson.id).first():
         db.session.add(LessonProgress(user_id=current_user.id, lesson_id=lesson.id))
-        db.session.commit()
+        record_daily_activity(current_user)
         flash("Tuyệt vời! Bài học đã được đánh dấu hoàn thành.", "success")
+    else:
+        record_daily_activity(current_user)
     return redirect(url_for("learning.lesson_detail", lesson_id=lesson.id))
 
 

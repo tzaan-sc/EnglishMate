@@ -2320,15 +2320,49 @@ a {
 .streak-pill {
     display: inline-flex;
     align-items: center;
-    gap: 6px;
-    background-color: #f1f3f5;
-    border: 1px solid #e2e8f0;
+    gap: 8px;
     border-radius: 20px;
     padding: 5px 14px;
     font-weight: 700;
-    color: #475569;
     font-size: 0.85rem;
     line-height: 1;
+    transition: all 0.25s ease;
+}
+
+.streak-pill.streak-inactive {
+    background-color: #f1f5f9;
+    border: 1px solid #e2e8f0;
+    color: #475569;
+}
+
+.streak-pill.streak-inactive .streak-icon {
+    filter: grayscale(100%);
+    opacity: 0.5;
+}
+
+.streak-pill.streak-inactive .streak-divider {
+    background-color: #cbd5e1;
+}
+
+.streak-pill.streak-active {
+    background-color: #fff7ed;
+    border: 1px solid #ffedd5;
+    color: #ea580c;
+}
+
+.streak-pill.streak-active .streak-icon {
+    filter: none;
+    opacity: 1;
+}
+
+.streak-pill.streak-active .streak-divider {
+    background-color: #fdba74;
+}
+
+.streak-divider {
+    width: 1px;
+    height: 14px;
+    display: inline-block;
 }
 
 .btn-upgrade-pro {

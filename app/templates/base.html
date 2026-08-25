@@ -35,9 +35,11 @@
         <!-- Right Controls: Streak & Pro Upgrade Button -->
         <div class="d-flex align-items-center gap-2">
           <!-- Streak badge -->
-          <div class="streak-pill">
-            <span style="font-size: 1rem; line-height: 1;">🔥</span>
-            <span>7</span>
+          {% set current_streak_num = current_user.get_current_streak() %}
+          <div class="streak-pill {% if current_streak_num > 0 %}streak-active{% else %}streak-inactive{% endif %}" title="Chuỗi ngày học (Kỷ lục: {{ current_user.longest_streak }} ngày)">
+            <span class="streak-icon" style="font-size: 1rem; line-height: 1;">🔥</span>
+            <span class="streak-divider"></span>
+            <span class="streak-count">{{ current_streak_num }}</span>
           </div>
 
           <!-- Pro Upgrade button -->
