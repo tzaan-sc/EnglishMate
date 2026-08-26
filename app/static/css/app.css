@@ -1,17 +1,77 @@
 :root {
+    /* Base Colors */
     --ink: #17211b;
     --muted: #67736c;
     --cream: #f6f5ef;
     --paper: #fff;
-    --green: #236b4b;
-    --green-2: #2f8a61;
-    --mint: #dff2e6;
-    --lime: #d8ef86;
-    --line: #dfe5df;
+    --line: #e2e8f0;
     --navy: #1b2c48;
-    --danger: #bd493d;
-    --shadow: 0 18px 55px rgba(30, 55, 41, .1)
+    
+    /* Brand Colors (Primary) */
+    --green: #236b4b;      /* Legacy */
+    --green-2: #2f8a61;    /* Legacy */
+    --mint: #dff2e6;       /* Legacy */
+    --lime: #d8ef86;       /* Legacy */
+    
+    --primary: #236b4b;
+    --primary-hover: #174f37;
+    --primary-light: #2f8a61;
+    --primary-subtle: #dff2e6;
+
+    /* Semantic Colors (Pastel Tone) */
+    --success: #34c77b;
+    --success-subtle: #e6f9f0;
+    
+    --warning: #f1a942;
+    --warning-subtle: #fdf5e8;
+    
+    --danger: #e86b7d;
+    --danger-subtle: #fceef0;
+    
+    --info: #5d9df0;
+    --info-subtle: #eef5fd;
+    
+    --purple: #a67cff;
+    --purple-subtle: #f4f0ff;
+
+    /* Effects */
+    --shadow: 0 18px 55px rgba(30, 55, 41, 0.1);
+    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+
+    /* Bootstrap Overrides */
+    --bs-primary: var(--primary);
+    --bs-success: var(--success);
+    --bs-warning: var(--warning);
+    --bs-danger: var(--danger);
+    --bs-info: var(--info);
+    
+    --bs-primary-bg-subtle: var(--primary-subtle);
+    --bs-success-bg-subtle: var(--success-subtle);
+    --bs-warning-bg-subtle: var(--warning-subtle);
+    --bs-danger-bg-subtle: var(--danger-subtle);
+    --bs-info-bg-subtle: var(--info-subtle);
 }
+
+/* Custom Semantic Utilities */
+.text-primary { color: var(--primary) !important; }
+.bg-primary-subtle { background-color: var(--primary-subtle) !important; }
+
+.text-success { color: var(--success) !important; }
+.bg-success-subtle { background-color: var(--success-subtle) !important; }
+
+.text-warning { color: var(--warning) !important; }
+.bg-warning-subtle { background-color: var(--warning-subtle) !important; }
+
+.text-danger { color: var(--danger) !important; }
+.bg-danger-subtle { background-color: var(--danger-subtle) !important; }
+
+.text-info { color: var(--info) !important; }
+.bg-info-subtle { background-color: var(--info-subtle) !important; }
+
+.text-purple { color: var(--purple) !important; }
+.bg-purple-subtle { background-color: var(--purple-subtle) !important; }
 
 * {
     box-sizing: border-box
@@ -2216,14 +2276,30 @@ a {
 }
 
 .sidebar-menu .nav-link:hover {
-    background-color: #f7fafc;
-    color: var(--green) !important;
+    background-color: #f8fafc;
 }
 
-.sidebar-menu .nav-link.active {
-    background-color: var(--mint) !important;
-    color: var(--green) !important;
-}
+/* Dynamic Sidebar Link Colors */
+.sidebar-menu .nav-link-primary:hover, .sidebar-menu .nav-link-primary.active { background-color: var(--primary-subtle) !important; color: var(--primary) !important; }
+.sidebar-menu .nav-link-primary.active .menu-icon-box { background-color: var(--primary) !important; color: #ffffff !important; }
+
+.sidebar-menu .nav-link-purple:hover, .sidebar-menu .nav-link-purple.active { background-color: var(--purple-subtle) !important; color: var(--purple) !important; }
+.sidebar-menu .nav-link-purple.active .menu-icon-box { background-color: var(--purple) !important; color: #ffffff !important; }
+
+.sidebar-menu .nav-link-success:hover, .sidebar-menu .nav-link-success.active { background-color: var(--success-subtle) !important; color: var(--success) !important; }
+.sidebar-menu .nav-link-success.active .menu-icon-box { background-color: var(--success) !important; color: #ffffff !important; }
+
+.sidebar-menu .nav-link-warning:hover, .sidebar-menu .nav-link-warning.active { background-color: var(--warning-subtle) !important; color: var(--warning) !important; }
+.sidebar-menu .nav-link-warning.active .menu-icon-box { background-color: var(--warning) !important; color: #ffffff !important; }
+
+.sidebar-menu .nav-link-info:hover, .sidebar-menu .nav-link-info.active { background-color: var(--info-subtle) !important; color: var(--info) !important; }
+.sidebar-menu .nav-link-info.active .menu-icon-box { background-color: var(--info) !important; color: #ffffff !important; }
+
+.sidebar-menu .nav-link-danger:hover, .sidebar-menu .nav-link-danger.active { background-color: var(--danger-subtle) !important; color: var(--danger) !important; }
+.sidebar-menu .nav-link-danger.active .menu-icon-box { background-color: var(--danger) !important; color: #ffffff !important; }
+
+.sidebar-menu .nav-link-dark:hover, .sidebar-menu .nav-link-dark.active { background-color: var(--line) !important; color: var(--ink) !important; }
+.sidebar-menu .nav-link-dark.active .menu-icon-box { background-color: var(--ink) !important; color: #ffffff !important; }
 
 .menu-icon-box {
     display: inline-flex;
@@ -2235,11 +2311,6 @@ a {
     flex-shrink: 0;
     font-weight: 700;
     transition: all 0.2s ease;
-}
-
-.sidebar-menu .nav-link.active .menu-icon-box {
-    background-color: var(--green) !important;
-    color: #ffffff !important;
 }
 
 .profile-avatar-circle {

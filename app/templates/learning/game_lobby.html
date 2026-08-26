@@ -57,10 +57,10 @@
 
         <!-- Section Title & Badges -->
         <div class="d-flex justify-content-between align-items-center mb-3">
-            <h5 class="fw-bold mb-0 d-flex align-items-center gap-2">Chọn game: <i class="bi bi-gear text-primary" style="font-size: 1.1rem; cursor: pointer;"></i></h5>
+            <h5 class="fw-bold mb-0 d-flex align-items-center gap-2">Chọn game: <i class="ph ph-gear text-primary" style="font-size: 1.1rem; cursor: pointer;"></i></h5>
             <div class="d-flex gap-2">
                 <span class="badge rounded-pill fw-bold px-3 py-2 d-flex align-items-center gap-1" style="background-color: #d1fae5; color: #059669; font-size: 0.85rem;" id="badgeRate">
-                    <i class="bi bi-volume-up"></i> <span id="knownRate">0%</span>
+                    <i class="ph ph-speaker-high"></i> <span id="knownRate">0%</span>
                 </span>
                 <span class="badge rounded-pill fw-bold px-3 py-2" style="background-color: #fee2e2; color: #dc2626; font-size: 0.85rem;" id="badgeReady">
                     0 TỪ SẴN SÀNG
@@ -71,55 +71,55 @@
         <!-- Game Modes Grid -->
         <div class="game-grid mb-5">
             <!-- Game Modes -->
-            <button type="button" onclick="submitGame('QUIZ')" class="mode-btn btn w-100 rounded-4 text-white d-flex flex-column align-items-center justify-content-center p-3 border-0 position-relative overflow-hidden" style="background: linear-gradient(135deg, #f97316, #ea580c);">
-                <div class="icon-circle mb-3" style="background: rgba(255,255,255,0.2); width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
-                    <i class="bi bi-ui-checks-grid fs-5"></i>
+            <button type="button" onclick="submitGame('QUIZ')" class="mode-btn btn bg-white w-100 rounded-4 text-warning d-flex flex-column align-items-center justify-content-center p-3 position-relative overflow-hidden" style="border: 2px solid var(--warning);">
+                <div class="icon-circle mb-3 bg-warning-subtle text-warning" style="width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                    <i class="ph ph-squares-four fs-5"></i>
                 </div>
                 <div class="fw-bold mb-1 text-center" style="font-size: 16px; line-height: 1.2;">Trắc nghiệm</div>
-                <div class="opacity-75 text-center mt-1" style="font-size: 0.75rem; line-height: 1.2;">Chọn đáp án đúng</div>
+                <div class="text-muted text-center mt-1" style="font-size: 0.75rem; line-height: 1.2;">Chọn đáp án đúng</div>
             </button>
             
-            <button type="button" onclick="submitGame('MATCHING')" class="mode-btn btn w-100 rounded-4 text-white d-flex flex-column align-items-center justify-content-center p-3 border-0 position-relative overflow-hidden" style="background: linear-gradient(135deg, #3b82f6, #2563eb);">
-                <div class="icon-circle mb-3" style="background: rgba(255,255,255,0.2); width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
-                    <i class="bi bi-puzzle fs-5"></i>
+            <button type="button" onclick="submitGame('MATCHING')" class="mode-btn btn bg-white w-100 rounded-4 text-info d-flex flex-column align-items-center justify-content-center p-3 position-relative overflow-hidden" style="border: 2px solid var(--info);">
+                <div class="icon-circle mb-3 bg-info-subtle text-info" style="width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                    <i class="ph ph-puzzle-piece fs-5"></i>
                 </div>
                 <div class="fw-bold mb-1 text-center" style="font-size: 16px; line-height: 1.2;">Nối từ</div>
-                <div class="opacity-75 text-center mt-1" style="font-size: 0.75rem; line-height: 1.2;">Ghép đôi từ và nghĩa</div>
+                <div class="text-muted text-center mt-1" style="font-size: 0.75rem; line-height: 1.2;">Ghép đôi từ và nghĩa</div>
             </button>
             
-            <button type="button" onclick="submitGame('TYPING')" class="mode-btn btn w-100 rounded-4 text-white d-flex flex-column align-items-center justify-content-center p-3 border-0 position-relative overflow-hidden" style="background: linear-gradient(135deg, #22c55e, #16a34a);">
-                <div class="icon-circle mb-3" style="background: rgba(255,255,255,0.2); width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
-                    <i class="bi bi-keyboard fs-5"></i>
+            <button type="button" onclick="submitGame('TYPING')" class="mode-btn btn bg-white w-100 rounded-4 text-success d-flex flex-column align-items-center justify-content-center p-3 position-relative overflow-hidden" style="border: 2px solid var(--success);">
+                <div class="icon-circle mb-3 bg-success-subtle text-success" style="width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                    <i class="ph ph-keyboard fs-5"></i>
                 </div>
                 <div class="fw-bold mb-1 text-center" style="font-size: 16px; line-height: 1.2;">Gõ từ</div>
-                <div class="opacity-75 text-center mt-1" style="font-size: 0.75rem; line-height: 1.2;">Nhìn nghĩa, tự gõ lại</div>
+                <div class="text-muted text-center mt-1" style="font-size: 0.75rem; line-height: 1.2;">Nhìn nghĩa, tự gõ lại</div>
             </button>
             
-            <button type="button" onclick="submitGame('LISTENING')" class="mode-btn btn w-100 rounded-4 text-white d-flex flex-column align-items-center justify-content-center p-3 border-0 position-relative overflow-hidden" style="background: linear-gradient(135deg, #06b6d4, #0891b2);">
-                <div class="icon-circle mb-3" style="background: rgba(255,255,255,0.2); width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
-                    <i class="bi bi-headphones fs-5"></i>
+            <button type="button" onclick="submitGame('LISTENING')" class="mode-btn btn bg-white w-100 rounded-4 text-primary d-flex flex-column align-items-center justify-content-center p-3 position-relative overflow-hidden" style="border: 2px solid var(--primary);">
+                <div class="icon-circle mb-3 bg-primary-subtle text-primary" style="width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                    <i class="ph ph-headphones fs-5"></i>
                 </div>
                 <div class="fw-bold mb-1 text-center" style="font-size: 16px; line-height: 1.2;">Nghe viết</div>
-                <div class="opacity-75 text-center mt-1" style="font-size: 0.75rem; line-height: 1.2;">Nghe âm và gõ lại</div>
+                <div class="text-muted text-center mt-1" style="font-size: 0.75rem; line-height: 1.2;">Nghe âm và gõ lại</div>
             </button>
             
-            <button type="button" onclick="submitGame('ARCADE')" class="mode-btn btn w-100 rounded-4 text-white d-flex flex-column align-items-center justify-content-center p-3 border-0 position-relative overflow-hidden" style="background: linear-gradient(135deg, #f472b6, #db2777);">
-                <span class="position-absolute top-0 end-0 badge bg-danger m-2 rounded-pill shadow-sm" style="font-size: 0.6rem;">HOT</span>
-                <div class="icon-circle mb-3" style="background: rgba(255,255,255,0.2); width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
-                    <i class="bi bi-lightning-charge-fill fs-5"></i>
+            <button type="button" onclick="submitGame('ARCADE')" class="mode-btn btn bg-white w-100 rounded-4 text-danger d-flex flex-column align-items-center justify-content-center p-3 position-relative overflow-hidden" style="border: 2px solid var(--danger);">
+                <span class="position-absolute top-0 end-0 badge bg-danger text-white m-2 rounded-pill shadow-sm" style="font-size: 0.6rem;">HOT</span>
+                <div class="icon-circle mb-3 bg-danger-subtle text-danger" style="width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                    <i class="ph-fill ph-lightning fs-5"></i>
                 </div>
                 <div class="fw-bold mb-1 text-center text-nowrap" style="font-size: 16px; line-height: 1.2;">Sinh tồn</div>
-                <div class="opacity-75 text-center mt-1" style="font-size: 0.75rem; line-height: 1.2;">Câu hỏi liên tục</div>
+                <div class="text-muted text-center mt-1" style="font-size: 0.75rem; line-height: 1.2;">Câu hỏi liên tục</div>
             </button>
         </div>
     </form>
 
     <!-- SRS Banner -->
     <div class="mb-5 position-relative">
-        <div class="rounded-4 overflow-hidden shadow-sm d-flex justify-content-between align-items-center p-4" style="background: linear-gradient(90deg, #f0abfc, #a855f7); color: white;">
+        <div class="rounded-4 overflow-hidden shadow-sm d-flex justify-content-between align-items-center p-4 bg-white" style="border: 2px solid var(--purple); color: var(--purple);">
             <div>
-                <h5 class="fw-bold mb-1 d-flex align-items-center gap-2"><i class="bi bi-arrow-repeat"></i> Ôn tập ngắt quãng (SRS)</h5>
-                <p class="mb-0 opacity-75 small">Hệ thống tự động nhắc lại các từ vựng bạn sắp quên. Học ít, nhớ lâu!</p>
+                <h5 class="fw-bold mb-1 d-flex align-items-center gap-2"><i class="ph ph-arrows-clockwise"></i> Ôn tập ngắt quãng (SRS)</h5>
+                <p class="mb-0 text-muted small">Hệ thống tự động nhắc lại các từ vựng bạn sắp quên. Học ít, nhớ lâu!</p>
             </div>
             
             {% if srs_count > 0 %}
@@ -130,13 +130,13 @@
                 <input type="hidden" name="sort_by" value="oldest">
                 <input type="hidden" name="quantity" value="all">
                 <input type="hidden" name="game_type" value="ARCADE">
-                <button type="submit" class="btn bg-white text-danger fw-bold rounded-pill px-4 py-2 d-flex align-items-center gap-2 shadow-sm transition-hover">
-                    <i class="bi bi-play-fill fs-5"></i> Bắt đầu ôn tập ({{ srs_count }})
+                <button type="submit" class="btn bg-purple text-white fw-bold rounded-pill px-4 py-2 d-flex align-items-center gap-2 shadow-sm transition-hover">
+                    <i class="ph-fill ph-play fs-5"></i> Bắt đầu ôn tập ({{ srs_count }})
                 </button>
             </form>
             {% else %}
             <button class="btn bg-white text-muted fw-bold rounded-pill px-4 py-2 shadow-sm opacity-75" disabled>
-                <i class="bi bi-play-fill fs-5"></i> Bắt đầu ôn tập (0)
+                <i class="ph-fill ph-play fs-5"></i> Bắt đầu ôn tập (0)
             </button>
             {% endif %}
         </div>
@@ -147,7 +147,7 @@
         <div class="card-body p-4">
             <h5 class="fw-bold mb-4 d-flex align-items-center gap-2">
                 <div class="bg-purple-subtle text-purple rounded p-2 d-flex align-items-center justify-content-center" style="width: 32px; height: 32px;">
-                    <i class="bi bi-calendar-event"></i>
+                    <i class="ph ph-calendar-blank"></i>
                 </div>
                 Lịch sử đấu
             </h5>
@@ -295,7 +295,5 @@
     
     .transition-hover { transition: transform 0.2s, box-shadow 0.2s; }
     .transition-hover:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.15) !important; }
-    .text-purple { color: #8b5cf6 !important; }
-    .bg-purple-subtle { background-color: #ede9fe !important; }
 </style>
 {% endblock %}

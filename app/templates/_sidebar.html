@@ -11,32 +11,32 @@
                 </li>
                 <li class="nav-item">
                     <a class="nav-link d-flex align-items-center gap-3 px-3 py-2.5 {% if request.path == url_for('admin.dashboard') %}active{% endif %}" href="{{ url_for('admin.dashboard') }}">
-                        <span class="menu-icon-box bg-danger-subtle text-danger" style="width: 32px; height: 32px; font-size: 0.9rem; display: inline-flex; align-items: center; justify-content: center;">
-                            📊
+                        <span class="menu-icon-box bg-danger-subtle text-danger" style="width: 32px; height: 32px; font-size: 1.1rem; display: inline-flex; align-items: center; justify-content: center;">
+                            <i class="ph ph-chart-pie-slice"></i>
                         </span>
                         <span>Tổng quan Admin</span>
                     </a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link d-flex align-items-center gap-3 px-3 py-2.5 {% if request.path.startswith('/admin/lessons') %}active{% endif %}" href="{{ url_for('admin.lessons') }}">
-                        <span class="menu-icon-box bg-purple-subtle text-purple" style="width: 32px; height: 32px; font-size: 0.9rem; display: inline-flex; align-items: center; justify-content: center;">
-                            📚
+                        <span class="menu-icon-box bg-purple-subtle text-purple" style="width: 32px; height: 32px; font-size: 1.1rem; display: inline-flex; align-items: center; justify-content: center;">
+                            <i class="ph ph-books"></i>
                         </span>
                         <span>Quản lý bài học</span>
                     </a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link d-flex align-items-center gap-3 px-3 py-2.5 {% if request.path.startswith('/admin/vocabulary') %}active{% endif %}" href="{{ url_for('admin.vocabulary') }}">
-                        <span class="menu-icon-box bg-success-subtle text-success" style="width: 32px; height: 32px; font-size: 0.9rem; display: inline-flex; align-items: center; justify-content: center;">
-                            📖
+                        <span class="menu-icon-box bg-success-subtle text-success" style="width: 32px; height: 32px; font-size: 1.1rem; display: inline-flex; align-items: center; justify-content: center;">
+                            <i class="ph ph-book-open-text"></i>
                         </span>
                         <span>Quản lý từ vựng</span>
                     </a>
                 </li>
                 <li class="nav-item mb-2">
                     <a class="nav-link d-flex align-items-center gap-3 px-3 py-2.5 {% if request.path == url_for('admin.users') %}active{% endif %}" href="{{ url_for('admin.users') }}">
-                        <span class="menu-icon-box bg-primary-subtle text-primary" style="width: 32px; height: 32px; font-size: 0.9rem; display: inline-flex; align-items: center; justify-content: center;">
-                            👥
+                        <span class="menu-icon-box bg-primary-subtle text-primary" style="width: 32px; height: 32px; font-size: 1.1rem; display: inline-flex; align-items: center; justify-content: center;">
+                            <i class="ph ph-users"></i>
                         </span>
                         <span>Quản lý người dùng</span>
                     </a>
@@ -52,84 +52,65 @@
 
                 <!-- LEARNER MENU ITEMS -->
                 <li class="nav-item">
-                    <a class="nav-link d-flex align-items-center gap-3 px-3 py-2.5 {% if request.path == url_for('main.dashboard') %}active{% endif %}" href="{{ url_for('main.dashboard') }}">
-                        <span class="menu-icon-box bg-primary-subtle text-primary">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="19" height="19" fill="currentColor" viewBox="0 0 16 16">
-                                <path d="M8.707 1.5a1 1 0 0 0-1.414 0L.646 8.146a.5.5 0 0 0 .708.708L2 8.207V13.5A1.5 1.5 0 0 0 3.5 15h9a1.5 1.5 0 0 0 1.5-1.5V8.207l.646.647a.5.5 0 0 0 .708-.708L13 5.793V2.5a.5.5 0 0 0-.5-.5h-1a.5.5 0 0 0-.5.5v1.293L8.707 1.5Z"/>
-                                <path d="m8 3.293 6 6V13.5a.5.5 0 0 1-.5.5h-9a.5.5 0 0 1-.5-.5V9.293l6-6Z"/>
-                            </svg>
+                    <a class="nav-link nav-link-primary d-flex align-items-center gap-3 px-3 py-2.5 {% if request.path == url_for('main.dashboard') %}active{% endif %}" href="{{ url_for('main.dashboard') }}">
+                        <span class="menu-icon-box bg-primary-subtle text-primary fs-5">
+                            <i class="ph ph-house"></i>
                         </span>
                         <span>Trang chủ</span>
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link d-flex align-items-center gap-3 px-3 py-2.5 {% if request.path.startswith(url_for('learning.lessons')) and not request.path.startswith('/admin') %}active{% endif %}" href="{{ url_for('learning.lessons') }}">
-                        <span class="menu-icon-box bg-purple-subtle text-purple">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="19" height="19" fill="currentColor" class="bi bi-grid" viewBox="0 0 16 16">
-                                <path d="M1 2.5A1.5 1.5 0 0 1 2.5 1h3A1.5 1.5 0 0 1 7 2.5v3A1.5 1.5 0 0 1 5.5 7h-3A1.5 1.5 0 0 1 1 5.5v-3zM2.5 2a.5.5 0 0 0-.5.5v3a.5.5 0 0 0 .5.5h3a.5.5 0 0 0 .5-.5v-3a.5.5 0 0 0-.5-.5h-3zm6.5.5A1.5 1.5 0 0 1 10.5 1h3A1.5 1.5 0 0 1 15 2.5v3A1.5 1.5 0 0 1 13.5 7h-3A1.5 1.5 0 0 1 9 5.5v-3zm1.5-.5a.5.5 0 0 0-.5.5v3a.5.5 0 0 0 .5.5h3a.5.5 0 0 0 .5-.5v-3a.5.5 0 0 0-.5-.5h-3zM1 10.5A1.5 1.5 0 0 1 2.5 9h3A1.5 1.5 0 0 1 7 10.5v3A1.5 1.5 0 0 1 5.5 15h-3A1.5 1.5 0 0 1 1 13.5v-3zm1.5-.5a.5.5 0 0 0-.5.5v3a.5.5 0 0 0 .5.5h3a.5.5 0 0 0 .5-.5v-3a.5.5 0 0 0-.5-.5h-3zm6.5.5A1.5 1.5 0 0 1 10.5 9h3a1.5 1.5 0 0 1 1.5 1.5v3a1.5 1.5 0 0 1-1.5 1.5h-3A1.5 1.5 0 0 1 9 13.5v-3zm1.5-.5a.5.5 0 0 0-.5.5v3a.5.5 0 0 0 .5.5h3a.5.5 0 0 0 .5-.5v-3a.5.5 0 0 0-.5-.5h-3z"/>
-                            </svg>
+                    <a class="nav-link nav-link-purple d-flex align-items-center gap-3 px-3 py-2.5 {% if request.path.startswith(url_for('learning.lessons')) and not request.path.startswith('/admin') %}active{% endif %}" href="{{ url_for('learning.lessons') }}">
+                        <span class="menu-icon-box bg-purple-subtle text-purple fs-5">
+                            <i class="ph ph-graduation-cap"></i>
                         </span>
                         <span>Bài học</span>
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link d-flex align-items-center gap-3 px-3 py-2.5 {% if request.path.startswith(url_for('learning.vocabulary')) and not request.path.startswith('/admin') %}active{% endif %}" href="{{ url_for('learning.vocabulary') }}">
-                        <span class="menu-icon-box bg-success-subtle text-success">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="19" height="19" fill="currentColor" class="bi bi-journal" viewBox="0 0 16 16">
-                                <path d="M3 0h10a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V2a2 2 0 0 1 2-2zm0 1a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H3z"/>
-                            </svg>
+                    <a class="nav-link nav-link-success d-flex align-items-center gap-3 px-3 py-2.5 {% if request.path.startswith(url_for('learning.vocabulary')) and not request.path.startswith('/admin') %}active{% endif %}" href="{{ url_for('learning.vocabulary') }}">
+                        <span class="menu-icon-box bg-success-subtle text-success fs-5">
+                            <i class="ph ph-notebook"></i>
                         </span>
                         <span>Từ vựng</span>
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link d-flex align-items-center gap-3 px-3 py-2.5 {% if request.path.startswith('/games') %}active{% endif %}" href="{{ url_for('learning.game_lobby') }}">
-                        <span class="menu-icon-box bg-success-subtle text-success">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="19" height="19" fill="currentColor" class="bi bi-lightning" viewBox="0 0 16 16">
-                                <path d="M5.52.359A.5.5 0 0 1 6 0h4a.5.5 0 0 1 .474.658L8.694 6H12.5a.5.5 0 0 1 .395.807l-7 9a.5.5 0 0 1-.873-.454L6.823 9.5H3.5a.5.5 0 0 1-.48-.641l2.5-8.5zM6.374 1 4.168 8.5H7.5a.5.5 0 0 1 .478.647L6.292 14.5l5.54-7.128H8.5a.5.5 0 0 1-.479-.652L9.832 1z"/>
-                            </svg>
+                    <a class="nav-link nav-link-warning d-flex align-items-center gap-3 px-3 py-2.5 {% if request.path.startswith('/games') %}active{% endif %}" href="{{ url_for('learning.game_lobby') }}">
+                        <span class="menu-icon-box bg-warning-subtle text-warning fs-5">
+                            <i class="ph ph-lightning"></i>
                         </span>
                         <span>Game phản xạ</span>
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link d-flex align-items-center gap-3 px-3 py-2.5 {% if request.path.startswith('/flashcard-sets') %}active{% endif %}" href="{{ url_for('learning.flashcard_sets') }}">
-                        <span class="menu-icon-box bg-primary-subtle text-primary">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="19" height="19" fill="currentColor" viewBox="0 0 16 16">
-                                <path d="M14 3a1 1 0 0 1 1 1v8a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h12zM2 2a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H2z"/>
-                                <path d="M2 5.5a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1-.5-.5v-1zm0 3a.5.5 0 0 1 .5-.5h5a.5.5 0 0 1 0 1h-5a.5.5 0 0 1-.5-.5zm0 2a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 0 1h-1a.5.5 0 0 1-.5-.5zm3 0a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 0 1h-1a.5.5 0 0 1-.5-.5zm3 0a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 0 1h-1a.5.5 0 0 1-.5-.5zm3 0a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 0 1h-1a.5.5 0 0 1-.5-.5z"/>
-                            </svg>
+                    <a class="nav-link nav-link-primary d-flex align-items-center gap-3 px-3 py-2.5 {% if request.path.startswith('/flashcard-sets') %}active{% endif %}" href="{{ url_for('learning.flashcard_sets') }}">
+                        <span class="menu-icon-box bg-primary-subtle text-primary fs-5">
+                            <i class="ph ph-cards"></i>
                         </span>
                         <span>Tạo Flashcard</span>
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link d-flex align-items-center gap-3 px-3 py-2.5 {% if request.path.startswith(url_for('learning.quiz')) %}active{% endif %}" href="{{ url_for('learning.quiz') }}">
-                        <span class="menu-icon-box bg-info-subtle text-info">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="19" height="19" fill="currentColor" class="bi bi-check-square" viewBox="0 0 16 16">
-                                <path d="M14 1a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1h12zM2 0a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2H2z"/>
-                                <path d="M10.854 7.854a.5.5 0 0 0-.708-.708L7.5 9.793 6.354 8.646a.5.5 0 1 0-.708.708l1.5 1.5a.5.5 0 0 0 .708 0l3-3z"/>
-                            </svg>
+                    <a class="nav-link nav-link-info d-flex align-items-center gap-3 px-3 py-2.5 {% if request.path.startswith(url_for('learning.quiz')) %}active{% endif %}" href="{{ url_for('learning.quiz') }}">
+                        <span class="menu-icon-box bg-info-subtle text-info fs-5">
+                            <i class="ph ph-check-square-offset"></i>
                         </span>
                         <span>Quiz ôn tập</span>
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link d-flex align-items-center gap-3 px-3 py-2.5 {% if request.path.startswith(url_for('exams.exam_list')) %}active{% endif %}" href="{{ url_for('exams.exam_list') }}">
-                        <span class="menu-icon-box bg-danger-subtle text-danger">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="19" height="19" fill="currentColor" class="bi bi-award" viewBox="0 0 16 16">
-                                <path d="M9.669.864 8 0 6.331.864l-1.858.282-.842 1.68-1.337 1.32L2.6 6l-.306 1.854 1.337 1.32.842 1.68 1.858.282L8 16l1.669-.864 1.858-.282.842-1.68 1.337-1.32L13.4 8l.306-1.854-1.337-1.32-.842-1.68-1.858-.282zm1.196 9.53a1.72 1.72 0 0 0-.785-.291 1.72 1.72 0 0 0-.89.24l-1.282.855-.838-1.677a1.72 1.72 0 0 0-.708-.708L5.474 8.16l.855-1.282a1.72 1.72 0 0 0 .24-.89 1.72 1.72 0 0 0-.291-.785l-1.077-1.794 1.794 1.077c.28.168.601.246.92.223.32-.022.623-.138.878-.335l1.677-.838.838 1.677c.168.28.246.601.223.92-.022.32-.138.623-.335.878l-.838 1.677.838.838zm-1.802-5.748L8 6.55 6.937 4.646a.25.25 0 0 0-.433.25l1.16 2.32a.25.25 0 0 0 .433 0l1.16-2.32a.25.25 0 0 0-.433-.25z"/>
-                            </svg>
+                    <a class="nav-link nav-link-danger d-flex align-items-center gap-3 px-3 py-2.5 {% if request.path.startswith(url_for('exams.exam_list')) %}active{% endif %}" href="{{ url_for('exams.exam_list') }}">
+                        <span class="menu-icon-box bg-danger-subtle text-danger fs-5">
+                            <i class="ph ph-certificate"></i>
                         </span>
                         <span>Luyện đề</span>
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link d-flex align-items-center gap-3 px-3 py-2.5 {% if request.path.startswith(url_for('learning.progress')) %}active{% endif %}" href="{{ url_for('learning.progress') }}">
-                        <span class="menu-icon-box bg-dark-subtle text-dark">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="19" height="19" fill="currentColor" viewBox="0 0 16 16">
-                                <path fill-rule="evenodd" d="M0 0h1v15h15v1H0V0Zm10 3.5a.5.5 0 0 1 .5-.5h4a.5.5 0 0 1 .5.5v4a.5.5 0 0 1-1 0V4.707l-5.3 5.3a.5.5 0 0 1-.708 0L5.3 7.307l-3.8 3.8a.5.5 0 0 1-.708-.708l4.15-4.15a.5.5 0 0 1 .708 0l2.7 2.7L13.293 4H10.5a.5.5 0 0 1-.5-.5z"/>
-                            </svg>
+                    <a class="nav-link nav-link-dark d-flex align-items-center gap-3 px-3 py-2.5 {% if request.path.startswith(url_for('learning.progress')) %}active{% endif %}" href="{{ url_for('learning.progress') }}">
+                        <span class="menu-icon-box bg-dark-subtle text-dark fs-5">
+                            <i class="ph ph-trend-up"></i>
                         </span>
                         <span>Tiến độ</span>
                     </a>
@@ -156,10 +137,7 @@
             <form method="post" action="{{ url_for('auth.logout') }}" class="m-0">
                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                 <button class="btn btn-link p-1 text-danger border-0 d-flex align-items-center justify-content-center" type="submit" title="Đăng xuất">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 16 16">
-                        <path fill-rule="evenodd" d="M6 12.5a.5.5 0 0 0 .5.5h8a.5.5 0 0 0 .5-.5v-9a.5.5 0 0 0-.5-.5h-8a.5.5 0 0 0-.5.5v2a.5.5 0 0 1-1 0v-2A1.5 1.5 0 0 1 6.5 2h8A1.5 1.5 0 0 1 16 3.5v9a1.5 1.5 0 0 1-1.5 1.5h-8A1.5 1.5 0 0 1 5 12.5v-2a.5.5 0 0 1 1 0v2z"/>
-                        <path fill-rule="evenodd" d="M.146 8.354a.5.5 0 0 1 0-.708l3-3a.5.5 0 1 1 .708.708L1.707 7.5H10.5a.5.5 0 0 1 0 1H1.707l2.147 2.146a.5.5 0 0 1-.708.708l-3-3z"/>
-                    </svg>
+                    <i class="ph ph-sign-out fs-5"></i>
                 </button>
             </form>
         </div>
