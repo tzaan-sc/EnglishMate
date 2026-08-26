@@ -1,4 +1,4 @@
-from app.models import Lesson, LessonProgress, QuizAttempt, Question
+from app.modules.learning.models import Lesson, LessonProgress, QuizAttempt, Question
 from tests.conftest import login
 
 
@@ -48,7 +48,7 @@ def test_all_learner_pages_render(client, app):
 
 def test_streak_mechanics(app):
     from datetime import date, timedelta
-    from app.models import User, record_daily_activity, DailyActivity
+    from app.modules.auth.models import User, record_daily_activity, DailyActivity
     from app.extensions import db
 
     with app.app_context():

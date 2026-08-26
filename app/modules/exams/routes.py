@@ -139,6 +139,7 @@ def toeic_result(attempt_id):
         part6_passages=part6_passages,
         part7_passages=part7_passages,
         answer_map=answer_map,
+        part_stats=part_stats,
     )
 
 
@@ -170,6 +171,21 @@ def exam_list():
             if sub.exam_id not in best_scores or sub.total_score > best_scores[sub.exam_id]:
                 best_scores[sub.exam_id] = sub.total_score
                 
+    # Pull scores for TOEIC category exams from ToeicAttempt
+    for exam in exams:
+        if exam.category.upper() == "TOEIC":
+            toeic_test = ToeicTest.query.filter(ToeicTest.title == exam.title).first()
+            if not toeic_test:
+                toeic_test = ToeicTest.query.first()
+            if toeic_test:
+                best_attempt = ToeicAttempt.query.filter_by(
+                    user_id=current_user.id,
+                    test_id=toeic_test.id,
+                    is_submitted=True
+                ).order_by(ToeicAttempt.score.desc()).first()
+                if best_attempt:
+                    best_scores[exam.id] = f"{best_attempt.score}/100"
+
     categories = [r[0] for r in db.session.query(Exam.category).distinct().all()]
     
     return render_template("exams/list.html", exams=exams, best_scores=best_scores, 
@@ -183,6 +199,13 @@ def start_exam(exam_id):
     # Mode can be 'practice' or 'real'
     mode = request.form.get("mode", "real")
     
+    if exam.category.upper() == "TOEIC":
+        toeic_test = ToeicTest.query.filter(ToeicTest.title == exam.title).first()
+        if not toeic_test:
+            toeic_test = ToeicTest.query.first()
+        if toeic_test:
+            return redirect(url_for("exams.toeic_start", test_id=toeic_test.id), code=307)
+            
     submission = ExamSubmission(user_id=current_user.id, exam_id=exam.id, status='IN_PROGRESS', total_score=0)
     db.session.add(submission)
     db.session.commit()

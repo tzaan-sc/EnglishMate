@@ -1,5 +1,4 @@
-from app.extensions import db
-from app.models import User
+from app.modules.auth.models import User
 
 
 def test_register_login_logout(client):

@@ -829,6 +829,15 @@ def seed_toeic():
             db.session.commit()
             print(f"Cleared existing questions/passages for test ID: {test.id}")
 
+        # Also ensure corresponding Exam is in generic Exam table for list.html
+        from app.modules.exams.models import Exam
+        exam = Exam.query.filter_by(category="TOEIC", title="Đề thi thử TOEIC Reading số 1").first()
+        if not exam:
+            exam = Exam(category="TOEIC", title="Đề thi thử TOEIC Reading số 1", duration=75)
+            db.session.add(exam)
+            db.session.commit()
+            print(f"Created Exam ID: {exam.id} for category TOEIC")
+
         # Seed Part 5 questions
         for q in PART_5_QUESTIONS:
             question = ToeicQuestion(
