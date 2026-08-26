@@ -6,7 +6,7 @@
                 <!-- ADMIN MANAGEMENT SECTION (TOP OF SIDEBAR) -->
                 <li class="nav-item mb-1">
                     <span class="text-danger small fw-bold text-uppercase px-3 mb-2 d-flex align-items-center gap-1.5" style="font-size: 0.65rem; letter-spacing: 0.6px;">
-                        <span>🛡️</span> Quản trị hệ thống
+                        Quản trị hệ thống
                     </span>
                 </li>
                 <li class="nav-item">
@@ -45,7 +45,7 @@
                 <!-- SEPARATOR & LEARNER INTERFACE PREVIEW SECTION (BELOW ADMIN) -->
                 <li class="nav-item mt-2 pt-2 border-top">
                     <span class="text-muted small fw-bold text-uppercase px-3 mb-2 d-flex align-items-center gap-1.5" style="font-size: 0.65rem; letter-spacing: 0.5px;">
-                        <span>👁️</span> Quan sát giao diện học viên
+                        Quan sát giao diện học viên
                     </span>
                 </li>
                 {% endif %}
@@ -83,8 +83,8 @@
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link d-flex align-items-center gap-3 px-3 py-2.5 {% if request.path.startswith(url_for('learning.flashcards')) %}active{% endif %}" href="{{ url_for('learning.flashcards') }}">
-                        <span class="menu-icon-box bg-warning-subtle text-warning">
+                    <a class="nav-link d-flex align-items-center gap-3 px-3 py-2.5 {% if request.path.startswith('/games') %}active{% endif %}" href="{{ url_for('learning.game_lobby') }}">
+                        <span class="menu-icon-box bg-success-subtle text-success">
                             <svg xmlns="http://www.w3.org/2000/svg" width="19" height="19" fill="currentColor" class="bi bi-lightning" viewBox="0 0 16 16">
                                 <path d="M5.52.359A.5.5 0 0 1 6 0h4a.5.5 0 0 1 .474.658L8.694 6H12.5a.5.5 0 0 1 .395.807l-7 9a.5.5 0 0 1-.873-.454L6.823 9.5H3.5a.5.5 0 0 1-.48-.641l2.5-8.5zM6.374 1 4.168 8.5H7.5a.5.5 0 0 1 .478.647L6.292 14.5l5.54-7.128H8.5a.5.5 0 0 1-.479-.652L9.832 1z"/>
                             </svg>

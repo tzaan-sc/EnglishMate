@@ -1,0 +1,588 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container py-4" style="max-width: 900px; height: 80vh; display: flex; flex-direction: column;">
+    <!-- Game Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div class="d-flex align-items-center gap-3">
+            <a href="{{ url_for('learning.game_lobby') }}" class="btn btn-light rounded-circle shadow-sm" style="width: 45px; height: 45px; display: flex; justify-content: center; align-items: center;" id="btnQuit">
+                <i class="bi bi-x-lg"></i>
+            </a>
+            <div>
+                <h4 class="fw-bold mb-0" id="gameTitle">Game</h4>
+                <div class="small text-muted" id="gameProgress">Đang tải dữ liệu...</div>
+            </div>
+        </div>
+        
+        <div class="d-flex gap-3 align-items-center">
+            <div class="bg-light px-3 py-2 rounded-pill fw-bold text-dark fs-5 shadow-sm d-flex gap-2 align-items-center">
+                <i class="bi bi-stopwatch text-danger"></i> <span id="gameTimer">00:00</span>
+            </div>
+            <div class="bg-light px-3 py-2 rounded-pill fw-bold text-dark fs-5 shadow-sm d-flex gap-2 align-items-center">
+                <i class="bi bi-star-fill text-warning"></i> <span id="gameScore">0</span>
+            </div>
+        </div>
+    </div>
+    
+    <div class="progress mb-4 bg-light" style="height: 8px; border-radius: 4px;">
+        <div id="progressBar" class="progress-bar" role="progressbar" style="width: 0%; background-color: #6366f1; transition: width 0.3s ease;"></div>
+    </div>
+
+    <!-- Game Boards Container -->
+    <div id="gameBoard" class="flex-grow-1 position-relative d-flex flex-column align-items-center justify-content-center" style="background: #f8fafc; border-radius: 1.5rem; padding: 2rem;">
+        
+        <!-- Loading -->
+        <div id="viewLoading" class="text-center w-100">
+            <div class="spinner-border text-primary" role="status"></div>
+            <p class="mt-3 text-muted fw-bold">Đang chuẩn bị thẻ...</p>
+        </div>
+        
+        <!-- View: QUIZ -->
+        <div id="viewQuiz" class="w-100 d-none flex-column align-items-center">
+            <div class="card shadow-sm border-0 rounded-4 w-100 mb-4" style="max-width: 600px;">
+                <div class="card-body text-center p-5">
+                    <button class="btn btn-light rounded-circle position-absolute top-0 end-0 m-3" onclick="playCurrentAudio()"><i class="bi bi-volume-up-fill text-primary"></i></button>
+                    <h1 class="fw-bold display-4 mb-0" id="quizTerm">Term</h1>
+                    <img id="quizImg" src="" style="display: none; max-height: 150px; margin-top: 20px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                </div>
+            </div>
+            <div class="row g-3 w-100" style="max-width: 600px;" id="quizOptions">
+                <!-- Buttons injected via JS -->
+            </div>
+        </div>
+
+        <!-- View: TYPING / LISTENING -->
+        <div id="viewTyping" class="w-100 d-none flex-column align-items-center">
+            <div class="card shadow-sm border-0 rounded-4 w-100 mb-4" style="max-width: 600px;">
+                <div class="card-body text-center p-5 position-relative">
+                    
+                    <div id="typingListenArea" class="d-none flex-column align-items-center justify-content-center mb-3">
+                        <button class="btn btn-primary rounded-circle shadow d-flex align-items-center justify-content-center mb-3" onclick="playCurrentAudio()" style="width: 80px; height: 80px;">
+                            <i class="bi bi-volume-up-fill fs-1"></i>
+                        </button>
+                        <button class="btn btn-outline-secondary btn-sm rounded-pill fw-bold" onclick="playCurrentAudio(0.75)">
+                            <i class="bi bi-turtle me-1"></i> Nghe chậm
+                        </button>
+                    </div>
+                    
+                    <div id="typingReadArea">
+                        <button class="btn btn-light rounded-circle position-absolute top-0 end-0 m-3" onclick="playCurrentAudio()"><i class="bi bi-volume-up-fill text-primary"></i></button>
+                        <h3 class="fw-bold text-dark mb-0" id="typingDef">Definition</h3>
+                        <img id="typingImg" src="" style="display: none; max-height: 150px; margin-top: 20px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                    </div>
+                </div>
+            </div>
+            
+            <div class="w-100" style="max-width: 600px;">
+                <form id="typingForm" onsubmit="submitTyping(event)">
+                    <div class="input-group input-group-lg shadow-sm rounded-4 overflow-hidden">
+                        <input type="text" id="typingInput" class="form-control border-0 bg-white px-4 py-3 fw-bold text-center fs-4" placeholder="Gõ thuật ngữ tiếng Anh vào đây..." autocomplete="off">
+                        <button class="btn btn-primary px-4 fw-bold" type="submit"><i class="bi bi-arrow-return-left"></i></button>
+                    </div>
+                    <div class="text-center mt-3 d-none" id="typingFeedback">
+                        <h4 class="fw-bold mb-0 text-success" id="typingFeedbackText">Chính xác!</h4>
+                        <div class="small text-muted mt-1" id="typingFeedbackCorrect"></div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- View: MATCHING -->
+        <div id="viewMatching" class="w-100 d-none h-100">
+            <div id="matchingGrid" class="matching-grid">
+                <!-- Cards injected via JS -->
+            </div>
+        </div>
+
+        <!-- View: RESULT -->
+        <div id="viewResult" class="w-100 d-none flex-column align-items-center text-center">
+            <input type="hidden" id="csrfToken" value="{{ csrf_token() }}">
+            <div class="mb-4">
+                <i class="bi bi-trophy-fill text-warning" style="font-size: 5rem;"></i>
+            </div>
+            <h1 class="fw-bold mb-2">Hoàn thành xuất sắc!</h1>
+            <p class="text-muted fs-5 mb-5">Bạn đã vượt qua bài kiểm tra phản xạ.</p>
+            
+            <div class="d-flex gap-4 justify-content-center mb-5 w-100" style="max-width: 500px;">
+                <div class="card border-0 shadow-sm rounded-4 flex-grow-1 bg-white">
+                    <div class="card-body p-4">
+                        <h2 class="fw-bold text-primary mb-0" id="resAccuracy">100%</h2>
+                        <div class="small text-muted fw-bold">ĐỘ CHÍNH XÁC</div>
+                    </div>
+                </div>
+                <div class="card border-0 shadow-sm rounded-4 flex-grow-1 bg-white">
+                    <div class="card-body p-4">
+                        <h2 class="fw-bold text-dark mb-0" id="resTime">00:00</h2>
+                        <div class="small text-muted fw-bold">THỜI GIAN</div>
+                    </div>
+                </div>
+            </div>
+            
+            <button class="btn btn-primary btn-lg rounded-pill fw-bold px-5 shadow" onclick="saveAndReturn()">
+                Lưu kết quả & Trở về Sảnh
+            </button>
+        </div>
+
+    </div>
+</div>
+
+<style>
+    /* Game Engine Animations & Styles */
+    .matching-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        gap: 15px;
+        width: 100%;
+        height: 100%;
+        align-content: center;
+    }
+    
+    .match-card {
+        background: white;
+        border: 2px solid #e2e8f0;
+        border-radius: 1rem;
+        padding: 1.5rem;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.2s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 600;
+        font-size: 1.1rem;
+        user-select: none;
+        min-height: 100px;
+    }
+    
+    .match-card:hover { transform: translateY(-3px); box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); }
+    .match-card.selected { border-color: #6366f1; background-color: #eef2ff; color: #4338ca; }
+    .match-card.matched { opacity: 0; pointer-events: none; transform: scale(0.8); }
+    
+    @keyframes shake {
+        0%, 100% { transform: translateX(0); }
+        25% { transform: translateX(-5px); }
+        50% { transform: translateX(5px); }
+        75% { transform: translateX(-5px); }
+    }
+    .shake-error {
+        animation: shake 0.4s cubic-bezier(.36,.07,.19,.97) both;
+        border-color: #ef4444 !important;
+        background-color: #fef2f2 !important;
+        color: #b91c1c !important;
+    }
+    
+    .quiz-option {
+        background: white; border: 2px solid #e2e8f0; border-radius: 1rem; padding: 1.25rem;
+        text-align: left; cursor: pointer; transition: all 0.2s; font-weight: 600; font-size: 1.1rem;
+    }
+    .quiz-option:hover { background: #f8fafc; border-color: #cbd5e1; }
+    .quiz-option.correct { background: #dcfce7; border-color: #22c55e; color: #15803d; }
+    .quiz-option.incorrect { background: #fee2e2; border-color: #ef4444; color: #b91c1c; }
+</style>
+
+<script>
+    const session_id = "{{ session_id }}";
+    const base_game_type = "{{ game_type }}";
+    
+    let gameState = {
+        items: [],
+        currentIndex: 0,
+        gameType: base_game_type,
+        timerSeconds: 0,
+        timerInterval: null,
+        correctCount: 0,
+        isProcessing: false,
+        // Matching specific
+        matchingPairs: [],
+        matchingSelectedId: null,
+        matchingSelectedEl: null
+    };
+
+    // Initialize Game
+    document.addEventListener("DOMContentLoaded", () => {
+        // Fetch data
+        fetch(`/games/api/data/${session_id}`)
+            .then(res => res.json())
+            .then(data => {
+                if (data.status !== "ok") {
+                    alert("Lỗi tải dữ liệu. Vui lòng quay lại sảnh.");
+                    window.location.href = "{{ url_for('learning.game_lobby') }}";
+                    return;
+                }
+                gameState.items = data.items;
+                document.getElementById('viewLoading').classList.add('d-none');
+                
+                // Titles
+                const typeNames = {
+                    "QUIZ": "Trắc nghiệm",
+                    "MATCHING": "Nối từ",
+                    "TYPING": "Gõ từ",
+                    "LISTENING": "Nghe viết",
+                    "ARCADE": "Chế độ Sinh tồn"
+                };
+                document.getElementById('gameTitle').textContent = typeNames[base_game_type];
+                
+                // Start Clock
+                gameState.timerInterval = setInterval(() => {
+                    gameState.timerSeconds++;
+                    const m = Math.floor(gameState.timerSeconds / 60).toString().padStart(2, '0');
+                    const s = (gameState.timerSeconds % 60).toString().padStart(2, '0');
+                    document.getElementById('gameTimer').textContent = `${m}:${s}`;
+                }, 1000);
+
+                // Start first question
+                if (base_game_type === "MATCHING") {
+                    startMatchingRound();
+                } else {
+                    renderQuestion();
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                alert("Lỗi tải dữ liệu.");
+            });
+            
+        // Setup Quit Button confirmation
+        document.getElementById('btnQuit').addEventListener('click', (e) => {
+            if (!confirm("Bạn có chắc chắn muốn thoát? Kết quả sẽ không được lưu.")) {
+                e.preventDefault();
+            }
+        });
+    });
+    
+    function playCurrentAudio(rate = 1.0) {
+        if (!gameState.items[gameState.currentIndex]) return;
+        const term = gameState.items[gameState.currentIndex].term;
+        const msg = new SpeechSynthesisUtterance(term);
+        msg.lang = 'en-US';
+        msg.rate = rate;
+        window.speechSynthesis.speak(msg);
+    }
+    
+    function getArcadeMode() {
+        const modes = ["QUIZ", "TYPING", "LISTENING"];
+        return modes[Math.floor(Math.random() * modes.length)];
+    }
+
+    function renderQuestion() {
+        if (gameState.currentIndex >= gameState.items.length) {
+            endGame();
+            return;
+        }
+        
+        gameState.isProcessing = false;
+        const currentItem = gameState.items[gameState.currentIndex];
+        
+        // Cập nhật progress bar
+        document.getElementById('progressText').textContent = `${gameState.currentIndex + 1}/${gameState.items.length}`;
+        const pct = ((gameState.currentIndex) / gameState.items.length) * 100;
+        document.getElementById('progressBar').style.width = `${pct}%`;
+        
+        // Quyết định mode hiện tại (nếu là ARCADE thì mix)
+        let mode = base_game_type;
+        if (mode === "ARCADE") {
+            mode = getArcadeMode();
+        }
+        
+        // Hide all views
+        document.getElementById('viewQuiz').classList.add('d-none');
+        document.getElementById('viewTyping').classList.add('d-none');
+        document.getElementById('viewMatching').classList.add('d-none');
+        document.getElementById('typingFeedback').classList.add('d-none');
+        
+        if (mode === "QUIZ") {
+            document.getElementById('viewQuiz').classList.remove('d-none');
+            document.getElementById('viewQuiz').classList.add('d-flex');
+            
+            document.getElementById('quizTerm').textContent = currentItem.term;
+            if (currentItem.image_url) {
+                document.getElementById('quizImg').src = currentItem.image_url;
+                document.getElementById('quizImg').style.display = 'block';
+            } else {
+                document.getElementById('quizImg').style.display = 'none';
+            }
+            
+            // Build options
+            const optsContainer = document.getElementById('quizOptions');
+            optsContainer.innerHTML = '';
+            
+            let options = [currentItem.definition];
+            if (currentItem.distractors) {
+                options = options.concat(currentItem.distractors);
+            }
+            // Shuffle options
+            options.sort(() => Math.random() - 0.5);
+            
+            options.forEach(opt => {
+                const btnHTML = `
+                <div class="col-md-6">
+                    <button class="w-100 quiz-option" onclick="submitQuiz(this, \`${opt.replace(/`/g, "'")}\`, \`${currentItem.definition.replace(/`/g, "'")}\`)">${opt}</button>
+                </div>
+                `;
+                optsContainer.insertAdjacentHTML('beforeend', btnHTML);
+            });
+            
+            // Auto play audio if quiz
+            playCurrentAudio();
+            
+        } else if (mode === "TYPING" || mode === "LISTENING") {
+            document.getElementById('viewTyping').classList.remove('d-none');
+            document.getElementById('viewTyping').classList.add('d-flex');
+            const input = document.getElementById('typingInput');
+            input.value = '';
+            input.disabled = false;
+            input.focus();
+            
+            if (mode === "TYPING") {
+                document.getElementById('typingReadArea').classList.remove('d-none');
+                document.getElementById('typingListenArea').classList.add('d-none');
+                document.getElementById('typingListenArea').classList.remove('d-flex');
+                
+                document.getElementById('typingDef').textContent = currentItem.definition;
+                if (currentItem.image_url) {
+                    document.getElementById('typingImg').src = currentItem.image_url;
+                    document.getElementById('typingImg').style.display = 'block';
+                } else {
+                    document.getElementById('typingImg').style.display = 'none';
+                }
+            } else {
+                // LISTENING
+                document.getElementById('typingReadArea').classList.add('d-none');
+                document.getElementById('typingListenArea').classList.remove('d-none');
+                document.getElementById('typingListenArea').classList.add('d-flex');
+                playCurrentAudio();
+            }
+        }
+    }
+    
+    // -- QUIZ LOGIC --
+    window.submitQuiz = function(btnEl, selected, correct) {
+        if (gameState.isProcessing) return;
+        gameState.isProcessing = true;
+        
+        const isCorrect = (selected === correct);
+        
+        if (isCorrect) {
+            btnEl.classList.add('correct');
+            gameState.correctCount++;
+            document.getElementById('gameScore').textContent = gameState.correctCount;
+        } else {
+            btnEl.classList.add('incorrect');
+            // Tìm nút đúng và bôi xanh
+            const btns = document.querySelectorAll('.quiz-option');
+            btns.forEach(b => {
+                if (b.textContent === correct) b.classList.add('correct');
+            });
+        }
+        
+        setTimeout(() => {
+            gameState.currentIndex++;
+            renderQuestion();
+        }, 1500);
+    };
+    
+    // -- TYPING / LISTENING LOGIC --
+    window.submitTyping = function(e) {
+        e.preventDefault();
+        if (gameState.isProcessing) return;
+        
+        const inputEl = document.getElementById('typingInput');
+        const userText = inputEl.value.trim().toLowerCase();
+        if (!userText) return;
+        
+        gameState.isProcessing = true;
+        inputEl.disabled = true;
+        
+        const currentItem = gameState.items[gameState.currentIndex];
+        const correctText = currentItem.term.trim().toLowerCase();
+        const isCorrect = (userText === correctText);
+        
+        const fbArea = document.getElementById('typingFeedback');
+        const fbTitle = document.getElementById('typingFeedbackText');
+        const fbCorrect = document.getElementById('typingFeedbackCorrect');
+        
+        fbArea.classList.remove('d-none');
+        
+        if (isCorrect) {
+            inputEl.classList.add('is-valid');
+            fbTitle.textContent = "Chính xác!";
+            fbTitle.className = "fw-bold mb-0 text-success";
+            fbCorrect.textContent = "";
+            gameState.correctCount++;
+            document.getElementById('gameScore').textContent = gameState.correctCount;
+        } else {
+            inputEl.classList.add('is-invalid');
+            fbTitle.textContent = "Chưa chính xác!";
+            fbTitle.className = "fw-bold mb-0 text-danger";
+            fbCorrect.innerHTML = `Đáp án đúng: <strong class="text-dark fs-5">${currentItem.term}</strong>`;
+        }
+        
+        setTimeout(() => {
+            inputEl.classList.remove('is-valid', 'is-invalid');
+            fbArea.classList.add('d-none');
+            gameState.currentIndex++;
+            renderQuestion();
+        }, 2000);
+    };
+    
+    // -- MATCHING LOGIC --
+    function startMatchingRound() {
+        document.getElementById('viewQuiz').classList.add('d-none');
+        document.getElementById('viewTyping').classList.add('d-none');
+        document.getElementById('viewMatching').classList.remove('d-none');
+        document.getElementById('progressText').textContent = `0/${gameState.items.length}`;
+        
+        const grid = document.getElementById('matchingGrid');
+        grid.innerHTML = '';
+        
+        let cards = [];
+        gameState.items.forEach(item => {
+            cards.push({ id: item.id, type: 'term', text: item.term });
+            cards.push({ id: item.id, type: 'def', text: item.definition });
+        });
+        
+        // Shuffle
+        cards.sort(() => Math.random() - 0.5);
+        
+        cards.forEach((card, idx) => {
+            const div = document.createElement('div');
+            div.className = 'match-card';
+            div.textContent = card.text;
+            div.dataset.id = card.id;
+            div.dataset.type = card.type;
+            div.dataset.idx = idx;
+            div.onclick = () => onMatchCardClick(div, card.id);
+            grid.appendChild(div);
+        });
+        
+        gameState.matchingPairs = gameState.items.length;
+    }
+    
+    window.onMatchCardClick = function(el, id) {
+        if (el.classList.contains('matched') || gameState.isProcessing) return;
+        
+        if (!gameState.matchingSelectedEl) {
+            // Chọn thẻ đầu tiên
+            el.classList.add('selected');
+            gameState.matchingSelectedEl = el;
+            gameState.matchingSelectedId = id;
+            if (el.dataset.type === 'term') {
+                const msg = new SpeechSynthesisUtterance(el.textContent);
+                msg.lang = 'en-US';
+                window.speechSynthesis.speak(msg);
+            }
+        } else {
+            // Nếu click lại chính nó thì bỏ chọn
+            if (gameState.matchingSelectedEl === el) {
+                el.classList.remove('selected');
+                gameState.matchingSelectedEl = null;
+                gameState.matchingSelectedId = null;
+                return;
+            }
+            
+            // Chọn thẻ thứ 2
+            const el1 = gameState.matchingSelectedEl;
+            const el2 = el;
+            
+            if (gameState.matchingSelectedId === id) {
+                // ĐÚNG
+                el1.classList.remove('selected');
+                el1.classList.add('matched');
+                el2.classList.add('matched');
+                gameState.correctCount++; // Bonus point maybe?
+                document.getElementById('gameScore').textContent = gameState.correctCount;
+                
+                gameState.matchingPairs--;
+                const matchedCount = gameState.items.length - gameState.matchingPairs;
+                document.getElementById('progressText').textContent = `${matchedCount}/${gameState.items.length}`;
+                document.getElementById('progressBar').style.width = `${(matchedCount / gameState.items.length) * 100}%`;
+                
+                if (gameState.matchingPairs === 0) {
+                    setTimeout(() => endGame(), 500);
+                }
+            } else {
+                // SAI
+                gameState.isProcessing = true;
+                el2.classList.add('shake-error');
+                el1.classList.add('shake-error');
+                
+                setTimeout(() => {
+                    el1.classList.remove('selected', 'shake-error');
+                    el2.classList.remove('shake-error');
+                    gameState.isProcessing = false;
+                }, 500);
+            }
+            
+            gameState.matchingSelectedEl = null;
+            gameState.matchingSelectedId = null;
+        }
+    };
+    
+    // -- GAME END LOGIC --
+    function endGame() {
+        clearInterval(gameState.timerInterval);
+        
+        document.getElementById('viewQuiz').classList.add('d-none');
+        document.getElementById('viewTyping').classList.add('d-none');
+        document.getElementById('viewMatching').classList.add('d-none');
+        
+        const resView = document.getElementById('viewResult');
+        resView.classList.remove('d-none');
+        resView.classList.add('d-flex');
+        
+        let total = gameState.items.length;
+        if (base_game_type === "MATCHING") total = gameState.items.length; // correctCount can be weird for matching, let's just say 100% if they finish
+        
+        let acc = 0;
+        if (base_game_type === "MATCHING") {
+            acc = 100; // if they finish, it's 100%
+        } else {
+            acc = Math.round((gameState.correctCount / total) * 100) || 0;
+        }
+        
+        document.getElementById('resAccuracy').textContent = acc + "%";
+        
+        const m = Math.floor(gameState.timerSeconds / 60).toString().padStart(2, '0');
+        const s = (gameState.timerSeconds % 60).toString().padStart(2, '0');
+        document.getElementById('resTime').textContent = `${m}:${s}`;
+        
+        // Hide top bar
+        document.querySelector('.progress').style.display = 'none';
+        
+        // Save to global state for submission
+        gameState.finalAcc = acc;
+        gameState.finalTotal = total;
+    }
+    
+    window.saveAndReturn = function() {
+        const btn = document.querySelector('#viewResult button');
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Đang lưu...';
+        
+        const csrfToken = document.getElementById('csrfToken').value;
+        
+        fetch('{{ url_for("learning.game_submit") }}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrfToken
+            },
+            body: JSON.stringify({
+                session_id: session_id,
+                game_type: base_game_type,
+                total_questions: gameState.finalTotal,
+                correct_answers: (base_game_type === "MATCHING") ? gameState.finalTotal : gameState.correctCount,
+                accuracy_rate: gameState.finalAcc,
+                duration_seconds: gameState.timerSeconds
+            })
+        })
+        .then(() => {
+            window.location.href = "{{ url_for('learning.game_lobby') }}";
+        })
+        .catch(() => {
+            alert("Đã xảy ra lỗi khi lưu kết quả.");
+            window.location.href = "{{ url_for('learning.game_lobby') }}";
+        });
+    }
+</script>
+{% endblock %}

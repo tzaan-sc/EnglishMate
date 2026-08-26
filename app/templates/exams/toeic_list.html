@@ -50,7 +50,7 @@
       {% else %}
       <div class="col-12">
         <div class="empty-state text-center py-5">
-          <span class="fs-1">📝</span>
+          <span class="fs-1"><i class="bi bi-journal-text text-muted"></i></span>
           <h3 class="mt-3">Chưa có đề thi TOEIC nào được tạo</h3>
           <p class="text-muted">Vui lòng chạy seed script để tải đề thi mẫu.</p>
         </div>
@@ -59,48 +59,60 @@
     </div>
 
     <!-- History panel -->
-    <div class="panel">
-      <h3 class="mb-4">Lịch sử làm bài</h3>
-      {% if attempts %}
-      <div class="table-responsive">
-        <table class="table table-hover align-middle">
-          <thead>
-            <tr>
-              <th>Đề thi</th>
-              <th>Ngày hoàn thành</th>
-              <th>Thời gian làm</th>
-              <th>Điểm số</th>
-              <th class="text-end">Hành động</th>
-            </tr>
-          </thead>
-          <tbody>
-            {% for attempt in attempts %}
-            <tr>
-              <td><strong>{{ attempt.test.title }}</strong></td>
-              <td>{{ attempt.completed_at.strftime('%d/%m/%Y %H:%M') if attempt.completed_at else attempt.created_at.strftime('%d/%m/%Y %H:%M') }}</td>
-              <td>
-                {% set mins = (attempt.time_spent // 60) %}
-                {% set secs = (attempt.time_spent % 60) %}
-                {{ mins }} phút {{ secs }} giây
-              </td>
-              <td>
-                <span class="badge bg-{{ 'success' if attempt.score >= 70 else 'warning' if attempt.score >= 50 else 'danger' }} px-3 py-2">
-                  {{ attempt.score }}/100
-                </span>
-              </td>
-              <td class="text-end">
-                <a href="{{ url_for('exams.toeic_result', attempt_id=attempt.id) }}" class="btn btn-outline-primary btn-sm">Xem chi tiết</a>
-              </td>
-            </tr>
-            {% endfor %}
-          </tbody>
-        </table>
-      </div>
-      {% else %}
-      <div class="empty-mini text-center py-4">
-        <p class="text-muted mb-0">Bạn chưa thực hiện bài thi thử nào. Hãy chọn một đề thi phía trên và bắt đầu!</p>
-      </div>
-      {% endif %}
+    <div class="card border-0 shadow-sm rounded-4" style="background-color: #f8fafc;">
+        <div class="card-body p-4">
+            <h5 class="fw-bold mb-4 d-flex align-items-center gap-2">
+                <div class="bg-purple-subtle text-purple rounded p-2 d-flex align-items-center justify-content-center" style="width: 32px; height: 32px;">
+                    <i class="bi bi-calendar-event"></i>
+                </div>
+                Lịch sử làm bài
+            </h5>
+            
+            <div class="bg-white rounded-4 p-4 border" style="border-color: #e2e8f0 !important;">
+                {% if not attempts %}
+                <div class="border border-dashed rounded-4 p-5 text-center text-muted" style="border-width: 2px; border-style: dashed; border-color: #cbd5e1;">
+                    <span class="small fw-bold opacity-75">Chưa có lịch sử làm bài. Hãy chơi thử một đề thi nhé!</span>
+                </div>
+                {% else %}
+                <div class="table-responsive">
+                    <table class="table table-borderless table-hover align-middle mb-0">
+                        <thead class="text-muted small fw-bold border-bottom">
+                            <tr>
+                                <th class="pb-3 ps-0">Đề thi</th>
+                                <th class="pb-3 text-center">Thời gian làm</th>
+                                <th class="pb-3 text-center">Điểm số</th>
+                                <th class="pb-3 text-end">Thời điểm</th>
+                                <th class="pb-3 text-end pe-0"></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for attempt in attempts %}
+                            <tr class="border-bottom">
+                                <td class="ps-0 py-3">
+                                    <span class="badge bg-secondary-subtle text-dark px-3 py-2 rounded-pill fw-bold">{{ attempt.test.title }}</span>
+                                </td>
+                                <td class="py-3 text-center text-primary fw-bold">
+                                    {{ attempt.time_spent // 60 }}p {{ attempt.time_spent % 60 }}s
+                                </td>
+                                <td class="py-3 text-center">
+                                    <div class="fw-bold {% if attempt.score >= 70 %}text-success{% elif attempt.score >= 50 %}text-warning{% else %}text-danger{% endif %}">
+                                        {{ attempt.score }}/100
+                                    </div>
+                                </td>
+                                <td class="py-3 text-end text-muted small">
+                                    {{ attempt.completed_at.strftime('%d/%m/%Y %H:%M') if attempt.completed_at else attempt.created_at.strftime('%d/%m/%Y %H:%M') }}
+                                </td>
+                                <td class="py-3 text-end pe-0">
+                                    <a href="{{ url_for('exams.toeic_result', attempt_id=attempt.id) }}" class="btn btn-sm btn-outline-primary rounded-pill px-3">Chi tiết</a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% endif %}
+            </div>
+        </div>
     </div>
 
   </div>

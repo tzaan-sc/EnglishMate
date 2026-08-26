@@ -1,0 +1,301 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container py-4" style="max-width: 1100px;">
+    
+
+    <form id="gameConfigForm" method="post" action="{{ url_for('learning.game_start') }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <input type="hidden" name="game_type" id="gameTypeInput" value="">
+        
+        <!-- Filter Controls Bar -->
+        <div class="row g-3 mb-4">
+            <div class="col-md-3">
+                <div class="filter-box bg-white p-3 text-center h-100 d-flex flex-column justify-content-center">
+                    <label class="form-label fw-bold text-dark mb-2" style="font-size: 0.85rem;">Bộ từ vựng</label>
+                    <select class="form-select border-0 text-center fw-bold text-muted bg-transparent shadow-none p-0" style="font-size: 0.95rem;" name="set_id" id="setId" onchange="calculateStats()">
+                        <option value="all">Tất cả bộ từ</option>
+                        {% for set in sets %}
+                        <option value="{{ set.id }}">{{ set.title }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="filter-box bg-white p-3 text-center h-100 d-flex flex-column justify-content-center">
+                    <label class="form-label fw-bold text-dark mb-2" style="font-size: 0.85rem;">Bộ lọc</label>
+                    <select class="form-select border-0 text-center fw-bold text-muted bg-transparent shadow-none p-0" style="font-size: 0.95rem;" name="status" id="status" onchange="calculateStats()">
+                        <option value="all">Tất cả thẻ</option>
+                        <option value="learning">Chưa thuộc</option>
+                        <option value="known">Đã thuộc</option>
+                    </select>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="filter-box bg-white p-3 text-center h-100 d-flex flex-column justify-content-center">
+                    <label class="form-label fw-bold text-dark mb-2" style="font-size: 0.85rem;">Thứ tự</label>
+                    <select class="form-select border-0 text-center fw-bold text-muted bg-transparent shadow-none p-0" style="font-size: 0.95rem;" name="sort_by" id="sortBy">
+                        <option value="random">Ngẫu nhiên</option>
+                        <option value="newest">Mới nhất</option>
+                        <option value="oldest">Cũ nhất</option>
+                        <option value="az">Theo chữ cái (A-Z)</option>
+                    </select>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="filter-box bg-white p-3 text-center h-100 d-flex flex-column justify-content-center">
+                    <label class="form-label fw-bold text-dark mb-2" style="font-size: 0.85rem;">Số lượng</label>
+                    <select class="form-select border-0 text-center fw-bold text-muted bg-transparent shadow-none p-0" style="font-size: 0.95rem;" name="quantity" id="quantity" onchange="calculateStats()">
+                        <option value="10">10 từ</option>
+                        <option value="20" selected>20 từ</option>
+                        <option value="50">50 từ</option>
+                        <option value="all">Tất cả</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section Title & Badges -->
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h5 class="fw-bold mb-0 d-flex align-items-center gap-2">Chọn game: <i class="bi bi-gear text-primary" style="font-size: 1.1rem; cursor: pointer;"></i></h5>
+            <div class="d-flex gap-2">
+                <span class="badge rounded-pill fw-bold px-3 py-2 d-flex align-items-center gap-1" style="background-color: #d1fae5; color: #059669; font-size: 0.85rem;" id="badgeRate">
+                    <i class="bi bi-volume-up"></i> <span id="knownRate">0%</span>
+                </span>
+                <span class="badge rounded-pill fw-bold px-3 py-2" style="background-color: #fee2e2; color: #dc2626; font-size: 0.85rem;" id="badgeReady">
+                    0 TỪ SẴN SÀNG
+                </span>
+            </div>
+        </div>
+
+        <!-- Game Modes Grid -->
+        <div class="game-grid mb-5">
+            <!-- Game Modes -->
+            <button type="button" onclick="submitGame('QUIZ')" class="mode-btn btn w-100 rounded-4 text-white d-flex flex-column align-items-center justify-content-center p-3 border-0 position-relative overflow-hidden" style="background: linear-gradient(135deg, #f97316, #ea580c);">
+                <div class="icon-circle mb-3" style="background: rgba(255,255,255,0.2); width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                    <i class="bi bi-ui-checks-grid fs-5"></i>
+                </div>
+                <div class="fw-bold mb-1 text-center" style="font-size: 16px; line-height: 1.2;">Trắc nghiệm</div>
+                <div class="opacity-75 text-center mt-1" style="font-size: 0.75rem; line-height: 1.2;">Chọn đáp án đúng</div>
+            </button>
+            
+            <button type="button" onclick="submitGame('MATCHING')" class="mode-btn btn w-100 rounded-4 text-white d-flex flex-column align-items-center justify-content-center p-3 border-0 position-relative overflow-hidden" style="background: linear-gradient(135deg, #3b82f6, #2563eb);">
+                <div class="icon-circle mb-3" style="background: rgba(255,255,255,0.2); width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                    <i class="bi bi-puzzle fs-5"></i>
+                </div>
+                <div class="fw-bold mb-1 text-center" style="font-size: 16px; line-height: 1.2;">Nối từ</div>
+                <div class="opacity-75 text-center mt-1" style="font-size: 0.75rem; line-height: 1.2;">Ghép đôi từ và nghĩa</div>
+            </button>
+            
+            <button type="button" onclick="submitGame('TYPING')" class="mode-btn btn w-100 rounded-4 text-white d-flex flex-column align-items-center justify-content-center p-3 border-0 position-relative overflow-hidden" style="background: linear-gradient(135deg, #22c55e, #16a34a);">
+                <div class="icon-circle mb-3" style="background: rgba(255,255,255,0.2); width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                    <i class="bi bi-keyboard fs-5"></i>
+                </div>
+                <div class="fw-bold mb-1 text-center" style="font-size: 16px; line-height: 1.2;">Gõ từ</div>
+                <div class="opacity-75 text-center mt-1" style="font-size: 0.75rem; line-height: 1.2;">Nhìn nghĩa, tự gõ lại</div>
+            </button>
+            
+            <button type="button" onclick="submitGame('LISTENING')" class="mode-btn btn w-100 rounded-4 text-white d-flex flex-column align-items-center justify-content-center p-3 border-0 position-relative overflow-hidden" style="background: linear-gradient(135deg, #06b6d4, #0891b2);">
+                <div class="icon-circle mb-3" style="background: rgba(255,255,255,0.2); width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                    <i class="bi bi-headphones fs-5"></i>
+                </div>
+                <div class="fw-bold mb-1 text-center" style="font-size: 16px; line-height: 1.2;">Nghe viết</div>
+                <div class="opacity-75 text-center mt-1" style="font-size: 0.75rem; line-height: 1.2;">Nghe âm và gõ lại</div>
+            </button>
+            
+            <button type="button" onclick="submitGame('ARCADE')" class="mode-btn btn w-100 rounded-4 text-white d-flex flex-column align-items-center justify-content-center p-3 border-0 position-relative overflow-hidden" style="background: linear-gradient(135deg, #f472b6, #db2777);">
+                <span class="position-absolute top-0 end-0 badge bg-danger m-2 rounded-pill shadow-sm" style="font-size: 0.6rem;">HOT</span>
+                <div class="icon-circle mb-3" style="background: rgba(255,255,255,0.2); width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                    <i class="bi bi-lightning-charge-fill fs-5"></i>
+                </div>
+                <div class="fw-bold mb-1 text-center text-nowrap" style="font-size: 16px; line-height: 1.2;">Sinh tồn</div>
+                <div class="opacity-75 text-center mt-1" style="font-size: 0.75rem; line-height: 1.2;">Câu hỏi liên tục</div>
+            </button>
+        </div>
+    </form>
+
+    <!-- SRS Banner -->
+    <div class="mb-5 position-relative">
+        <div class="rounded-4 overflow-hidden shadow-sm d-flex justify-content-between align-items-center p-4" style="background: linear-gradient(90deg, #f0abfc, #a855f7); color: white;">
+            <div>
+                <h5 class="fw-bold mb-1 d-flex align-items-center gap-2"><i class="bi bi-arrow-repeat"></i> Ôn tập ngắt quãng (SRS)</h5>
+                <p class="mb-0 opacity-75 small">Hệ thống tự động nhắc lại các từ vựng bạn sắp quên. Học ít, nhớ lâu!</p>
+            </div>
+            
+            {% if srs_count > 0 %}
+            <form method="post" action="{{ url_for('learning.game_start') }}" class="m-0">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <input type="hidden" name="set_id" value="all">
+                <input type="hidden" name="status" value="known">
+                <input type="hidden" name="sort_by" value="oldest">
+                <input type="hidden" name="quantity" value="all">
+                <input type="hidden" name="game_type" value="ARCADE">
+                <button type="submit" class="btn bg-white text-danger fw-bold rounded-pill px-4 py-2 d-flex align-items-center gap-2 shadow-sm transition-hover">
+                    <i class="bi bi-play-fill fs-5"></i> Bắt đầu ôn tập ({{ srs_count }})
+                </button>
+            </form>
+            {% else %}
+            <button class="btn bg-white text-muted fw-bold rounded-pill px-4 py-2 shadow-sm opacity-75" disabled>
+                <i class="bi bi-play-fill fs-5"></i> Bắt đầu ôn tập (0)
+            </button>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Match History -->
+    <div class="card border-0 shadow-sm rounded-4" style="background-color: #f8fafc;">
+        <div class="card-body p-4">
+            <h5 class="fw-bold mb-4 d-flex align-items-center gap-2">
+                <div class="bg-purple-subtle text-purple rounded p-2 d-flex align-items-center justify-content-center" style="width: 32px; height: 32px;">
+                    <i class="bi bi-calendar-event"></i>
+                </div>
+                Lịch sử đấu
+            </h5>
+            
+            <div class="bg-white rounded-4 p-4 border" style="border-color: #e2e8f0 !important;">
+                {% if not history %}
+                <div class="border border-dashed rounded-4 p-5 text-center text-muted" style="border-width: 2px; border-style: dashed; border-color: #cbd5e1;">
+                    <span class="small fw-bold opacity-75">Chưa có lịch sử đấu. Hãy chơi thử một game nhé!</span>
+                </div>
+                {% else %}
+                <div class="table-responsive">
+                    <table class="table table-borderless table-hover align-middle mb-0">
+                        <thead class="text-muted small fw-bold border-bottom">
+                            <tr>
+                                <th class="pb-3 ps-0">Trò chơi</th>
+                                <th class="pb-3 text-center">Thời gian thi</th>
+                                <th class="pb-3 text-center">Tỷ lệ chính xác</th>
+                                <th class="pb-3 text-end pe-0">Thời điểm</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for record in history %}
+                            <tr class="border-bottom">
+                                <td class="ps-0 py-3">
+                                    <span class="badge bg-secondary-subtle text-dark px-3 py-2 rounded-pill fw-bold">{{ record.game_type }}</span>
+                                </td>
+                                <td class="py-3 text-center text-primary fw-bold">
+                                    {{ '{:02d}:{:02d}'.format(record.duration_seconds // 60, record.duration_seconds % 60) }}s
+                                </td>
+                                <td class="py-3 text-center">
+                                    <div class="fw-bold {% if record.accuracy_rate >= 80 %}text-success{% elif record.accuracy_rate >= 50 %}text-warning{% else %}text-danger{% endif %}">
+                                        {{ record.correct_answers }}/{{ record.total_questions }} ({{ record.accuracy_rate|int }}%)
+                                    </div>
+                                </td>
+                                <td class="py-3 text-end pe-0 text-muted small">
+                                    {{ record.created_at.strftime('%d/%m/%Y %H:%M') }}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function calculateStats() {
+        const setId = document.getElementById('setId').value;
+        const status = document.getElementById('status').value;
+        const quantity = document.getElementById('quantity').value; // if we need it
+        const csrfToken = document.querySelector('input[name="csrf_token"]').value;
+        
+        fetch('{{ url_for("learning.game_calculate_stats") }}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrfToken
+            },
+            body: JSON.stringify({ set_id: setId, status: status })
+        })
+        .then(res => res.json())
+        .then(data => {
+            const badgeReady = document.getElementById('badgeReady');
+            
+            // Adjust available count by quantity limit if needed
+            let displayCount = data.available_count;
+            if (quantity !== 'all') {
+                displayCount = Math.min(data.available_count, parseInt(quantity));
+            }
+            
+            badgeReady.textContent = `${displayCount} TỪ SẴN SÀNG`;
+            
+            let rate = 0;
+            if (data.total_count > 0) {
+                rate = Math.round((data.learned_count / data.total_count) * 100);
+            }
+            document.getElementById('knownRate').textContent = rate + '%';
+            
+            // Disable mode buttons if no cards ready
+            const btns = document.querySelectorAll('.mode-btn');
+            btns.forEach(btn => {
+                if (data.available_count < 4) {
+                    btn.disabled = true;
+                    btn.classList.add('opacity-50');
+                } else {
+                    btn.disabled = false;
+                    btn.classList.remove('opacity-50');
+                }
+            });
+            
+            if (data.available_count < 4) {
+                badgeReady.style.backgroundColor = '#fee2e2';
+                badgeReady.style.color = '#dc2626';
+            } else {
+                badgeReady.style.backgroundColor = '#dcfce7'; // green-100
+                badgeReady.style.color = '#15803d'; // green-700
+            }
+        });
+    }
+
+    function submitGame(type) {
+        document.getElementById('gameTypeInput').value = type;
+        document.getElementById('gameConfigForm').submit();
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+        calculateStats();
+    });
+</script>
+
+<style>
+    body { background-color: #f8fafc; }
+    
+    .filter-box {
+        border: 1px solid #e2e8f0 !important;
+        border-radius: 1rem !important;
+        transition: border-color 0.2s;
+    }
+    .filter-box:hover { border-color: #8b5cf6 !important; }
+    .filter-box select:focus { outline: none !important; box-shadow: none !important; }
+    
+    .game-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1.25rem;
+    }
+    @media (min-width: 768px) {
+        .game-grid { grid-template-columns: repeat(3, 1fr); }
+    }
+    @media (min-width: 992px) {
+        .game-grid { grid-template-columns: repeat(5, 1fr); }
+    }
+    
+    .mode-btn {
+        aspect-ratio: 4/5;
+        transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .mode-btn:not(:disabled):hover {
+        transform: translateY(-4px);
+        box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1);
+    }
+    
+    .transition-hover { transition: transform 0.2s, box-shadow 0.2s; }
+    .transition-hover:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.15) !important; }
+    .text-purple { color: #8b5cf6 !important; }
+    .bg-purple-subtle { background-color: #ede9fe !important; }
+</style>
+{% endblock %}

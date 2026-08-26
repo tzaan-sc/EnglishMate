@@ -147,7 +147,7 @@ def toeic_result(attempt_id):
 from app.modules.exams.models import Exam, ExamQuestion, ExamSubmission, ExamAnswerDetail
 import json
 
-@bp.get("/list")
+@bp.get("/exam")
 @login_required
 def exam_list():
     category = request.args.get("category", "")
@@ -189,7 +189,7 @@ def exam_list():
     categories = [r[0] for r in db.session.query(Exam.category).distinct().all()]
     
     return render_template("exams/list.html", exams=exams, best_scores=best_scores, 
-                           categories=categories, category=category, skill=skill)
+                           categories=categories, category=category, skill=skill, history=submissions)
 
 
 @bp.post("/<int:exam_id>/start")

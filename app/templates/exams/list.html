@@ -70,4 +70,71 @@
   </div>
   {% endfor %}
 </div>
+
+<!-- History panel -->
+<div class="card border-0 shadow-sm rounded-4 mt-5 mb-4" style="background-color: #f8fafc;">
+    <div class="card-body p-4">
+        <h5 class="fw-bold mb-4 d-flex align-items-center gap-2">
+            <div class="bg-purple-subtle text-purple rounded p-2 d-flex align-items-center justify-content-center" style="width: 32px; height: 32px;">
+                <i class="bi bi-calendar-event"></i>
+            </div>
+            Lịch sử làm bài
+        </h5>
+        
+        <div class="bg-white rounded-4 p-4 border" style="border-color: #e2e8f0 !important;">
+            {% if not history %}
+            <div class="border border-dashed rounded-4 p-5 text-center text-muted" style="border-width: 2px; border-style: dashed; border-color: #cbd5e1;">
+                <span class="small fw-bold opacity-75">Chưa có lịch sử làm bài. Hãy chọn một đề thi và bắt đầu nhé!</span>
+            </div>
+            {% else %}
+            <div class="table-responsive">
+                <table class="table table-borderless table-hover align-middle mb-0">
+                    <thead class="text-muted small fw-bold border-bottom">
+                        <tr>
+                            <th class="pb-3 ps-0">Đề thi</th>
+                            <th class="pb-3 text-center">Trạng thái</th>
+                            <th class="pb-3 text-center">Điểm số</th>
+                            <th class="pb-3 text-end">Thời điểm</th>
+                            <th class="pb-3 text-end pe-0"></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for sub in history %}
+                        <tr class="border-bottom">
+                            <td class="ps-0 py-3">
+                                <span class="badge bg-secondary-subtle text-dark px-3 py-2 rounded-pill fw-bold">{{ sub.exam.title if sub.exam else 'Đề thi đã bị xóa' }}</span>
+                            </td>
+                            <td class="py-3 text-center">
+                                {% if sub.status == 'COMPLETED' %}
+                                <span class="badge bg-success-subtle text-success">Đã hoàn thành</span>
+                                {% else %}
+                                <span class="badge bg-warning-subtle text-warning">Chưa nộp</span>
+                                {% endif %}
+                            </td>
+                            <td class="py-3 text-center">
+                                {% if sub.status == 'COMPLETED' %}
+                                <div class="fw-bold text-primary">{{ sub.total_score }}</div>
+                                {% else %}
+                                -
+                                {% endif %}
+                            </td>
+                            <td class="py-3 text-end text-muted small">
+                                {{ sub.completed_at.strftime('%d/%m/%Y %H:%M') if sub.completed_at else sub.created_at.strftime('%d/%m/%Y %H:%M') }}
+                            </td>
+                            <td class="py-3 text-end pe-0">
+                                {% if sub.status == 'COMPLETED' %}
+                                <a href="{{ url_for('exams.result', submission_id=sub.id) }}" class="btn btn-sm btn-outline-primary rounded-pill px-3">Chi tiết</a>
+                                {% else %}
+                                <a href="{{ url_for('exams.attempt', submission_id=sub.id) }}" class="btn btn-sm btn-primary rounded-pill px-3">Tiếp tục</a>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
 {% endblock %}

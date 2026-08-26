@@ -124,3 +124,17 @@ class FlashcardProgress(db.Model):
     user = db.relationship("User", backref="flashcard_progress")
     item = db.relationship("FlashcardItem", backref=db.backref("progress_records", cascade="all, delete-orphan"))
     __table_args__ = (db.UniqueConstraint("user_id", "item_id"),)
+
+
+class GameSession(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False, index=True)
+    session_id = db.Column(db.String(64), nullable=False, unique=True)
+    game_type = db.Column(db.String(50), nullable=False) # QUIZ, MATCHING, TYPING, LISTENING, ARCADE
+    total_questions = db.Column(db.Integer, nullable=False)
+    correct_answers = db.Column(db.Integer, nullable=False)
+    accuracy_rate = db.Column(db.Float, nullable=False)
+    duration_seconds = db.Column(db.Integer, nullable=False)
+    created_at = db.Column(db.DateTime(timezone=True), default=now, nullable=False)
+    
+    user = db.relationship("User", backref=db.backref("game_sessions", cascade="all, delete-orphan"))

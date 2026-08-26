@@ -382,3 +382,191 @@ def flashcard_set_delete(set_id):
     db.session.commit()
     flash(f"Học phần '{fset.title}' đã bị xóa.", "success")
     return redirect(url_for("learning.flashcard_sets"))
+
+
+# ==========================================
+# GAME SYSTEM ROUTES
+# ==========================================
+import uuid
+import json
+from datetime import datetime, timedelta
+
+@bp.get("/games/lobby")
+@login_required
+def game_lobby():
+    from .models import FlashcardSet, GameSession, FlashcardProgress
+    sets = FlashcardSet.query.filter_by(user_id=current_user.id).order_by(FlashcardSet.created_at.desc()).all()
+    history = GameSession.query.filter_by(user_id=current_user.id).order_by(GameSession.created_at.desc()).limit(10).all()
+    
+    # Calculate SRS due cards
+    now_time = datetime.utcnow()
+    srs_count = FlashcardProgress.query.filter(
+        FlashcardProgress.user_id == current_user.id,
+        FlashcardProgress.last_reviewed_at < now_time - timedelta(hours=24)
+    ).count()
+    
+    return render_template("learning/game_lobby.html", sets=sets, history=history, srs_count=srs_count)
+
+@bp.post("/games/calculate-stats")
+@login_required
+def game_calculate_stats():
+    data = request.json
+    set_id = data.get("set_id")
+    status = data.get("status")
+    
+    from .models import FlashcardItem, FlashcardSet, FlashcardProgress
+    query = db.session.query(FlashcardItem).join(FlashcardSet).filter(FlashcardSet.user_id == current_user.id)
+    
+    if set_id and set_id != "all":
+        query = query.filter(FlashcardSet.id == int(set_id))
+        
+    items = query.all()
+    total_count = len(items)
+    
+    progress_records = {p.item_id: p for p in FlashcardProgress.query.filter_by(user_id=current_user.id).all()}
+    
+    learned_count = 0
+    available_items = []
+    
+    for item in items:
+        p = progress_records.get(item.id)
+        is_known = p.is_known if p else False
+        if is_known:
+            learned_count += 1
+            
+        if status == "learning" and is_known:
+            continue
+        if status == "known" and not is_known:
+            continue
+        # (Chưa implement Đánh dấu sao)
+        
+        available_items.append(item)
+        
+    return {
+        "available_count": len(available_items),
+        "total_count": total_count,
+        "learned_count": learned_count
+    }
+
+@bp.post("/games/start")
+@login_required
+def game_start():
+    set_id = request.form.get("set_id")
+    status = request.form.get("status")
+    sort_by = request.form.get("sort_by")
+    quantity = request.form.get("quantity")
+    game_type = request.form.get("game_type")
+    
+    from .models import FlashcardItem, FlashcardSet, FlashcardProgress
+    query = db.session.query(FlashcardItem).join(FlashcardSet).filter(FlashcardSet.user_id == current_user.id)
+    
+    if set_id and set_id != "all":
+        query = query.filter(FlashcardSet.id == int(set_id))
+        
+    items = query.all()
+    progress_records = {p.item_id: p for p in FlashcardProgress.query.filter_by(user_id=current_user.id).all()}
+    
+    filtered = []
+    for item in items:
+        p = progress_records.get(item.id)
+        is_known = p.is_known if p else False
+        if status == "learning" and is_known: continue
+        if status == "known" and not is_known: continue
+        filtered.append(item)
+        
+    if sort_by == "random":
+        random.shuffle(filtered)
+    elif sort_by == "az":
+        filtered.sort(key=lambda x: x.term.lower())
+    elif sort_by == "newest":
+        filtered.sort(key=lambda x: x.id, reverse=True)
+    elif sort_by == "oldest":
+        filtered.sort(key=lambda x: x.id)
+        
+    if quantity != "all" and quantity.isdigit():
+        filtered = filtered[:int(quantity)]
+        
+    if not filtered:
+        flash("Không có thẻ nào thỏa mãn điều kiện lọc.", "warning")
+        return redirect(url_for("learning.game_lobby"))
+        
+    session_id = str(uuid.uuid4())
+    from flask import session
+    session[f"game_{session_id}"] = {
+        "item_ids": [i.id for i in filtered],
+        "game_type": game_type
+    }
+    
+    return redirect(url_for("learning.game_play", session_id=session_id))
+
+@bp.get("/games/play/<session_id>")
+@login_required
+def game_play(session_id):
+    from flask import session
+    game_data = session.get(f"game_{session_id}")
+    if not game_data:
+        flash("Phiên chơi không hợp lệ hoặc đã hết hạn.", "danger")
+        return redirect(url_for("learning.game_lobby"))
+        
+    return render_template("learning/game_play.html", session_id=session_id, game_type=game_data["game_type"])
+
+@bp.get("/games/api/data/<session_id>")
+@login_required
+def game_api_data(session_id):
+    from flask import session
+    game_data = session.get(f"game_{session_id}")
+    if not game_data:
+        return {"error": "Invalid session"}, 400
+        
+    from .models import FlashcardItem
+    items = FlashcardItem.query.filter(FlashcardItem.id.in_(game_data["item_ids"])).all()
+    # Sort items based on the original list order to preserve random/sort options
+    items_dict = {item.id: item for item in items}
+    sorted_items = [items_dict[item_id] for item_id in game_data["item_ids"] if item_id in items_dict]
+    
+    all_terms = [i.term for i in items]
+    all_defs = [i.definition for i in items]
+    
+    data = []
+    for item in sorted_items:
+        # Generate random distractors for quiz
+        distractors = []
+        if len(all_defs) >= 4:
+            pool = [d for d in all_defs if d != item.definition]
+            distractors = random.sample(pool, min(3, len(pool)))
+            
+        data.append({
+            "id": item.id,
+            "term": item.term,
+            "definition": item.definition,
+            "image_url": item.image_url,
+            "distractors": distractors
+        })
+        
+    return {"status": "ok", "game_type": game_data["game_type"], "items": data}
+
+@bp.post("/games/submit")
+@login_required
+def game_submit():
+    data = request.json
+    from .models import GameSession
+    
+    gs = GameSession(
+        user_id=current_user.id,
+        session_id=data.get("session_id"),
+        game_type=data.get("game_type"),
+        total_questions=data.get("total_questions", 0),
+        correct_answers=data.get("correct_answers", 0),
+        accuracy_rate=data.get("accuracy_rate", 0.0),
+        duration_seconds=data.get("duration_seconds", 0)
+    )
+    db.session.add(gs)
+    db.session.commit()
+    
+    # Optional: Clear session data
+    from flask import session
+    session_key = f"game_{data.get('session_id')}"
+    if session_key in session:
+        session.pop(session_key)
+        
+    return {"status": "ok"}
