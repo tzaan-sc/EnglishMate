@@ -4,7 +4,8 @@ from flask_login import current_user, login_required
 from sqlalchemy import func
 
 from ...extensions import db
-from ...models import DailyActivity, Lesson, LessonProgress, QuizAttempt, VocabularyProgress
+from ..auth.models import DailyActivity
+from ..learning.models import Lesson, LessonProgress, QuizAttempt, VocabularyProgress
 from . import bp
 
 

@@ -40,7 +40,7 @@
             </div>
             {% endif %}
             
-            <form action="{{ url_for('learning.toeic_start', test_id=test.id) }}" method="post">
+            <form action="{{ url_for('exams.toeic_start', test_id=test.id) }}" method="post">
               <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
               <button type="submit" class="btn btn-primary w-100 py-3">Bắt đầu làm bài</button>
             </form>
@@ -89,7 +89,7 @@
                 </span>
               </td>
               <td class="text-end">
-                <a href="{{ url_for('learning.toeic_result', attempt_id=attempt.id) }}" class="btn btn-outline-primary btn-sm">Xem chi tiết</a>
+                <a href="{{ url_for('exams.toeic_result', attempt_id=attempt.id) }}" class="btn btn-outline-primary btn-sm">Xem chi tiết</a>
               </td>
             </tr>
             {% endfor %}

@@ -4,7 +4,8 @@ from flask import abort, flash, redirect, render_template, request, url_for
 from flask_login import current_user, login_required
 
 from ...extensions import db
-from ...models import Lesson, Question, QuizAttempt, User, Vocabulary
+from ..auth.models import User
+from ..learning.models import Lesson, Question, QuizAttempt, Vocabulary
 from . import bp
 from .forms import ConfirmForm, LessonForm, VocabularyForm
 

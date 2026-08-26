@@ -10,7 +10,7 @@
       
       <!-- Left Column: Questions -->
       <div class="col-lg-9">
-        <form id="toeic-test-form" action="{{ url_for('learning.toeic_submit', attempt_id=attempt.id) }}" method="post">
+        <form id="toeic-test-form" action="{{ url_for('exams.toeic_submit', attempt_id=attempt.id) }}" method="post">
           <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
           <input type="hidden" name="time_spent" id="time-spent" value="0">
           <input type="hidden" name="is_timer_expired" id="is-timer-expired" value="false">

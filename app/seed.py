@@ -1,7 +1,8 @@
 """Create the local database and deterministic demo content."""
 from app import create_app
 from app.extensions import db
-from app.models import Lesson, Question, User, Vocabulary
+from app.modules.learning.models import Lesson, Question, Vocabulary
+from app.modules.auth.models import User
 
 
 LESSONS = [

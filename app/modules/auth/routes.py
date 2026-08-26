@@ -4,7 +4,7 @@ from flask import flash, redirect, render_template, request, url_for
 from flask_login import current_user, login_user, logout_user
 
 from ...extensions import db
-from ...models import User
+from .models import User
 from . import bp
 from .forms import LoginForm, RegisterForm
 

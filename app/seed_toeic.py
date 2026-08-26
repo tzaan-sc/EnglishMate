@@ -1,7 +1,7 @@
 import sys
 from app import create_app
 from app.extensions import db
-from app.models import ToeicTest, ToeicPassage, ToeicQuestion
+from app.modules.exams.models import ToeicTest, ToeicPassage, ToeicQuestion
 
 PART_5_QUESTIONS = [
     {

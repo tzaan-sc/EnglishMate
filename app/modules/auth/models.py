@@ -1,0 +1,100 @@
+from datetime import date, datetime, timedelta, timezone
+
+from flask_login import UserMixin
+from werkzeug.security import check_password_hash, generate_password_hash
+
+from app.extensions import db
+
+
+def now():
+    return datetime.now(timezone.utc)
+
+
+class User(UserMixin, db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(40), unique=True, nullable=False, index=True)
+    email = db.Column(db.String(120), unique=True, nullable=False, index=True)
+    password_hash = db.Column(db.String(255), nullable=False)
+    role = db.Column(db.String(10), nullable=False, default="USER")
+    is_active = db.Column(db.Boolean, nullable=False, default=True)
+    current_streak = db.Column(db.Integer, nullable=False, default=0)
+    longest_streak = db.Column(db.Integer, nullable=False, default=0)
+    last_activity_date = db.Column(db.Date, nullable=True)
+    created_at = db.Column(db.DateTime(timezone=True), default=now, nullable=False)
+    updated_at = db.Column(db.DateTime(timezone=True), default=now, onupdate=now, nullable=False)
+
+    def set_password(self, password):
+        self.password_hash = generate_password_hash(password)
+
+    def check_password(self, password):
+        return check_password_hash(self.password_hash, password)
+
+    @property
+    def is_admin(self):
+        return self.role == "ADMIN"
+
+    def get_current_streak(self):
+        """
+        Returns active streak count.
+        Resets current_streak to 0 if last_activity_date was before yesterday.
+        """
+        if not self.last_activity_date:
+            return 0
+        today = date.today()
+        yesterday = today - timedelta(days=1)
+        if self.last_activity_date < yesterday:
+            if self.current_streak != 0:
+                self.current_streak = 0
+                db.session.commit()
+            return 0
+        return self.current_streak
+
+
+class DailyActivity(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False, index=True)
+    activity_date = db.Column(db.Date, nullable=False, default=date.today, index=True)
+    completed_lessons = db.Column(db.Integer, nullable=False, default=0)
+    goal_completed = db.Column(db.Boolean, nullable=False, default=False)
+
+    user = db.relationship("User", backref=db.backref("daily_activities", lazy="dynamic"))
+
+    __table_args__ = (db.UniqueConstraint("user_id", "activity_date"),)
+
+
+def record_daily_activity(user, lessons_count=1):
+    """
+    Records lesson completion activity for the user today.
+    Enforces streak business rules:
+    - 1 lesson completed -> goal_completed = True
+    - Multiple lessons same day -> streak increments only once
+    - Consecutive day -> streak += 1
+    - Missed day -> streak = 1
+    - longest_streak tracks max record
+    """
+    today = date.today()
+    yesterday = today - timedelta(days=1)
+
+    activity = DailyActivity.query.filter_by(user_id=user.id, activity_date=today).first()
+    if not activity:
+        activity = DailyActivity(user_id=user.id, activity_date=today, completed_lessons=0, goal_completed=False)
+        db.session.add(activity)
+
+    activity.completed_lessons += lessons_count
+
+    if activity.completed_lessons >= 1 and not activity.goal_completed:
+        activity.goal_completed = True
+
+        if user.last_activity_date == yesterday:
+            user.current_streak = (user.current_streak or 0) + 1
+        elif user.last_activity_date == today:
+            pass  # Already counted today
+        else:
+            user.current_streak = 1
+
+        user.last_activity_date = today
+        if user.current_streak > (user.longest_streak or 0):
+            user.longest_streak = user.current_streak
+
+    db.session.commit()
+    return activity
