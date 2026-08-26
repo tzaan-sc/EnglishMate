@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container py-4" style="max-width: 800px;">
+    <div class="mb-4">
+        <a href="{{ url_for('learning.flashcard_sets') }}" class="text-decoration-none text-muted fw-bold small"><i class="bi bi-arrow-left"></i> Quay lại thư viện</a>
+    </div>
+
+    <h2 class="fw-bold mb-2">{{ fset.title }}</h2>
+    {% if fset.description %}
+    <p class="text-muted">{{ fset.description }}</p>
+    {% endif %}
+
+    <div class="d-flex align-items-center gap-3 mb-5 mt-4">
+        <div class="profile-avatar-circle" style="width: 40px; height: 40px;">
+            {{ fset.user.username[0].upper() }}
+        </div>
+        <div>
+            <div class="small text-muted fw-bold">Tạo bởi</div>
+            <div class="fw-bold">{{ fset.user.username }}</div>
+        </div>
+    </div>
+
+    <h5 class="fw-bold mb-3">Thẻ trong học phần này ({{ fset.items|length }})</h5>
+    
+    <div class="row g-3">
+        {% for item in fset.items %}
+        <div class="col-12">
+            <div class="card shadow-sm border-0 rounded-4">
+                <div class="card-body p-4 d-flex align-items-center">
+                    <div class="w-50 pe-4 border-end">
+                        <span class="fs-5 text-dark">{{ item.term }}</span>
+                    </div>
+                    <div class="w-50 ps-4 d-flex justify-content-between align-items-center">
+                        <span class="text-dark">{{ item.definition }}</span>
+                        {% if item.image_url %}
+                        <img src="{{ item.image_url }}" alt="Image" class="rounded" style="max-height: 60px; max-width: 80px; object-fit: cover;">
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% else %}
+        <div class="col-12 text-center text-muted">
+            Học phần này chưa có thẻ nào.
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

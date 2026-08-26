@@ -88,3 +88,27 @@ class QuizAttemptAnswer(db.Model):
     is_correct = db.Column(db.Boolean, nullable=False, default=False)
     attempt = db.relationship("QuizAttempt", backref=db.backref("answers", cascade="all, delete-orphan"))
     question = db.relationship("Question")
+
+
+class FlashcardSet(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(200), nullable=False)
+    description = db.Column(db.Text, nullable=True)
+    is_public = db.Column(db.Boolean, default=True, nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False, index=True)
+    created_at = db.Column(db.DateTime(timezone=True), default=now, nullable=False)
+    updated_at = db.Column(db.DateTime(timezone=True), default=now, onupdate=now, nullable=False)
+    
+    user = db.relationship("User", backref=db.backref("flashcard_sets", cascade="all, delete-orphan"))
+
+
+class FlashcardItem(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    set_id = db.Column(db.Integer, db.ForeignKey("flashcard_set.id"), nullable=False, index=True)
+    term = db.Column(db.String(500), nullable=False)
+    definition = db.Column(db.Text, nullable=False)
+    image_url = db.Column(db.String(500), nullable=True)
+    order = db.Column(db.Integer, nullable=False, default=0)
+    
+    flashcard_set = db.relationship("FlashcardSet", backref=db.backref("items", cascade="all, delete-orphan", order_by="FlashcardItem.order"))
+

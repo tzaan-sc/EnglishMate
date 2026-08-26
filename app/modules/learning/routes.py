@@ -184,5 +184,72 @@ def progress():
                            best=max(percentages, default=0), average=round(sum(percentages) / len(percentages)) if percentages else 0)
 
 
+@bp.get("/flashcard-sets")
+@login_required
+def flashcard_sets():
+    from .models import FlashcardSet
+    # Lấy các học phần do user tạo hoặc công khai
+    sets = FlashcardSet.query.filter(
+        (FlashcardSet.user_id == current_user.id) | (FlashcardSet.is_public == True)
+    ).order_by(FlashcardSet.created_at.desc()).all()
+    return render_template("learning/flashcard_sets.html", sets=sets)
 
 
+@bp.route("/flashcard-sets/new", methods=["GET", "POST"])
+@login_required
+def flashcard_set_create():
+    if request.method == "POST":
+        from .models import FlashcardSet, FlashcardItem
+        title = request.form.get("title", "").strip()
+        description = request.form.get("description", "").strip()
+        is_public = request.form.get("is_public") == "on"
+        
+        if not title:
+            flash("Vui lòng nhập tiêu đề học phần.", "danger")
+            return redirect(url_for("learning.flashcard_set_create"))
+            
+        new_set = FlashcardSet(
+            title=title,
+            description=description,
+            is_public=is_public,
+            user_id=current_user.id
+        )
+        db.session.add(new_set)
+        db.session.flush() # Lấy new_set.id
+        
+        # Xử lý các Flashcard Items động
+        terms = request.form.getlist("terms[]")
+        definitions = request.form.getlist("definitions[]")
+        images = request.form.getlist("images[]")
+        
+        for i in range(len(terms)):
+            term = terms[i].strip()
+            definition = definitions[i].strip()
+            image_url = images[i].strip() if i < len(images) else None
+            
+            if term or definition: # Lưu nếu 1 trong 2 có dữ liệu
+                item = FlashcardItem(
+                    set_id=new_set.id,
+                    term=term,
+                    definition=definition,
+                    image_url=image_url,
+                    order=i
+                )
+                db.session.add(item)
+                
+        db.session.commit()
+        flash(f"Học phần '{title}' đã được tạo thành công!", "success")
+        return redirect(url_for("learning.flashcard_sets"))
+        
+    return render_template("learning/flashcard_create.html")
+
+
+@bp.get("/flashcard-sets/<int:set_id>")
+@login_required
+def flashcard_set_view(set_id):
+    from .models import FlashcardSet
+    fset = FlashcardSet.query.get_or_404(set_id)
+    # Check permissions
+    if not fset.is_public and fset.user_id != current_user.id:
+        abort(403)
+    return render_template("learning/flashcard_view.html", fset=fset)
