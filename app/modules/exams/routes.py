@@ -139,5 +139,166 @@ def toeic_result(attempt_id):
         part6_passages=part6_passages,
         part7_passages=part7_passages,
         answer_map=answer_map,
-        part_stats=part_stats
+    )
+
+
+# --- NEW GENERIC EXAM ROUTES ---
+from app.modules.exams.models import Exam, ExamQuestion, ExamSubmission, ExamAnswerDetail
+import json
+
+@bp.get("/list")
+@login_required
+def exam_list():
+    category = request.args.get("category", "")
+    skill = request.args.get("skill", "")
+    
+    query = Exam.query.filter_by(is_active=True)
+    if category:
+        query = query.filter_by(category=category)
+    
+    # Optional: if skill is provided, filter exams that have questions with this skill
+    if skill:
+        query = query.join(ExamQuestion).filter(ExamQuestion.skill == skill)
+        
+    exams = query.all()
+    
+    # Get user submissions
+    submissions = ExamSubmission.query.filter_by(user_id=current_user.id).all()
+    best_scores = {}
+    for sub in submissions:
+        if sub.status == 'COMPLETED':
+            if sub.exam_id not in best_scores or sub.total_score > best_scores[sub.exam_id]:
+                best_scores[sub.exam_id] = sub.total_score
+                
+    categories = [r[0] for r in db.session.query(Exam.category).distinct().all()]
+    
+    return render_template("exams/list.html", exams=exams, best_scores=best_scores, 
+                           categories=categories, category=category, skill=skill)
+
+
+@bp.post("/<int:exam_id>/start")
+@login_required
+def start_exam(exam_id):
+    exam = db.get_or_404(Exam, exam_id)
+    # Mode can be 'practice' or 'real'
+    mode = request.form.get("mode", "real")
+    
+    submission = ExamSubmission(user_id=current_user.id, exam_id=exam.id, status='IN_PROGRESS', total_score=0)
+    db.session.add(submission)
+    db.session.commit()
+    
+    return redirect(url_for("exams.attempt_exam", submission_id=submission.id, mode=mode))
+
+
+@bp.get("/attempt/<int:submission_id>")
+@login_required
+def attempt_exam(submission_id):
+    submission = ExamSubmission.query.filter_by(id=submission_id, user_id=current_user.id).first_or_404()
+    if submission.status == 'COMPLETED':
+        return redirect(url_for("exams.exam_result", submission_id=submission.id))
+        
+    exam = db.get_or_404(Exam, submission.exam_id)
+    questions = ExamQuestion.query.filter_by(exam_id=exam.id).order_by(ExamQuestion.id).all()
+    
+    mode = request.args.get("mode", "real")
+    form = ActionForm()
+    
+    return render_template(
+        "exams/attempt.html",
+        submission=submission,
+        exam=exam,
+        questions=questions,
+        mode=mode,
+        form=form
+    )
+
+
+@bp.post("/attempt/<int:submission_id>/submit")
+@login_required
+def submit_exam(submission_id):
+    submission = ExamSubmission.query.filter_by(id=submission_id, user_id=current_user.id).first_or_404()
+    if submission.status == 'COMPLETED':
+        return redirect(url_for("exams.exam_result", submission_id=submission.id))
+        
+    exam = db.get_or_404(Exam, submission.exam_id)
+    questions = ExamQuestion.query.filter_by(exam_id=exam.id).all()
+    
+    total_score = 0
+    # Clear previous answers if any
+    ExamAnswerDetail.query.filter_by(submission_id=submission.id).delete()
+    
+    for q in questions:
+        selected = request.form.get(f"question_{q.id}")
+        is_correct = False
+        
+        if q.type == 'SINGLE_CHOICE':
+            if selected:
+                selected = selected.strip().upper()
+                is_correct = (selected == q.correct_answer)
+                if is_correct:
+                    total_score += 1
+                    
+            ans = ExamAnswerDetail(
+                submission_id=submission.id,
+                question_id=q.id,
+                user_response={"selected": selected},
+                is_correct=is_correct,
+                score=1 if is_correct else 0
+            )
+            db.session.add(ans)
+        else:
+            # For ESSAY or AUDIO_RECORD, we just save the response and set is_correct=None
+            ans = ExamAnswerDetail(
+                submission_id=submission.id,
+                question_id=q.id,
+                user_response={"text": selected} if selected else {},
+                is_correct=None,
+                score=0
+            )
+            db.session.add(ans)
+            
+    # Check if there are questions that need AI grading
+    needs_grading = any(q.type in ['ESSAY', 'AUDIO_RECORD'] for q in questions)
+    
+    submission.total_score = total_score
+    submission.completed_at = func.now()
+    submission.status = 'PENDING' if needs_grading else 'COMPLETED'
+    
+    db.session.commit()
+    
+    if needs_grading:
+        from app.modules.exams.ai_grading import trigger_ai_grading
+        from flask import current_app
+        # current_app._get_current_object() is needed to pass the actual app instance to the thread
+        trigger_ai_grading(current_app._get_current_object(), submission.id)
+        
+        flash("Bài thi đã được nộp. Phần tự luận đang được AI chấm điểm, vui lòng quay lại sau ít phút.", "info")
+    else:
+        flash("Bài thi của bạn đã được nộp thành công!", "success")
+        
+    return redirect(url_for("exams.exam_result", submission_id=submission.id))
+
+
+@bp.get("/result/<int:submission_id>")
+@login_required
+def exam_result(submission_id):
+    submission = ExamSubmission.query.filter_by(id=submission_id, user_id=current_user.id).first_or_404()
+    
+    exam = db.get_or_404(Exam, submission.exam_id)
+    answers = ExamAnswerDetail.query.filter_by(submission_id=submission.id).all()
+    
+    # Create a map of question_id -> answer for easy rendering
+    answer_map = {ans.question_id: ans for ans in answers}
+    questions = ExamQuestion.query.filter_by(exam_id=exam.id).order_by(ExamQuestion.id).all()
+    
+    correct_count = sum(1 for ans in answers if ans.is_correct)
+    
+    return render_template(
+        "exams/result.html",
+        submission=submission,
+        exam=exam,
+        questions=questions,
+        answer_map=answer_map,
+        correct_count=correct_count,
+        total_questions=len(questions)
     )

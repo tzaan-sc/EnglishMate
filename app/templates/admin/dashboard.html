@@ -130,6 +130,20 @@
         </div>
       </a>
     </div>
+
+    <div class="col-md-4">
+      <a class="card border rounded-4 bg-white p-4 shadow-xs text-decoration-none transition-hover h-100" href="{{ url_for('admin.exam_upload') }}">
+        <div class="d-flex align-items-center gap-3">
+          <div class="rounded-3 bg-info text-white d-flex align-items-center justify-content-center" style="width: 40px; height: 40px; font-size: 1.2rem; font-weight: bold;">
+            📤
+          </div>
+          <div>
+            <h6 class="fw-800 text-dark mb-0">Upload Đề thi mới</h6>
+            <span class="text-muted small">Nhập hàng loạt qua Excel/JSON</span>
+          </div>
+        </div>
+      </a>
+    </div>
   </div>
 </div>
 {% endblock %}

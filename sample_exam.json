@@ -1,0 +1,31 @@
+[
+  {
+    "Skill": "LISTENING",
+    "Part": "Part 1",
+    "Type": "SINGLE_CHOICE",
+    "Question_Text": "What is the man doing in the picture?",
+    "Option_A": "Reading a book",
+    "Option_B": "Looking at a monitor",
+    "Option_C": "Drinking coffee",
+    "Option_D": "Typing on a keyboard",
+    "Correct_Answer": "B",
+    "Audio_URL": "s3://audio/test1/part1_q1.mp3",
+    "Start_Time": 0,
+    "End_Time": 5.5,
+    "Transcript": "(A) He is reading a book.\n(B) He is looking at a monitor.\n(C) He is drinking coffee.\n(D) He is typing on a keyboard.",
+    "Explanation": "The man is clearly staring at the computer screen."
+  },
+  {
+    "Skill": "READING",
+    "Part": "Part 5",
+    "Type": "SINGLE_CHOICE",
+    "Question_Text": "The new employee is very _____ about learning the software.",
+    "Option_A": "enthusiasm",
+    "Option_B": "enthusiast",
+    "Option_C": "enthusiastic",
+    "Option_D": "enthusiastically",
+    "Correct_Answer": "C",
+    "Transcript": "",
+    "Explanation": "Sau 'is very' cần một tính từ. 'Enthusiastic' là tính từ phù hợp."
+  }
+]

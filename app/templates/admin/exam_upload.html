@@ -1,0 +1,196 @@
+{% extends "admin/base.html" %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row mb-4">
+        <div class="col-12 d-flex justify-content-between align-items-center">
+            <h1 class="h3 mb-0 text-gray-800">Upload Đề Thi (Excel / JSON)</h1>
+            <a href="{{ url_for('admin.dashboard') }}" class="btn btn-outline-secondary">Quay lại Dashboard</a>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-5">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Cấu hình Đề thi</h6>
+                </div>
+                <div class="card-body">
+                    <form action="{{ url_for('admin.exam_upload') }}" method="post" enctype="multipart/form-data" id="uploadForm">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Chứng chỉ / Loại đề</label>
+                            <input type="text" class="form-control" name="category" placeholder="Ví dụ: TOEIC, IELTS, THPT" required>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Tên bài thi</label>
+                            <input type="text" class="form-control" name="title" placeholder="Ví dụ: ETS 2024 Test 1" required>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label class="form-label fw-bold">Thời gian làm bài (Phút)</label>
+                            <input type="number" class="form-control" name="duration" value="120" min="1" required>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">File dữ liệu (Excel hoặc JSON)</label>
+                            <div class="border border-2 border-primary border-dashed rounded p-4 text-center bg-light" id="dropZone" style="cursor: pointer;">
+                                <i class="bi bi-cloud-arrow-up fs-1 text-primary mb-2"></i>
+                                <p class="mb-0">Kéo thả file vào đây hoặc click để chọn file</p>
+                                <small class="text-muted">Hỗ trợ định dạng .xlsx, .xls, .json</small>
+                                <input type="file" name="file" id="fileInput" class="d-none" accept=".xlsx,.xls,.json" required>
+                            </div>
+                            <div id="fileInfo" class="mt-2 text-success fw-bold d-none"></div>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary w-100 py-2 mt-2" id="submitBtn" disabled>
+                            Xác nhận Lưu vào Hệ thống
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-7">
+            <div class="card shadow mb-4 h-100">
+                <div class="card-header py-3 d-flex justify-content-between align-items-center">
+                    <h6 class="m-0 font-weight-bold text-info">Xem trước dữ liệu (Preview)</h6>
+                    <span class="badge bg-secondary" id="totalRows">Chưa có dữ liệu</span>
+                </div>
+                <div class="card-body p-0">
+                    <div id="previewArea" class="p-4 text-center text-muted h-100 d-flex flex-column justify-content-center align-items-center">
+                        <i class="bi bi-table fs-1 mb-3 text-secondary opacity-50"></i>
+                        <p>Dữ liệu mẫu của 10 câu hỏi đầu tiên sẽ hiển thị tại đây sau khi bạn chọn file.</p>
+                    </div>
+                    
+                    <div id="tableWrapper" class="table-responsive d-none h-100 p-2" style="max-height: 500px; overflow-y: auto;">
+                        <table class="table table-bordered table-sm table-striped" style="font-size: 0.85rem;">
+                            <thead class="table-dark" id="tableHead">
+                                <!-- Headers go here -->
+                            </thead>
+                            <tbody id="tableBody">
+                                <!-- Data goes here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    const dropZone = document.getElementById('dropZone');
+    const fileInput = document.getElementById('fileInput');
+    const fileInfo = document.getElementById('fileInfo');
+    const submitBtn = document.getElementById('submitBtn');
+    
+    // Drag & drop logic
+    dropZone.addEventListener('click', () => fileInput.click());
+    
+    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+        dropZone.addEventListener(eventName, preventDefaults, false);
+    });
+    
+    function preventDefaults(e) {
+        e.preventDefault();
+        e.stopPropagation();
+    }
+    
+    ['dragenter', 'dragover'].forEach(eventName => {
+        dropZone.addEventListener(eventName, () => {
+            dropZone.classList.add('bg-primary-subtle');
+        }, false);
+    });
+    
+    ['dragleave', 'drop'].forEach(eventName => {
+        dropZone.addEventListener(eventName, () => {
+            dropZone.classList.remove('bg-primary-subtle');
+        }, false);
+    });
+    
+    dropZone.addEventListener('drop', (e) => {
+        let dt = e.dataTransfer;
+        let files = dt.files;
+        if(files.length) {
+            fileInput.files = files;
+            handleFileSelect();
+        }
+    });
+    
+    fileInput.addEventListener('change', handleFileSelect);
+    
+    function handleFileSelect() {
+        if(fileInput.files.length === 0) return;
+        
+        const file = fileInput.files[0];
+        fileInfo.textContent = "Đã chọn file: " + file.name;
+        fileInfo.classList.remove('d-none');
+        
+        // Disable submit button during preview loading
+        submitBtn.disabled = true;
+        
+        // Prepare FormData for Preview
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('csrf_token', document.querySelector('input[name="csrf_token"]').value);
+        
+        document.getElementById('previewArea').innerHTML = '<div class="spinner-border text-primary" role="status"></div><p class="mt-2">Đang xử lý file...</p>';
+        document.getElementById('tableWrapper').classList.add('d-none');
+        document.getElementById('previewArea').classList.remove('d-none');
+        
+        fetch('{{ url_for("admin.exam_preview") }}', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if(data.success) {
+                renderTable(data.columns, data.preview);
+                document.getElementById('totalRows').textContent = `Tổng cộng: ${data.total_rows} câu hỏi`;
+                submitBtn.disabled = false;
+            } else {
+                alert("Lỗi parse file: " + data.error);
+                document.getElementById('previewArea').innerHTML = '<i class="bi bi-exclamation-triangle fs-1 text-danger"></i><p class="mt-2 text-danger">Lỗi định dạng file.</p>';
+            }
+        })
+        .catch(err => {
+            alert("Đã xảy ra lỗi mạng.");
+            console.error(err);
+        });
+    }
+    
+    function renderTable(columns, rows) {
+        document.getElementById('previewArea').classList.add('d-none');
+        const wrapper = document.getElementById('tableWrapper');
+        wrapper.classList.remove('d-none');
+        
+        let thead = '<tr>';
+        columns.forEach(col => {
+            thead += `<th>${col}</th>`;
+        });
+        thead += '</tr>';
+        document.getElementById('tableHead').innerHTML = thead;
+        
+        let tbody = '';
+        rows.forEach(row => {
+            tbody += '<tr>';
+            columns.forEach(col => {
+                let cellVal = row[col];
+                if(cellVal === null || cellVal === undefined) cellVal = '';
+                // limit text length
+                if(typeof cellVal === 'string' && cellVal.length > 50) {
+                    cellVal = cellVal.substring(0, 50) + '...';
+                }
+                tbody += `<td>${cellVal}</td>`;
+            });
+            tbody += '</tr>';
+        });
+        document.getElementById('tableBody').innerHTML = tbody;
+    }
+});
+</script>
+{% endblock %}

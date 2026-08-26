@@ -1,0 +1,99 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-lg-10">
+    
+    <div class="card shadow border-0 mb-4 bg-primary text-white">
+      <div class="card-body text-center py-5">
+        <h1 class="display-4 fw-bold mb-3">Kết quả: {{ exam.title }}</h1>
+        
+        {% if submission.status == 'PENDING' %}
+          <div class="alert alert-warning text-dark d-inline-block px-4 py-3">
+            <i class="bi bi-hourglass-split me-2 fs-5"></i> 
+            <span class="fs-5">Bài thi của bạn đang được AI chấm điểm (Phần Tự luận). Vui lòng quay lại sau!</span>
+          </div>
+        {% else %}
+          <p class="fs-4 mb-0">Bạn đã hoàn thành bài thi với kết quả</p>
+          <div class="display-1 fw-bold mt-2">
+            {{ correct_count }} <span class="fs-3 text-white-50">/ {{ total_questions }}</span>
+          </div>
+        {% endif %}
+      </div>
+    </div>
+
+    <h4 class="mb-4">Chi tiết bài làm</h4>
+    
+    {% set ns = namespace(current_part=None) %}
+    {% for q in questions %}
+      {% if q.part != ns.current_part %}
+        <h5 class="mt-4 mb-3 border-bottom pb-2 text-secondary">{{ q.part }}</h5>
+        {% set ns.current_part = q.part %}
+      {% endif %}
+      
+      {% set ans = answer_map.get(q.id) %}
+      {% set is_correct = ans.is_correct if ans else False %}
+      {% set user_choice = ans.user_response.get('selected', '') if ans and ans.user_response else '' %}
+      
+      <div class="card mb-3 shadow-sm {% if q.type == 'SINGLE_CHOICE' %}{{ 'border-success' if is_correct else 'border-danger' }}{% endif %}">
+        <div class="card-header bg-transparent d-flex justify-content-between align-items-center">
+          <strong>Câu {{ loop.index }}</strong>
+          {% if q.type == 'SINGLE_CHOICE' %}
+            {% if is_correct %}
+              <span class="badge bg-success"><i class="bi bi-check-circle"></i> Đúng</span>
+            {% else %}
+              <span class="badge bg-danger"><i class="bi bi-x-circle"></i> Sai</span>
+            {% endif %}
+          {% else %}
+            <span class="badge bg-warning text-dark"><i class="bi bi-clock"></i> {{ 'Chờ AI chấm' if submission.status == 'PENDING' else 'Đã chấm' }}</span>
+          {% endif %}
+        </div>
+        
+        <div class="card-body">
+          <p class="card-text">{{ q.question_text }}</p>
+          
+          {% if q.type == 'SINGLE_CHOICE' %}
+            <div class="row mb-3">
+              <div class="col-sm-6">
+                <strong>Bạn chọn:</strong> 
+                <span class="text-{{ 'success' if is_correct else 'danger' }} fw-bold">{{ user_choice or 'Bỏ trống' }}</span>
+              </div>
+              <div class="col-sm-6">
+                <strong>Đáp án đúng:</strong> 
+                <span class="text-success fw-bold">{{ q.correct_answer }}</span>
+              </div>
+            </div>
+            
+            <div class="bg-light p-3 rounded text-muted small">
+              {% if q.transcript %}
+              <div class="mb-2"><strong>Transcript:</strong><br>{{ q.transcript | replace('\n', '<br>') | safe }}</div>
+              {% endif %}
+              {% if q.explanation %}
+              <div><strong>Giải thích:</strong><br>{{ q.explanation | replace('\n', '<br>') | safe }}</div>
+              {% endif %}
+            </div>
+          {% else %}
+            <div class="bg-light p-3 rounded text-muted">
+              <strong>Phần trả lời của bạn:</strong><br>
+              {{ ans.user_response.get('text', 'Không có nội dung') if ans and ans.user_response else 'Bỏ trống' }}
+            </div>
+            
+            {% if ans and ans.user_response and ans.user_response.get('ai_feedback') %}
+            <div class="alert alert-info mt-3 mb-0">
+              <h6 class="alert-heading"><i class="bi bi-robot"></i> AI Feedback:</h6>
+              {{ ans.user_response.get('ai_feedback') }}
+            </div>
+            {% endif %}
+            
+          {% endif %}
+        </div>
+      </div>
+    {% endfor %}
+    
+    <div class="text-center mt-5 mb-5">
+      <a href="{{ url_for('exams.exam_list') }}" class="btn btn-outline-primary btn-lg px-5">Quay lại danh sách Đề thi</a>
+    </div>
+
+  </div>
+</div>
+{% endblock %}

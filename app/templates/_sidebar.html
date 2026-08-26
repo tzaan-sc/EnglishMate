@@ -104,13 +104,13 @@
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link d-flex align-items-center gap-3 px-3 py-2.5 {% if request.path.startswith(url_for('exams.toeic')) %}active{% endif %}" href="{{ url_for('exams.toeic') }}">
+                    <a class="nav-link d-flex align-items-center gap-3 px-3 py-2.5 {% if request.path.startswith(url_for('exams.exam_list')) %}active{% endif %}" href="{{ url_for('exams.exam_list') }}">
                         <span class="menu-icon-box bg-danger-subtle text-danger">
                             <svg xmlns="http://www.w3.org/2000/svg" width="19" height="19" fill="currentColor" class="bi bi-award" viewBox="0 0 16 16">
                                 <path d="M9.669.864 8 0 6.331.864l-1.858.282-.842 1.68-1.337 1.32L2.6 6l-.306 1.854 1.337 1.32.842 1.68 1.858.282L8 16l1.669-.864 1.858-.282.842-1.68 1.337-1.32L13.4 8l.306-1.854-1.337-1.32-.842-1.68-1.858-.282zm1.196 9.53a1.72 1.72 0 0 0-.785-.291 1.72 1.72 0 0 0-.89.24l-1.282.855-.838-1.677a1.72 1.72 0 0 0-.708-.708L5.474 8.16l.855-1.282a1.72 1.72 0 0 0 .24-.89 1.72 1.72 0 0 0-.291-.785l-1.077-1.794 1.794 1.077c.28.168.601.246.92.223.32-.022.623-.138.878-.335l1.677-.838.838 1.677c.168.28.246.601.223.92-.022.32-.138.623-.335.878l-.838 1.677.838.838zm-1.802-5.748L8 6.55 6.937 4.646a.25.25 0 0 0-.433.25l1.16 2.32a.25.25 0 0 0 .433 0l1.16-2.32a.25.25 0 0 0-.433-.25z"/>
                             </svg>
                         </span>
-                        <span>Thi TOEIC</span>
+                        <span>Luyện đề</span>
                     </a>
                 </li>
                 <li class="nav-item">

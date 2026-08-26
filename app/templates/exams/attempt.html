@@ -1,0 +1,194 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row mb-3">
+  <div class="col-12 d-flex justify-content-between align-items-center">
+    <h3 class="mb-0">{{ exam.title }} <span class="badge bg-secondary fs-6">{{ 'Thi Thật' if mode == 'real' else 'Luyện Tập' }}</span></h3>
+    {% if mode == 'real' %}
+    <div class="fs-4 fw-bold text-danger" id="timer">
+      --:--
+    </div>
+    {% endif %}
+  </div>
+</div>
+
+<form id="exam-form" action="{{ url_for('exams.submit_exam', submission_id=submission.id) }}" method="post">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+  
+  <div class="row">
+    <!-- Main Content -->
+    <div class="col-lg-8">
+      {% set ns = namespace(current_part=None) %}
+      {% for q in questions %}
+        {% if q.part != ns.current_part %}
+          <h4 class="mt-4 mb-3 border-bottom pb-2 text-primary">{{ q.part }}</h4>
+          {% set ns.current_part = q.part %}
+        {% endif %}
+        
+        <div class="card mb-4 shadow-sm question-card" id="q-{{ q.id }}">
+          <div class="card-body">
+            <h5 class="card-title fw-bold">Câu {{ loop.index }}</h5>
+            
+            {% if q.media_info and q.media_info.audio_url %}
+            <div class="mb-3 p-3 bg-light rounded">
+              <audio controls class="w-100 exam-audio" 
+                     data-start="{{ q.media_info.start_time or 0 }}" 
+                     data-end="{{ q.media_info.end_time or 0 }}"
+                     src="{{ q.media_info.audio_url }}"></audio>
+            </div>
+            {% endif %}
+            
+            {% if q.question_text %}
+            <p class="fs-5 mb-4">{{ q.question_text }}</p>
+            {% endif %}
+            
+            {% if q.type == 'SINGLE_CHOICE' %}
+              <div class="d-flex flex-column gap-2">
+                {% for opt_val, opt_text in [('A', q.option_a), ('B', q.option_b), ('C', q.option_c), ('D', q.option_d)] %}
+                  {% if opt_text %}
+                  <label class="btn btn-outline-secondary text-start p-3 rounded-3 option-label">
+                    <input type="radio" name="question_{{ q.id }}" value="{{ opt_val }}" class="me-2" required>
+                    <strong>{{ opt_val }}.</strong> {{ opt_text }}
+                  </label>
+                  {% endif %}
+                {% endfor %}
+              </div>
+            {% elif q.type == 'ESSAY' %}
+              <textarea name="question_{{ q.id }}" class="form-control" rows="5" placeholder="Nhập câu trả lời của bạn..." required></textarea>
+            {% elif q.type == 'AUDIO_RECORD' %}
+              <div class="alert alert-warning">
+                Tính năng thu âm đang được nâng cấp để chờ AI xử lý. Bạn có thể nhập tóm tắt nội dung vào bên dưới.
+              </div>
+              <textarea name="question_{{ q.id }}" class="form-control" rows="3" placeholder="Nhập văn bản thay thế tạm thời..."></textarea>
+            {% endif %}
+            
+            {% if mode == 'practice' %}
+            <div class="mt-3">
+              <button type="button" class="btn btn-sm btn-info check-answer-btn" 
+                      data-correct="{{ q.correct_answer }}" 
+                      data-transcript="{{ q.transcript or '' }}" 
+                      data-explanation="{{ q.explanation or '' }}">
+                Xem đáp án & Giải thích
+              </button>
+              <div class="practice-feedback mt-3 d-none p-3 bg-info-subtle border border-info rounded">
+                <p class="mb-1"><strong>Đáp án đúng:</strong> <span class="correct-text text-danger"></span></p>
+                <div class="transcript-text mt-2 small text-muted"></div>
+                <div class="explanation-text mt-2"></div>
+              </div>
+            </div>
+            {% endif %}
+          </div>
+        </div>
+      {% endfor %}
+      
+      <div class="text-center my-4">
+        <button type="submit" class="btn btn-success btn-lg px-5">Nộp bài</button>
+      </div>
+    </div>
+    
+    <!-- Right Sidebar (Navigation) -->
+    <div class="col-lg-4 d-none d-lg-block">
+      <div class="card shadow-sm position-sticky" style="top: 20px;">
+        <div class="card-body">
+          <h5 class="card-title">Danh sách câu hỏi</h5>
+          <div class="d-flex flex-wrap gap-2 mt-3">
+            {% for q in questions %}
+            <a href="#q-{{ q.id }}" class="btn btn-outline-secondary btn-sm" style="width: 40px; height: 40px; line-height: 25px;" id="nav-{{ q.id }}">
+              {{ loop.index }}
+            </a>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</form>
+
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+  // Navigation active state
+  const radios = document.querySelectorAll('input[type="radio"]');
+  radios.forEach(r => {
+    r.addEventListener('change', function() {
+      const qId = this.name.split('_')[1];
+      const navBtn = document.getElementById('nav-' + qId);
+      if(navBtn) {
+        navBtn.classList.remove('btn-outline-secondary');
+        navBtn.classList.add('btn-primary');
+      }
+    });
+  });
+
+  // Audio player constraints
+  const audios = document.querySelectorAll('.exam-audio');
+  audios.forEach(audio => {
+    let start = parseFloat(audio.getAttribute('data-start'));
+    let end = parseFloat(audio.getAttribute('data-end'));
+    
+    if (start > 0) {
+      audio.currentTime = start;
+    }
+    
+    audio.addEventListener('timeupdate', function() {
+      if (end > 0 && this.currentTime >= end) {
+        this.pause();
+        this.currentTime = start > 0 ? start : 0; // Reset
+      }
+    });
+  });
+
+  // Timer logic for 'real' mode
+  {% if mode == 'real' %}
+  const durationMinutes = {{ exam.duration }};
+  let timeLeft = durationMinutes * 60;
+  const timerDisplay = document.getElementById('timer');
+  const form = document.getElementById('exam-form');
+  
+  const timer = setInterval(() => {
+    if (timeLeft <= 0) {
+      clearInterval(timer);
+      timerDisplay.innerHTML = "HẾT GIỜ";
+      alert("Đã hết thời gian làm bài. Hệ thống sẽ tự động nộp bài.");
+      form.submit();
+    } else {
+      let m = Math.floor(timeLeft / 60);
+      let s = timeLeft % 60;
+      timerDisplay.innerHTML = `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+      timeLeft--;
+    }
+  }, 1000);
+  {% endif %}
+
+  // Practice mode feedback
+  const checkBtns = document.querySelectorAll('.check-answer-btn');
+  checkBtns.forEach(btn => {
+    btn.addEventListener('click', function() {
+      const parent = this.closest('.card-body');
+      const feedback = parent.querySelector('.practice-feedback');
+      
+      const correct = this.getAttribute('data-correct');
+      const transcript = this.getAttribute('data-transcript');
+      const explanation = this.getAttribute('data-explanation');
+      
+      feedback.querySelector('.correct-text').innerText = correct || 'Không có';
+      
+      const transDiv = feedback.querySelector('.transcript-text');
+      if(transcript) {
+        transDiv.innerHTML = `<strong>Transcript:</strong><br>${transcript.replace(/\\n/g, '<br>')}`;
+      } else {
+        transDiv.innerHTML = '';
+      }
+      
+      const explDiv = feedback.querySelector('.explanation-text');
+      if(explanation) {
+        explDiv.innerHTML = `<strong>Giải thích:</strong><br>${explanation.replace(/\\n/g, '<br>')}`;
+      } else {
+        explDiv.innerHTML = '';
+      }
+      
+      feedback.classList.remove('d-none');
+    });
+  });
+});
+</script>
+{% endblock %}

@@ -172,3 +172,76 @@ def user_toggle_role(user_id):
         flash(f"Đã chuyển vai trò tài khoản {user.username} thành {user.role}.", "success")
     return redirect(url_for("admin.users"))
 
+
+# --- EXAM UPLOAD SYSTEM (GIAI ĐOẠN 3) ---
+import os
+import pandas as pd
+from werkzeug.utils import secure_filename
+from app.modules.exams.services import import_exam_from_dataframe
+from flask import jsonify
+
+UPLOAD_FOLDER = os.path.join('app', 'static', 'uploads')
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+
+@bp.route("/exams/upload", methods=["GET", "POST"])
+@admin_required
+def exam_upload():
+    if request.method == "POST":
+        file = request.files.get("file")
+        category = request.form.get("category", "TOEIC")
+        title = request.form.get("title", "Đề thi mới")
+        duration = int(request.form.get("duration", 120))
+        
+        if not file or file.filename == '':
+            flash("Vui lòng chọn một file.", "danger")
+            return redirect(url_for("admin.exam_upload"))
+            
+        filename = secure_filename(file.filename)
+        filepath = os.path.join(UPLOAD_FOLDER, filename)
+        file.save(filepath)
+        
+        try:
+            if filename.endswith('.json'):
+                df = pd.read_json(filepath, orient='records')
+            else:
+                df = pd.read_excel(filepath)
+                
+            exam = import_exam_from_dataframe(df, category, title, duration)
+            flash(f"Đã import thành công {len(df)} câu hỏi vào đề thi '{exam.title}'.", "success")
+        except Exception as e:
+            flash(f"Lỗi khi xử lý file: {str(e)}", "danger")
+            
+        # Clean up
+        if os.path.exists(filepath):
+            os.remove(filepath)
+            
+        return redirect(url_for("admin.exam_upload"))
+        
+    return render_template("admin/exam_upload.html")
+
+
+@bp.post("/exams/preview")
+@admin_required
+def exam_preview():
+    file = request.files.get("file")
+    if not file or file.filename == '':
+        return jsonify({"success": False, "error": "Không tìm thấy file"}), 400
+        
+    try:
+        if file.filename.endswith('.json'):
+            df = pd.read_json(file, orient='records')
+        else:
+            df = pd.read_excel(file)
+            
+        # Convert first 5 rows to dict for preview
+        # Handle NaN values safely
+        preview_data = df.head(10).where(pd.notnull(df), None).to_dict(orient='records')
+        
+        return jsonify({
+            "success": True,
+            "total_rows": len(df),
+            "preview": preview_data,
+            "columns": list(df.columns)
+        })
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
