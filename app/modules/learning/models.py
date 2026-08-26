@@ -112,3 +112,15 @@ class FlashcardItem(db.Model):
     
     flashcard_set = db.relationship("FlashcardSet", backref=db.backref("items", cascade="all, delete-orphan", order_by="FlashcardItem.order"))
 
+
+class FlashcardProgress(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False, index=True)
+    item_id = db.Column(db.Integer, db.ForeignKey("flashcard_item.id"), nullable=False, index=True)
+    is_known = db.Column(db.Boolean, default=False, nullable=False)
+    review_count = db.Column(db.Integer, default=0, nullable=False)
+    last_reviewed_at = db.Column(db.DateTime(timezone=True), default=now, nullable=False)
+
+    user = db.relationship("User", backref="flashcard_progress")
+    item = db.relationship("FlashcardItem", backref=db.backref("progress_records", cascade="all, delete-orphan"))
+    __table_args__ = (db.UniqueConstraint("user_id", "item_id"),)

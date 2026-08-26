@@ -241,7 +241,75 @@ def flashcard_set_create():
         flash(f"Học phần '{title}' đã được tạo thành công!", "success")
         return redirect(url_for("learning.flashcard_sets"))
         
-    return render_template("learning/flashcard_create.html")
+    return render_template("learning/flashcard_create.html", fset=None)
+
+
+@bp.route("/flashcard-sets/<int:set_id>/edit", methods=["GET", "POST"])
+@login_required
+def flashcard_set_edit(set_id):
+    from .models import FlashcardSet, FlashcardItem
+    fset = FlashcardSet.query.get_or_404(set_id)
+    if fset.user_id != current_user.id:
+        abort(403)
+        
+    if request.method == "POST":
+        title = request.form.get("title", "").strip()
+        description = request.form.get("description", "").strip()
+        is_public = request.form.get("is_public") == "on"
+        
+        if not title:
+            flash("Vui lòng nhập tiêu đề học phần.", "danger")
+            return redirect(url_for("learning.flashcard_set_edit", set_id=fset.id))
+            
+        fset.title = title
+        fset.description = description
+        fset.is_public = is_public
+        
+        item_ids = request.form.getlist("item_ids[]")
+        terms = request.form.getlist("terms[]")
+        definitions = request.form.getlist("definitions[]")
+        images = request.form.getlist("images[]")
+        
+        valid_item_ids = [int(i) for i in item_ids if i.strip().isdigit()]
+        
+        items_to_delete = FlashcardItem.query.filter(
+            FlashcardItem.set_id == fset.id,
+            ~FlashcardItem.id.in_(valid_item_ids) if valid_item_ids else True
+        ).all()
+        for item in items_to_delete:
+            db.session.delete(item)
+            
+        for i in range(len(terms)):
+            term = terms[i].strip()
+            definition = definitions[i].strip()
+            image_url = images[i].strip() if i < len(images) else None
+            item_id = item_ids[i].strip() if i < len(item_ids) else ""
+            
+            if not term and not definition:
+                continue
+                
+            if item_id and item_id.isdigit():
+                item = FlashcardItem.query.filter_by(id=int(item_id), set_id=fset.id).first()
+                if item:
+                    item.term = term
+                    item.definition = definition
+                    item.image_url = image_url
+                    item.order = i
+            else:
+                new_item = FlashcardItem(
+                    set_id=fset.id,
+                    term=term,
+                    definition=definition,
+                    image_url=image_url,
+                    order=i
+                )
+                db.session.add(new_item)
+                
+        db.session.commit()
+        flash(f"Học phần '{title}' đã được cập nhật!", "success")
+        return redirect(url_for("learning.flashcard_set_view", set_id=fset.id))
+        
+    return render_template("learning/flashcard_create.html", fset=fset)
 
 
 @bp.get("/flashcard-sets/<int:set_id>")
@@ -253,3 +321,64 @@ def flashcard_set_view(set_id):
     if not fset.is_public and fset.user_id != current_user.id:
         abort(403)
     return render_template("learning/flashcard_view.html", fset=fset)
+
+
+@bp.post("/flashcard-sets/<int:set_id>/sync")
+@login_required
+def flashcard_set_sync(set_id):
+    from .models import FlashcardSet, FlashcardProgress
+    fset = FlashcardSet.query.get_or_404(set_id)
+    if not fset.is_public and fset.user_id != current_user.id:
+        abort(403)
+
+    data = request.get_json()
+    if not data or "progress" not in data:
+        return {"error": "Invalid payload"}, 400
+
+    know_ids = data["progress"].get("know_ids", [])
+    learning_ids = data["progress"].get("learning_ids", [])
+
+    # Fetch existing progress for these items
+    all_item_ids = know_ids + learning_ids
+    if not all_item_ids:
+        return {"status": "ok"}
+
+    existing_progress = FlashcardProgress.query.filter(
+        FlashcardProgress.user_id == current_user.id,
+        FlashcardProgress.item_id.in_(all_item_ids)
+    ).all()
+    
+    progress_map = {p.item_id: p for p in existing_progress}
+
+    # Helper function to update or create progress
+    def update_progress(item_id, is_known):
+        p = progress_map.get(item_id)
+        if not p:
+            p = FlashcardProgress(user_id=current_user.id, item_id=item_id)
+            db.session.add(p)
+        p.is_known = is_known
+        p.review_count += 1
+        p.last_reviewed_at = func.now()
+
+    for item_id in know_ids:
+        update_progress(item_id, True)
+
+    for item_id in learning_ids:
+        update_progress(item_id, False)
+
+    db.session.commit()
+    return {"status": "ok", "synced_items": len(all_item_ids)}
+
+
+@bp.post("/flashcard-sets/<int:set_id>/delete")
+@login_required
+def flashcard_set_delete(set_id):
+    from .models import FlashcardSet
+    fset = FlashcardSet.query.get_or_404(set_id)
+    if fset.user_id != current_user.id:
+        abort(403)
+        
+    db.session.delete(fset)
+    db.session.commit()
+    flash(f"Học phần '{fset.title}' đã bị xóa.", "success")
+    return redirect(url_for("learning.flashcard_sets"))

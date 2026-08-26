@@ -2,26 +2,26 @@
 
 {% block content %}
 <div class="container py-4" style="max-width: 900px;">
-    <form method="post" action="{{ url_for('learning.flashcard_set_create') }}" id="flashcardForm">
+    <form method="post" action="{% if fset %}{{ url_for('learning.flashcard_set_edit', set_id=fset.id) }}{% else %}{{ url_for('learning.flashcard_set_create') }}{% endif %}" id="flashcardForm">
         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
         
         <!-- Header Section -->
         <div class="d-flex justify-content-between align-items-center mb-4">
-            <h3 class="fw-bold mb-0">Tạo một học phần mới</h3>
+            <h3 class="fw-bold mb-0">{% if fset %}Sửa học phần{% else %}Tạo một học phần mới{% endif %}</h3>
             <div class="d-flex gap-2">
-                <button type="button" class="btn btn-light fw-bold px-4 rounded-pill">Tạo</button>
-                <button type="submit" class="btn btn-primary fw-bold px-4 rounded-pill" style="background-color: #4255ff; border-color: #4255ff;">Tạo và ôn luyện</button>
+                <a href="{{ url_for('learning.flashcard_sets') }}" class="btn btn-light fw-bold px-4 rounded-pill">Hủy</a>
+                <button type="submit" class="btn btn-primary fw-bold px-4 rounded-pill" style="background-color: #4255ff; border-color: #4255ff;">{% if fset %}Lưu thay đổi{% else %}Tạo và ôn luyện{% endif %}</button>
             </div>
         </div>
         
         <div class="mb-4">
             <div class="form-check form-switch mb-3 bg-light d-inline-block px-4 py-2 rounded-pill">
-                <input class="form-check-input" type="checkbox" id="is_public" name="is_public" checked style="cursor: pointer;">
+                <input class="form-check-input" type="checkbox" id="is_public" name="is_public" {% if not fset or fset.is_public %}checked{% endif %} style="cursor: pointer;">
                 <label class="form-check-label ms-2 small fw-bold text-muted" for="is_public" style="cursor: pointer;">Công khai</label>
             </div>
             
-            <input type="text" name="title" class="form-control form-control-lg mb-3 border-0 bg-light" placeholder="Tiêu đề" required style="font-weight: 500;">
-            <textarea name="description" class="form-control border-0 bg-light" placeholder="Thêm mô tả..." rows="2" style="resize: none;"></textarea>
+            <input type="text" name="title" class="form-control form-control-lg mb-3 border-0 bg-light" placeholder="Tiêu đề" value="{% if fset %}{{ fset.title }}{% endif %}" required style="font-weight: 500;">
+            <textarea name="description" class="form-control border-0 bg-light" placeholder="Thêm mô tả..." rows="2" style="resize: none;">{% if fset %}{{ fset.description or '' }}{% endif %}</textarea>
         </div>
 
         <!-- Toolbar Section -->
@@ -37,263 +37,21 @@
                 </div>
                 <div class="d-flex gap-2">
                     <button type="button" class="btn btn-light rounded-circle p-2" style="width: 35px; height: 35px;"><i class="bi bi-search text-muted"></i></button>
-                    <button type="button" class="btn btn-light rounded-circle p-2" style="width: 35px; height: 35px;"><i class="bi bi-arrow-left-right text-muted"></i></button>
+                    <button type="button" class="btn btn-light rounded-circle p-2" style="width: 35px; height: 35px;" onclick="swapTermsAndDefinitions()" title="Đổi chỗ Thuật ngữ - Định nghĩa"><i class="bi bi-arrow-left-right text-muted"></i></button>
                     <button type="button" class="btn btn-light rounded-circle p-2" style="width: 35px; height: 35px;"><i class="bi bi-keyboard text-muted"></i></button>
-                    <button type="button" class="btn btn-danger rounded-circle p-2" style="width: 35px; height: 35px;" onclick="document.getElementById('cardsContainer').innerHTML=''"><i class="bi bi-trash"></i></button>
+                    <button type="button" class="btn btn-danger rounded-circle p-2" style="width: 35px; height: 35px;" onclick="clearAllCards()" title="Xóa tất cả thẻ"><i class="bi bi-trash"></i></button>
                 </div>
             </div>
         </div>
 
         <!-- Cards Container -->
         <div id="cardsContainer">
-            <!-- Card 1 -->
-            <div class="card shadow-sm border-0 mb-4 flashcard-item rounded-4" draggable="true">
-                <div class="card-header bg-white border-0 d-flex justify-content-between align-items-center py-3 rounded-top-4">
-                    <span class="fw-bold fs-5 text-muted card-number">1</span>
-                    <div class="d-flex gap-3">
-                        <i class="bi bi-list text-muted fs-5 drag-handle" style="cursor: grab;"></i>
-                        <i class="bi bi-trash text-muted fs-5 btn-delete" style="cursor: pointer;" onclick="deleteCard(this)"></i>
-                    </div>
-                </div>
-                <div class="card-body pt-0 pb-4">
-                    <div class="row g-4 align-items-start">
-                        <div class="col-md-5">
-                            <input type="text" name="terms[]" class="form-control border-0 bg-light py-2" placeholder="Nhập thuật ngữ">
-                            <div class="text-muted small mt-1 fw-bold" style="font-size: 0.65rem; letter-spacing: 0.5px;">THUẬT NGỮ</div>
-                        </div>
-                        <div class="col-md-5">
-                            <input type="text" name="definitions[]" class="form-control border-0 bg-light py-2" placeholder="Nhập định nghĩa">
-                            <div class="text-muted small mt-1 fw-bold" style="font-size: 0.65rem; letter-spacing: 0.5px;">ĐỊNH NGHĨA</div>
-                        </div>
-                        <div class="col-md-2">
-                            <div class="border border-dashed border-2 rounded p-2 text-center text-muted d-flex flex-column align-items-center justify-content-center" style="height: 60px; cursor: pointer; border-color: #d1d5db !important;" onclick="promptImage(this)">
-                                <i class="bi bi-image fs-5"></i>
-                                <span class="small" style="font-size: 0.7rem;">Hình ảnh</span>
-                                <input type="hidden" name="images[]" value="">
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Card 2 -->
-            <div class="card shadow-sm border-0 mb-4 flashcard-item rounded-4" draggable="true">
-                <div class="card-header bg-white border-0 d-flex justify-content-between align-items-center py-3 rounded-top-4">
-                    <span class="fw-bold fs-5 text-muted card-number">2</span>
-                    <div class="d-flex gap-3">
-                        <i class="bi bi-list text-muted fs-5 drag-handle" style="cursor: grab;"></i>
-                        <i class="bi bi-trash text-muted fs-5 btn-delete" style="cursor: pointer;" onclick="deleteCard(this)"></i>
-                    </div>
-                </div>
-                <div class="card-body pt-0 pb-4">
-                    <div class="row g-4 align-items-start">
-                        <div class="col-md-5">
-                            <input type="text" name="terms[]" class="form-control border-0 bg-light py-2" placeholder="Nhập thuật ngữ">
-                            <div class="text-muted small mt-1 fw-bold" style="font-size: 0.65rem; letter-spacing: 0.5px;">THUẬT NGỮ</div>
-                        </div>
-                        <div class="col-md-5">
-                            <input type="text" name="definitions[]" class="form-control border-0 bg-light py-2" placeholder="Nhập định nghĩa">
-                            <div class="text-muted small mt-1 fw-bold" style="font-size: 0.65rem; letter-spacing: 0.5px;">ĐỊNH NGHĨA</div>
-                        </div>
-                        <div class="col-md-2">
-                            <div class="border border-dashed border-2 rounded p-2 text-center text-muted d-flex flex-column align-items-center justify-content-center" style="height: 60px; cursor: pointer; border-color: #d1d5db !important;" onclick="promptImage(this)">
-                                <i class="bi bi-image fs-5"></i>
-                                <span class="small" style="font-size: 0.7rem;">Hình ảnh</span>
-                                <input type="hidden" name="images[]" value="">
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Add Card Button -->
-        <div class="text-center my-5">
-            <button type="button" class="btn btn-light fw-bold px-4 py-3 rounded-pill shadow-sm bg-white border-0" onclick="addCard()">
-                Thêm thẻ
-            </button>
-        </div>
-
-        <!-- Footer Section -->
-        <div class="d-flex justify-content-end align-items-center gap-2 mt-5 mb-5 pt-3">
-            <button type="button" class="btn btn-light fw-bold px-4 py-2 rounded-pill shadow-sm border-0" style="color: #4255ff; background: #eef2ff;">Tạo</button>
-            <button type="submit" class="btn btn-primary fw-bold px-4 py-2 rounded-pill shadow-sm" style="background-color: #4255ff; border-color: #4255ff;">Tạo và ôn luyện</button>
-        </div>
-    </form>
-</div>
-
-<!-- Import Modal -->
-<div class="modal fade" id="importModal" tabindex="-1" aria-labelledby="importModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-xl modal-dialog-centered">
-        <div class="modal-content border-0 shadow-lg rounded-4">
-            <div class="modal-header border-0 pb-0">
-                <h5 class="modal-title fw-bold" id="importModalLabel">Nhập dữ liệu</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body px-4">
-                <p class="text-muted small mb-2">Chép và dán dữ liệu ở đây (từ Word, Excel, Google Docs, v.v.)</p>
-                <textarea id="importTextarea" class="form-control bg-light border-0 mb-4" rows="8" placeholder="Từ 1	Định nghĩa 1&#10;Từ 2	Định nghĩa 2&#10;Từ 3	Định nghĩa 3" style="resize: none;"></textarea>
-                
-                <div class="row g-4 mb-4">
-                    <div class="col-md-6">
-                        <label class="fw-bold mb-3">Giữa thuật ngữ và định nghĩa</label>
-                        <div class="d-flex flex-column gap-2">
-                            <div class="form-check">
-                                <input class="form-check-input" type="radio" name="termDelimiter" id="termTab" value="\t" checked>
-                                <label class="form-check-label" for="termTab">Tab</label>
-                            </div>
-                            <div class="form-check">
-                                <input class="form-check-input" type="radio" name="termDelimiter" id="termComma" value=",">
-                                <label class="form-check-label" for="termComma">Phẩy</label>
-                            </div>
-                            <div class="form-check d-flex align-items-center gap-2">
-                                <input class="form-check-input" type="radio" name="termDelimiter" id="termCustom" value="custom">
-                                <input type="text" id="termCustomInput" class="form-control form-control-sm bg-light border-0" placeholder="Tùy chỉnh" style="max-width: 150px;">
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-6">
-                        <label class="fw-bold mb-3">Giữa các thẻ</label>
-                        <div class="d-flex flex-column gap-2">
-                            <div class="form-check">
-                                <input class="form-check-input" type="radio" name="cardDelimiter" id="cardNewline" value="\n" checked>
-                                <label class="form-check-label" for="cardNewline">Dòng mới</label>
-                            </div>
-                            <div class="form-check">
-                                <input class="form-check-input" type="radio" name="cardDelimiter" id="cardSemicolon" value=";">
-                                <label class="form-check-label" for="cardSemicolon">Chấm phẩy</label>
-                            </div>
-                            <div class="form-check d-flex align-items-center gap-2">
-                                <input class="form-check-input" type="radio" name="cardDelimiter" id="cardCustom" value="custom">
-                                <input type="text" id="cardCustomInput" class="form-control form-control-sm bg-light border-0" placeholder="Tùy chỉnh" style="max-width: 150px;">
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                
-                <h6 class="fw-bold mb-3">Xem trước <span id="previewCount" class="text-muted fw-normal fs-6">0 thẻ</span></h6>
-                <div class="table-responsive bg-light rounded-3 p-3" style="max-height: 200px; overflow-y: auto;">
-                    <table class="table table-borderless table-sm mb-0">
-                        <tbody id="previewBody">
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-            <div class="modal-footer border-0 pt-0 px-4 pb-4">
-                <button type="button" class="btn btn-light fw-bold rounded-pill px-4" data-bs-dismiss="modal">Hủy</button>
-                <button type="button" class="btn btn-primary fw-bold rounded-pill px-4" id="btnApplyImport" style="background-color: #4255ff; border-color: #4255ff;">Nhập</button>
-            </div>
-        </div>
-    </div>
-</div>
-
-<script>
-    let parsedCards = [];
-    let uniqueCards = [];
-    let duplicateCards = [];
-    
-    function parseImportText() {
-        const rawText = document.getElementById('importTextarea').value;
-        if (!rawText.trim()) {
-            parsedCards = [];
-            uniqueCards = [];
-            duplicateCards = [];
-            renderPreview();
-            return;
-        }
-
-        // Get delimiters
-        let termDelim = document.querySelector('input[name="termDelimiter"]:checked').value;
-        if (termDelim === 'custom') {
-            termDelim = document.getElementById('termCustomInput').value;
-        }
-        if (termDelim === '\\t') termDelim = '\t';
-        
-        let cardDelim = document.querySelector('input[name="cardDelimiter"]:checked').value;
-        if (cardDelim === 'custom') {
-            cardDelim = document.getElementById('cardCustomInput').value;
-        }
-        if (cardDelim === '\\n') cardDelim = '\n';
-
-        if (!termDelim || !cardDelim) return;
-
-        const cards = rawText.split(cardDelim);
-        parsedCards = [];
-
-        cards.forEach(cardStr => {
-            if (!cardStr.trim()) return; // Skip empty
-            
-            const splitIndex = cardStr.indexOf(termDelim);
-            let term = '';
-            let definition = '';
-            
-            if (splitIndex === -1) {
-                term = cardStr.trim();
-            } else {
-                term = cardStr.substring(0, splitIndex).trim();
-                definition = cardStr.substring(splitIndex + termDelim.length).trim();
-            }
-            
-            if (term || definition) {
-                parsedCards.push({ term, definition });
-            }
-        });
-        
-        // Duplicate check logic
-        const seenTerms = new Set();
-        uniqueCards = [];
-        duplicateCards = [];
-        
-        parsedCards.forEach(card => {
-            const normalizedTerm = card.term.trim().toLowerCase();
-            
-            if (seenTerms.has(normalizedTerm)) {
-                card.isDuplicate = true;
-                duplicateCards.push(card);
-            } else {
-                seenTerms.add(normalizedTerm);
-                card.isDuplicate = false;
-                uniqueCards.push(card);
-            }
-        });
-        
-        renderPreview();
-    }
-
-    function renderPreview() {
-        document.getElementById('previewCount').textContent = `${parsedCards.length} thẻ (Bỏ qua ${duplicateCards.length} thẻ trùng)`;
-        const tbody = document.getElementById('previewBody');
-        tbody.innerHTML = '';
-        
-        parsedCards.forEach((card, i) => {
-            const tr = document.createElement('tr');
-            if (card.isDuplicate) {
-                tr.classList.add('table-danger'); // Bôi đỏ thẻ trùng
-            }
-            tr.innerHTML = `
-                <td class="text-muted" style="width: 40px">${i+1}</td>
-                <td class="w-50 border-end pe-3">
-                    <strong>${card.term}</strong>
-                    ${card.isDuplicate ? '<span class="badge bg-danger ms-2">Trùng lặp</span>' : ''}
-                </td>
-                <td class="w-50 ps-3"><strong>${card.definition}</strong></td>
-            `;
-            tbody.appendChild(tr);
-        });
-    }
-
-    function applyImport() {
-        if (uniqueCards.length === 0) return;
-        
-        const container = document.getElementById('cardsContainer');
-        
-        // Append unique cards only
-        uniqueCards.forEach(card => {
-            const count = container.querySelectorAll('.flashcard-item').length + 1;
-            const cardHTML = `
-                <div class="card shadow-sm border-0 mb-4 flashcard-item rounded-4" draggable="true">
+            {% if fset and fset.items %}
+                {% for item in fset.items %}
+                <div class="card shadow-sm border-0 mb-4 flashcard-item rounded-4">
+                    <input type="hidden" name="item_ids[]" value="{{ item.id }}">
                     <div class="card-header bg-white border-0 d-flex justify-content-between align-items-center py-3 rounded-top-4">
-                        <span class="fw-bold fs-5 text-muted card-number">${count}</span>
+                        <span class="fw-bold fs-5 text-muted card-number">{{ loop.index }}</span>
                         <div class="d-flex gap-3">
                             <i class="bi bi-list text-muted fs-5 drag-handle" style="cursor: grab;"></i>
                             <i class="bi bi-trash text-muted fs-5 btn-delete" style="cursor: pointer;" onclick="deleteCard(this)"></i>
@@ -302,12 +60,51 @@
                     <div class="card-body pt-0 pb-4">
                         <div class="row g-4 align-items-start">
                             <div class="col-md-5">
-                                <input type="text" name="terms[]" class="form-control border-0 bg-light py-2" placeholder="Nhập thuật ngữ" value="${card.term.replace(/"/g, '&quot;')}">
-                                <div class="text-muted small mt-1 fw-bold" style="font-size: 0.65rem; letter-spacing: 0.5px;">THUẬT NGỮ</div>
+                                <input type="text" name="terms[]" class="form-control border-0 bg-light py-2" value="{{ item.term }}" placeholder="Nhập thuật ngữ">
+                                <div class="text-success small mt-1 fw-bold" style="font-size: 0.65rem; letter-spacing: 0.5px;">THUẬT NGỮ</div>
                             </div>
                             <div class="col-md-5">
-                                <input type="text" name="definitions[]" class="form-control border-0 bg-light py-2" placeholder="Nhập định nghĩa" value="${card.definition.replace(/"/g, '&quot;')}">
-                                <div class="text-muted small mt-1 fw-bold" style="font-size: 0.65rem; letter-spacing: 0.5px;">ĐỊNH NGHĨA</div>
+                                <input type="text" name="definitions[]" class="form-control border-0 bg-light py-2" value="{{ item.definition }}" placeholder="Nhập định nghĩa">
+                                <div class="text-success small mt-1 fw-bold" style="font-size: 0.65rem; letter-spacing: 0.5px;">ĐỊNH NGHĨA</div>
+                            </div>
+                            <div class="col-md-2">
+                                {% if item.image_url %}
+                                <div class="border border-dashed border-2 rounded p-2 text-center text-muted d-flex flex-column align-items-center justify-content-center" style="height: 60px; cursor: pointer; border-color: #d1d5db !important;" onclick="promptImage(this)">
+                                    <span class="small fw-bold text-success" style="font-size: 0.7rem;">Đã có ảnh</span>
+                                    <input type="hidden" name="images[]" value="{{ item.image_url }}">
+                                </div>
+                                {% else %}
+                                <div class="border border-dashed border-2 rounded p-2 text-center text-muted d-flex flex-column align-items-center justify-content-center" style="height: 60px; cursor: pointer; border-color: #d1d5db !important;" onclick="promptImage(this)">
+                                    <i class="bi bi-image fs-5"></i>
+                                    <span class="small" style="font-size: 0.7rem;">Hình ảnh</span>
+                                    <input type="hidden" name="images[]" value="">
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <!-- Card 1 -->
+                <div class="card shadow-sm border-0 mb-4 flashcard-item rounded-4">
+                    <input type="hidden" name="item_ids[]" value="">
+                    <div class="card-header bg-white border-0 d-flex justify-content-between align-items-center py-3 rounded-top-4">
+                        <span class="fw-bold fs-5 text-muted card-number">1</span>
+                        <div class="d-flex gap-3">
+                            <i class="bi bi-list text-muted fs-5 drag-handle" style="cursor: grab;"></i>
+                            <i class="bi bi-trash text-muted fs-5 btn-delete" style="cursor: pointer;" onclick="deleteCard(this)"></i>
+                        </div>
+                    </div>
+                    <div class="card-body pt-0 pb-4">
+                        <div class="row g-4 align-items-start">
+                            <div class="col-md-5">
+                                <input type="text" name="terms[]" class="form-control border-0 bg-light py-2" placeholder="Nhập thuật ngữ">
+                                <div class="text-success small mt-1 fw-bold" style="font-size: 0.65rem; letter-spacing: 0.5px;">THUẬT NGỮ</div>
+                            </div>
+                            <div class="col-md-5">
+                                <input type="text" name="definitions[]" class="form-control border-0 bg-light py-2" placeholder="Nhập định nghĩa">
+                                <div class="text-success small mt-1 fw-bold" style="font-size: 0.65rem; letter-spacing: 0.5px;">ĐỊNH NGHĨA</div>
                             </div>
                             <div class="col-md-2">
                                 <div class="border border-dashed border-2 rounded p-2 text-center text-muted d-flex flex-column align-items-center justify-content-center" style="height: 60px; cursor: pointer; border-color: #d1d5db !important;" onclick="promptImage(this)">
@@ -319,64 +116,117 @@
                         </div>
                     </div>
                 </div>
-            `;
-            container.insertAdjacentHTML('beforeend', cardHTML);
-        });
+                <!-- Card 2 -->
+                <div class="card shadow-sm border-0 mb-4 flashcard-item rounded-4">
+                    <input type="hidden" name="item_ids[]" value="">
+                    <div class="card-header bg-white border-0 d-flex justify-content-between align-items-center py-3 rounded-top-4">
+                        <span class="fw-bold fs-5 text-muted card-number">2</span>
+                        <div class="d-flex gap-3">
+                            <i class="bi bi-list text-muted fs-5 drag-handle" style="cursor: grab;"></i>
+                            <i class="bi bi-trash text-muted fs-5 btn-delete" style="cursor: pointer;" onclick="deleteCard(this)"></i>
+                        </div>
+                    </div>
+                    <div class="card-body pt-0 pb-4">
+                        <div class="row g-4 align-items-start">
+                            <div class="col-md-5">
+                                <input type="text" name="terms[]" class="form-control border-0 bg-light py-2" placeholder="Nhập thuật ngữ">
+                                <div class="text-success small mt-1 fw-bold" style="font-size: 0.65rem; letter-spacing: 0.5px;">THUẬT NGỮ</div>
+                            </div>
+                            <div class="col-md-5">
+                                <input type="text" name="definitions[]" class="form-control border-0 bg-light py-2" placeholder="Nhập định nghĩa">
+                                <div class="text-success small mt-1 fw-bold" style="font-size: 0.65rem; letter-spacing: 0.5px;">ĐỊNH NGHĨA</div>
+                            </div>
+                            <div class="col-md-2">
+                                <div class="border border-dashed border-2 rounded p-2 text-center text-muted d-flex flex-column align-items-center justify-content-center" style="height: 60px; cursor: pointer; border-color: #d1d5db !important;" onclick="promptImage(this)">
+                                    <i class="bi bi-image fs-5"></i>
+                                    <span class="small" style="font-size: 0.7rem;">Hình ảnh</span>
+                                    <input type="hidden" name="images[]" value="">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
         
-        // Hide modal
-        const modal = bootstrap.Modal.getInstance(document.getElementById('importModal'));
-        modal.hide();
-        
-        // Reset textarea
-        document.getElementById('importTextarea').value = '';
-        parsedCards = [];
-        uniqueCards = [];
-        duplicateCards = [];
-        renderPreview();
-    }
-    
-    // Add event listeners for import logic
-    document.addEventListener("DOMContentLoaded", () => {
-        document.getElementById('importTextarea').addEventListener('input', parseImportText);
-        document.querySelectorAll('input[name="termDelimiter"]').forEach(r => r.addEventListener('change', parseImportText));
-        document.querySelectorAll('input[name="cardDelimiter"]').forEach(r => r.addEventListener('change', parseImportText));
-        document.getElementById('termCustomInput').addEventListener('input', () => {
-            document.getElementById('termCustom').checked = true;
-            parseImportText();
-        });
-        document.getElementById('cardCustomInput').addEventListener('input', () => {
-            document.getElementById('cardCustom').checked = true;
-            parseImportText();
-        });
-        
-        document.getElementById('btnApplyImport').addEventListener('click', applyImport);
-    });
+        <div class="card shadow-sm border-0 mb-5 rounded-4" style="cursor: pointer; transition: all 0.2s;" onclick="addCard()" onmouseover="this.classList.add('shadow')" onmouseout="this.classList.remove('shadow')">
+            <div class="card-body text-center py-4">
+                <span class="fw-bold text-dark fs-5 border-bottom border-dark border-3 pb-2"><i class="bi bi-plus-lg me-1"></i> Thêm thẻ</span>
+            </div>
+        </div>
+    </form>
+</div>
 
+<!-- Modal Nhập từ Word, Excel, Google Docs -->
+<div class="modal fade" id="importModal" tabindex="-1" aria-labelledby="importModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content rounded-4 border-0 shadow">
+            <div class="modal-header border-0 pb-0">
+                <h5 class="modal-title fw-bold fs-4" id="importModalLabel">Nhập thẻ của bạn</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body pb-2">
+                <p class="text-muted small mb-3">Sao chép và dán dữ liệu của bạn ở đây (từ Word, Excel, Google Docs, v.v.)</p>
+                
+                <textarea id="importTextData" class="form-control bg-light border-0 mb-3 p-3" rows="8" placeholder="Từ 1\tĐịnh nghĩa 1\nTừ 2\tĐịnh nghĩa 2" style="font-family: monospace; resize: vertical;"></textarea>
+                
+                <div class="row g-3 align-items-center mb-3">
+                    <div class="col-md-6">
+                        <label class="form-label small fw-bold text-muted">Giữa Thuật ngữ & Định nghĩa</label>
+                        <select id="termSeparator" class="form-select border-0 bg-light fw-bold text-dark">
+                            <option value="\t">Tab</option>
+                            <option value=",">Phẩy</option>
+                            <option value="-">Gạch ngang (-)</option>
+                            <option value="custom">Tùy chỉnh...</option>
+                        </select>
+                        <input type="text" id="customTermSep" class="form-control border-0 bg-light mt-2 d-none" placeholder="Ký tự phân tách (vd: =>)">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label small fw-bold text-muted">Giữa các Thẻ</label>
+                        <select id="cardSeparator" class="form-select border-0 bg-light fw-bold text-dark">
+                            <option value="\n">Dòng mới</option>
+                            <option value=";">Chấm phẩy</option>
+                            <option value="custom">Tùy chỉnh...</option>
+                        </select>
+                        <input type="text" id="customCardSep" class="form-control border-0 bg-light mt-2 d-none" placeholder="Ký tự phân tách (vd: \n\n)">
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer border-0 pt-0 d-flex justify-content-between">
+                <button type="button" class="btn btn-light fw-bold rounded-pill px-4" data-bs-dismiss="modal">Hủy</button>
+                <button type="button" class="btn btn-primary fw-bold rounded-pill px-4" style="background-color: #4255ff; border: none;" onclick="applyImport()">Nhập thẻ</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
     function updateCardNumbers() {
-        document.querySelectorAll('.card-number').forEach((el, index) => {
-            el.textContent = index + 1;
+        const cards = document.querySelectorAll('.flashcard-item');
+        cards.forEach((card, index) => {
+            card.querySelector('.card-number').textContent = index + 1;
         });
     }
 
     function deleteCard(btn) {
-        const items = document.querySelectorAll('.flashcard-item');
-        if (items.length <= 2) {
-            alert("Học phần phải có ít nhất 2 thẻ.");
-            return;
+        const cards = document.querySelectorAll('.flashcard-item');
+        if (cards.length > 2) {
+            btn.closest('.flashcard-item').remove();
+            updateCardNumbers();
+        } else {
+            alert('Học phần phải có ít nhất 2 thẻ!');
         }
-        btn.closest('.flashcard-item').remove();
-        updateCardNumbers();
     }
 
-    function promptImage(element) {
-        const url = prompt("Nhập đường dẫn (URL) hình ảnh:");
+    function promptImage(divElement) {
+        const url = prompt("Nhập đường dẫn URL hình ảnh:");
         if (url) {
-            const hiddenInput = element.querySelector('input[type="hidden"]');
-            hiddenInput.value = url;
-            element.innerHTML = `<img src="${url}" style="max-height: 100%; max-width: 100%; object-fit: contain;">
-                                 <input type="hidden" name="images[]" value="${url}">`;
-            element.classList.remove('border-dashed', 'p-2');
-            element.classList.add('p-1');
+            divElement.querySelector('input').value = url;
+            // Thay thế nội dung bằng Ảnh đã chọn
+            divElement.innerHTML = `
+                <span class="small fw-bold text-success" style="font-size: 0.7rem;">Đã có ảnh</span>
+                <input type="hidden" name="images[]" value="${url}">
+            `;
         }
     }
 
@@ -385,7 +235,8 @@
         const count = container.querySelectorAll('.flashcard-item').length + 1;
         
         const cardHTML = `
-            <div class="card shadow-sm border-0 mb-4 flashcard-item rounded-4" draggable="true">
+            <div class="card shadow-sm border-0 mb-4 flashcard-item rounded-4">
+                <input type="hidden" name="item_ids[]" value="">
                 <div class="card-header bg-white border-0 d-flex justify-content-between align-items-center py-3 rounded-top-4">
                     <span class="fw-bold fs-5 text-muted card-number">${count}</span>
                     <div class="d-flex gap-3">
@@ -397,11 +248,11 @@
                     <div class="row g-4 align-items-start">
                         <div class="col-md-5">
                             <input type="text" name="terms[]" class="form-control border-0 bg-light py-2" placeholder="Nhập thuật ngữ">
-                            <div class="text-muted small mt-1 fw-bold" style="font-size: 0.65rem; letter-spacing: 0.5px;">THUẬT NGỮ</div>
+                            <div class="text-success small mt-1 fw-bold" style="font-size: 0.65rem; letter-spacing: 0.5px;">THUẬT NGỮ</div>
                         </div>
                         <div class="col-md-5">
                             <input type="text" name="definitions[]" class="form-control border-0 bg-light py-2" placeholder="Nhập định nghĩa">
-                            <div class="text-muted small mt-1 fw-bold" style="font-size: 0.65rem; letter-spacing: 0.5px;">ĐỊNH NGHĨA</div>
+                            <div class="text-success small mt-1 fw-bold" style="font-size: 0.65rem; letter-spacing: 0.5px;">ĐỊNH NGHĨA</div>
                         </div>
                         <div class="col-md-2">
                             <div class="border border-dashed border-2 rounded p-2 text-center text-muted d-flex flex-column align-items-center justify-content-center" style="height: 60px; cursor: pointer; border-color: #d1d5db !important;" onclick="promptImage(this)">
@@ -417,67 +268,183 @@
         container.insertAdjacentHTML('beforeend', cardHTML);
     }
     
-    // Drag and Drop Logic
-    let draggedItem = null;
-
-    function initDragAndDrop() {
-        const container = document.getElementById('cardsContainer');
-        
-        container.addEventListener('dragstart', function(e) {
-            const item = e.target.closest('.flashcard-item');
-            if (item) {
-                // Ensure only drag handle initiates dragging
-                if (!e.target.classList.contains('drag-handle') && !e.target.closest('.drag-handle')) {
-                    e.preventDefault();
-                    return;
-                }
-                draggedItem = item;
-                setTimeout(() => draggedItem.classList.add('dragging'), 0);
+    function swapTermsAndDefinitions() {
+        const terms = document.querySelectorAll('input[name="terms[]"]');
+        const defs = document.querySelectorAll('input[name="definitions[]"]');
+        for (let i = 0; i < terms.length; i++) {
+            if (terms[i] && defs[i]) {
+                const temp = terms[i].value;
+                terms[i].value = defs[i].value;
+                defs[i].value = temp;
             }
-        });
-
-        container.addEventListener('dragend', function(e) {
-            if (draggedItem) {
-                draggedItem.classList.remove('dragging');
-                draggedItem = null;
-                updateCardNumbers();
-            }
-        });
-
-        container.addEventListener('dragover', function(e) {
-            e.preventDefault();
-            const currentItem = document.querySelector('.dragging');
-            if (!currentItem) return;
-            
-            const afterElement = getDragAfterElement(container, e.clientY);
-            if (afterElement == null) {
-                container.appendChild(currentItem);
-            } else {
-                container.insertBefore(currentItem, afterElement);
-            }
-        });
-    }
-
-    function getDragAfterElement(container, y) {
-        const draggableElements = [...container.querySelectorAll('.flashcard-item:not(.dragging)')];
-        
-        return draggableElements.reduce((closest, child) => {
-            const box = child.getBoundingClientRect();
-            const offset = y - box.top - box.height / 2;
-            if (offset < 0 && offset > closest.offset) {
-                return { offset: offset, element: child };
-            } else {
-                return closest;
-            }
-        }, { offset: Number.NEGATIVE_INFINITY }).element;
+        }
     }
     
-    document.addEventListener("DOMContentLoaded", initDragAndDrop);
+    function clearAllCards() {
+        if (confirm("Bạn có chắc chắn muốn xóa toàn bộ thẻ đang nhập không? Mọi dữ liệu chưa lưu sẽ bị mất.")) {
+            const container = document.getElementById('cardsContainer');
+            container.innerHTML = '';
+            // Hệ thống yêu cầu ít nhất 2 thẻ
+            addCard();
+            addCard();
+            updateCardNumbers();
+        }
+    }
+
+    // Handle Custom Separators display
+    document.getElementById('termSeparator').addEventListener('change', function(e) {
+        document.getElementById('customTermSep').classList.toggle('d-none', e.target.value !== 'custom');
+    });
+    document.getElementById('cardSeparator').addEventListener('change', function(e) {
+        document.getElementById('customCardSep').classList.toggle('d-none', e.target.value !== 'custom');
+    });
+
+    function getSeparatorValue(selectId, customInputId) {
+        const select = document.getElementById(selectId).value;
+        if (select === 'custom') return document.getElementById(customInputId).value;
+        if (select === '\\t') return '\t';
+        if (select === '\\n') return '\n';
+        return select;
+    }
+
+    function applyImport() {
+        const rawText = document.getElementById('importTextData').value;
+        if (!rawText.trim()) {
+            alert('Vui lòng dán dữ liệu cần nhập!');
+            return;
+        }
+
+        const cardSep = getSeparatorValue('cardSeparator', 'customCardSep');
+        const termSep = getSeparatorValue('termSeparator', 'customTermSep');
+        
+        if (!cardSep || !termSep) {
+            alert('Vui lòng chọn hoặc nhập ký tự phân tách!');
+            return;
+        }
+
+        // Tách chuỗi theo Card Separator
+        let rawCards = rawText.split(cardSep);
+        
+        const parsedCards = [];
+        rawCards.forEach(raw => {
+            raw = raw.trim();
+            if (raw) {
+                // Tách Thuật ngữ & Định nghĩa theo Term Separator
+                const index = raw.indexOf(termSep);
+                if (index > -1) {
+                    const term = raw.substring(0, index).trim();
+                    const def = raw.substring(index + termSep.length).trim();
+                    if (term || def) parsedCards.push({ term, def });
+                } else {
+                    // Nếu không tìm thấy ký tự ngăn cách, đưa toàn bộ vào thuật ngữ
+                    parsedCards.push({ term: raw, def: '' });
+                }
+            }
+        });
+
+        // Xử lý chống trùng lặp theo yêu cầu
+        const seenTerms = new Set();
+        const uniqueCards = [];
+        
+        parsedCards.forEach(card => {
+            const normalizedTerm = card.term.trim().toLowerCase();
+            if (!seenTerms.has(normalizedTerm)) {
+                seenTerms.add(normalizedTerm);
+                uniqueCards.push(card);
+            }
+        });
+
+        if (uniqueCards.length === 0) {
+            alert("Không tìm thấy dữ liệu hợp lệ để nhập.");
+            return;
+        }
+
+        // Xóa toàn bộ thẻ cũ và Render thẻ mới
+        const container = document.getElementById('cardsContainer');
+        container.innerHTML = '';
+        
+        uniqueCards.forEach((card, i) => {
+            const cardHTML = `
+                <div class="card shadow-sm border-0 mb-4 flashcard-item rounded-4">
+                    <input type="hidden" name="item_ids[]" value="">
+                    <div class="card-header bg-white border-0 d-flex justify-content-between align-items-center py-3 rounded-top-4">
+                        <span class="fw-bold fs-5 text-muted card-number">${i + 1}</span>
+                        <div class="d-flex gap-3">
+                            <i class="bi bi-list text-muted fs-5 drag-handle" style="cursor: grab;"></i>
+                            <i class="bi bi-trash text-muted fs-5 btn-delete" style="cursor: pointer;" onclick="deleteCard(this)"></i>
+                        </div>
+                    </div>
+                    <div class="card-body pt-0 pb-4">
+                        <div class="row g-4 align-items-start">
+                            <div class="col-md-5">
+                                <input type="text" name="terms[]" class="form-control border-0 bg-light py-2" value="${card.term.replace(/"/g, '&quot;')}" placeholder="Nhập thuật ngữ">
+                                <div class="text-success small mt-1 fw-bold" style="font-size: 0.65rem; letter-spacing: 0.5px;">THUẬT NGỮ</div>
+                            </div>
+                            <div class="col-md-5">
+                                <input type="text" name="definitions[]" class="form-control border-0 bg-light py-2" value="${card.def.replace(/"/g, '&quot;')}" placeholder="Nhập định nghĩa">
+                                <div class="text-success small mt-1 fw-bold" style="font-size: 0.65rem; letter-spacing: 0.5px;">ĐỊNH NGHĨA</div>
+                            </div>
+                            <div class="col-md-2">
+                                <div class="border border-dashed border-2 rounded p-2 text-center text-muted d-flex flex-column align-items-center justify-content-center" style="height: 60px; cursor: pointer; border-color: #d1d5db !important;" onclick="promptImage(this)">
+                                    <i class="bi bi-image fs-5"></i>
+                                    <span class="small" style="font-size: 0.7rem;">Hình ảnh</span>
+                                    <input type="hidden" name="images[]" value="">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            container.insertAdjacentHTML('beforeend', cardHTML);
+        });
+        
+        // Luôn đảm bảo có tối thiểu 2 thẻ
+        while (container.querySelectorAll('.flashcard-item').length < 2) {
+            addCard();
+        }
+
+        // Đóng Modal (yêu cầu Bootstrap)
+        const modalEl = document.getElementById('importModal');
+        const modal = bootstrap.Modal.getInstance(modalEl);
+        if (modal) modal.hide();
+        
+        updateCardNumbers();
+    }
+    
+    // SortableJS Drag and Drop Logic
+    document.addEventListener("DOMContentLoaded", () => {
+        const container = document.getElementById('cardsContainer');
+        new Sortable(container, {
+            handle: '.drag-handle', // Chỉ bắt sự kiện ở nút Nắm
+            animation: 250,         // Animation trượt mượt mà (Placeholder trượt xuống)
+            ghostClass: 'sortable-ghost', // Lớp CSS cho thẻ ảo nhường chỗ
+            dragClass: 'sortable-drag',   // Lớp CSS cho thẻ đang kéo (Portal)
+            forceFallback: true,    // Ép dùng fallback để custom drag image mượt hơn
+            fallbackClass: 'sortable-fallback',
+            onEnd: function () {
+                updateCardNumbers(); // Cập nhật lại số thứ tự khi thả
+            }
+        });
+    });
 </script>
 
 <style>
     /* Styling to match the screenshot */
     .border-dashed { border-style: dashed !important; }
     input:focus, textarea:focus { box-shadow: none !important; border-bottom: 2px solid #4255ff !important; border-radius: 0 !important; }
+    
+    /* CSS cho Drag & Drop (Portal & Placeholder) */
+    .sortable-ghost {
+        opacity: 0.2;
+        background-color: #f3f4f6 !important;
+        border: 2px dashed #cbd5e1 !important;
+    }
+    .sortable-fallback {
+        opacity: 1 !important;
+        box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1) !important;
+        z-index: 9999 !important;
+        cursor: grabbing !important;
+    }
 </style>
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
 {% endblock %}

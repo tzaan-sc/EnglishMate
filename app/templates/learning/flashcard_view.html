@@ -1,50 +1,623 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="container py-4" style="max-width: 800px;">
-    <div class="mb-4">
-        <a href="{{ url_for('learning.flashcard_sets') }}" class="text-decoration-none text-muted fw-bold small"><i class="bi bi-arrow-left"></i> Quay lại thư viện</a>
-    </div>
+<style>
+    /* Focus Overlay */
+    .focus-overlay {
+        position: fixed;
+        top: 0; left: 0; width: 100vw; height: 100vh;
+        background: rgba(0,0,0,0.85);
+        z-index: 1040;
+        display: none;
+        align-items: center;
+        justify-content: center;
+    }
+    .focus-overlay.active {
+        display: flex;
+    }
+    .focus-close {
+        position: absolute;
+        top: 20px; right: 20px;
+        color: white; font-size: 2rem; cursor: pointer;
+    }
 
-    <h2 class="fw-bold mb-2">{{ fset.title }}</h2>
-    {% if fset.description %}
-    <p class="text-muted">{{ fset.description }}</p>
-    {% endif %}
-
-    <div class="d-flex align-items-center gap-3 mb-5 mt-4">
-        <div class="profile-avatar-circle" style="width: 40px; height: 40px;">
-            {{ fset.user.username[0].upper() }}
-        </div>
-        <div>
-            <div class="small text-muted fw-bold">Tạo bởi</div>
-            <div class="fw-bold">{{ fset.user.username }}</div>
-        </div>
-    </div>
-
-    <h5 class="fw-bold mb-3">Thẻ trong học phần này ({{ fset.items|length }})</h5>
+    /* 3D Flip */
+    .flashcard-container {
+        perspective: 1000px;
+        width: 100%;
+        max-width: 700px;
+        height: 400px;
+        margin: 0 auto;
+        cursor: pointer;
+    }
+    .flashcard-inner {
+        width: 100%;
+        height: 100%;
+        transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+        transform-style: preserve-3d;
+        position: relative;
+    }
+    .flashcard-inner.is-flipped {
+        transform: rotateX(180deg);
+    }
+    .card-front, .card-back {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        backface-visibility: hidden;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        border-radius: 2rem;
+        box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1);
+        padding: 3rem;
+        text-align: left;
+        border: none !important;
+    }
+    .card-front {
+        background-color: #f2f7f4;
+        color: #111827;
+    }
+    .card-back {
+        transform: rotateX(180deg);
+        background-color: #31644d;
+        color: #ffffff;
+    }
+    .card-text { font-size: 3.5rem; font-weight: 800; letter-spacing: -1px; margin-bottom: 0.5rem; line-height: 1.1; }
+    .card-subtext { font-size: 1.25rem; font-weight: 400; opacity: 0.8; }
     
-    <div class="row g-3">
+    .card-hint {
+        position: absolute;
+        bottom: 2rem;
+        left: 3rem;
+        font-size: 1rem;
+        font-weight: 500;
+        opacity: 0.7;
+    }
+    
+    .card-tag {
+        position: absolute;
+        top: 2rem;
+        left: 3rem;
+        background-color: rgba(0,0,0,0.05);
+        padding: 0.4rem 1rem;
+        border-radius: 0.5rem;
+        font-size: 0.85rem;
+        font-weight: 700;
+        color: #31644d;
+    }
+    .card-back .card-tag {
+        background-color: rgba(255,255,255,0.15);
+        color: #ffffff;
+    }
+    
+    /* Swipe animations */
+    .swipe-left { animation: swipeLeft 0.4s forwards; }
+    .swipe-right { animation: swipeRight 0.4s forwards; }
+    
+    @keyframes swipeLeft {
+        to { transform: translateX(-300px) rotate(-15deg); opacity: 0; }
+    }
+    @keyframes swipeRight {
+        to { transform: translateX(300px) rotate(15deg); opacity: 0; }
+    }
+    
+    .btn-study-action {
+        width: 80px; height: 80px; border-radius: 50%;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 3rem; transition: all 0.2s;
+        background: transparent;
+    }
+    .btn-study-action:hover { transform: scale(1.1); box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+    .btn-study-action.mark-learn { color: #d9534f; border: 2px solid #d9534f; }
+    .btn-study-action.mark-know { color: #31644d; border: 2px solid #31644d; }
+    .transition-hover { transition: all 0.2s; }
+    .transition-hover:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.1) !important; }
+</style>
+
+<div class="container py-4" style="max-width: 900px;">
+    <!-- Nút Quay Lại -->
+    <div class="mb-4">
+        <a href="{{ url_for('learning.flashcard_sets') }}" class="text-decoration-none text-muted mb-3 d-inline-block fw-bold" style="font-size: 0.95rem;">
+            <i class="bi bi-arrow-left me-1"></i> Quay lại thư viện
+        </a>
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <h2 class="fw-bold text-dark mb-1" style="letter-spacing: -0.5px;">{{ fset.title }}</h2>
+                <div class="text-muted" style="font-size: 0.9rem;">
+                    Tạo bởi <span class="fw-bold text-dark">{{ fset.user.username }}</span> &bull; {{ fset.items|length }} thẻ
+                </div>
+            </div>
+            <div class="d-flex gap-2 align-items-center">
+                {% if fset.user_id == current_user.id %}
+                <a href="{{ url_for('learning.flashcard_set_edit', set_id=fset.id) }}" class="btn btn-light rounded-circle shadow-sm d-flex justify-content-center align-items-center transition-hover" title="Sửa học phần" style="width: 45px; height: 45px; color: #31644d; background-color: #f2f7f4; border: 1px solid rgba(49,100,77,0.1);">
+                    <i class="bi bi-pencil-fill fs-5"></i>
+                </a>
+                {% endif %}
+                <button class="btn btn-light rounded-circle shadow-sm d-flex justify-content-center align-items-center transition-hover" data-bs-toggle="modal" data-bs-target="#settingsModal" title="Cấu hình phiên học" style="width: 45px; height: 45px; color: #31644d; background-color: #f2f7f4; border: 1px solid rgba(49,100,77,0.1);">
+                    <i class="bi bi-gear-fill fs-5"></i>
+                </button>
+                <button class="btn fw-bold px-4 rounded-pill d-flex align-items-center gap-2 shadow-sm transition-hover ms-2" onclick="toggleFocusMode()" style="background-color: #31644d; color: white; border: none; height: 45px;">
+                    <i class="bi bi-arrows-fullscreen"></i> Luyện tập toàn màn hình
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Core Study Area -->
+    <div id="studyAreaWrapper" class="d-flex flex-column align-items-center w-100">
+        <div id="studyArea" class="mb-5 position-relative w-100">
+            <!-- Progress Bar -->
+            <div class="d-flex justify-content-between align-items-center mb-2 px-1 mt-4">
+                <div class="fw-bold text-dark fs-5" style="opacity: 0.85;">Thẻ <span id="progressText">1/{{ fset.items|length }}</span></div>
+                <div class="d-flex gap-4 fw-bold" style="font-size: 1.1rem;">
+                    <span class="d-flex align-items-center gap-1" style="color: #d9534f;" title="Đang học">
+                        <i class="bi bi-x-circle-fill"></i> <span id="learningCount">0</span>
+                    </span>
+                    <span class="d-flex align-items-center gap-1" style="color: #20c997;" title="Đã thuộc">
+                        <i class="bi bi-check-circle-fill"></i> <span id="knowCount">0</span>
+                    </span>
+                </div>
+            </div>
+            <div class="progress mb-4" style="height: 6px; border-radius: 3px; background-color: #e5ece8;">
+                <div id="progressBar" class="progress-bar" role="progressbar" style="width: 0%; background-color: #31644d; transition: width 0.3s ease;"></div>
+            </div>
+
+            <!-- 3D Flashcard -->
+            <div class="flashcard-container" id="flashcardContainer" onclick="flipCard()">
+                <div class="flashcard-inner" id="flashcardInner">
+                    <!-- Mặt trước (Front) -->
+                    <div class="card-front">
+                        <div class="card-tag" id="frontTag">Thuật ngữ</div>
+                        <div class="position-absolute top-0 end-0 p-4">
+                            <button class="btn btn-sm btn-light rounded-circle shadow-sm d-flex justify-content-center align-items-center p-0" onclick="event.stopPropagation(); playAudio('front')" style="width: 40px; height: 40px; color: #31644d;"><i class="bi bi-volume-up-fill fs-5"></i></button>
+                        </div>
+                        <div>
+                            <div class="card-text" id="cardFrontText">Term</div>
+                        </div>
+                        <img id="cardFrontImg" src="" style="display: none; max-height: 120px; margin-top: 15px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); align-self: flex-start;">
+                        
+                        <div class="card-hint">Chạm để xem nghĩa ↻</div>
+                    </div>
+                    <!-- Mặt sau (Back) -->
+                    <div class="card-back">
+                        <div class="card-tag" id="backTag">Định nghĩa</div>
+                        <div class="position-absolute top-0 end-0 p-4">
+                            <button class="btn btn-sm btn-light rounded-circle shadow-sm d-flex justify-content-center align-items-center p-0" onclick="event.stopPropagation(); playAudio('back')" style="width: 40px; height: 40px; color: #31644d;"><i class="bi bi-volume-up-fill fs-5"></i></button>
+                        </div>
+                        <div>
+                            <div class="card-text" id="cardBackText">Definition</div>
+                        </div>
+                        
+                        <div class="card-hint">Chạm để quay lại ↻</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Summary Screen (Hidden by default) -->
+            <div id="summaryScreen" class="card shadow border-0 rounded-4 p-5 text-center" style="display: none; height: 400px; max-width: 700px; margin: 0 auto;">
+                <div class="d-flex flex-column h-100 justify-content-center align-items-center">
+                    <h3 class="fw-bold mb-5 fs-2 text-dark">Hoàn thành vòng học!</h3>
+                    <div class="row w-100 justify-content-center mb-5">
+                        <div class="col-4">
+                            <h1 class="text-success fw-bold display-4 mb-2" id="summaryKnow">0</h1>
+                            <div class="text-muted fw-bold text-uppercase" style="letter-spacing: 1px;">Đã thuộc</div>
+                        </div>
+                        <div class="col-4">
+                            <h1 class="text-warning fw-bold display-4 mb-2" id="summaryLearning">0</h1>
+                            <div class="text-muted fw-bold text-uppercase" style="letter-spacing: 1px;">Đang học</div>
+                        </div>
+                    </div>
+                    <button class="btn btn-primary btn-lg fw-bold rounded-pill px-5 py-3 shadow-sm" id="btnRestudy" onclick="startRound()" style="background-color: #4255ff; border: none; font-size: 1.1rem;">
+                        Tiếp tục học thẻ chưa thuộc
+                    </button>
+                </div>
+            </div>
+
+            <!-- Controls -->
+            <div class="d-flex justify-content-center gap-5 mt-4" id="studyControls">
+                <button class="btn btn-study-action mark-learn" onclick="markCard(false)" title="Đang học (Phím Trái / 1)">
+                    <i class="bi bi-x"></i>
+                </button>
+                <button class="btn btn-study-action mark-know" onclick="markCard(true)" title="Đã thuộc (Phím Phải / 2)">
+                    <i class="bi bi-check2"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Word List Area -->
+    <h4 class="fw-bold mb-4 mt-5">Danh sách thuật ngữ ({{ fset.items|length }})</h4>
+    <div class="row g-3 mb-5">
         {% for item in fset.items %}
         <div class="col-12">
             <div class="card shadow-sm border-0 rounded-4">
                 <div class="card-body p-4 d-flex align-items-center">
-                    <div class="w-50 pe-4 border-end">
-                        <span class="fs-5 text-dark">{{ item.term }}</span>
+                    <div class="w-50 pe-4 border-end fw-bold fs-5 text-dark">
+                        {{ item.term }}
                     </div>
                     <div class="w-50 ps-4 d-flex justify-content-between align-items-center">
-                        <span class="text-dark">{{ item.definition }}</span>
-                        {% if item.image_url %}
-                        <img src="{{ item.image_url }}" alt="Image" class="rounded" style="max-height: 60px; max-width: 80px; object-fit: cover;">
-                        {% endif %}
+                        <span class="fs-5 text-dark">{{ item.definition }}</span>
+                        <div class="d-flex gap-3 align-items-center">
+                            {% if item.image_url %}
+                            <img src="{{ item.image_url }}" alt="Image" class="rounded shadow-sm" style="height: 50px; width: 60px; object-fit: cover;">
+                            {% endif %}
+                            <button class="btn btn-light rounded-circle text-muted" onclick="toggleStar(this, {{ item.id }})"><i class="bi bi-star fs-5"></i></button>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
-        {% else %}
-        <div class="col-12 text-center text-muted">
-            Học phần này chưa có thẻ nào.
-        </div>
         {% endfor %}
     </div>
 </div>
+
+<!-- Focus Overlay Wrapper -->
+<div class="focus-overlay" id="focusOverlay">
+    <i class="bi bi-x-lg focus-close" onclick="toggleFocusMode()" title="Thoát chế độ toàn màn hình"></i>
+    <!-- Container sẽ được JS move vào đây khi Fullscreen -->
+    <div id="focusContainer" style="width: 100%; max-width: 900px; padding: 20px;"></div>
+</div>
+
+<!-- Settings Modal -->
+<div class="modal fade" id="settingsModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 rounded-4 shadow-lg">
+            <div class="modal-header border-0 pb-0 pt-4 px-4">
+                <h5 class="fw-bold fs-4 mb-0">Cấu hình phiên học</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-4">
+                <div class="mb-4">
+                    <div class="d-flex justify-content-between align-items-center bg-light p-3 rounded-3">
+                        <div>
+                            <div class="fw-bold text-dark">Tráo thẻ ngẫu nhiên</div>
+                            <div class="small text-muted">Xáo trộn thứ tự các từ trong học phần</div>
+                        </div>
+                        <div class="form-check form-switch m-0">
+                            <input class="form-check-input fs-4" type="checkbox" id="settingShuffle" role="switch">
+                        </div>
+                    </div>
+                </div>
+                <div class="mb-4">
+                    <div class="d-flex justify-content-between align-items-center bg-light p-3 rounded-3">
+                        <div>
+                            <div class="fw-bold text-dark">Phát âm tự động (TTS)</div>
+                            <div class="small text-muted">Đọc to thuật ngữ/định nghĩa khi chuyển thẻ</div>
+                        </div>
+                        <div class="form-check form-switch m-0">
+                            <input class="form-check-input fs-4" type="checkbox" id="settingAutoPlay" checked role="switch">
+                        </div>
+                    </div>
+                </div>
+                <h6 class="fw-bold mb-3 mt-2">Ngôn ngữ Đọc Phát Âm</h6>
+                <div class="row g-3">
+                    <div class="col-6">
+                        <label class="fw-bold small text-muted mb-2">Thuật ngữ</label>
+                        <select class="form-select bg-light border-0 fw-bold py-2" id="settingLangTerm">
+                            <option value="en-US" selected>Tiếng Anh (US)</option>
+                            <option value="vi-VN">Tiếng Việt</option>
+                        </select>
+                    </div>
+                    <div class="col-6">
+                        <label class="fw-bold small text-muted mb-2">Định nghĩa</label>
+                        <select class="form-select bg-light border-0 fw-bold py-2" id="settingLangDef">
+                            <option value="en-US">Tiếng Anh (US)</option>
+                            <option value="vi-VN" selected>Tiếng Việt</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer border-0 p-4 pt-0">
+                <button type="button" class="btn btn-primary rounded-pill px-4 py-3 fw-bold w-100 fs-5" data-bs-dismiss="modal" onclick="applySettings()" style="background-color: #4255ff; border: none;">Lưu cấu hình & Bắt đầu vòng mới</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Toàn bộ dữ liệu Flashcard từ Backend inject vào
+    const allCards = [
+        {% for item in fset.items %}
+        {
+            id: {{ item.id }},
+            term: {{ item.term|tojson }},
+            definition: {{ item.definition|tojson }},
+            image_url: {% if item.image_url %}{{ item.image_url|tojson }}{% else %}null{% endif %}
+        },
+        {% endfor %}
+    ];
+
+    // State Schema
+    const state = {
+        cards: [...allCards],
+        currentQueue: [],
+        currentIndex: 0,
+        isFlipped: false,
+        knowIds: [],
+        learningIds: [],
+        round: 1,
+        settings: {
+            shuffle: false,
+            autoPlay: true,
+            langTerm: 'en-US',
+            langDef: 'vi-VN'
+        }
+    };
+
+    // Elements
+    const elContainer = document.getElementById('flashcardContainer');
+    const elInner = document.getElementById('flashcardInner');
+    const elFrontText = document.getElementById('cardFrontText');
+    const elBackText = document.getElementById('cardBackText');
+    const elFrontImg = document.getElementById('cardFrontImg');
+    const elSummary = document.getElementById('summaryScreen');
+    const elControls = document.getElementById('studyControls');
+    const elProgressBar = document.getElementById('progressBar');
+    
+    // Init
+    document.addEventListener('DOMContentLoaded', () => {
+        applySettings(false);
+        setupHotkeys();
+    });
+
+    function applySettings(restart = true) {
+        state.settings.shuffle = document.getElementById('settingShuffle').checked;
+        state.settings.autoPlay = document.getElementById('settingAutoPlay').checked;
+        state.settings.langTerm = document.getElementById('settingLangTerm').value;
+        state.settings.langDef = document.getElementById('settingLangDef').value;
+        
+        if (restart) {
+            state.round = 1;
+            state.knowIds = [];
+            state.learningIds = [];
+            state.currentQueue = [...state.cards];
+            if (state.settings.shuffle) {
+                state.currentQueue.sort(() => Math.random() - 0.5);
+            }
+            startRound();
+        } else {
+            // First time load
+            state.currentQueue = [...state.cards];
+            startRound();
+        }
+    }
+
+    function startRound() {
+        if (state.round > 1) {
+            // Re-study only the learning ones
+            state.currentQueue = state.cards.filter(c => state.learningIds.includes(c.id));
+            if (state.settings.shuffle) state.currentQueue.sort(() => Math.random() - 0.5);
+        }
+        
+        if (state.currentQueue.length === 0) {
+            alert("Bạn chưa có thẻ nào hoặc đã học xong toàn bộ!");
+            return;
+        }
+
+        state.currentIndex = 0;
+        state.isFlipped = false;
+        state.learningIds = []; 
+        state.knowIds = [];
+        
+        elSummary.style.display = 'none';
+        elContainer.style.display = 'block';
+        elControls.style.display = 'flex';
+        
+        renderCurrentCard();
+    }
+
+    function renderCurrentCard() {
+        if (state.currentIndex >= state.currentQueue.length) {
+            showSummary();
+            return;
+        }
+        
+        const card = state.currentQueue[state.currentIndex];
+        
+        // Remove swipe animations if any
+        elInner.classList.remove('swipe-left', 'swipe-right', 'is-flipped');
+        state.isFlipped = false;
+        
+        // Cập nhật nội dung mặt trước
+        elFrontText.textContent = card.term;
+        if (card.image_url) {
+            elFrontImg.src = card.image_url;
+            elFrontImg.style.display = 'block';
+        } else {
+            elFrontImg.style.display = 'none';
+        }
+        
+        // Cập nhật mặt sau
+        elBackText.textContent = card.definition;
+        
+        // Cập nhật Progress Bar
+        const current = state.currentIndex + 1;
+        const total = state.currentQueue.length;
+        document.getElementById('progressText').textContent = `${current}/${total}`;
+        elProgressBar.style.width = `${(current / total) * 100}%`;
+        
+        document.getElementById('learningCount').textContent = state.learningIds.length;
+        document.getElementById('knowCount').textContent = state.knowIds.length;
+        
+        // Auto-play
+        if (state.settings.autoPlay) {
+            setTimeout(() => playAudio('front'), 200);
+        }
+    }
+
+    function flipCard() {
+        state.isFlipped = !state.isFlipped;
+        if (state.isFlipped) {
+            elInner.classList.add('is-flipped');
+            if (state.settings.autoPlay) setTimeout(() => playAudio('back'), 150);
+        } else {
+            elInner.classList.remove('is-flipped');
+            if (state.settings.autoPlay) setTimeout(() => playAudio('front'), 150);
+        }
+    }
+
+    function markCard(isKnown) {
+        if (state.currentIndex >= state.currentQueue.length || elSummary.style.display === 'block') return;
+        
+        const card = state.currentQueue[state.currentIndex];
+        
+        // Animation
+        elInner.classList.add(isKnown ? 'swipe-right' : 'swipe-left');
+        
+        // Logic
+        if (isKnown) {
+            state.knowIds.push(card.id);
+            document.getElementById('knowCount').textContent = state.knowIds.length;
+        } else {
+            state.learningIds.push(card.id);
+            document.getElementById('learningCount').textContent = state.learningIds.length;
+        }
+        
+        // Ngừng đọc âm thanh cũ
+        if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+        
+        setTimeout(() => {
+            state.currentIndex++;
+            renderCurrentCard();
+        }, 350); // Đợi CSS animation 0.35s
+    }
+
+    function showSummary() {
+        elContainer.style.display = 'none';
+        elControls.style.display = 'none';
+        elSummary.style.display = 'block';
+        
+        document.getElementById('summaryKnow').textContent = state.knowIds.length;
+        document.getElementById('summaryLearning').textContent = state.learningIds.length;
+        
+        // Update bar for completeness
+        elProgressBar.style.width = '100%';
+        
+        const btnRestudy = document.getElementById('btnRestudy');
+        if (state.learningIds.length === 0) {
+            btnRestudy.textContent = "Hoàn thành phiên học";
+            btnRestudy.onclick = () => window.location.reload();
+        } else {
+            btnRestudy.textContent = "Tiếp tục học thẻ chưa thuộc";
+            btnRestudy.onclick = () => {
+                state.round++;
+                startRound();
+            };
+        }
+        
+        syncProgressBackend();
+    }
+
+    function syncProgressBackend() {
+        if (state.knowIds.length === 0 && state.learningIds.length === 0) return;
+        
+        const payload = {
+            progress: {
+                know_ids: state.knowIds,
+                learning_ids: state.learningIds
+            },
+            completed_round: state.round
+        };
+        
+        fetch(`/flashcard-sets/{{ fset.id }}/sync`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token() }}'
+            },
+            body: JSON.stringify(payload)
+        })
+        .then(res => res.json())
+        .then(data => console.log('Synced progress', data))
+        .catch(err => console.error('Sync error', err));
+    }
+
+    // TTS Logic
+    function playAudio(side) {
+        if (!('speechSynthesis' in window)) return;
+        
+        const text = side === 'front' ? elFrontText.textContent : elBackText.textContent;
+        const lang = side === 'front' ? state.settings.langTerm : state.settings.langDef;
+        
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.lang = lang;
+        utterance.rate = 1.0;
+        
+        window.speechSynthesis.cancel(); 
+        window.speechSynthesis.speak(utterance);
+    }
+
+    // Focus / Fullscreen Logic
+    let isFocusMode = false;
+    function toggleFocusMode() {
+        isFocusMode = !isFocusMode;
+        const overlay = document.getElementById('focusOverlay');
+        const container = document.getElementById('focusContainer');
+        const studyArea = document.getElementById('studyArea');
+        const studyAreaWrapper = document.getElementById('studyAreaWrapper');
+        
+        if (isFocusMode) {
+            overlay.classList.add('active');
+            container.appendChild(studyArea);
+            // Vô hiệu hóa cuộn trang ngoài
+            document.body.style.overflow = 'hidden';
+        } else {
+            overlay.classList.remove('active');
+            // Move back to main layout
+            studyAreaWrapper.appendChild(studyArea);
+            document.body.style.overflow = 'auto';
+        }
+    }
+
+    // Hotkeys on Window (Ignore Inputs)
+    function setupHotkeys() {
+        window.addEventListener('keydown', (e) => {
+            if (['INPUT', 'TEXTAREA', 'SELECT'].includes(e.target.tagName)) return;
+            
+            // Xử lý khi đang ở bảng Summary
+            if (elSummary.style.display === 'block') {
+                if (e.code === 'Enter' || e.code === 'Space') {
+                    e.preventDefault();
+                    document.getElementById('btnRestudy').click();
+                }
+                return;
+            }
+            
+            switch (e.code) {
+                case 'Space':
+                case 'ArrowUp':
+                case 'ArrowDown':
+                    e.preventDefault(); 
+                    flipCard();
+                    break;
+                case 'ArrowLeft':
+                case 'Digit1':
+                    e.preventDefault();
+                    markCard(false); 
+                    break;
+                case 'ArrowRight':
+                case 'Digit2':
+                    e.preventDefault();
+                    markCard(true); 
+                    break;
+                case 'Escape':
+                    if(isFocusMode) {
+                        e.preventDefault();
+                        toggleFocusMode();
+                    }
+                    break;
+            }
+        });
+    }
+
+    function toggleStar(btn, cardId) {
+        btn.classList.toggle('text-warning');
+        btn.classList.toggle('text-muted');
+        const icon = btn.querySelector('i');
+        icon.classList.toggle('bi-star');
+        icon.classList.toggle('bi-star-fill');
+        // TODO: Lưu cờ star vào DB
+    }
+</script>
 {% endblock %}

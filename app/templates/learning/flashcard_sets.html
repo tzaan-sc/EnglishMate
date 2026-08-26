@@ -11,29 +11,46 @@
 <div class="row g-4">
     {% for fset in sets %}
     <div class="col-md-6 col-lg-4">
-        <a href="{{ url_for('learning.flashcard_set_view', set_id=fset.id) }}" class="text-decoration-none">
-            <div class="card h-100 shadow-sm border-0 rounded-4 transition-hover">
-                <div class="card-body d-flex flex-column">
-                    <div class="d-flex justify-content-between mb-3">
+        <div class="card h-100 shadow-sm border-0 rounded-4 transition-hover" style="cursor: pointer;" onclick="window.location.href='{{ url_for('learning.flashcard_set_view', set_id=fset.id) }}'">
+            <div class="card-body d-flex flex-column">
+                <div class="d-flex justify-content-between mb-3 align-items-start">
+                    <div>
                         <span class="badge bg-light text-muted border px-2 py-1">{{ fset.items|length }} thuật ngữ</span>
                         {% if current_user.id == fset.user_id %}
-                        <span class="badge bg-primary-subtle text-primary border px-2 py-1"><i class="bi bi-person"></i> Của tôi</span>
+                        <span class="badge bg-primary-subtle text-primary border px-2 py-1 ms-1"><i class="bi bi-person"></i> Của tôi</span>
                         {% endif %}
                     </div>
-                    <h5 class="card-title fw-bold text-dark">{{ fset.title }}</h5>
-                    {% if fset.description %}
-                    <p class="card-text text-muted small text-truncate">{{ fset.description }}</p>
-                    {% endif %}
-                    
-                    <div class="mt-auto pt-3 border-top d-flex align-items-center gap-2">
-                        <div class="profile-avatar-circle" style="width: 24px; height: 24px; font-size: 0.7rem;">
-                            {{ fset.user.username[0].upper() }}
-                        </div>
-                        <span class="text-muted small fw-bold">{{ fset.user.username }}</span>
+                    {% if current_user.id == fset.user_id %}
+                    <div class="dropdown" onclick="event.stopPropagation();">
+                        <button class="btn btn-sm btn-light rounded-circle" type="button" data-bs-toggle="dropdown">
+                            <i class="bi bi-three-dots-vertical"></i>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end shadow border-0">
+                            <li><a class="dropdown-item fw-bold text-muted" href="{{ url_for('learning.flashcard_set_edit', set_id=fset.id) }}"><i class="bi bi-pencil me-2"></i>Sửa học phần</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li>
+                                <form action="{{ url_for('learning.flashcard_set_delete', set_id=fset.id) }}" method="post" onsubmit="return confirm('Bạn có chắc chắn muốn xóa học phần này không? Toàn bộ thẻ và tiến trình học sẽ bị xóa vĩnh viễn.');">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                    <button type="submit" class="dropdown-item fw-bold text-danger"><i class="bi bi-trash me-2"></i>Xóa</button>
+                                </form>
+                            </li>
+                        </ul>
                     </div>
+                    {% endif %}
+                </div>
+                <h5 class="card-title fw-bold text-dark">{{ fset.title }}</h5>
+                {% if fset.description %}
+                <p class="card-text text-muted small text-truncate">{{ fset.description }}</p>
+                {% endif %}
+                
+                <div class="mt-auto pt-3 border-top d-flex align-items-center gap-2">
+                    <div class="profile-avatar-circle" style="width: 24px; height: 24px; font-size: 0.7rem;">
+                        {{ fset.user.username[0].upper() }}
+                    </div>
+                    <span class="text-muted small fw-bold">{{ fset.user.username }}</span>
                 </div>
             </div>
-        </a>
+        </div>
     </div>
     {% else %}
     <div class="col-12 text-center py-5">
