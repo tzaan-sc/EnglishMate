@@ -7,9 +7,9 @@ from sqlalchemy import func
 
 from ...extensions import db
 from ..auth.models import record_daily_activity
-from .models import (Lesson, LessonBookmark, LessonFavorite, LessonNote, LessonProgress,
-                       LessonReport, Question, QuizAttempt, QuizAttemptAnswer,
-                       Vocabulary, VocabularyProgress, WordReport)
+from .models import (GrammarProgress, GrammarTopic, Lesson, LessonBookmark, LessonFavorite,
+                       LessonNote, LessonProgress, LessonReport, Question, QuizAttempt,
+                       QuizAttemptAnswer, Vocabulary, VocabularyProgress, WordReport)
 from . import bp
 from .forms import ActionForm, QuizStartForm
 
@@ -1535,3 +1535,246 @@ def vocabulary_settings():
         return redirect(url_for("learning.vocabulary_settings"))
 
     return render_template("learning/vocabulary_settings.html")
+
+
+# ==========================================
+# GRAMMAR LEARNING ROUTES
+# ==========================================
+
+def ensure_initial_grammar_topics():
+    if GrammarTopic.query.count() > 0:
+        return
+
+    sample_topics = [
+        GrammarTopic(
+            title="Thì Hiện Tại Đơn (Present Simple Tense)",
+            category="Các thì (Tenses)",
+            level="A1",
+            difficulty="Easy",
+            summary="Quy tắc, công thức và cách dùng thì hiện tại đơn trong giao tiếp và văn viết tiếng Anh.",
+            rule_explanation="""1. Cấu trúc với Động từ Tỏ thái độ / Thường:
+- Khẳng định: S + V(s/es)
+- Phủ định: S + do/does + not + V_inf
+- Nghi vấn: Do/Does + S + V_inf?
+
+2. Cách sử dụng chính:
+- Diễn tả hành động lặp đi lặp lại theo thói quen (every day, always, usually).
+- Diễn tả sự thật hiển nhiên, chân lý khách quan.
+- Diễn tả lịch trình, thời gian biểu cố định.""",
+            examples_json="""She works at a technology company in Hanoi.|Cô ấy làm việc tại một công ty công nghệ ở Hà Nội.
+Do you study English every morning?|Bạn có học tiếng Anh mỗi sáng không?
+The sun rises in the East.|Mặt trời mọc ở hướng Đông.""",
+            common_mistakes="❌ Quên thêm 's/es' sau động từ khi chủ ngữ là ngôi thứ 3 số ít (He/She/It).\n❌ Nhầm lẫn giữa trợ động từ 'do/does' và động từ 'to be' (am/is/are).",
+            tips_tricks="💡 Nhớ quy tắc thêm 'es' sau các động từ kết thúc bằng: o, s, ch, x, sh, z (VD: watch ➔ watches, wash ➔ washes).",
+            related_topic_ids="2,3"
+        ),
+        GrammarTopic(
+            title="Thì Hiện Tại Tiếp Diễn (Present Continuous Tense)",
+            category="Các thì (Tenses)",
+            level="A1",
+            difficulty="Easy",
+            summary="Cấu trúc, dấu hiệu nhận biết và cách dùng thì hiện tại tiếp diễn.",
+            rule_explanation="""1. Cấu trúc:
+- Khẳng định: S + am/is/are + V-ing
+- Phủ định: S + am/is/are + not + V-ing
+- Nghi vấn: Am/Is/Are + S + V-ing?
+
+2. Cách sử dụng chính:
+- Diễn tả hành động đang diễn ra ngay tại thời điểm nói (now, at the moment).
+- Diễn tả kế hoạch đã lên lịch trong tương lai gần.""",
+            examples_json="""I am writing a blog post right now.|Tôi đang viết một bài blog ngay lúc này.
+They are meeting the project manager tomorrow.|Họ sẽ gặp quản lý dự án vào ngày mai.""",
+            common_mistakes="❌ Không dùng thì hiện tại tiếp diễn với các động từ chỉ trạng thái/cảm xúc (stative verbs) như: know, want, like, love, believe.",
+            tips_tricks="💡 Dấu hiệu nhận biết: now, right now, at the moment, Listen!, Look!",
+            related_topic_ids="1,3"
+        ),
+        GrammarTopic(
+            title="Thì Quá Khứ Đơn (Past Simple Tense)",
+            category="Các thì (Tenses)",
+            level="A2",
+            difficulty="Medium",
+            summary="Cách chia động từ quá khứ có quy tắc và bất quy tắc.",
+            rule_explanation="""1. Cấu trúc:
+- Khẳng định: S + V2/ed
+- Phủ định: S + did not (didn't) + V_inf
+- Nghi vấn: Did + S + V_inf?
+
+2. Cách sử dụng chính:
+- Diễn tả hành động đã xảy ra và chấm dứt hoàn toàn trong quá khứ tại thời điểm xác định.""",
+            examples_json="""We visited the national museum last weekend.|Chúng tôi đã thăm bảo tàng quốc gia cuối tuần trước.
+She didn't receive the email yesterday.|Cô ấy đã không nhận được email ngày hôm qua.""",
+            common_mistakes="❌ Quên chuyển động từ về dạng nguyên thể (V_inf) sau trợ động từ 'did/didn't'.",
+            tips_tricks="💡 Học thuộc 360 động từ bất quy tắc thông dụng (VD: go ➔ went, see ➔ saw, buy ➔ bought).",
+            related_topic_ids="1,2"
+        ),
+        GrammarTopic(
+            title="Câu Điều Kiện Loại 1 (First Conditional)",
+            category="Cấu trúc câu (Sentence Structure)",
+            level="B1",
+            difficulty="Medium",
+            summary="Cấu trúc diễn tả giả định có thật hoặc có thể xảy ra ở hiện tại hoặc tương lai.",
+            rule_explanation="""1. Cấu trúc:
+- Mệnh đề If: If + S + V(present simple)
+- Mệnh đề chính: S + will / can / may + V_inf
+
+2. Ý nghĩa:
+- Diễn tả sự việc có khả năng cao sẽ xảy ra nếu điều kiện được đáp ứng.""",
+            examples_json="""If it rains tomorrow, we will stay at home.|Nếu ngày mai trời mưa, chúng tôi sẽ ở nhà.
+If you practice every day, you will speak English fluently.|Nếu bạn luyện tập mỗi ngày, bạn sẽ nói tiếng Anh trôi chảy.""",
+            common_mistakes="❌ Dùng 'will' ở cả 2 mệnh đề (Sai: If it will rain, I will stay).",
+            tips_tricks="💡 Nhớ thần chú: 'If đi với Hiện tại đơn, vế còn lại dùng Will + động từ nguyên thể'.",
+            related_topic_ids="1,3"
+        ),
+        GrammarTopic(
+            title="Động Từ Khuyết Thiếu (Modal Verbs: Can, Must, Should)",
+            category="Động từ khuyết thiếu (Modals)",
+            level="A2",
+            difficulty="Easy",
+            summary="Cách dùng các động từ khuyết thiếu chỉ khả năng, nghĩa vụ và lời khuyên.",
+            rule_explanation="""1. Cấu trúc chung: S + Modal Verb + V_inf
+2. Phân loại theo chức năng:
+- Can / Could: Diễn tả khả năng, năng lực.
+- Must / Have to: Diễn tả sự bắt buộc, nghĩa vụ.
+- Should / Ought to: Diễn tả lời khuyên nên làm.""",
+            examples_json="""You should drink more water every day.|Bạn nên uống nhiều nước hơn mỗi ngày.
+Applicants must submit their resume before Friday.|Ứng viên phải nộp hồ sơ trước thứ Sáu.""",
+            common_mistakes="❌ Thêm 'to' sau Modal Verb (Sai: You should to study). Ngoại lệ chỉ có 'ought to' và 'have to'.",
+            tips_tricks="💡 Sau Modal Verbs luôn đi trực tiếp với Động từ nguyên thể không 'to' (V_inf).",
+            related_topic_ids="4,6"
+        )
+    ]
+    db.session.add_all(sample_topics)
+    db.session.commit()
+
+
+@bp.route("/grammar")
+@login_required
+def grammar_overview():
+    ensure_initial_grammar_topics()
+
+    q = request.args.get("q", "").strip()
+    category = request.args.get("category", "").strip()
+    level = request.args.get("level", "").strip()
+    difficulty = request.args.get("difficulty", "").strip()
+    status = request.args.get("status", "").strip()
+
+    all_topics = GrammarTopic.query.filter_by(is_active=True).all()
+    user_progress = GrammarProgress.query.filter_by(user_id=current_user.id).all()
+    completed_ids = {p.topic_id for p in user_progress if p.is_completed}
+    favorite_ids = {p.topic_id for p in user_progress if p.is_favorite}
+
+    categories = [r[0] for r in db.session.query(GrammarTopic.category).distinct().all()]
+
+    query = GrammarTopic.query.filter_by(is_active=True)
+    if q:
+        query = query.filter(GrammarTopic.title.ilike(f"%{q}%") | GrammarTopic.summary.ilike(f"%{q}%"))
+    if category:
+        query = query.filter_by(category=category)
+    if level:
+        query = query.filter_by(level=level)
+    if difficulty:
+        query = query.filter_by(difficulty=difficulty)
+
+    topics_list = query.order_by(GrammarTopic.level, GrammarTopic.id).all()
+
+    if status == "completed":
+        topics_list = [t for t in topics_list if t.id in completed_ids]
+    elif status == "favorite":
+        topics_list = [t for t in topics_list if t.id in favorite_ids]
+    elif status == "new":
+        topics_list = [t for t in topics_list if t.id not in completed_ids]
+
+    total_topics = len(all_topics)
+    completed_count = len(completed_ids)
+    favorite_count = len(favorite_ids)
+
+    return render_template(
+        "learning/grammar.html",
+        topics=topics_list,
+        categories=categories,
+        q=q,
+        category=category,
+        level=level,
+        difficulty=difficulty,
+        status=status,
+        completed_ids=completed_ids,
+        favorite_ids=favorite_ids,
+        total_topics=total_topics,
+        completed_count=completed_count,
+        favorite_count=favorite_count,
+    )
+
+
+@bp.route("/grammar/<int:topic_id>")
+@login_required
+def grammar_detail(topic_id):
+    topic = GrammarTopic.query.filter_by(id=topic_id, is_active=True).first_or_404()
+    prog = GrammarProgress.query.filter_by(user_id=current_user.id, topic_id=topic.id).first()
+
+    is_completed = prog.is_completed if prog else False
+    is_favorite = prog.is_favorite if prog else False
+
+    # Related topics
+    related_topics = []
+    if topic.related_topic_ids:
+        r_ids = [int(i.strip()) for i in topic.related_topic_ids.split(",") if i.strip().isdigit()]
+        if r_ids:
+            related_topics = GrammarTopic.query.filter(GrammarTopic.id.in_(r_ids), GrammarTopic.is_active.is_(True)).all()
+    if not related_topics:
+        related_topics = GrammarTopic.query.filter(GrammarTopic.category == topic.category, GrammarTopic.id != topic.id, GrammarTopic.is_active.is_(True)).limit(3).all()
+
+    return render_template(
+        "learning/grammar_detail.html",
+        topic=topic,
+        is_completed=is_completed,
+        is_favorite=is_favorite,
+        related_topics=related_topics,
+        form=ActionForm()
+    )
+
+
+@bp.post("/grammar/<int:topic_id>/complete")
+@login_required
+def complete_grammar_topic(topic_id):
+    topic = GrammarTopic.query.filter_by(id=topic_id, is_active=True).first_or_404()
+    prog = GrammarProgress.query.filter_by(user_id=current_user.id, topic_id=topic.id).first()
+    if not prog:
+        prog = GrammarProgress(user_id=current_user.id, topic_id=topic.id, is_completed=True, completed_at=datetime.utcnow())
+        db.session.add(prog)
+    else:
+        prog.is_completed = not prog.is_completed
+        if prog.is_completed:
+            prog.completed_at = datetime.utcnow()
+    
+    if prog.is_completed:
+        record_daily_activity(current_user)
+
+    db.session.commit()
+    msg = "Đã đánh dấu hoàn thành chủ đề ngữ pháp!" if prog.is_completed else "Đã bỏ đánh dấu hoàn thành."
+
+    if request.is_json or request.headers.get("X-Requested-With") == "XMLHttpRequest":
+        return jsonify({"success": True, "is_completed": prog.is_completed, "message": msg})
+
+    flash(msg, "success" if prog.is_completed else "info")
+    return redirect(url_for("learning.grammar_detail", topic_id=topic.id))
+
+
+@bp.post("/grammar/<int:topic_id>/favorite")
+@login_required
+def favorite_grammar_topic(topic_id):
+    topic = GrammarTopic.query.filter_by(id=topic_id, is_active=True).first_or_404()
+    prog = GrammarProgress.query.filter_by(user_id=current_user.id, topic_id=topic.id).first()
+    if not prog:
+        prog = GrammarProgress(user_id=current_user.id, topic_id=topic.id, is_favorite=True)
+        db.session.add(prog)
+    else:
+        prog.is_favorite = not prog.is_favorite
+
+    db.session.commit()
+    msg = "Đã thêm vào chủ đề ngữ pháp yêu thích!" if prog.is_favorite else "Đã bỏ khỏi danh sách yêu thích."
+
+    if request.is_json or request.headers.get("X-Requested-With") == "XMLHttpRequest":
+        return jsonify({"success": True, "is_favorite": prog.is_favorite, "message": msg})
+
+    flash(msg, "success" if prog.is_favorite else "info")
+    return redirect(request.referrer or url_for("learning.grammar_overview"))

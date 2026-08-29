@@ -255,9 +255,45 @@ if db_path.exists():
             FOREIGN KEY (lesson_id) REFERENCES lesson (id)
         )
     """)
+
+    # Create grammar_topic table if not exists
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS grammar_topic (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            title VARCHAR(160) NOT NULL,
+            category VARCHAR(80) NOT NULL,
+            level VARCHAR(2) NOT NULL,
+            difficulty VARCHAR(20) NOT NULL DEFAULT 'Easy',
+            summary VARCHAR(280) NOT NULL,
+            rule_explanation TEXT NOT NULL,
+            examples_json TEXT NOT NULL,
+            common_mistakes TEXT,
+            tips_tricks TEXT,
+            related_topic_ids VARCHAR(100),
+            is_active BOOLEAN NOT NULL DEFAULT 1,
+            created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+        )
+    """)
+
+    # Create grammar_progress table if not exists
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS grammar_progress (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id INTEGER NOT NULL,
+            topic_id INTEGER NOT NULL,
+            is_completed BOOLEAN NOT NULL DEFAULT 0,
+            is_favorite BOOLEAN NOT NULL DEFAULT 0,
+            completed_at DATETIME,
+            updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (user_id) REFERENCES user (id),
+            FOREIGN KEY (topic_id) REFERENCES grammar_topic (id),
+            UNIQUE (user_id, topic_id)
+        )
+    """)
     conn.commit()
 
     conn.close()
-    print("Database patched successfully with Vocabulary Learning & Lesson Content enhancements!")
+    print("Database patched successfully with Grammar Learning enhancements!")
 else:
     print("Database file not found at", db_path)

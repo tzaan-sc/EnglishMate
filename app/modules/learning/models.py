@@ -210,3 +210,34 @@ class LessonReport(db.Model):
 
     user = db.relationship("User", backref="lesson_reports")
     lesson = db.relationship("Lesson", backref="content_reports")
+
+
+class GrammarTopic(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(160), nullable=False)
+    category = db.Column(db.String(80), nullable=False, index=True)
+    level = db.Column(db.String(2), nullable=False, index=True)
+    difficulty = db.Column(db.String(20), nullable=False, default="Easy")
+    summary = db.Column(db.String(280), nullable=False)
+    rule_explanation = db.Column(db.Text, nullable=False)
+    examples_json = db.Column(db.Text, nullable=False)
+    common_mistakes = db.Column(db.Text, nullable=True)
+    tips_tricks = db.Column(db.Text, nullable=True)
+    related_topic_ids = db.Column(db.String(100), nullable=True)
+    is_active = db.Column(db.Boolean, nullable=False, default=True)
+    created_at = db.Column(db.DateTime(timezone=True), default=now, nullable=False)
+    updated_at = db.Column(db.DateTime(timezone=True), default=now, onupdate=now, nullable=False)
+
+
+class GrammarProgress(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False, index=True)
+    topic_id = db.Column(db.Integer, db.ForeignKey("grammar_topic.id"), nullable=False, index=True)
+    is_completed = db.Column(db.Boolean, nullable=False, default=False)
+    is_favorite = db.Column(db.Boolean, nullable=False, default=False)
+    completed_at = db.Column(db.DateTime(timezone=True), nullable=True)
+    updated_at = db.Column(db.DateTime(timezone=True), default=now, onupdate=now, nullable=False)
+
+    user = db.relationship("User", backref="grammar_progress_records")
+    topic = db.relationship("GrammarTopic", backref="progress_records")
+    __table_args__ = (db.UniqueConstraint("user_id", "topic_id", name="uq_user_grammar_topic"),)
