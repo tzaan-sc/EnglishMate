@@ -1,0 +1,125 @@
+{% extends "base.html" %}
+{% block title %}Trung Tâm Đề Thi Chuyên Biệt · EnglishMate{% endblock %}
+
+{% block content %}
+<div class="container-fluid max-w-7xl py-4">
+
+  <!-- Hero Header Banner -->
+  <div class="card border-0 shadow-sm rounded-4 bg-primary text-white p-4 p-md-5 mb-4 position-relative overflow-hidden">
+    <div class="row align-items-center relative-1">
+      <div class="col-lg-8">
+        <span class="badge bg-white text-primary rounded-pill px-3 py-1.5 fw-bold mb-3">
+          🎓 KHỦNG LONG LUYỆN THI · SPECIALIZED EXAMS
+        </span>
+        <h2 class="fw-bold mb-2">Trung Tâm Đề Thi Chuyên Biệt</h2>
+        <p class="text-white-50 mb-4 lh-lg">Mô phỏng áp lực thi thật với TOEIC, IELTS, TOEFL, bài kiểm tra xếp lớp Placement Test, đánh giá tiến độ định kỳ và các phiên luyện tập giới hạn thời gian thực tế.</p>
+        
+        <div class="d-flex flex-wrap gap-2">
+          <a href="{{ url_for('exams.specialized_placement_start') }}" class="btn btn-light rounded-pill px-4 fw-bold text-primary shadow-xs">
+            🎯 Test Xếp Lớp Ngay
+          </a>
+          <a href="{{ url_for('exams.specialized_timed_practice') }}" class="btn btn-outline-light rounded-pill px-4 fw-bold">
+            ⏱️ Phiên Luyện Tập Thời Gian
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 8 Specialized Exam Categories Grid -->
+  <div class="row g-3 mb-5">
+    {% for cat in categories %}
+    <div class="col-lg-3 col-md-4 col-sm-6">
+      <div class="card border-0 shadow-xs rounded-4 p-3 bg-white h-100 {{ 'border-2 border-primary' if active_cat==cat.id }}">
+        <div class="d-flex justify-content-between align-items-start mb-2">
+          <span class="fs-2">{{ cat.icon }}</span>
+          <span class="badge bg-light text-secondary border rounded-pill px-2.5">{{ cat.count }} bài</span>
+        </div>
+
+        <h6 class="fw-bold text-dark mb-1">{{ cat.name }}</h6>
+        <p class="text-muted small mb-3 flex-grow-1 line-clamp-2" style="font-size: 0.82rem;">{{ cat.desc }}</p>
+
+        {% if cat.id == 'Placement' %}
+        <a href="{{ url_for('exams.specialized_placement_start') }}" class="btn btn-primary btn-sm rounded-pill w-100 fw-bold">Thi Ngay 🎯</a>
+        {% elif cat.id == 'Progress' %}
+        <a href="{{ url_for('exams.specialized_progress_start') }}" class="btn btn-info text-white btn-sm rounded-pill w-100 fw-bold">Đánh Giá 📈</a>
+        {% elif cat.id == 'Timed' %}
+        <a href="{{ url_for('exams.specialized_timed_practice') }}" class="btn btn-warning text-dark btn-sm rounded-pill w-100 fw-bold">Cài Đặt ⏱️</a>
+        {% else %}
+        <a href="{{ url_for('exams.specialized_exams_hub', category=cat.id) }}" class="btn btn-outline-primary btn-sm rounded-pill w-100 fw-bold">Xem Danh Sách</a>
+        {% endif %}
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+
+  <!-- Filter & Search Toolbar -->
+  <div class="card border-0 shadow-sm rounded-4 p-4 bg-white mb-4">
+    <form method="GET" action="{{ url_for('exams.specialized_exams_hub') }}" class="row g-3 align-items-center">
+      <div class="col-md-6">
+        <div class="input-group">
+          <span class="input-group-text bg-light border-end-0 rounded-start-pill ps-3">🔍</span>
+          <input type="text" name="q" class="form-control bg-light border-start-0 rounded-end-pill ps-0" placeholder="Tìm kiếm đề thi chuyên biệt..." value="{{ search_query }}">
+        </div>
+      </div>
+
+      <div class="col-md-4">
+        <select name="category" class="form-select rounded-pill" onchange="this.form.submit()">
+          <option value="">-- Tất cả danh mục chuyên biệt --</option>
+          <option value="TOEIC" {{ 'selected' if active_cat=='TOEIC' }}>TOEIC Simulation</option>
+          <option value="IELTS" {{ 'selected' if active_cat=='IELTS' }}>IELTS Practice</option>
+          <option value="TOEFL" {{ 'selected' if active_cat=='TOEFL' }}>TOEFL Preparation</option>
+          <option value="Custom" {{ 'selected' if active_cat=='Custom' }}>Custom Skill Tests</option>
+          <option value="Placement" {{ 'selected' if active_cat=='Placement' }}>Placement Tests</option>
+          <option value="Progress" {{ 'selected' if active_cat=='Progress' }}>Progress Assessment</option>
+          <option value="Mock" {{ 'selected' if active_cat=='Mock' }}>Mock Exams</option>
+        </select>
+      </div>
+
+      <div class="col-md-2">
+        <a href="{{ url_for('exams.specialized_exams_hub') }}" class="btn btn-light rounded-pill w-100 text-secondary">Làm mới</a>
+      </div>
+    </form>
+  </div>
+
+  <!-- Exams List Section -->
+  <h5 class="fw-bold text-dark mb-3">Danh Sách Đề Thi Chuyên Biệt ({{ exams|length }} bài thi)</h5>
+
+  <div class="row g-3">
+    {% for e in exams %}
+    <div class="col-md-6 col-lg-4">
+      <div class="card border-0 shadow-sm rounded-4 p-4 bg-white h-100 d-flex flex-column">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+          <span class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill px-3 py-1 font-semibold">{{ e.category }}</span>
+          <span class="text-muted small">⏱️ {{ e.duration_minutes or e.duration or 15 }} phút</span>
+        </div>
+
+        <h6 class="fw-bold text-dark lh-base mb-2 mb-grow">{{ e.title }}</h6>
+
+        <div class="d-flex justify-content-between align-items-center mt-3 pt-3 border-top">
+          <span class="small text-secondary">
+            🎯 {{ e.difficulty or 'Medium' }} · ❓ {{ e.question_count or 10 }} câu
+          </span>
+
+          <form action="{{ url_for('exams.start_exam', exam_id=e.id) }}" method="POST" class="d-inline">
+            {{ form.hidden_tag() }}
+            <button type="submit" class="btn btn-primary rounded-pill px-3 py-1 font-semibold shadow-xs">
+              Bắt Đầu Thi →
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+    {% else %}
+    <div class="col-12">
+      <div class="card border-0 shadow-xs rounded-4 p-5 bg-white text-center">
+        <span class="fs-1 mb-2">🔍</span>
+        <h5 class="fw-bold text-dark">Không tìm thấy đề thi chuyên biệt phù hợp</h5>
+        <p class="text-secondary small">Vui lòng thử lại với từ khóa hoặc danh mục khác.</p>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+
+</div>
+{% endblock %}

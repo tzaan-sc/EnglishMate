@@ -192,7 +192,7 @@ def exam_list():
                            categories=categories, category=category, skill=skill, history=submissions)
 
 
-@bp.post("/<int:exam_id>/start")
+@bp.route("/<int:exam_id>/start", methods=["GET", "POST"])
 @login_required
 def start_exam(exam_id):
     exam = db.get_or_404(Exam, exam_id)
@@ -325,3 +325,196 @@ def exam_result(submission_id):
         correct_count=correct_count,
         total_questions=len(questions)
     )
+
+
+# ==========================================
+# SPECIALIZED EXAMS ROUTES (Section 4.6)
+# ==========================================
+
+def ensure_specialized_exams_seeded():
+    if Exam.query.filter(Exam.category.in_(["Placement", "Progress", "TOEFL", "Mock", "Custom"])).count() > 0:
+        return
+
+    special_exams = [
+        Exam(
+            title="Đề Thi Thử Mô Phỏng TOEIC Full 200 Câu (Listening & Reading)",
+            category="TOEIC",
+            duration=120,
+            duration_minutes=120,
+            difficulty="Medium",
+            question_bank="TOEIC Bank",
+            selection_type="random",
+            question_count=200,
+            is_published=True,
+            is_active=True
+        ),
+        Exam(
+            title="Đề Luyện Thi IELTS Academic (Listening, Reading, Writing & Speaking)",
+            category="IELTS",
+            duration=150,
+            duration_minutes=150,
+            difficulty="Hard",
+            question_bank="IELTS Bank",
+            selection_type="random",
+            question_count=40,
+            is_published=True,
+            is_active=True
+        ),
+        Exam(
+            title="Đề Chuẩn Bị TOEFL iBT Comprehensive Test",
+            category="TOEFL",
+            duration=120,
+            duration_minutes=120,
+            difficulty="Hard",
+            question_bank="TOEFL Bank",
+            selection_type="random",
+            question_count=50,
+            is_published=True,
+            is_active=True
+        ),
+        Exam(
+            title="Bài Kiểm Tra Phân Loại Trình Độ Đầu Vào (Placement Test A1-C2)",
+            category="Placement",
+            duration=45,
+            duration_minutes=45,
+            difficulty="Medium",
+            question_bank="Placement Bank",
+            selection_type="random",
+            question_count=30,
+            is_published=True,
+            is_active=True
+        ),
+        Exam(
+            title="Bài Kiểm Tra Đánh Giá Tiến Độ Học Tập Hàng Tháng (Progress Assessment)",
+            category="Progress",
+            duration=30,
+            duration_minutes=30,
+            difficulty="Medium",
+            question_bank="Progress Bank",
+            selection_type="random",
+            question_count=25,
+            is_published=True,
+            is_active=True
+        ),
+        Exam(
+            title="Đề Thi Thử Tổng Hợp Áp Lực Thời Gian Thật (Full Mock Exam)",
+            category="Mock",
+            duration=90,
+            duration_minutes=90,
+            difficulty="Hard",
+            question_bank="General Bank",
+            selection_type="random",
+            question_count=60,
+            is_published=True,
+            is_active=True
+        ),
+        Exam(
+            title="Kiểm Tra Kỹ Năng Tùy Chỉnh: Ngữ Pháp & Từ Vựng Nâng Cao",
+            category="Custom",
+            duration=20,
+            duration_minutes=20,
+            difficulty="Medium",
+            question_bank="Grammar & Vocabulary",
+            selection_type="random",
+            question_count=20,
+            is_published=True,
+            is_active=True
+        )
+    ]
+    db.session.add_all(special_exams)
+    db.session.commit()
+
+
+@bp.route("/specialized")
+@bp.route("/exams/specialized")
+@login_required
+def specialized_exams_hub():
+    ensure_specialized_exams_seeded()
+
+    cat = request.args.get("category", "").strip()
+    search = request.args.get("q", "").strip()
+
+    query = Exam.query.filter_by(is_active=True, is_published=True)
+    if cat:
+        query = query.filter_by(category=cat)
+    if search:
+        query = query.filter(Exam.title.ilike(f"%{search}%"))
+
+    exams_list_data = query.order_by(Exam.id.desc()).all()
+
+    specialized_categories = [
+        {"id": "TOEIC", "name": "Mô phỏng thi TOEIC", "icon": "🎧", "desc": "Đề thi TOEIC Listening & Reading chuẩn định dạng mới 200 câu.", "count": Exam.query.filter_by(category="TOEIC").count()},
+        {"id": "IELTS", "name": "Luyện thi IELTS", "icon": "📖", "desc": "Luyện thi IELTS Academic 4 kỹ năng tích hợp chấm điểm AI.", "count": Exam.query.filter_by(category="IELTS").count()},
+        {"id": "TOEFL", "name": "Chuẩn bị TOEFL", "icon": "🎓", "desc": "Đề luyện thi chuẩn bị TOEFL iBT dạng bài tổng hợp.", "count": Exam.query.filter_by(category="TOEFL").count()},
+        {"id": "Custom", "name": "Kiểm tra Kỹ năng Tùy chỉnh", "icon": "⚡", "desc": "Tùy chọn luyện từng kỹ năng đơn lẻ: Ngữ pháp, Từ vựng, Đọc, Nghe.", "count": Exam.query.filter_by(category="Custom").count()},
+        {"id": "Placement", "name": "Kiểm tra Xếp lớp", "icon": "🎯", "desc": "Bài test đánh giá phân loại trình độ đầu vào chuẩn CEFR A1-C2.", "count": Exam.query.filter_by(category="Placement").count()},
+        {"id": "Progress", "name": "Đánh giá Tiến độ", "icon": "📈", "desc": "Bài kiểm tra đo lường sự tiến bộ và tốc độ cải thiện kiến thức.", "count": Exam.query.filter_by(category="Progress").count()},
+        {"id": "Timed", "name": "Phiên Luyện tập Thời gian", "icon": "⏱️", "desc": "Tùy chỉnh phiên luyện tập giới hạn thời gian thực tế 5 - 60 phút.", "count": 10},
+        {"id": "Mock", "name": "Đề Thi Thử Tổng Hợp", "icon": "🏆", "desc": "Đề thi thử tổng hợp mô phỏng áp lực phòng thi thật.", "count": Exam.query.filter_by(category="Mock").count()}
+    ]
+
+    return render_template(
+        "exams/specialized_hub.html",
+        categories=specialized_categories,
+        exams=exams_list_data,
+        active_cat=cat,
+        search_query=search,
+        form=ActionForm()
+    )
+
+
+@bp.route("/specialized/placement")
+@bp.route("/exams/specialized/placement")
+@login_required
+def specialized_placement_start():
+    ensure_specialized_exams_seeded()
+    exam = Exam.query.filter_by(category="Placement", is_active=True).first()
+    if not exam:
+        exam = Exam.query.first()
+    return redirect(url_for("exams.start_exam", exam_id=exam.id))
+
+
+@bp.route("/specialized/progress")
+@bp.route("/exams/specialized/progress")
+@login_required
+def specialized_progress_start():
+    ensure_specialized_exams_seeded()
+    exam = Exam.query.filter_by(category="Progress", is_active=True).first()
+    if not exam:
+        exam = Exam.query.first()
+    return redirect(url_for("exams.start_exam", exam_id=exam.id))
+
+
+@bp.route("/specialized/timed-practice", methods=["GET", "POST"])
+@bp.route("/exams/specialized/timed-practice", methods=["GET", "POST"])
+@login_required
+def specialized_timed_practice():
+    if request.method == "POST":
+        duration = int(request.form.get("duration", 15))
+        question_count = int(request.form.get("question_count", 15))
+        difficulty = request.form.get("difficulty", "Medium")
+        skill = request.form.get("skill", "General")
+
+        title = f"Phiên Luyện Tập {duration} Phút ({skill} - {difficulty})"
+        timed_exam = Exam(
+            title=title,
+            category="Timed",
+            duration=duration,
+            duration_minutes=duration,
+            difficulty=difficulty,
+            question_bank=skill,
+            selection_type="random",
+            question_count=question_count,
+            is_published=True,
+            is_active=True
+        )
+        db.session.add(timed_exam)
+        db.session.commit()
+
+        submission = ExamSubmission(user_id=current_user.id, exam_id=timed_exam.id, status='IN_PROGRESS', total_score=0)
+        db.session.add(submission)
+        db.session.commit()
+
+        return redirect(url_for("exams.attempt_exam", submission_id=submission.id, mode="timed_practice"))
+
+    return render_template("exams/timed_practice.html", form=ActionForm())

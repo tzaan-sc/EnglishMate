@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+{% block title %}Cài Đặt Phiên Luyện Tập Thời Gian · EnglishMate{% endblock %}
+
+{% block content %}
+<div class="container-fluid max-w-3xl py-4">
+
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <a href="{{ url_for('exams.specialized_exams_hub') }}" class="btn btn-light rounded-pill px-3 text-secondary">
+      ← Quay lại Trung tâm đề thi chuyên biệt
+    </a>
+  </div>
+
+  <div class="card border-0 shadow-sm rounded-4 bg-white p-4 p-md-5">
+    <div class="text-center mb-4">
+      <span class="fs-1 mb-2 d-block">⏱️</span>
+      <h3 class="fw-bold text-dark mb-1">Cài Đặt Phiên Luyện Tập Có Giới Hạn Thời Gian</h3>
+      <p class="text-secondary small">Tùy chỉnh áp lực thời gian làm bài thực tế để rèn luyện phản xạ và tốc độ làm câu hỏi.</p>
+    </div>
+
+    <form method="POST" action="{{ url_for('exams.specialized_timed_practice') }}">
+      {{ form.hidden_tag() }}
+
+      <!-- Duration Selection -->
+      <div class="mb-4">
+        <label class="form-label fw-bold text-dark">1. Chọn thời gian luyện tập</label>
+        <div class="row g-2">
+          {% for dur in [5, 10, 15, 30, 45, 60] %}
+          <div class="col-4 col-md-2">
+            <input type="radio" class="btn-check" name="duration" id="dur_{{ dur }}" value="{{ dur }}" {{ 'checked' if dur==15 }}>
+            <label class="btn btn-outline-primary rounded-3 w-100 py-2.5 fw-bold" for="dur_{{ dur }}">{{ dur }} phút</label>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+
+      <!-- Question Count Selection -->
+      <div class="mb-4">
+        <label class="form-label fw-bold text-dark">2. Số lượng câu hỏi</label>
+        <div class="row g-2">
+          {% for cnt in [5, 10, 15, 20, 30, 50] %}
+          <div class="col-4 col-md-2">
+            <input type="radio" class="btn-check" name="question_count" id="cnt_{{ cnt }}" value="{{ cnt }}" {{ 'checked' if cnt==15 }}>
+            <label class="btn btn-outline-secondary rounded-3 w-100 py-2.5 fw-bold" for="cnt_{{ cnt }}">{{ cnt }} câu</label>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+
+      <div class="row g-3 mb-4">
+        <!-- Skill Selection -->
+        <div class="col-md-6">
+          <label class="form-label fw-bold text-dark">3. Kỹ năng luyện tập</label>
+          <select name="skill" class="form-select form-select-lg rounded-3">
+            <option value="General">Tổng hợp tất cả kỹ năng (General)</option>
+            <option value="Grammar">Ngữ pháp (Grammar)</option>
+            <option value="Vocabulary">Từ vựng (Vocabulary)</option>
+            <option value="Reading">Kỹ năng Đọc (Reading)</option>
+            <option value="Listening">Kỹ năng Nghe (Listening)</option>
+          </select>
+        </div>
+
+        <!-- Difficulty Selection -->
+        <div class="col-md-6">
+          <label class="form-label fw-bold text-dark">4. Độ khó bài tập</label>
+          <select name="difficulty" class="form-select form-select-lg rounded-3">
+            <option value="Easy">Dễ (Easy)</option>
+            <option value="Medium" selected>Trung bình (Medium)</option>
+            <option value="Hard">Khó (Hard)</option>
+          </select>
+        </div>
+      </div>
+
+      <button type="submit" class="btn btn-primary rounded-pill btn-lg w-100 fw-bold shadow-xs py-3">
+        🚀 Bắt Đầu Phiên Luyện Tập Thời Gian Ngay
+      </button>
+    </form>
+  </div>
+
+</div>
+{% endblock %}
