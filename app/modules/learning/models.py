@@ -298,3 +298,19 @@ class GrammarRuleBookmark(db.Model):
     user = db.relationship("User", backref="grammar_rule_bookmarks")
     rule = db.relationship("GrammarRule", backref="bookmarked_by")
     __table_args__ = (db.UniqueConstraint("user_id", "rule_id", name="uq_user_grammar_rule_bookmark"),)
+
+
+class Quiz(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(160), nullable=False)
+    category = db.Column(db.String(80), nullable=False, index=True)
+    level = db.Column(db.String(2), nullable=False, index=True)
+    skill = db.Column(db.String(30), nullable=False, index=True)
+    difficulty = db.Column(db.String(20), nullable=False, index=True, default="Medium")
+    description = db.Column(db.String(280), nullable=False)
+    question_count = db.Column(db.Integer, nullable=False, default=10)
+    duration_minutes = db.Column(db.Integer, nullable=False, default=15)
+    view_count = db.Column(db.Integer, nullable=False, default=0)
+    is_active = db.Column(db.Boolean, nullable=False, default=True)
+    created_at = db.Column(db.DateTime(timezone=True), default=now, nullable=False)
+    updated_at = db.Column(db.DateTime(timezone=True), default=now, onupdate=now, nullable=False)

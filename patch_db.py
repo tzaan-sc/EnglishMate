@@ -362,9 +362,28 @@ if db_path.exists():
             UNIQUE (user_id, rule_id)
         )
     """)
+
+    # Create quiz table if not exists
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS quiz (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            title VARCHAR(160) NOT NULL,
+            category VARCHAR(80) NOT NULL,
+            level VARCHAR(2) NOT NULL,
+            skill VARCHAR(30) NOT NULL,
+            difficulty VARCHAR(20) NOT NULL DEFAULT 'Medium',
+            description VARCHAR(280) NOT NULL,
+            question_count INTEGER NOT NULL DEFAULT 10,
+            duration_minutes INTEGER NOT NULL DEFAULT 15,
+            view_count INTEGER NOT NULL DEFAULT 0,
+            is_active BOOLEAN NOT NULL DEFAULT 1,
+            created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+        )
+    """)
     conn.commit()
 
     conn.close()
-    print("Database patched successfully with Grammar Reference enhancements!")
+    print("Database patched successfully with Quiz List enhancements!")
 else:
     print("Database file not found at", db_path)

@@ -9,7 +9,7 @@ from ...extensions import db
 from ..auth.models import record_daily_activity
 from .models import (GrammarErrorLog, GrammarExerciseAttempt, GrammarProgress, GrammarRule,
                        GrammarRuleBookmark, GrammarTopic, Lesson, LessonBookmark, LessonFavorite,
-                       LessonNote, LessonProgress, LessonReport, Question, QuizAttempt,
+                       LessonNote, LessonProgress, LessonReport, Question, Quiz, QuizAttempt,
                        QuizAttemptAnswer, Vocabulary, VocabularyProgress, WordReport)
 from . import bp
 from .forms import ActionForm, QuizStartForm
@@ -2338,3 +2338,185 @@ def quiz_dashboard():
         metrics=metrics,
         form=ActionForm()
     )
+
+
+# ==========================================
+# QUIZ LIST & BROWSE ROUTES (Section 4.2)
+# ==========================================
+
+def ensure_initial_quizzes():
+    if Quiz.query.count() > 0:
+        return
+
+    sample_quizzes = [
+        Quiz(
+            title="Kiểm Tra Ngữ Pháp Tổng Hợp A1",
+            category="Grammar",
+            level="A1",
+            skill="Grammar",
+            difficulty="Easy",
+            description="Bài kiểm tra kiến thức ngữ pháp cơ bản mức độ A1: Thì hiện tại đơn, danh từ số nhiều, đại từ nhân xưng.",
+            question_count=10,
+            duration_minutes=10,
+            view_count=1450
+        ),
+        Quiz(
+            title="Từ Vựng Tiếng Anh Giao Tiếp Hàng Ngày A2",
+            category="Vocabulary",
+            level="A2",
+            skill="Vocabulary",
+            difficulty="Easy",
+            description="Đánh giá vốn từ vựng chủ đề giao tiếp cơ bản: Mua sắm, hỏi đường, đặt đồ ăn và thời tiết.",
+            question_count=10,
+            duration_minutes=12,
+            view_count=980
+        ),
+        Quiz(
+            title="TOEIC Reading Mini Test Part 5 & 6 (B1)",
+            category="TOEIC",
+            level="B1",
+            skill="Reading",
+            difficulty="Medium",
+            description="Luyện tập câu hỏi điền từ vào câu và đoạn văn chuẩn cấu trúc đề thi TOEIC Reading mới nhất.",
+            question_count=15,
+            duration_minutes=15,
+            view_count=2100
+        ),
+        Quiz(
+            title="Ngữ Pháp Nâng Cao: Mệnh Đề Quan Hệ & Câu Điều Kiện B2",
+            category="Grammar",
+            level="B2",
+            skill="Grammar",
+            difficulty="Hard",
+            description="Thử thách kiến thức ngữ pháp phức tạp mức B2: Mệnh đề quan hệ rút gọn, câu điều kiện hỗn hợp.",
+            question_count=12,
+            duration_minutes=15,
+            view_count=1890
+        ),
+        Quiz(
+            title="Listening Comprehension Business English C1",
+            category="Listening",
+            level="C1",
+            skill="Listening",
+            difficulty="Hard",
+            description="Bài kiểm tra kỹ năng nghe hiểu tiếng Anh thương mại nâng cao: Đàm phán, thuyết trình và họp chiến lược.",
+            question_count=10,
+            duration_minutes=20,
+            view_count=760
+        )
+    ]
+    db.session.add_all(sample_quizzes)
+    db.session.commit()
+
+
+@bp.route("/quizzes/list")
+@bp.route("/quizzes/browse")
+@login_required
+def quiz_list():
+    ensure_initial_quizzes()
+
+    q = request.args.get("q", "").strip()
+    category = request.args.get("category", "").strip()
+    level = request.args.get("level", "").strip()
+    skill = request.args.get("skill", "").strip()
+    difficulty = request.args.get("difficulty", "").strip()
+    status = request.args.get("status", "").strip()
+    sort = request.args.get("sort", "recent").strip()
+
+    categories = [r[0] for r in db.session.query(Quiz.category).distinct().all()]
+    levels = ["A1", "A2", "B1", "B2", "C1", "C2"]
+    skills = ["Grammar", "Vocabulary", "Reading", "Listening", "Speaking", "Writing"]
+    difficulties = ["Easy", "Medium", "Hard"]
+
+    query = Quiz.query.filter_by(is_active=True)
+
+    if q:
+        query = query.filter(Quiz.title.ilike(f"%{q}%") | Quiz.description.ilike(f"%{q}%"))
+    if category:
+        query = query.filter_by(category=category)
+    if level:
+        query = query.filter_by(level=level)
+    if skill:
+        query = query.filter_by(skill=skill)
+    if difficulty:
+        query = query.filter_by(difficulty=difficulty)
+
+    if sort == "popularity":
+        query = query.order_by(Quiz.view_count.desc(), Quiz.id.desc())
+    else:
+        query = query.order_by(Quiz.created_at.desc(), Quiz.id.desc())
+
+    quizzes_all = query.all()
+
+    user_attempts = QuizAttempt.query.filter_by(user_id=current_user.id).order_by(QuizAttempt.created_at.desc()).all()
+    user_attempts_by_topic = {}
+    for att in user_attempts:
+        if att.topic not in user_attempts_by_topic:
+            user_attempts_by_topic[att.topic] = att
+
+    in_progress_quiz_ids = session.get("in_progress_quizzes", [])
+
+    final_quizzes = []
+    for quiz in quizzes_all:
+        att = user_attempts_by_topic.get(quiz.title) or user_attempts_by_topic.get(quiz.category)
+        if att:
+            q_status = "completed"
+            last_attempt_id = att.id
+        elif quiz.id in in_progress_quiz_ids:
+            q_status = "in_progress"
+            last_attempt_id = None
+        else:
+            q_status = "new"
+            last_attempt_id = None
+
+        if status and q_status != status:
+            continue
+
+        final_quizzes.append({
+            "model": quiz,
+            "status": q_status,
+            "last_attempt_id": last_attempt_id
+        })
+
+    return render_template(
+        "learning/quiz_list.html",
+        quizzes=final_quizzes,
+        categories=categories,
+        levels=levels,
+        skills=skills,
+        difficulties=difficulties,
+        q=q,
+        category=category,
+        level=level,
+        skill=skill,
+        difficulty=difficulty,
+        status=status,
+        sort=sort
+    )
+
+
+@bp.route("/quizzes/<int:quiz_id>/preview")
+@login_required
+def quiz_detail_preview(quiz_id):
+    quiz = db.session.get(Quiz, quiz_id)
+    if not quiz:
+        return jsonify({"success": False, "message": "Không tìm thấy bài quiz."}), 404
+
+    quiz.view_count = (quiz.view_count or 0) + 1
+    db.session.commit()
+
+    return jsonify({
+        "success": True,
+        "quiz": {
+            "id": quiz.id,
+            "title": quiz.title,
+            "category": quiz.category,
+            "level": quiz.level,
+            "skill": quiz.skill,
+            "difficulty": quiz.difficulty,
+            "description": quiz.description,
+            "question_count": quiz.question_count,
+            "duration_minutes": quiz.duration_minutes,
+            "view_count": quiz.view_count
+        }
+    })
