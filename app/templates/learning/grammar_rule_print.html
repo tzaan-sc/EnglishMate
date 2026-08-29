@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>In: {{ rule.title }} · EnglishMate</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body { font-family: 'Times New Roman', Times, serif; color: #000; background: #fff; padding: 20px; }
+    h1, h2, h3, h4 { font-family: Arial, sans-serif; font-weight: bold; }
+    .print-header { border-bottom: 2px solid #000; padding-bottom: 10px; margin-bottom: 20px; }
+    .section-box { margin-bottom: 25px; page-break-inside: avoid; }
+    .section-title { font-size: 1.2rem; font-weight: bold; text-decoration: underline; margin-bottom: 8px; }
+    @media print {
+      .no-print { display: none !important; }
+      body { padding: 0; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- No-print Action Toolbar -->
+  <div class="no-print d-flex justify-content-between align-items-center mb-4 p-3 bg-light border rounded-3">
+    <span class="fw-bold">🖨️ Chế độ Xem In Ấn (Print-Friendly View)</span>
+    <div>
+      <button onclick="window.print()" class="btn btn-primary btn-sm rounded-pill px-4 fw-bold">In Bài Viết Ngay</button>
+      <button onclick="window.close()" class="btn btn-secondary btn-sm rounded-pill px-3 ms-2">Đóng Trang</button>
+    </div>
+  </div>
+
+  <!-- Print Header -->
+  <div class="print-header d-flex justify-content-between align-items-end">
+    <div>
+      <h2 class="mb-1">{{ rule.title }}</h2>
+      <span class="text-uppercase fw-bold text-secondary">Danh mục: {{ rule.category }} · Tài liệu EnglishMate</span>
+    </div>
+    <div class="text-end small">
+      Ngày in: {{ rule.updated_at.strftime('%d/%m/%Y') }}
+    </div>
+  </div>
+
+  <!-- Summary -->
+  <div class="section-box">
+    <p class="fst-italic fs-6"><strong>Tóm tắt:</strong> {{ rule.summary }}</p>
+  </div>
+
+  <!-- Explanation -->
+  <div class="section-box">
+    <div class="section-title">1. GIẢI THÍCH QUY TẮC</div>
+    <div class="lh-base" style="white-space: pre-line;">{{ rule.explanation }}</div>
+  </div>
+
+  <!-- Examples -->
+  <div class="section-box">
+    <div class="section-title">2. CÁC VÍ DỤ MINH HỌA</div>
+    <div class="p-3 border bg-light" style="white-space: pre-line;">{{ rule.examples }}</div>
+  </div>
+
+  <!-- Quick Reference Table -->
+  {% if rule.quick_table_html %}
+  <div class="section-box">
+    <div class="section-title">3. BẢNG THAM KHẢO NHANH</div>
+    {{ rule.quick_table_html|safe }}
+  </div>
+  {% endif %}
+
+  <!-- Exceptions -->
+  {% if rule.exceptions %}
+  <div class="section-box">
+    <div class="section-title">4. TRƯỜNG HỢP NGOẠI LỆ</div>
+    <div class="p-3 border" style="white-space: pre-line;">{{ rule.exceptions }}</div>
+  </div>
+  {% endif %}
+
+  <!-- Common Errors -->
+  {% if rule.common_errors %}
+  <div class="section-box">
+    <div class="section-title">5. CÁC LỖI THƯỜNG GẶP</div>
+    <div class="p-3 border" style="white-space: pre-line;">{{ rule.common_errors }}</div>
+  </div>
+  {% endif %}
+
+</body>
+</html>

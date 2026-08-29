@@ -1,0 +1,131 @@
+{% extends "base.html" %}
+{% block title %}Tài Liệu Tra Cứu Ngữ Pháp · EnglishMate{% endblock %}
+
+{% block content %}
+<div class="container-fluid max-w-6xl py-4">
+
+  <!-- Header Banner -->
+  <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
+    <div>
+      <span class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill px-3 py-1 mb-2 font-semibold">
+        THƯ VIỆN TRA CỨU QUY TẮC CHUẨN
+      </span>
+      <h2 class="fw-bold text-dark mb-1">Tài Liệu Tham Khảo Ngữ Pháp</h2>
+      <p class="text-secondary small mb-0">Tra cứu nhanh chóng các quy tắc chính tả, trật tự từ, động từ bất quy tắc và ngoại lệ.</p>
+    </div>
+    <div>
+      <a href="{{ url_for('learning.grammar_overview') }}" class="btn btn-outline-primary rounded-pill px-4 fw-bold shadow-xs">
+        📚 Danh mục Học Ngữ Pháp
+      </a>
+    </div>
+  </div>
+
+  <!-- Category Pills Navigation & Bookmarked Filter -->
+  <div class="d-flex gap-2 flex-wrap align-items-center mb-4">
+    <a href="{{ url_for('learning.grammar_reference_index') }}" class="btn {{ 'btn-dark' if not category and not bookmarked_only else 'btn-outline-secondary' }} rounded-pill px-3 py-1.5 fw-semibold small">
+      Tất cả quy tắc
+    </a>
+
+    {% for cat in categories %}
+    <a href="{{ url_for('learning.grammar_reference_index', category=cat) }}" class="btn {{ 'btn-primary' if category==cat else 'btn-outline-primary' }} rounded-pill px-3 py-1.5 fw-semibold small">
+      {{ cat }}
+    </a>
+    {% endfor %}
+
+    <a href="{{ url_for('learning.grammar_reference_index', bookmarked_only=1) }}" class="btn {{ 'btn-warning text-dark' if bookmarked_only=='1' else 'btn-outline-warning text-dark-emphasis' }} rounded-pill px-3 py-1.5 fw-bold small ms-auto">
+      🔖 Quy tắc đã Bookmark
+    </a>
+  </div>
+
+  <!-- Search Bar -->
+  <div class="card border-0 shadow-sm rounded-4 p-4 bg-white mb-4">
+    <form method="get" action="{{ url_for('learning.grammar_reference_index') }}" class="row g-3 align-items-center">
+      <div class="col-md-9">
+        <div class="input-group">
+          <span class="input-group-text bg-transparent border-end-0"><i class="ph ph-magnifying-glass text-muted fs-5"></i></span>
+          <input class="form-control form-control-lg border-start-0 ps-0 fs-6" name="q" value="{{ q }}" placeholder="Nhập tên quy tắc (VD: OSASCOMP, s/es, bất quy tắc)...">
+        </div>
+      </div>
+      <div class="col-md-3">
+        <button type="submit" class="btn btn-dark btn-lg w-100 rounded-pill fw-bold fs-6">
+          🔍 Tìm kiếm
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <!-- Rules Grid Cards -->
+  <div class="row g-4 mb-4">
+    {% for rule in rules %}
+    <div class="col-md-6 col-lg-4">
+      <article class="card border-0 shadow-xs rounded-4 p-4 h-100 bg-white d-flex flex-column justify-content-between hover-shadow transition">
+        <div>
+          <div class="d-flex justify-content-between align-items-center mb-2">
+            <span class="badge bg-primary-subtle text-primary rounded-pill px-2.5 py-1 fw-bold small">{{ rule.category }}</span>
+            <button type="button" class="btn btn-link p-0 text-decoration-none btn-bm-rule" data-rule-id="{{ rule.id }}" title="Bookmark quy tắc">
+              <i class="ph-fill ph-bookmark fs-5 {{ 'text-warning' if rule.id in bm_rule_ids else 'text-muted opacity-50' }}"></i>
+            </button>
+          </div>
+
+          <h5 class="fw-bold text-dark mb-2 line-clamp-2">{{ rule.title }}</h5>
+          <p class="text-secondary small mb-3 line-clamp-3">{{ rule.summary }}</p>
+        </div>
+
+        <div class="pt-3 border-top d-flex align-items-center justify-content-between">
+          <a href="{{ url_for('learning.grammar_rule_detail', rule_id=rule.id) }}" class="btn btn-sm btn-outline-primary rounded-pill px-3 fw-bold">
+            Xem chi tiết →
+          </a>
+          <a href="{{ url_for('learning.grammar_rule_print_view', rule_id=rule.id) }}" target="_blank" class="btn btn-sm btn-light text-secondary rounded-circle p-1.5" title="In ấn">
+            <i class="ph ph-printer fs-5"></i>
+          </a>
+        </div>
+      </article>
+    </div>
+    {% else %}
+    <div class="col-12">
+      <div class="card border-0 shadow-sm rounded-4 p-5 text-center bg-white">
+        <i class="ph ph-notebook fs-1 text-muted mb-2"></i>
+        <h5 class="fw-bold text-muted mb-1">Chưa tìm thấy quy tắc ngữ pháp phù hợp</h5>
+        <p class="text-secondary small mb-0">Thử tìm kiếm với từ khóa khác hoặc quay lại danh mục tất cả quy tắc.</p>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+  const csrfToken = "{{ csrf_token() }}";
+
+  document.querySelectorAll(".btn-bm-rule").forEach(btn => {
+    btn.addEventListener("click", function(e) {
+      e.preventDefault();
+      const ruleId = this.dataset.ruleId;
+      const bmIcon = this.querySelector("i");
+
+      fetch(`/learning/grammar/reference/${ruleId}/bookmark`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-CSRFToken": csrfToken,
+          "X-Requested-With": "XMLHttpRequest"
+        }
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          if (data.is_bookmarked) {
+            bmIcon.classList.remove("text-muted", "opacity-50");
+            bmIcon.classList.add("text-warning");
+          } else {
+            bmIcon.classList.remove("text-warning");
+            bmIcon.classList.add("text-muted", "opacity-50");
+          }
+        }
+      });
+    });
+  });
+});
+</script>
+{% endblock %}

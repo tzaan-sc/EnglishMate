@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+{% block title %}{{ rule.title }} · Tra Cứu Ngữ Pháp EnglishMate{% endblock %}
+
+{% block content %}
+<div class="container-fluid max-w-4xl py-4">
+
+  <!-- Top Action Toolbar -->
+  <div class="d-flex align-items-center justify-content-between mb-4">
+    <a class="btn btn-light rounded-pill px-3 py-1.5 fw-semibold text-secondary shadow-xs" href="{{ url_for('learning.grammar_reference_index') }}">
+      <i class="ph ph-arrow-left me-1"></i> Chỉ mục Tra cứu Ngữ pháp
+    </a>
+    <div class="d-flex gap-2">
+      <!-- Bookmark Button -->
+      <form method="post" action="{{ url_for('learning.bookmark_grammar_rule', rule_id=rule.id) }}" class="d-inline">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <button type="submit" class="btn btn-outline-warning rounded-pill px-3 py-1.5 fw-bold shadow-xs text-dark">
+          <i class="ph-fill ph-bookmark me-1 {{ 'text-warning' if is_bookmarked else 'text-muted opacity-50' }}"></i>
+          {{ 'Đã Bookmark' if is_bookmarked else 'Bookmark Quy Tắc' }}
+        </button>
+      </form>
+      <!-- Print Button -->
+      <a href="{{ url_for('learning.grammar_rule_print_view', rule_id=rule.id) }}" target="_blank" class="btn btn-outline-secondary rounded-pill px-3 py-1.5 fw-semibold shadow-xs">
+        <i class="ph ph-printer me-1"></i> In ấn (Print-friendly)
+      </a>
+    </div>
+  </div>
+
+  <!-- Header Banner -->
+  <div class="card border-0 shadow-sm rounded-4 p-4 bg-white mb-4">
+    <span class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill px-3 py-1 fw-bold align-self-start mb-2">
+      {{ rule.category }}
+    </span>
+    <h2 class="fw-bold text-dark mb-2">{{ rule.title }}</h2>
+    <p class="text-secondary mb-0 fs-6">{{ rule.summary }}</p>
+  </div>
+
+  <!-- Section 1: Rule Explanation -->
+  <div class="card border-0 shadow-sm rounded-4 p-4 bg-white mb-4">
+    <h5 class="fw-bold text-dark mb-3 border-bottom pb-2 d-flex align-items-center gap-2">
+      <i class="ph ph-book-open text-primary fs-4"></i> 1. Giải thích Quy tắc Chi tiết
+    </h5>
+    <div class="prose text-dark lh-lg" style="font-size: 1.05rem; white-space: pre-line;">{{ rule.explanation }}</div>
+  </div>
+
+  <!-- Section 2: Examples -->
+  <div class="card border-0 shadow-sm rounded-4 p-4 bg-white mb-4">
+    <h5 class="fw-bold text-dark mb-3 border-bottom pb-2 d-flex align-items-center gap-2">
+      <i class="ph ph-chat-circle-text text-success fs-4"></i> 2. Các Ví dụ Minh họa
+    </h5>
+    <div class="p-3 bg-light border-start border-4 border-success rounded-3 lh-lg" style="white-space: pre-line;">
+      {{ rule.examples }}
+    </div>
+  </div>
+
+  <!-- Section 3: Quick Reference Table -->
+  {% if rule.quick_table_html %}
+  <div class="card border-0 shadow-sm rounded-4 p-4 bg-white mb-4">
+    <h5 class="fw-bold text-dark mb-3 border-bottom pb-2 d-flex align-items-center gap-2">
+      <i class="ph ph-table text-info fs-4"></i> 3. Bảng Tham Khảo Nhanh (Quick Reference Table)
+    </h5>
+    <div class="table-responsive rounded-3 border">
+      {{ rule.quick_table_html|safe }}
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- Section 4: Exceptions -->
+  {% if rule.exceptions %}
+  <div class="card border-0 shadow-sm rounded-4 p-4 bg-white mb-4 border-start border-4 border-warning">
+    <h5 class="fw-bold text-warning-emphasis mb-3 d-flex align-items-center gap-2">
+      <i class="ph ph-warning text-warning fs-4"></i> 4. Trường hợp Ngoại lệ (Exceptions)
+    </h5>
+    <div class="p-3 bg-warning-subtle text-warning-emphasis rounded-3 lh-lg" style="white-space: pre-line;">
+      {{ rule.exceptions }}
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- Section 5: Common Errors -->
+  {% if rule.common_errors %}
+  <div class="card border-0 shadow-sm rounded-4 p-4 bg-white mb-4 border-start border-4 border-danger">
+    <h5 class="fw-bold text-danger mb-3 d-flex align-items-center gap-2">
+      <i class="ph ph-x-circle text-danger fs-4"></i> 5. Các Lỗi thường gặp (Common Errors)
+    </h5>
+    <div class="p-3 bg-danger-subtle text-danger-emphasis rounded-3 lh-lg" style="white-space: pre-line;">
+      {{ rule.common_errors }}
+    </div>
+  </div>
+  {% endif %}
+
+</div>
+{% endblock %}

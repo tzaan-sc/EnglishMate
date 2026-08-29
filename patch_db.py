@@ -326,9 +326,39 @@ if db_path.exists():
             FOREIGN KEY (attempt_id) REFERENCES grammar_exercise_attempt (id)
         )
     """)
+
+    # Create grammar_rule table if not exists
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS grammar_rule (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            title VARCHAR(160) NOT NULL,
+            category VARCHAR(80) NOT NULL,
+            summary VARCHAR(280) NOT NULL,
+            explanation TEXT NOT NULL,
+            examples TEXT NOT NULL,
+            exceptions TEXT,
+            common_errors TEXT,
+            quick_table_html TEXT,
+            created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+        )
+    """)
+
+    # Create grammar_rule_bookmark table if not exists
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS grammar_rule_bookmark (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id INTEGER NOT NULL,
+            rule_id INTEGER NOT NULL,
+            created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (user_id) REFERENCES user (id),
+            FOREIGN KEY (rule_id) REFERENCES grammar_rule (id),
+            UNIQUE (user_id, rule_id)
+        )
+    """)
     conn.commit()
 
     conn.close()
-    print("Database patched successfully with Grammar Exercises & Error Log enhancements!")
+    print("Database patched successfully with Grammar Reference enhancements!")
 else:
     print("Database file not found at", db_path)

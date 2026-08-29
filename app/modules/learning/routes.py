@@ -7,10 +7,10 @@ from sqlalchemy import func
 
 from ...extensions import db
 from ..auth.models import record_daily_activity
-from .models import (GrammarErrorLog, GrammarExerciseAttempt, GrammarProgress, GrammarTopic,
-                       Lesson, LessonBookmark, LessonFavorite, LessonNote, LessonProgress,
-                       LessonReport, Question, QuizAttempt, QuizAttemptAnswer, Vocabulary,
-                       VocabularyProgress, WordReport)
+from .models import (GrammarErrorLog, GrammarExerciseAttempt, GrammarProgress, GrammarRule,
+                       GrammarRuleBookmark, GrammarTopic, Lesson, LessonBookmark, LessonFavorite,
+                       LessonNote, LessonProgress, LessonReport, Question, QuizAttempt,
+                       QuizAttemptAnswer, Vocabulary, VocabularyProgress, WordReport)
 from . import bp
 from .forms import ActionForm, QuizStartForm
 
@@ -2055,3 +2055,187 @@ def retry_grammar_exercise(attempt_id):
 
     flash("Đã mở chế độ Thử lại các câu sai!", "info")
     return redirect(url_for("learning.do_grammar_exercise"))
+
+
+# ==========================================
+# GRAMMAR REFERENCE ROUTES (Section 3.6)
+# ==========================================
+
+def ensure_initial_grammar_rules():
+    if GrammarRule.query.count() > 0:
+        return
+
+    sample_rules = [
+        GrammarRule(
+            title="Quy tắc Thêm S/ES vào Động Từ & Danh Từ",
+            category="Verbs & Nouns",
+            summary="Các quy tắc phát âm và chính tả khi thêm s/es vào đuôi động từ hoặc danh từ số nhiều.",
+            explanation="""1. Quy tắc thêm 'es':
+- Khi động từ hoặc danh từ kết thúc bằng các chữ cái: -s, -ss, -sh, -ch, -x, -z, -o ➔ Thêm 'es'.
+  Ví dụ: watch ➔ watches, wash ➔ washes, box ➔ boxes, potato ➔ potatoes.
+
+2. Quy tắc với đuôi '-y':
+- Nguyên âm (a, e, i, o, u) + y ➔ Giữ nguyên, thêm 's' (play ➔ plays, boy ➔ boys).
+- Phụ âm + y ➔ Đổi 'y' thành 'i' rồi thêm 'es' (study ➔ studies, city ➔ cities).""",
+            examples="""watch ➔ watches (xem)
+box ➔ boxes (hộp)
+fly ➔ flies (bay)
+toy ➔ toys (đồ chơi)""",
+            exceptions="""- Một số từ mượn gốc Ý/Đức tận cùng là '-o' chỉ thêm 's': photo ➔ photos, piano ➔ pianos, radio ➔ radios, kilo ➔ kilos.""",
+            common_errors="❌ Thêm 'es' cho các từ tận cùng '-y' đứng sau nguyên âm (Sai: playes ➔ Đúng: plays).\n❌ Quên phát âm đuôi /iz/ khi từ kết thúc bằng âm xuýt.",
+            quick_table_html="""<table class="table table-bordered table-sm mb-0">
+  <thead class="table-light"><tr><th>Đuôi tận cùng</th><th>Quy tắc</th><th>Ví dụ</th></tr></thead>
+  <tbody>
+    <tr><td>-s, -sh, -ch, -x, -z, -o</td><td>+ es</td><td>watches, washes, tomatoes</td></tr>
+    <tr><td>Phụ âm + y</td><td>y ➔ i + es</td><td>study ➔ studies</td></tr>
+    <tr><td>Nguyên âm + y</td><td>+ s</td><td>play ➔ plays</td></tr>
+  </tbody>
+</table>"""
+        ),
+        GrammarRule(
+            title="Quy tắc Trật Tự Tính Từ (OSASCOMP)",
+            category="Adjectives",
+            summary="Thứ tự sắp xếp các tính từ khi bổ nghĩa cho một danh từ trong tiếng Anh.",
+            explanation="""Khi có nhiều tính từ cùng đứng trước một danh từ, thứ tự được sắp xếp theo quy tắc OSASCOMP:
+1. Opinion (Ý kiến, cảm nhận): beautiful, lovely, delicious
+2. Size (Kích cỡ): big, small, huge, tall
+3. Age (Độ tuổi, cũ mới): new, old, young, ancient
+4. Shape (Hình dáng): round, square, oval
+5. Color (Màu sắc): red, blue, dark, pale
+6. Origin (Nguồn gốc, xuất xứ): Vietnamese, American, Japanese
+7. Material (Chất liệu): wooden, silk, leather, plastic
+8. Purpose (Mục đích sử dụng): sleeping (bag), racing (car)""",
+            examples="""A beautiful small old round black Vietnamese wooden table.
+(Một chiếc bàn gỗ Việt Nam màu đen hình tròn cũ nhỏ xinh xắn).""",
+            exceptions="""- Tính từ chỉ kích thước và chiều dài thường đứng trước tính từ chỉ hình dạng (short round hair).""",
+            common_errors="❌ Đặt Nguồn gốc hoặc Chất liệu lên trước Ý kiến (Sai: a wooden beautiful table ➔ Đúng: a beautiful wooden table).",
+            quick_table_html="""<table class="table table-bordered table-sm mb-0">
+  <thead class="table-light"><tr><th>Ký tự</th><th>Yếu tố (Meaning)</th><th>Ví dụ</th></tr></thead>
+  <tbody>
+    <tr><td>O</td><td>Opinion (Ý kiến)</td><td>lovely, ugly</td></tr>
+    <tr><td>S</td><td>Size (Kích thước)</td><td>huge, tiny</td></tr>
+    <tr><td>A</td><td>Age (Tuổi tác)</td><td>ancient, modern</td></tr>
+    <tr><td>S</td><td>Shape (Hình dáng)</td><td>round, square</td></tr>
+    <tr><td>C</td><td>Color (Màu sắc)</td><td>yellow, green</td></tr>
+    <tr><td>O</td><td>Origin (Xuất xứ)</td><td>Italian, French</td></tr>
+    <tr><td>M</td><td>Material (Chất liệu)</td><td>gold, plastic</td></tr>
+    <tr><td>P</td><td>Purpose (Mục đích)</td><td>swimming (pool)</td></tr>
+  </tbody>
+</table>"""
+        ),
+        GrammarRule(
+            title="Quy tắc Động Từ Bất Quy Tắc Phổ Biến (Irregular Verbs)",
+            category="Verbs",
+            summary="Bảng tổng hợp và quy tắc biến đổi các động từ bất quy tắc trong quá khứ đơn và quá khứ phân từ.",
+            explanation="""Động từ bất quy tắc là các động từ khi chuyển sang Quá khứ đơn (V2) và Quá khứ phân từ (V3) không thêm đuôi '-ed' mà biến đổi theo dạng riêng hoặc giữ nguyên.""",
+            examples="""go ➔ went ➔ gone (đi)
+see ➔ saw ➔ seen (nhìn thấy)
+take ➔ took ➔ taken (lấy)
+cut ➔ cut ➔ cut (cắt)""",
+            exceptions="""- Một số động từ có 2 cách chia cả có quy tắc và bất quy tắc (VD: burn ➔ burned/burnt, learn ➔ learned/learnt).""",
+            common_errors="❌ Thêm '-ed' vào động từ bất quy tắc (Sai: goed ➔ Đúng: went).",
+            quick_table_html="""<table class="table table-bordered table-sm mb-0">
+  <thead class="table-light"><tr><th>V1 (Nguyên thể)</th><th>V2 (Quá khứ)</th><th>V3 (Phân từ)</th><th>Nghĩa</th></tr></thead>
+  <tbody>
+    <tr><td>go</td><td>went</td><td>gone</td><td>đi</td></tr>
+    <tr><td>do</td><td>did</td><td>done</td><td>làm</td></tr>
+    <tr><td>have</td><td>had</td><td>had</td><td>có</td></tr>
+    <tr><td>make</td><td>made</td><td>made</td><td>tạo ra</td></tr>
+  </tbody>
+</table>"""
+        )
+    ]
+    db.session.add_all(sample_rules)
+    db.session.commit()
+
+
+@bp.route("/grammar/reference")
+@login_required
+def grammar_reference_index():
+    ensure_initial_grammar_rules()
+
+    q = request.args.get("q", "").strip()
+    category = request.args.get("category", "").strip()
+    bookmarked_only = request.args.get("bookmarked_only", "").strip()
+
+    user_bms = GrammarRuleBookmark.query.filter_by(user_id=current_user.id).all()
+    bm_rule_ids = {b.rule_id for b in user_bms}
+
+    categories = [r[0] for r in db.session.query(GrammarRule.category).distinct().all()]
+
+    query = GrammarRule.query
+    if q:
+        query = query.filter(GrammarRule.title.ilike(f"%{q}%") | GrammarRule.summary.ilike(f"%{q}%"))
+    if category:
+        query = query.filter_by(category=category)
+
+    rules = query.order_by(GrammarRule.id).all()
+
+    if bookmarked_only == "1":
+        rules = [r for r in rules if r.id in bm_rule_ids]
+
+    return render_template(
+        "learning/grammar_reference.html",
+        rules=rules,
+        categories=categories,
+        q=q,
+        category=category,
+        bookmarked_only=bookmarked_only,
+        bm_rule_ids=bm_rule_ids
+    )
+
+
+@bp.route("/grammar/reference/<int:rule_id>")
+@login_required
+def grammar_rule_detail(rule_id):
+    rule = db.session.get(GrammarRule, rule_id)
+    if not rule:
+        flash("Không tìm thấy quy tắc ngữ pháp.", "danger")
+        return redirect(url_for("learning.grammar_reference_index"))
+
+    bm = GrammarRuleBookmark.query.filter_by(user_id=current_user.id, rule_id=rule.id).first()
+    is_bookmarked = (bm is not None)
+
+    return render_template(
+        "learning/grammar_rule_detail.html",
+        rule=rule,
+        is_bookmarked=is_bookmarked,
+        form=ActionForm()
+    )
+
+
+@bp.post("/grammar/reference/<int:rule_id>/bookmark")
+@login_required
+def bookmark_grammar_rule(rule_id):
+    rule = db.session.get(GrammarRule, rule_id)
+    if not rule:
+        return jsonify({"success": False, "message": "Không tìm thấy quy tắc."}), 404
+
+    bm = GrammarRuleBookmark.query.filter_by(user_id=current_user.id, rule_id=rule.id).first()
+    if bm:
+        db.session.delete(bm)
+        db.session.commit()
+        is_bm = False
+        msg = "Đã bỏ bookmark quy tắc ngữ pháp."
+    else:
+        db.session.add(GrammarRuleBookmark(user_id=current_user.id, rule_id=rule.id))
+        db.session.commit()
+        is_bm = True
+        msg = "Đã bookmark quy tắc ngữ pháp thành công!"
+
+    if request.is_json or request.headers.get("X-Requested-With") == "XMLHttpRequest":
+        return jsonify({"success": True, "is_bookmarked": is_bm, "message": msg})
+
+    flash(msg, "success" if is_bm else "info")
+    return redirect(url_for("learning.grammar_rule_detail", rule_id=rule.id))
+
+
+@bp.route("/grammar/reference/<int:rule_id>/print")
+@login_required
+def grammar_rule_print_view(rule_id):
+    rule = db.session.get(GrammarRule, rule_id)
+    if not rule:
+        flash("Không tìm thấy quy tắc ngữ pháp.", "danger")
+        return redirect(url_for("learning.grammar_reference_index"))
+
+    return render_template("learning/grammar_rule_print.html", rule=rule)
