@@ -29,6 +29,11 @@ class User(UserMixin, db.Model):
     last_login_at = db.Column(db.DateTime(timezone=True), nullable=True)
     reset_token = db.Column(db.String(100), nullable=True)
     reset_token_expiry = db.Column(db.DateTime(timezone=True), nullable=True)
+    full_name = db.Column(db.String(100), nullable=True)
+    avatar = db.Column(db.String(255), nullable=True, default="default_avatar.png")
+    pending_email = db.Column(db.String(120), nullable=True)
+    pending_email_otp = db.Column(db.String(6), nullable=True)
+    pending_email_expiry = db.Column(db.DateTime(timezone=True), nullable=True)
     current_streak = db.Column(db.Integer, nullable=False, default=0)
     longest_streak = db.Column(db.Integer, nullable=False, default=0)
     last_activity_date = db.Column(db.Date, nullable=True)
@@ -101,6 +106,29 @@ class User(UserMixin, db.Model):
         if expiry.tzinfo is None:
             expiry = expiry.replace(tzinfo=timezone.utc)
         return current_time <= expiry
+
+    def generate_pending_email_otp(self, new_email):
+        self.pending_email = new_email.strip().lower()
+        self.pending_email_otp = f"{random.randint(100000, 999999)}"
+        self.pending_email_expiry = datetime.now(timezone.utc) + timedelta(minutes=15)
+        return self.pending_email_otp
+
+    def verify_pending_email_otp(self, code):
+        if not self.pending_email or not self.pending_email_otp or not self.pending_email_expiry:
+            return False
+        current_time = datetime.now(timezone.utc)
+        expiry = self.pending_email_expiry
+        if expiry.tzinfo is None:
+            expiry = expiry.replace(tzinfo=timezone.utc)
+        if current_time > expiry:
+            return False
+        if self.pending_email_otp == code.strip():
+            self.email = self.pending_email
+            self.pending_email = None
+            self.pending_email_otp = None
+            self.pending_email_expiry = None
+            return True
+        return False
 
     @property
     def is_admin(self):

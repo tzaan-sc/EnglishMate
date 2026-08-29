@@ -1,12 +1,18 @@
+import os
+import uuid
 from datetime import date, timedelta
-from flask import render_template
-from flask_login import current_user, login_required
+from pathlib import Path
+
+from flask import current_app, flash, redirect, render_template, request, url_for
+from flask_login import current_user, login_required, logout_user
 from sqlalchemy import func
 
 from ...extensions import db
-from ..auth.models import DailyActivity
+from ..auth.models import DailyActivity, User
+from ..auth.routes import log_dev_otp_code
 from ..learning.models import Lesson, LessonProgress, QuizAttempt, VocabularyProgress
 from . import bp
+from .forms import ChangeEmailForm, ChangePasswordForm, DeleteAccountForm, EditProfileForm, VerifyNewEmailForm
 
 
 @bp.get("/")
@@ -56,4 +62,142 @@ def how_to_learn():
 @bp.get("/faq")
 def faq():
     return render_template("main/faq.html")
+
+
+@bp.route("/profile", methods=["GET"])
+@login_required
+def profile():
+    profile_form = EditProfileForm(full_name=current_user.full_name or "")
+    email_form = ChangeEmailForm()
+    verify_email_form = VerifyNewEmailForm()
+    password_form = ChangePasswordForm()
+    delete_form = DeleteAccountForm()
+    show_verify_modal = request.args.get("verify_email") == "1"
+
+    return render_template(
+        "main/profile.html",
+        profile_form=profile_form,
+        email_form=email_form,
+        verify_email_form=verify_email_form,
+        password_form=password_form,
+        delete_form=delete_form,
+        show_verify_modal=show_verify_modal,
+    )
+
+
+@bp.post("/profile/edit-info")
+@login_required
+def edit_profile_info():
+    form = EditProfileForm()
+    if form.validate_on_submit():
+        if form.full_name.data is not None:
+            current_user.full_name = form.full_name.data.strip()
+
+        if form.avatar.data:
+            file = form.avatar.data
+            ext = os.path.splitext(file.filename)[1].lower()
+            filename = f"avatar_{current_user.id}_{uuid.uuid4().hex[:8]}{ext}"
+            upload_folder = Path(current_app.root_path) / "static" / "uploads" / "avatars"
+            upload_folder.mkdir(parents=True, exist_ok=True)
+            file_path = upload_folder / filename
+            file.save(file_path)
+            current_user.avatar = filename
+
+        db.session.commit()
+        flash("Cập nhật thông tin cá nhân thành công!", "success")
+    else:
+        for error in form.errors.values():
+            flash(f"Lỗi: {error[0]}", "danger")
+
+    return redirect(url_for("main.profile"))
+
+
+@bp.post("/profile/change-email")
+@login_required
+def change_email_request():
+    form = ChangeEmailForm()
+    if form.validate_on_submit():
+        new_email = form.new_email.data.strip().lower()
+        if new_email == current_user.email:
+            flash("Email mới trùng với email hiện tại.", "warning")
+        elif User.query.filter(User.email == new_email, User.id != current_user.id).first():
+            flash("Email này đã được sử dụng bởi tài khoản khác.", "danger")
+        else:
+            code = current_user.generate_pending_email_otp(new_email)
+            db.session.commit()
+            log_dev_otp_code(new_email, code)
+            flash(f"Mã OTP xác nhận đã được gửi tới email mới <strong>{new_email}</strong>. Vui lòng nhập mã OTP để xác nhận.", "info")
+            return redirect(url_for("main.profile", verify_email="1"))
+    else:
+        for error in form.errors.values():
+            flash(f"Lỗi: {error[0]}", "danger")
+
+    return redirect(url_for("main.profile"))
+
+
+@bp.post("/profile/verify-email")
+@login_required
+def verify_new_email():
+    form = VerifyNewEmailForm()
+    if form.validate_on_submit():
+        if current_user.verify_pending_email_otp(form.otp_code.data):
+            db.session.commit()
+            flash("Cập nhật địa chỉ email mới thành công!", "success")
+        else:
+            flash("Mã OTP không chính xác hoặc đã hết hạn (15 phút). Vui lòng thử lại.", "danger")
+            return redirect(url_for("main.profile", verify_email="1"))
+    else:
+        for error in form.errors.values():
+            flash(f"Lỗi: {error[0]}", "danger")
+
+    return redirect(url_for("main.profile"))
+
+
+@bp.post("/profile/change-password")
+@login_required
+def profile_change_password():
+    form = ChangePasswordForm()
+    if form.validate_on_submit():
+        if not current_user.check_password(form.current_password.data):
+            flash("Mật khẩu hiện tại không chính xác.", "danger")
+        else:
+            current_user.set_password(form.new_password.data)
+            db.session.commit()
+            flash("Đổi mật khẩu thành công!", "success")
+    else:
+        for error in form.errors.values():
+            flash(f"Lỗi: {error[0]}", "danger")
+
+    return redirect(url_for("main.profile"))
+
+
+@bp.post("/profile/deactivate")
+@login_required
+def profile_deactivate():
+    current_user.is_active = False
+    db.session.commit()
+    logout_user()
+    flash("Tài khoản của bạn đã được vô hiệu hóa tạm thời.", "warning")
+    return redirect(url_for("main.index"))
+
+
+@bp.post("/profile/delete")
+@login_required
+def profile_delete_account():
+    form = DeleteAccountForm()
+    if form.validate_on_submit():
+        if not current_user.check_password(form.confirm_password.data):
+            flash("Mật khẩu xác nhận không chính xác. Xóa tài khoản thất bại.", "danger")
+        else:
+            user = db.session.get(User, current_user.id)
+            logout_user()
+            db.session.delete(user)
+            db.session.commit()
+            flash("Tài khoản của bạn đã được xóa vĩnh viễn khỏi hệ thống.", "info")
+            return redirect(url_for("main.index"))
+    else:
+        for error in form.errors.values():
+            flash(f"Lỗi: {error[0]}", "danger")
+
+    return redirect(url_for("main.profile"))
 

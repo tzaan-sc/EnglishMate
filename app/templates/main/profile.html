@@ -1,0 +1,273 @@
+{% extends "base.html" %}
+{% block title %}Hồ sơ cá nhân · EnglishMate{% endblock %}
+
+{% block content %}
+<div class="container-fluid max-w-5xl py-4">
+    <!-- Page Header Title -->
+    <div class="d-flex align-items-center justify-content-between mb-4">
+        <div>
+            <h2 class="fw-bold mb-1">Hồ sơ cá nhân</h2>
+            <p class="text-secondary small mb-0">Quản lý thông tin tài khoản, mật khẩu và bảo mật cá nhân.</p>
+        </div>
+        <a href="{{ url_for('main.dashboard') }}" class="btn btn-outline-secondary btn-sm rounded-pill px-3">
+            ← Quay lại Trang chủ
+        </a>
+    </div>
+
+    <!-- Main Grid Layout -->
+    <div class="row g-4">
+        <!-- Left Column: User Summary Card -->
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm rounded-4 p-4 text-center bg-white h-100">
+                <div class="position-relative d-inline-block mx-auto mb-3">
+                    <div class="rounded-circle overflow-hidden shadow-sm mx-auto d-flex align-items-center justify-content-center bg-primary-subtle text-primary border border-2 border-primary-subtle" style="width: 110px; height: 110px; font-size: 2.5rem; font-weight: bold;">
+                        {% if current_user.avatar and current_user.avatar != 'default_avatar.png' %}
+                        <img src="{{ url_for('static', filename='uploads/avatars/' + current_user.avatar) }}" class="w-100 h-100 object-fit-cover" alt="Avatar">
+                        {% else %}
+                        {{ current_user.username[0].upper() }}
+                        {% endif %}
+                    </div>
+                </div>
+
+                <h4 class="fw-bold mb-1">{{ current_user.full_name or current_user.username }}</h4>
+                <p class="text-muted small mb-3">@{{ current_user.username }}</p>
+
+                <div class="d-flex justify-content-center gap-2 mb-4">
+                    {% if current_user.is_admin %}
+                    <span class="badge bg-danger-subtle text-danger border border-danger-subtle rounded-pill px-3 py-1">Quản trị viên</span>
+                    {% else %}
+                    <span class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill px-3 py-1">Học viên chính thức</span>
+                    {% endif %}
+
+                    {% if current_user.is_email_verified %}
+                    <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-3 py-1">✓ Đã xác minh Email</span>
+                    {% else %}
+                    <span class="badge bg-warning-subtle text-warning border border-warning-subtle rounded-pill px-3 py-1">Chưa xác minh Email</span>
+                    {% endif %}
+                </div>
+
+                <hr class="my-3 opacity-25">
+
+                <!-- Account Metadata Details -->
+                <div class="text-start small text-secondary space-y-2">
+                    <div class="d-flex justify-content-between py-1">
+                        <span><i class="ph ph-envelope me-1"></i> Email:</span>
+                        <strong class="text-dark">{{ current_user.email }}</strong>
+                    </div>
+                    <div class="d-flex justify-content-between py-1">
+                        <span><i class="ph ph-calendar-blank me-1"></i> Ngày tham gia:</span>
+                        <strong class="text-dark">{{ current_user.created_at.strftime('%d/%m/%Y') if current_user.created_at else '---' }}</strong>
+                    </div>
+                    <div class="d-flex justify-content-between py-1">
+                        <span><i class="ph ph-clock me-1"></i> Đăng nhập gần nhất:</span>
+                        <strong class="text-dark">{{ current_user.last_login_at.strftime('%d/%m/%Y %H:%M') if current_user.last_login_at else 'Lần đầu' }}</strong>
+                    </div>
+                    <div class="d-flex justify-content-between py-1">
+                        <span><i class="ph ph-fire me-1"></i> Chuỗi ngày học:</span>
+                        <strong class="text-danger fw-bold">{{ current_user.current_streak }} ngày 🔥</strong>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Column: Settings Sections -->
+        <div class="col-lg-8 space-y-4">
+            
+            <!-- Section 1: Edit Profile Info & Avatar -->
+            <div class="card border-0 shadow-sm rounded-4 p-4 bg-white mb-4">
+                <h5 class="fw-bold mb-3 d-flex align-items-center gap-2">
+                    <i class="ph ph-user-gear text-primary fs-4"></i> Thông tin cá nhân & Ảnh đại diện
+                </h5>
+                <form method="post" action="{{ url_for('main.edit_profile_info') }}" enctype="multipart/form-data">
+                    {{ profile_form.hidden_tag() }}
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Họ và tên đầy đủ</label>
+                        {{ profile_form.full_name(class="form-control", placeholder="Nhập họ và tên đầy đủ của bạn") }}
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Tải lên ảnh đại diện mới</label>
+                        {{ profile_form.avatar(class="form-control") }}
+                        <div class="form-text small">Hỗ trợ định dạng JPG, PNG, WEBP, GIF. Dung lượng tối đa 5MB.</div>
+                    </div>
+                    <button type="submit" class="btn btn-primary rounded-pill px-4 fw-semibold">
+                        Lưu thay đổi thông tin
+                    </button>
+                </form>
+            </div>
+
+            <!-- Section 2: Change Email -->
+            <div class="card border-0 shadow-sm rounded-4 p-4 bg-white mb-4">
+                <h5 class="fw-bold mb-3 d-flex align-items-center gap-2">
+                    <i class="ph ph-envelope-simple-open text-success fs-4"></i> Thay đổi địa chỉ Email (Xác thực OTP)
+                </h5>
+                <p class="text-muted small">Khi thay đổi email, một mã xác nhận OTP 6 chữ số sẽ được gửi tới email mới để bạn xác minh.</p>
+                <form method="post" action="{{ url_for('main.change_email_request') }}">
+                    {{ email_form.hidden_tag() }}
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Địa chỉ Email hiện tại</label>
+                        <input type="text" class="form-control bg-light" value="{{ current_user.email }}" readonly disabled>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Địa chỉ Email mới</label>
+                        {{ email_form.new_email(class="form-control", placeholder="Nhập email mới của bạn") }}
+                    </div>
+                    <button type="submit" class="btn btn-success rounded-pill px-4 fw-semibold">
+                        Gửi mã xác nhận OTP tới email mới
+                    </button>
+                </form>
+            </div>
+
+            <!-- Section 3: Change Password -->
+            <div class="card border-0 shadow-sm rounded-4 p-4 bg-white mb-4">
+                <h5 class="fw-bold mb-3 d-flex align-items-center gap-2">
+                    <i class="ph ph-key text-warning fs-4"></i> Đổi mật khẩu
+                </h5>
+                <form method="post" action="{{ url_for('main.profile_change_password') }}">
+                    {{ password_form.hidden_tag() }}
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Mật khẩu hiện tại</label>
+                        <div class="input-group">
+                            {{ password_form.current_password(class="form-control", id="current_password") }}
+                            <button class="btn btn-outline-secondary toggle-password-btn" type="button" data-target="current_password">
+                                <i class="bi bi-eye"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Mật khẩu mới</label>
+                        <div class="input-group">
+                            {{ password_form.new_password(class="form-control", id="password") }}
+                            <button class="btn btn-outline-secondary toggle-password-btn" type="button" data-target="password">
+                                <i class="bi bi-eye"></i>
+                            </button>
+                        </div>
+                        <!-- Dynamic Strength Meter -->
+                        <div id="password-strength-wrap" class="mt-2 d-none">
+                            <div class="progress" style="height: 6px;">
+                                <div id="password-strength-bar" class="progress-bar" role="progressbar" style="width: 0%;"></div>
+                            </div>
+                            <div class="d-flex justify-content-between align-items-center mt-1">
+                                <small id="password-strength-text" class="fw-semibold text-muted" style="font-size: 0.75rem;"></small>
+                                <small id="password-strength-hint" class="text-muted" style="font-size: 0.75rem;"></small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Nhập lại mật khẩu mới</label>
+                        <div class="input-group">
+                            {{ password_form.confirm_password(class="form-control", id="confirm_password") }}
+                            <button class="btn btn-outline-secondary toggle-password-btn" type="button" data-target="confirm_password">
+                                <i class="bi bi-eye"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-warning rounded-pill px-4 fw-semibold text-dark">
+                        Cập nhật mật khẩu mới
+                    </button>
+                </form>
+            </div>
+
+            <!-- Section 4: Danger Zone -->
+            <div class="card border border-danger-subtle shadow-sm rounded-4 p-4 bg-danger-subtle bg-opacity-10 mb-4">
+                <h5 class="fw-bold text-danger mb-3 d-flex align-items-center gap-2">
+                    <i class="ph ph-warning-circle text-danger fs-4"></i> Vùng quản lý rủi ro & Bảo mật
+                </h5>
+                <p class="text-secondary small mb-3">Vô hiệu hóa tài khoản tạm thời hoặc Xóa tài khoản vĩnh viễn khỏi hệ thống.</p>
+                <div class="d-flex flex-wrap gap-3">
+                    <button type="button" class="btn btn-outline-warning text-dark rounded-pill px-4 fw-semibold" data-bs-toggle="modal" data-bs-target="#deactivateModal">
+                        Vô hiệu hóa tài khoản
+                    </button>
+                    <button type="button" class="btn btn-danger rounded-pill px-4 fw-semibold" data-bs-toggle="modal" data-bs-target="#deleteModal">
+                        Xóa tài khoản vĩnh viễn
+                    </button>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<!-- Modal Verify New Email OTP -->
+<div class="modal fade" id="verifyNewEmailModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 rounded-4 shadow">
+            <div class="modal-header border-0 pb-0">
+                <h5 class="modal-title fw-bold">Xác nhận Email Mới</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4">
+                <p class="text-secondary small">Vui lòng nhập mã OTP 6 chữ số đã được gửi tới email mới <strong>{{ current_user.pending_email }}</strong>.</p>
+                <form method="post" action="{{ url_for('main.verify_new_email') }}">
+                    {{ verify_email_form.hidden_tag() }}
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Mã xác minh OTP</label>
+                        {{ verify_email_form.otp_code(class="form-control form-control-lg text-center fs-3 letter-spacing-2", placeholder="000000", maxlength="6") }}
+                    </div>
+                    <button type="submit" class="btn btn-success w-100 btn-lg rounded-pill fw-bold">
+                        Xác nhận cập nhật Email
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Deactivate Account Confirmation -->
+<div class="modal fade" id="deactivateModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 rounded-4 shadow">
+            <div class="modal-header border-0">
+                <h5 class="modal-title fw-bold text-warning">Xác nhận Vô hiệu hóa Tài khoản</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Bạn có chắc chắn muốn **vô hiệu hóa tạm thời** tài khoản này không? Sau khi vô hiệu hóa, bạn sẽ tự động đăng xuất và tạm thời không thể đăng nhập lại cho đến khi liên hệ Quản trị viên khôi phục.</p>
+            </div>
+            <div class="modal-footer border-0">
+                <button type="button" class="btn btn-light rounded-pill" data-bs-dismiss="modal">Hủy bỏ</button>
+                <form method="post" action="{{ url_for('main.profile_deactivate') }}" class="m-0">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <button type="submit" class="btn btn-warning rounded-pill text-dark fw-bold">Xác nhận Vô hiệu hóa</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Delete Account Confirmation -->
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 rounded-4 shadow">
+            <div class="modal-header border-0">
+                <h5 class="modal-title fw-bold text-danger">⚠️ Xác nhận Xóa Tài khoản Vĩnh viễn</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p class="text-danger fw-semibold">Hành động này KHÔNG THỂ HOÀN TÁC! Toàn bộ thông tin bài học, tiến độ và lịch sử học tập của bạn sẽ bị xóa vĩnh viễn.</p>
+                <form method="post" action="{{ url_for('main.profile_delete_account') }}">
+                    {{ delete_form.hidden_tag() }}
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Nhập mật khẩu tài khoản để xác nhận</label>
+                        {{ delete_form.confirm_password(class="form-control", placeholder="Nhập mật khẩu hiện tại của bạn") }}
+                    </div>
+                    <div class="d-flex justify-content-end gap-2">
+                        <button type="button" class="btn btn-light rounded-pill" data-bs-dismiss="modal">Hủy</button>
+                        <button type="submit" class="btn btn-danger rounded-pill fw-bold">Xác nhận Xóa Vĩnh Viễn</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if show_verify_modal %}
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+    const modalEl = document.getElementById("verifyNewEmailModal");
+    if (modalEl && window.bootstrap) {
+        new bootstrap.Modal(modalEl).show();
+    }
+});
+</script>
+{% endif %}
+{% endblock %}

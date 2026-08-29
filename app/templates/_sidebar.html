@@ -115,25 +115,37 @@
                         <span>Tiến độ</span>
                     </a>
                 </li>
+                <li class="nav-item">
+                    <a class="nav-link nav-link-success d-flex align-items-center gap-3 px-3 py-2.5 {% if request.path == url_for('main.profile') %}active{% endif %}" href="{{ url_for('main.profile') }}">
+                        <span class="menu-icon-box bg-success-subtle text-success fs-5">
+                            <i class="ph ph-user-circle"></i>
+                        </span>
+                        <span>Hồ sơ cá nhân</span>
+                    </a>
+                </li>
             </ul>
         </div>
     </div>
     
     <div class="sidebar-profile p-3 border-top bg-light-subtle">
         <div class="d-flex align-items-center justify-content-between">
-            <div class="d-flex align-items-center gap-2 text-truncate">
+            <a href="{{ url_for('main.profile') }}" class="d-flex align-items-center gap-2 text-truncate text-decoration-none" title="Xem hồ sơ cá nhân">
                 <div class="profile-avatar-circle">
+                    {% if current_user.avatar and current_user.avatar != 'default_avatar.png' %}
+                    <img src="{{ url_for('static', filename='uploads/avatars/' + current_user.avatar) }}" class="w-100 h-100 rounded-circle object-fit-cover" alt="Avatar">
+                    {% else %}
                     {{ current_user.username[0].upper() }}
+                    {% endif %}
                 </div>
                 <div class="d-flex flex-column text-truncate" style="max-width: 120px;">
-                    <span class="fw-bold text-dark text-truncate small" title="{{ current_user.username }}">{{ current_user.username }}</span>
+                    <span class="fw-bold text-dark text-truncate small" title="{{ current_user.full_name or current_user.username }}">{{ current_user.full_name or current_user.username }}</span>
                     {% if current_user.is_admin %}
                     <span class="badge bg-danger-subtle text-danger border border-danger-subtle rounded-pill px-1.5 py-0.5 text-center" style="font-size: 0.62rem; width: fit-content;">Quản trị viên</span>
                     {% else %}
                     <span class="text-muted" style="font-size: 0.68rem;">Học viên</span>
                     {% endif %}
                 </div>
-            </div>
+            </a>
             <form method="post" action="{{ url_for('auth.logout') }}" class="m-0">
                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                 <button class="btn btn-link p-1 text-danger border-0 d-flex align-items-center justify-content-center" type="submit" title="Đăng xuất">

@@ -20,6 +20,11 @@ if db_path.exists():
         ("last_login_at", "DATETIME"),
         ("reset_token", "VARCHAR(100)"),
         ("reset_token_expiry", "DATETIME"),
+        ("full_name", "VARCHAR(100)"),
+        ("avatar", "VARCHAR(255) DEFAULT 'default_avatar.png'"),
+        ("pending_email", "VARCHAR(120)"),
+        ("pending_email_otp", "VARCHAR(6)"),
+        ("pending_email_expiry", "DATETIME"),
     ]
 
     for col_name, col_type in new_cols:
