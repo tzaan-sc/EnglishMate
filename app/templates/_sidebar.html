@@ -33,12 +33,28 @@
                         <span>Quản lý từ vựng</span>
                     </a>
                 </li>
-                <li class="nav-item mb-2">
+                <li class="nav-item">
                     <a class="nav-link d-flex align-items-center gap-3 px-3 py-2.5 {% if request.path == url_for('admin.users') %}active{% endif %}" href="{{ url_for('admin.users') }}">
                         <span class="menu-icon-box bg-primary-subtle text-primary" style="width: 32px; height: 32px; font-size: 1.1rem; display: inline-flex; align-items: center; justify-content: center;">
                             <i class="ph ph-users"></i>
                         </span>
                         <span>Quản lý người dùng</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link d-flex align-items-center gap-3 px-3 py-2.5 {% if request.path == url_for('admin.roles') %}active{% endif %}" href="{{ url_for('admin.roles') }}">
+                        <span class="menu-icon-box bg-warning-subtle text-warning" style="width: 32px; height: 32px; font-size: 1.1rem; display: inline-flex; align-items: center; justify-content: center;">
+                            <i class="ph ph-shield-check"></i>
+                        </span>
+                        <span>Vai trò & Phân quyền</span>
+                    </a>
+                </li>
+                <li class="nav-item mb-2">
+                    <a class="nav-link d-flex align-items-center gap-3 px-3 py-2.5 {% if request.path == url_for('admin.audit_logs') %}active{% endif %}" href="{{ url_for('admin.audit_logs') }}">
+                        <span class="menu-icon-box bg-secondary-subtle text-secondary" style="width: 32px; height: 32px; font-size: 1.1rem; display: inline-flex; align-items: center; justify-content: center;">
+                            <i class="ph ph-receipt"></i>
+                        </span>
+                        <span>Nhật ký Audit Logs</span>
                     </a>
                 </li>
 

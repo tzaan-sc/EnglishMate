@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+{% block title %}Nhật ký Kiểm tra Audit Logs · EnglishMate Admin{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  {% include "admin/_nav.html" %}
+
+  <div class="card border rounded-4 bg-white p-4 shadow-xs">
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
+      <div>
+        <h4 class="fw-800 text-dark mb-1">Nhật ký Kiểm tra Admin Audit Logs</h4>
+        <p class="text-secondary small mb-0">Theo dõi toàn bộ các thao tác quản trị, thay đổi quyền hạn và trạng thái hệ thống.</p>
+      </div>
+
+      <form method="get" class="d-flex flex-wrap gap-2" style="max-width: 450px;">
+        <select name="action" class="form-select rounded-pill px-3" style="max-width: 170px;">
+          <option value="">-- Tất cả hành động --</option>
+          {% for a in actions %}
+          <option value="{{ a }}" {% if action_filter == a %}selected{% endif %}>{{ a }}</option>
+          {% endfor %}
+        </select>
+        <input type="text" name="q" value="{{ search }}" class="form-control rounded-pill px-3" placeholder="Tìm người thực hiện, IP...">
+        <button type="submit" class="btn btn-dark rounded-pill px-3">Lọc</button>
+      </form>
+    </div>
+
+    <div class="table-responsive">
+      <table class="table table-hover align-middle border-top">
+        <thead class="bg-light small text-uppercase text-muted">
+          <tr>
+            <th class="py-3 ps-3">ID & Thời gian</th>
+            <th class="py-3">Người thực hiện</th>
+            <th class="py-3 text-center">Hành động (Action)</th>
+            <th class="py-3">Chi tiết & Đối tượng</th>
+            <th class="py-3 text-end pe-3">Địa chỉ IP</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for log in logs %}
+          <tr>
+            <td class="ps-3">
+              <span class="fw-bold text-dark d-block">#{{ log.id }}</span>
+              <small class="text-muted">{{ log.created_at.strftime('%H:%M:%S %d/%m/%Y') if log.created_at else '---' }}</small>
+            </td>
+            <td>
+              {% if log.user %}
+              <div class="d-flex align-items-center gap-2">
+                <div class="profile-avatar-circle" style="width: 28px; height: 28px; font-size: 0.75rem;">
+                  {{ log.user.username[0].upper() }}
+                </div>
+                <span class="fw-semibold text-dark small">{{ log.user.username }}</span>
+              </div>
+              {% else %}
+              <span class="text-muted small">Hệ thống</span>
+              {% endif %}
+            </td>
+            <td class="text-center">
+              {% if 'CREATE' in log.action %}
+              <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-2.5 py-1">{{ log.action }}</span>
+              {% elif 'DELETE' in log.action %}
+              <span class="badge bg-danger-subtle text-danger border border-danger-subtle rounded-pill px-2.5 py-1">{{ log.action }}</span>
+              {% elif 'ASSIGN' in log.action or 'ROLE' in log.action %}
+              <span class="badge bg-warning-subtle text-warning border border-warning-subtle rounded-pill px-2.5 py-1 text-dark">{{ log.action }}</span>
+              {% else %}
+              <span class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill px-2.5 py-1">{{ log.action }}</span>
+              {% endif %}
+            </td>
+            <td>
+              <span class="text-dark small d-block">{{ log.details or '---' }}</span>
+              {% if log.target_type %}
+              <small class="text-muted">Đối tượng: {{ log.target_type }} #{{ log.target_id or '' }}</small>
+              {% endif %}
+            </td>
+            <td class="text-end pe-3">
+              <span class="badge bg-light text-secondary border font-monospace">{{ log.ip_address or '127.0.0.1' }}</span>
+            </td>
+          </tr>
+          {% else %}
+          <tr>
+            <td colspan="5" class="text-center py-4 text-muted">Chưa có nhật ký kiểm tra nào.</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

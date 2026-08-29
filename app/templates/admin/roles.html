@@ -1,0 +1,228 @@
+{% extends "base.html" %}
+{% block title %}Quản lý Vai trò & Quyền hạn · EnglishMate Admin{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  {% include "admin/_nav.html" %}
+
+  <!-- Header section -->
+  <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
+    <div>
+      <h4 class="fw-800 text-dark mb-1">Quản lý Vai trò & Quyền hạn (RBAC)</h4>
+      <p class="text-secondary small mb-0">Tạo vai trò tùy chỉnh, kế thừa vai trò, chi tiết hóa quyền hạn và áp dụng mẫu quyền.</p>
+    </div>
+    <button type="button" class="btn btn-primary rounded-pill px-4 fw-bold shadow-xs d-inline-flex align-items-center gap-2" data-bs-toggle="modal" data-bs-target="#createRoleModal">
+      <i class="ph ph-plus-circle fs-5"></i> Tạo Vai Trò Mới
+    </button>
+  </div>
+
+  <!-- Roles Grid -->
+  <div class="row g-4">
+    {% for r in roles %}
+    <div class="col-lg-6">
+      <div class="card border rounded-4 bg-white p-4 shadow-xs h-100 position-relative">
+        <div class="d-flex justify-content-between align-items-start mb-3">
+          <div>
+            <div class="d-flex align-items-center gap-2 mb-1">
+              <h5 class="fw-bold mb-0 text-dark">{{ r.name }}</h5>
+              {% if r.is_custom %}
+              <span class="badge bg-info-subtle text-info border border-info-subtle rounded-pill px-2.5 py-0.5">Tùy chỉnh</span>
+              {% else %}
+              <span class="badge bg-secondary-subtle text-secondary border rounded-pill px-2.5 py-0.5">Mặc định</span>
+              {% endif %}
+
+              {% if r.parent %}
+              <span class="badge bg-purple-subtle text-purple border border-purple-subtle rounded-pill px-2.5 py-0.5">
+                ↳ Kế thừa: {{ r.parent.name }}
+              </span>
+              {% endif %}
+            </div>
+            <p class="text-muted small mb-0">{{ r.description or 'Chưa có mô tả' }}</p>
+          </div>
+
+          {% if r.is_custom %}
+          <div class="dropdown">
+            <button class="btn btn-light btn-sm rounded-circle" type="button" data-bs-toggle="dropdown">
+              <i class="ph ph-dots-three-vertical"></i>
+            </button>
+            <ul class="dropdown-menu dropdown-menu-end rounded-3 shadow-sm border-0">
+              <li>
+                <button class="dropdown-menu-item dropdown-item" type="button" data-bs-toggle="modal" data-bs-target="#editRoleModal{{ r.id }}">
+                  <i class="ph ph-pencil me-2"></i> Chỉnh sửa quyền
+                </button>
+              </li>
+              <li><hr class="dropdown-divider"></li>
+              <li>
+                <form method="post" action="{{ url_for('admin.role_delete', role_id=r.id) }}" class="m-0">
+                  {{ form.csrf_token }}
+                  <button type="submit" class="dropdown-item text-danger" onclick="return confirm('Bạn có chắc chắn muốn xóa vai trò này?');">
+                    <i class="ph ph-trash me-2"></i> Xóa vai trò
+                  </button>
+                </form>
+              </li>
+            </ul>
+          </div>
+          {% endif %}
+        </div>
+
+        <hr class="my-3 opacity-25">
+
+        <!-- Role Permissions List -->
+        <div>
+          <span class="text-muted small fw-semibold text-uppercase d-block mb-2">Quyền Hạn Được Cấp</span>
+          <div class="d-flex flex-wrap gap-1.5">
+            {% set r_perms = r.permissions %}
+            {% if r_perms %}
+              {% for rp in r_perms %}
+              <span class="badge bg-light text-dark border rounded-pill px-2.5 py-1 small">
+                ✓ {{ rp.permission.name }}
+              </span>
+              {% endfor %}
+            {% else %}
+              <span class="text-muted small italic">Chưa gán quyền trực tiếp {% if r.parent %}(Nhận quyền từ {{ r.parent.name }}){% endif %}</span>
+            {% endif %}
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Edit Role Modal -->
+    <div class="modal fade" id="editRoleModal{{ r.id }}" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content border-0 rounded-4 shadow-lg">
+          <div class="modal-header border-0 pb-0">
+            <h5 class="modal-title fw-bold">Chỉnh Sửa Vai Trò: {{ r.name }}</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <form method="post" action="{{ url_for('admin.role_edit', role_id=r.id) }}">
+            <div class="modal-body p-4">
+              {{ form.csrf_token }}
+              <div class="mb-3">
+                <label class="form-label fw-semibold">Mô tả vai trò</label>
+                <input type="text" name="description" class="form-control rounded-3" value="{{ r.description or '' }}">
+              </div>
+              <div class="mb-3">
+                <label class="form-label fw-semibold">Kế Thừa Vai Trò Cha (Role Inheritance)</label>
+                <select name="parent_id" class="form-select rounded-3">
+                  <option value="">-- Không kế thừa --</option>
+                  {% for pr in roles %}
+                    {% if pr.id != r.id %}
+                    <option value="{{ pr.id }}" {% if r.parent_id == pr.id %}selected{% endif %}>
+                      {{ pr.name }} - {{ pr.description }}
+                    </option>
+                    {% endif %}
+                  {% endfor %}
+                </select>
+                <div class="form-text small">Khi chọn vai trò cha, vai trò này sẽ tự động kế thừa toàn bộ quyền của vai trò cha.</div>
+              </div>
+
+              <div class="mb-3">
+                <label class="form-label fw-semibold d-block">Danh Sách Quyền Hạn Chi Tiết</label>
+                <div class="row g-2 border rounded-3 p-3 bg-light-subtle max-h-60 overflow-auto">
+                  {% set active_pids = r_perms|map(attribute='permission_id')|list %}
+                  {% for p in permissions %}
+                  <div class="col-md-6">
+                    <div class="form-check">
+                      <input class="form-check-input" type="checkbox" name="permissions" value="{{ p.id }}" id="perm_edit_{{ r.id }}_{{ p.id }}" {% if p.id in active_pids %}checked{% endif %}>
+                      <label class="form-check-label small text-dark" for="perm_edit_{{ r.id }}_{{ p.id }}">
+                        <strong>{{ p.name }}</strong><br>
+                        <span class="text-muted" style="font-size: 0.75rem;">{{ p.description }}</span>
+                      </label>
+                    </div>
+                  </div>
+                  {% endfor %}
+                </div>
+              </div>
+            </div>
+            <div class="modal-footer border-0 justify-content-end pt-0 pb-4 pe-4">
+              <button type="button" class="btn btn-light rounded-pill" data-bs-dismiss="modal">Hủy</button>
+              <button type="submit" class="btn btn-primary rounded-pill px-4 fw-bold">Cập Nhật Quyền Hạn</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+
+<!-- Modal Create Custom Role -->
+<div class="modal fade" id="createRoleModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content border-0 rounded-4 shadow-lg">
+      <div class="modal-header border-0 pb-0">
+        <h5 class="modal-title fw-bold">Tạo Vai Trò Tùy Chỉnh Mới</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <form method="post" action="{{ url_for('admin.roles') }}">
+        <div class="modal-body p-4">
+          {{ form.csrf_token }}
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Tên Vai Trò (Viết hoa)</label>
+            <input type="text" name="name" class="form-control rounded-3" placeholder="VÍ DỤ: CONTENT_EDITOR, ASSISTANT" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Mô tả Vai Trò</label>
+            <input type="text" name="description" class="form-control rounded-3" placeholder="Mô tả công việc và phạm vi của vai trò này">
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Kế Thừa Vai Trò Cha (Role Inheritance)</label>
+            <select name="parent_id" class="form-select rounded-3">
+              <option value="">-- Không kế thừa --</option>
+              {% for pr in roles %}
+              <option value="{{ pr.id }}">{{ pr.name }} - {{ pr.description }}</option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div class="mb-3">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <label class="form-label fw-semibold mb-0">Danh Sách Quyền Hạn Chi Tiết</label>
+              <div class="d-flex gap-2">
+                <button type="button" class="btn btn-xs btn-outline-secondary rounded-pill btn-apply-template" data-perms="lessons:read,lessons:write,vocabulary:manage,exams:manage">
+                  Mẫu Kiểm duyệt Nội dung
+                </button>
+                <button type="button" class="btn btn-xs btn-outline-secondary rounded-pill btn-apply-template" data-perms="users:manage,roles:manage,audit:read">
+                  Mẫu An ninh & Phân quyền
+                </button>
+              </div>
+            </div>
+            <div class="row g-2 border rounded-3 p-3 bg-light-subtle max-h-60 overflow-auto">
+              {% for p in permissions %}
+              <div class="col-md-6">
+                <div class="form-check">
+                  <input class="form-check-input perm-checkbox" type="checkbox" name="permissions" value="{{ p.id }}" data-name="{{ p.name }}" id="perm_create_{{ p.id }}">
+                  <label class="form-check-label small text-dark" for="perm_create_{{ p.id }}">
+                    <strong>{{ p.name }}</strong><br>
+                    <span class="text-muted" style="font-size: 0.75rem;">{{ p.description }}</span>
+                  </label>
+                </div>
+              </div>
+              {% endfor %}
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer border-0 justify-content-end pt-0 pb-4 pe-4">
+          <button type="button" class="btn btn-light rounded-pill" data-bs-dismiss="modal">Hủy</button>
+          <button type="submit" class="btn btn-primary rounded-pill px-4 fw-bold">Khởi Tạo Vai Trò</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+    document.querySelectorAll(".btn-apply-template").forEach(btn => {
+        btn.addEventListener("click", () => {
+            const targetPerms = btn.getAttribute("data-perms").split(",");
+            document.querySelectorAll(".perm-checkbox").forEach(cb => {
+                const pname = cb.getAttribute("data-name");
+                cb.checked = targetPerms.includes(pname);
+            });
+        });
+    });
+});
+</script>
+{% endblock %}

@@ -46,10 +46,22 @@
             </td>
             <td><span class="text-secondary small">{{ u.email }}</span></td>
             <td class="text-center">
-              {% if u.is_admin %}
-              <span class="badge bg-danger-subtle text-danger border border-danger-subtle rounded-pill px-2.5 py-1">ADMIN</span>
+              {% set u_roles = u.user_assigned_roles.all() %}
+              {% if u_roles %}
+                {% for ur in u_roles %}
+                  <span class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill px-2.5 py-1 mb-1 d-inline-block">
+                    {{ ur.role.name }}
+                    {% if ur.expires_at %}
+                    <br><small style="font-size: 0.65rem;">(Hạn: {{ ur.expires_at.strftime('%d/%m/%Y') }})</small>
+                    {% endif %}
+                  </span>
+                {% endfor %}
               {% else %}
-              <span class="badge bg-secondary-subtle text-secondary border rounded-pill px-2.5 py-1">USER</span>
+                {% if u.is_admin %}
+                <span class="badge bg-danger-subtle text-danger border border-danger-subtle rounded-pill px-2.5 py-1">ADMIN</span>
+                {% else %}
+                <span class="badge bg-secondary-subtle text-secondary border rounded-pill px-2.5 py-1">USER</span>
+                {% endif %}
               {% endif %}
             </td>
             <td class="text-center">
@@ -65,13 +77,10 @@
             <td class="text-end pe-3">
               <div class="d-inline-flex gap-1">
                 {% if u.id != current_user.id %}
-                <!-- Toggle Role Form -->
-                <form method="post" action="{{ url_for('admin.user_toggle_role', user_id=u.id) }}" class="m-0">
-                  {{ form.csrf_token }}
-                  <button type="submit" class="btn btn-sm btn-outline-secondary rounded-pill px-2.5" title="Đổi vai trò">
-                    {% if u.is_admin %}Thành User{% else %}Thành Admin{% endif %}
-                  </button>
-                </form>
+                <!-- Assign Role Modal Trigger Button -->
+                <button type="button" class="btn btn-sm btn-outline-primary rounded-pill px-2.5" data-bs-toggle="modal" data-bs-target="#assignRoleModal{{ u.id }}">
+                  Phân vai trò
+                </button>
 
                 <!-- Toggle Active Form -->
                 <form method="post" action="{{ url_for('admin.user_toggle', user_id=u.id) }}" class="m-0">
@@ -86,6 +95,42 @@
               </div>
             </td>
           </tr>
+
+          <!-- Modal Assign Role for User #{{ u.id }} -->
+          <div class="modal fade" id="assignRoleModal{{ u.id }}" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+              <div class="modal-content border-0 rounded-4 shadow-lg">
+                <div class="modal-header border-0 pb-0">
+                  <h5 class="modal-title fw-bold">Phân Vai Trò Cho: {{ u.username }}</h5>
+                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form method="post" action="{{ url_for('admin.user_assign_role', user_id=u.id) }}">
+                  <div class="modal-body p-4">
+                    {{ form.csrf_token }}
+                    <div class="mb-3">
+                      <label class="form-label fw-semibold">Chọn Vai Trò</label>
+                      <select name="role_id" class="form-select rounded-3" required>
+                        {% for r in roles %}
+                        <option value="{{ r.id }}" {% if u.role == r.name %}selected{% endif %}>
+                          {{ r.name }} - {{ r.description }}
+                        </option>
+                        {% endfor %}
+                      </select>
+                    </div>
+                    <div class="mb-3">
+                      <label class="form-label fw-semibold">Ngày Hết Hạn Vai Trò (Phân vai trò tạm thời)</label>
+                      <input type="date" name="expires_at" class="form-control rounded-3">
+                      <div class="form-text small text-muted">Bỏ trống nếu muốn gán vai trò vĩnh viễn không hết hạn.</div>
+                    </div>
+                  </div>
+                  <div class="modal-footer border-0 justify-content-end pt-0 pb-4 pe-4">
+                    <button type="button" class="btn btn-light rounded-pill" data-bs-dismiss="modal">Hủy</button>
+                    <button type="submit" class="btn btn-primary rounded-pill px-4 fw-bold">Lưu Vai Trò</button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
           {% else %}
           <tr>
             <td colspan="6" class="text-center py-4 text-muted">Không tìm thấy người dùng phù hợp.</td>
