@@ -1,13 +1,13 @@
 import random
 from datetime import date, datetime, timedelta
 
-from flask import abort, flash, redirect, render_template, request, url_for
+from flask import abort, flash, jsonify, redirect, render_template, request, url_for
 from flask_login import current_user, login_required
 from sqlalchemy import func
 
 from ...extensions import db
 from ..auth.models import record_daily_activity
-from .models import (Lesson, LessonProgress, Question, QuizAttempt, QuizAttemptAnswer,
+from .models import (Lesson, LessonFavorite, LessonProgress, Question, QuizAttempt, QuizAttemptAnswer,
                        Vocabulary, VocabularyProgress, WordReport)
 from . import bp
 from .forms import ActionForm, QuizStartForm
@@ -18,11 +18,15 @@ from .forms import ActionForm, QuizStartForm
 def lessons():
     level = request.args.get("level", "").strip()
     skill = request.args.get("skill", "").strip()
+    status = request.args.get("status", "").strip()
+    sort = request.args.get("sort", "").strip()
     q = request.args.get("q", "").strip()
 
     all_lessons = Lesson.query.filter_by(is_active=True).order_by(Lesson.level, Lesson.id).all()
     user_progress_list = LessonProgress.query.filter_by(user_id=current_user.id).all()
     done = {p.lesson_id for p in user_progress_list}
+    favorites = LessonFavorite.query.filter_by(user_id=current_user.id).all()
+    favorite_ids = {f.lesson_id for f in favorites}
 
     total_lessons = len(all_lessons)
     completed_count = len(done)
@@ -60,7 +64,7 @@ def lessons():
 
     # Current lesson (most recent progress) & Recommended next lesson
     sorted_progress = sorted(user_progress_list, key=lambda p: p.completed_at, reverse=True)
-    current_lesson = Lesson.query.get(sorted_progress[0].lesson_id) if sorted_progress else (all_lessons[0] if all_lessons else None)
+    current_lesson = db.session.get(Lesson, sorted_progress[0].lesson_id) if sorted_progress else (all_lessons[0] if all_lessons else None)
     
     recommended_lesson = None
     for l in all_lessons:
@@ -83,17 +87,45 @@ def lessons():
     if skill:
         query = query.filter_by(skill=skill)
     if q:
-        query = query.filter(Lesson.title.ilike(f"%{q}%") | Lesson.short_description.ilike(f"%{q}%"))
+        query = query.filter(
+            Lesson.title.ilike(f"%{q}%") | 
+            Lesson.short_description.ilike(f"%{q}%") | 
+            Lesson.content.ilike(f"%{q}%")
+        )
 
-    lessons_list = query.order_by(Lesson.level, Lesson.id).all()
+    lessons_list = query.all()
+
+    # Filter by status
+    if status == "completed":
+        lessons_list = [l for l in lessons_list if l.id in done]
+    elif status == "new":
+        lessons_list = [l for l in lessons_list if l.id not in done]
+    elif status == "favorite":
+        lessons_list = [l for l in lessons_list if l.id in favorite_ids]
+
+    # Sorting logic
+    level_rank = {"A1": 1, "A2": 2, "B1": 3, "B2": 4, "C1": 5, "C2": 6}
+    if sort == "popularity":
+        lessons_list.sort(key=lambda l: (l.view_count or 0), reverse=True)
+    elif sort == "difficulty_asc":
+        lessons_list.sort(key=lambda l: (level_rank.get(l.level, 99), l.id))
+    elif sort == "difficulty_desc":
+        lessons_list.sort(key=lambda l: (level_rank.get(l.level, 99), l.id), reverse=True)
+    elif sort == "recent":
+        lessons_list.sort(key=lambda l: (l.created_at or datetime.min), reverse=True)
+    else:
+        lessons_list.sort(key=lambda l: (level_rank.get(l.level, 99), l.id))
 
     return render_template(
         "learning/lessons.html",
         lessons=lessons_list,
         level=level,
         skill=skill,
+        status=status,
+        sort=sort,
         q=q,
         done=done,
+        favorite_ids=favorite_ids,
         total_lessons=total_lessons,
         completed_count=completed_count,
         in_progress_count=in_progress_count,
@@ -108,10 +140,55 @@ def lessons():
     )
 
 
+@bp.post("/lessons/<int:lesson_id>/favorite")
+@login_required
+def favorite_lesson(lesson_id):
+    lesson = Lesson.query.filter_by(id=lesson_id, is_active=True).first_or_404()
+    fav = LessonFavorite.query.filter_by(user_id=current_user.id, lesson_id=lesson.id).first()
+    if fav:
+        db.session.delete(fav)
+        db.session.commit()
+        is_fav = False
+        msg = "Đã bỏ bài học khỏi danh sách yêu thích."
+    else:
+        db.session.add(LessonFavorite(user_id=current_user.id, lesson_id=lesson.id))
+        db.session.commit()
+        is_fav = True
+        msg = "Đã thêm bài học vào danh sách yêu thích!"
+
+    if request.is_json or request.headers.get("X-Requested-With") == "XMLHttpRequest":
+        return jsonify({"success": True, "is_favorite": is_fav, "message": msg})
+
+    flash(msg, "success" if is_fav else "info")
+    return redirect(request.referrer or url_for("learning.lessons"))
+
+
+@bp.get("/lessons/<int:lesson_id>/preview")
+@login_required
+def preview_lesson(lesson_id):
+    lesson = Lesson.query.filter_by(id=lesson_id, is_active=True).first_or_404()
+    is_done = LessonProgress.query.filter_by(user_id=current_user.id, lesson_id=lesson.id).first() is not None
+    is_fav = LessonFavorite.query.filter_by(user_id=current_user.id, lesson_id=lesson.id).first() is not None
+    return jsonify({
+        "id": lesson.id,
+        "title": lesson.title,
+        "level": lesson.level,
+        "skill": lesson.skill,
+        "short_description": lesson.short_description,
+        "examples": lesson.examples,
+        "content_preview": (lesson.content[:200] + "...") if lesson.content and len(lesson.content) > 200 else lesson.content,
+        "view_count": lesson.view_count or 0,
+        "is_done": is_done,
+        "is_favorite": is_fav
+    })
+
+
 @bp.get("/lessons/<int:lesson_id>")
 @login_required
 def lesson_detail(lesson_id):
     lesson = Lesson.query.filter_by(id=lesson_id, is_active=True).first_or_404()
+    lesson.view_count = (lesson.view_count or 0) + 1
+    db.session.commit()
     completed = LessonProgress.query.filter_by(user_id=current_user.id, lesson_id=lesson.id).first()
     return render_template("learning/lesson_detail.html", lesson=lesson, completed=completed, form=ActionForm())
 

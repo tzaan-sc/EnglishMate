@@ -191,9 +191,30 @@ if db_path.exists():
             FOREIGN KEY (vocabulary_id) REFERENCES vocabulary (id)
         )
     """)
+
+    # Patch lesson table (thumbnail_url, view_count)
+    cursor.execute("PRAGMA table_info(lesson)")
+    existing_lesson_cols = [row[1] for row in cursor.fetchall()]
+    if "thumbnail_url" not in existing_lesson_cols:
+        cursor.execute("ALTER TABLE lesson ADD COLUMN thumbnail_url VARCHAR(255)")
+    if "view_count" not in existing_lesson_cols:
+        cursor.execute("ALTER TABLE lesson ADD COLUMN view_count INTEGER NOT NULL DEFAULT 0")
+
+    # Create lesson_favorite table if not exists
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS lesson_favorite (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id INTEGER NOT NULL,
+            lesson_id INTEGER NOT NULL,
+            created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (user_id) REFERENCES user (id),
+            FOREIGN KEY (lesson_id) REFERENCES lesson (id),
+            UNIQUE (user_id, lesson_id)
+        )
+    """)
     conn.commit()
 
     conn.close()
-    print("Database patched successfully with Vocabulary Learning enhancements!")
+    print("Database patched successfully with Vocabulary Learning & Lesson List enhancements!")
 else:
     print("Database file not found at", db_path)

@@ -10,9 +10,22 @@ class Lesson(db.Model):
     short_description = db.Column(db.String(280), nullable=False)
     content = db.Column(db.Text, nullable=False)
     examples = db.Column(db.Text, nullable=False)
+    thumbnail_url = db.Column(db.String(255), nullable=True)
+    view_count = db.Column(db.Integer, nullable=False, default=0)
     is_active = db.Column(db.Boolean, nullable=False, default=True)
     created_at = db.Column(db.DateTime(timezone=True), default=now, nullable=False)
     updated_at = db.Column(db.DateTime(timezone=True), default=now, onupdate=now, nullable=False)
+
+
+class LessonFavorite(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False, index=True)
+    lesson_id = db.Column(db.Integer, db.ForeignKey("lesson.id"), nullable=False, index=True)
+    created_at = db.Column(db.DateTime(timezone=True), default=now, nullable=False)
+
+    user = db.relationship("User", backref="favorite_lessons")
+    lesson = db.relationship("Lesson", backref="favorited_by")
+    __table_args__ = (db.UniqueConstraint("user_id", "lesson_id", name="uq_user_lesson_favorite"),)
 
 
 class Vocabulary(db.Model):

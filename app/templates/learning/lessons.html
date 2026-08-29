@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% block title %}Bảng điều khiển Bài học · EnglishMate{% endblock %}
+{% block title %}Thư viện & Bảng điều khiển Bài học · EnglishMate{% endblock %}
 
 {% block content %}
 <div class="container-fluid max-w-6xl py-4">
@@ -10,8 +10,8 @@
       <span class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill px-3 py-1 mb-2 font-semibold">
         HỆ THỐNG BÀI HỌC CHUẨN KHUNG CEFR
       </span>
-      <h2 class="fw-bold text-dark mb-1">Bảng điều khiển bài học</h2>
-      <p class="text-secondary small mb-0">Theo dõi tiến độ tích lũy kỹ năng, lộ trình bài học cá nhân và mục tiêu thực hành hàng ngày.</p>
+      <h2 class="fw-bold text-dark mb-1">Bảng điều khiển & Thư viện bài học</h2>
+      <p class="text-secondary small mb-0">Duyệt bài học theo cấp độ, kỹ năng, trạng thái và lộ trình học tập cá nhân hóa.</p>
     </div>
     <div class="d-flex gap-2">
       {% if recommended_lesson %}
@@ -155,16 +155,18 @@
         <div class="row g-3">
           {% for st in level_stats %}
           <div class="col-6 col-md-4">
-            <div class="border rounded-4 p-3 bg-light-subtle text-center">
-              <span class="badge bg-success-subtle text-success border border-success-subtle rounded-circle p-2 mb-2 d-inline-block fw-bold" style="width: 38px; height: 38px; line-height: 20px;">
-                {{ st.level }}
-              </span>
-              <h6 class="fw-bold text-dark mb-1">{{ st.pct }}%</h6>
-              <div class="progress rounded-pill mb-2" style="height: 6px;">
-                <div class="progress-bar bg-success rounded-pill" role="progressbar" style="width: {{ st.pct }}%;"></div>
+            <a href="{{ url_for('learning.lessons', level=st.level) }}" class="text-decoration-none">
+              <div class="border rounded-4 p-3 bg-light-subtle text-center hover-shadow transition">
+                <span class="badge bg-success-subtle text-success border border-success-subtle rounded-circle p-2 mb-2 d-inline-block fw-bold" style="width: 38px; height: 38px; line-height: 20px;">
+                  {{ st.level }}
+                </span>
+                <h6 class="fw-bold text-dark mb-1">{{ st.pct }}%</h6>
+                <div class="progress rounded-pill mb-2" style="height: 6px;">
+                  <div class="progress-bar bg-success rounded-pill" role="progressbar" style="width: {{ st.pct }}%;"></div>
+                </div>
+                <small class="text-muted" style="font-size: 0.75rem;">{{ st.done }}/{{ st.total }} bài xong</small>
               </div>
-              <small class="text-muted" style="font-size: 0.75rem;">{{ st.done }}/{{ st.total }} bài hoàn thành</small>
-            </div>
+            </a>
           </div>
           {% endfor %}
         </div>
@@ -179,39 +181,49 @@
         </h5>
         <div class="d-flex flex-column gap-3">
           {% for sk in skill_stats %}
-          <div>
-            <div class="d-flex justify-content-between align-items-center mb-1">
-              <span class="fw-bold text-dark">{{ sk.skill }}</span>
-              <span class="small text-muted">{{ sk.done }}/{{ sk.total }} bài hoàn thành (<strong>{{ sk.pct }}%</strong>)</span>
+          <a href="{{ url_for('learning.lessons', skill=sk.skill) }}" class="text-decoration-none text-dark">
+            <div>
+              <div class="d-flex justify-content-between align-items-center mb-1">
+                <span class="fw-bold">{{ sk.skill }}</span>
+                <span class="small text-muted">{{ sk.done }}/{{ sk.total }} bài xong (<strong>{{ sk.pct }}%</strong>)</span>
+              </div>
+              <div class="progress rounded-pill" style="height: 8px;">
+                <div class="progress-bar bg-primary rounded-pill" role="progressbar" style="width: {{ sk.pct }}%;"></div>
+              </div>
             </div>
-            <div class="progress rounded-pill" style="height: 8px;">
-              <div class="progress-bar bg-primary rounded-pill" role="progressbar" style="width: {{ sk.pct }}%;"></div>
-            </div>
-          </div>
+          </a>
           {% endfor %}
         </div>
       </div>
     </div>
   </div>
 
-  <!-- Section 4: Filter & Search Bar for Lesson Library -->
-  <div class="card border-0 shadow-sm rounded-4 p-3 bg-white mb-4">
-    <form method="get" class="row g-2 align-items-center">
-      <div class="col-md-5">
+  <!-- Section 4: Advanced Search & Filter Bar for Lesson Library -->
+  <div class="card border-0 shadow-sm rounded-4 p-4 bg-white mb-4">
+    <form method="get" action="{{ url_for('learning.lessons') }}" class="row g-3 align-items-center">
+      <!-- Search Title / Content -->
+      <div class="col-md-4">
+        <label class="form-label small fw-bold text-muted mb-1">Tìm theo Tiêu đề / Nội dung</label>
         <div class="input-group">
           <span class="input-group-text bg-transparent border-end-0"><i class="ph ph-magnifying-glass text-muted"></i></span>
-          <input class="form-control border-start-0 ps-0" name="q" value="{{ q }}" placeholder="Tìm kiếm bài học theo tiêu đề hoặc nội dung...">
+          <input class="form-control border-start-0 ps-0" name="q" value="{{ q }}" placeholder="Từ khóa tìm kiếm...">
         </div>
       </div>
-      <div class="col-md-3">
+
+      <!-- Level Filter -->
+      <div class="col-6 col-md-2">
+        <label class="form-label small fw-bold text-muted mb-1">Cấp độ (CEFR)</label>
         <select class="form-select" name="level">
-          <option value="">Tất cả cấp độ</option>
+          <option value="">Tất cả level</option>
           {% for x in ['A1','A2','B1','B2','C1','C2'] %}
           <option value="{{ x }}" {{ 'selected' if level==x }}>{{ x }}</option>
           {% endfor %}
         </select>
       </div>
-      <div class="col-md-2">
+
+      <!-- Skill Filter -->
+      <div class="col-6 col-md-2">
+        <label class="form-label small fw-bold text-muted mb-1">Kỹ năng</label>
         <select class="form-select" name="skill">
           <option value="">Tất cả kỹ năng</option>
           {% for x in ['Vocabulary','Grammar','Reading','Listening','Speaking'] %}
@@ -219,39 +231,103 @@
           {% endfor %}
         </select>
       </div>
-      <div class="col-md-2">
-        <button class="btn btn-dark w-100 rounded-pill fw-semibold">Lọc bài học</button>
+
+      <!-- Status Filter -->
+      <div class="col-6 col-md-2">
+        <label class="form-label small fw-bold text-muted mb-1">Trạng thái bài</label>
+        <select class="form-select" name="status">
+          <option value="">Tất cả trạng thái</option>
+          <option value="new" {{ 'selected' if status=='new' }}>🆕 Bài mới chưa học</option>
+          <option value="completed" {{ 'selected' if status=='completed' }}>✓ Bài đã hoàn thành</option>
+          <option value="favorite" {{ 'selected' if status=='favorite' }}>❤️ Đã thả tim yêu thích</option>
+        </select>
+      </div>
+
+      <!-- Sort Option -->
+      <div class="col-6 col-md-2">
+        <label class="form-label small fw-bold text-muted mb-1">Sắp xếp theo</label>
+        <select class="form-select" name="sort">
+          <option value="recent" {{ 'selected' if sort=='recent' }}>🕒 Mới nhất</option>
+          <option value="popularity" {{ 'selected' if sort=='popularity' }}>🔥 Phổ biến nhất</option>
+          <option value="difficulty_asc" {{ 'selected' if sort=='difficulty_asc' }}>📈 Độ khó (A1 ➔ C2)</option>
+          <option value="difficulty_desc" {{ 'selected' if sort=='difficulty_desc' }}>📉 Độ khó (C2 ➔ A1)</option>
+        </select>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="col-12 d-flex justify-content-end gap-2 pt-2 border-top mt-3">
+        <a href="{{ url_for('learning.lessons') }}" class="btn btn-outline-secondary rounded-pill px-3 fw-semibold">
+          Đặt lại bộ lọc
+        </a>
+        <button type="submit" class="btn btn-dark rounded-pill px-4 fw-bold">
+          🔍 Tìm bài học
+        </button>
       </div>
     </form>
   </div>
 
-  <!-- Section 5: Lesson Library Grid Cards -->
-  <div class="row g-4">
+  <!-- Section 5: Lesson Library Grid Cards with Thumbnails -->
+  <div class="row g-4 mb-5">
     {% for lesson in lessons %}
     <div class="col-md-6 col-lg-4">
-      <article class="card border-0 shadow-xs rounded-4 p-4 h-100 bg-white d-flex flex-column justify-content-between position-relative">
-        <div>
-          <div class="d-flex justify-content-between align-items-center mb-3">
-            <span class="text-muted fw-bold font-monospace fs-5">#{{ '%02d'|format(loop.index) }}</span>
+      <article class="card border-0 shadow-xs rounded-4 h-100 bg-white d-flex flex-column justify-content-between overflow-hidden">
+        
+        <!-- Thumbnail Image Header -->
+        <div class="position-relative bg-dark-subtle" style="height: 140px;">
+          {% if lesson.thumbnail_url %}
+          <img src="{{ lesson.thumbnail_url }}" class="w-100 h-100 object-fit-cover" alt="{{ lesson.title }}">
+          {% else %}
+          <div class="w-100 h-100 d-flex align-items-center justify-content-center bg-gradient-primary text-white">
+            <i class="ph ph-book-bookmark fs-1 opacity-75"></i>
+          </div>
+          {% endif %}
+
+          <!-- Favorite Toggle Button -->
+          <button type="button" 
+                  class="btn btn-light rounded-circle p-2 shadow-xs position-absolute top-0 end-0 m-3 border-0 btn-fav-toggle" 
+                  data-lesson-id="{{ lesson.id }}"
+                  title="Đánh dấu yêu thích">
+            <i class="ph-fill ph-heart fs-5 {{ 'text-danger' if lesson.id in favorite_ids else 'text-muted opacity-50' }}"></i>
+          </button>
+
+          <!-- Status Badge -->
+          <div class="position-absolute bottom-0 start-0 m-3">
             {% if lesson.id in done %}
-            <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-3 py-1 fw-bold">
-              ✓ Đã hoàn thành
+            <span class="badge bg-success text-white rounded-pill px-3 py-1 font-semibold shadow-xs">
+              ✓ Đã học
+            </span>
+            {% else %}
+            <span class="badge bg-primary text-white rounded-pill px-3 py-1 font-semibold shadow-xs">
+              Bài mới
             </span>
             {% endif %}
           </div>
-          <div class="mb-2">
-            <span class="badge bg-primary-subtle text-primary rounded-pill px-2.5 py-1 fw-bold me-1">{{ lesson.level }}</span>
-            <span class="badge bg-light text-secondary border rounded-pill px-2.5 py-1">{{ lesson.skill }}</span>
-          </div>
-          <h4 class="fw-bold text-dark mb-2">{{ lesson.title }}</h4>
-          <p class="text-secondary small mb-3">{{ lesson.short_description }}</p>
         </div>
 
-        <div class="pt-3 border-top d-flex align-items-center justify-content-between">
-          <a href="{{ url_for('learning.lesson_detail', lesson_id=lesson.id) }}" class="btn btn-sm {{ 'btn-outline-secondary' if lesson.id in done else 'btn-primary' }} rounded-pill px-3.5 fw-bold">
-            {{ 'Xem lại bài học' if lesson.id in done else 'Bắt đầu học' }} →
-          </a>
+        <!-- Card Body -->
+        <div class="p-4 d-flex flex-column flex-grow-1 justify-content-between">
+          <div>
+            <div class="mb-2 d-flex align-items-center gap-2">
+              <span class="badge bg-primary-subtle text-primary rounded-pill px-2.5 py-1 fw-bold">{{ lesson.level }}</span>
+              <span class="badge bg-light text-secondary border rounded-pill px-2.5 py-1">{{ lesson.skill }}</span>
+              <small class="text-muted ms-auto" title="Lượt truy cập"><i class="ph ph-eye"></i> {{ lesson.view_count or 0 }}</small>
+            </div>
+            <h4 class="fw-bold text-dark mb-2 line-clamp-2">{{ lesson.title }}</h4>
+            <p class="text-secondary small mb-3 line-clamp-3">{{ lesson.short_description }}</p>
+          </div>
+
+          <!-- Card Footer Actions -->
+          <div class="pt-3 border-top d-flex align-items-center justify-content-between">
+            <button type="button" class="btn btn-light rounded-circle p-2 btn-preview" data-lesson-id="{{ lesson.id }}" title="Xem trước bài học">
+              <i class="ph ph-eye fs-5 text-secondary"></i>
+            </button>
+
+            <a href="{{ url_for('learning.lesson_detail', lesson_id=lesson.id) }}" class="btn btn-sm {{ 'btn-outline-secondary' if lesson.id in done else 'btn-primary' }} rounded-pill px-4 py-2 fw-bold shadow-xs">
+              {{ 'Xem lại bài học' if lesson.id in done else 'Bắt đầu học' }} →
+            </a>
+          </div>
         </div>
+
       </article>
     </div>
     {% else %}
@@ -266,4 +342,97 @@
   </div>
 
 </div>
+
+<!-- Modal Xem trước Chi tiết Bài học (Lesson Preview Modal) -->
+<div class="modal fade" id="lessonPreviewModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
+      <div class="modal-header border-0 pb-0">
+        <div>
+          <span class="badge bg-primary-subtle text-primary rounded-pill px-3 py-1 mb-1 font-semibold" id="prevLevelSkill">A1 · Grammar</span>
+          <h4 class="modal-title fw-bold text-dark" id="prevTitle">Tiêu đề bài học</h4>
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body p-4">
+        <div class="mb-3">
+          <h6 class="fw-bold text-dark mb-1">Mô tả bài học:</h6>
+          <p class="text-secondary small" id="prevDesc">Mô tả chi tiết...</p>
+        </div>
+        <div class="mb-3">
+          <h6 class="fw-bold text-dark mb-1">Ví dụ thực tế:</h6>
+          <div class="p-3 bg-light rounded-3 text-secondary small font-monospace" id="prevExamples">Examples...</div>
+        </div>
+        <div>
+          <h6 class="fw-bold text-dark mb-1">Nội dung xem trước:</h6>
+          <p class="text-secondary small" id="prevContent">Nội dung...</p>
+        </div>
+      </div>
+      <div class="modal-footer border-0 bg-light p-3">
+        <button type="button" class="btn btn-secondary rounded-pill px-4" data-bs-dismiss="modal">Đóng</button>
+        <a id="prevStartBtn" href="#" class="btn btn-primary rounded-pill px-4 fw-bold">Bắt đầu học ngay →</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+  const csrfToken = "{{ csrf_token() }}";
+
+  // Favorite toggle AJAX
+  document.querySelectorAll(".btn-fav-toggle").forEach(btn => {
+    btn.addEventListener("click", function(e) {
+      e.preventDefault();
+      const lessonId = this.dataset.lessonId;
+      const heartIcon = this.querySelector("i");
+
+      fetch(`/learning/lessons/${lessonId}/favorite`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-CSRFToken": csrfToken,
+          "X-Requested-With": "XMLHttpRequest"
+        }
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          if (data.is_favorite) {
+            heartIcon.classList.remove("text-muted", "opacity-50");
+            heartIcon.classList.add("text-danger");
+          } else {
+            heartIcon.classList.remove("text-danger");
+            heartIcon.classList.add("text-muted", "opacity-50");
+          }
+        }
+      })
+      .catch(err => console.error(err));
+    });
+  });
+
+  // Preview modal AJAX
+  const previewModal = new bootstrap.Modal(document.getElementById('lessonPreviewModal'));
+  document.querySelectorAll(".btn-preview").forEach(btn => {
+    btn.addEventListener("click", function(e) {
+      e.preventDefault();
+      const lessonId = this.dataset.lessonId;
+
+      fetch(`/learning/lessons/${lessonId}/preview`)
+      .then(res => res.json())
+      .then(data => {
+        document.getElementById("prevTitle").innerText = data.title;
+        document.getElementById("prevLevelSkill").innerText = `${data.level} · ${data.skill}`;
+        document.getElementById("prevDesc").innerText = data.short_description;
+        document.getElementById("prevExamples").innerText = data.examples || "Không có ví dụ";
+        document.getElementById("prevContent").innerText = data.content_preview;
+        document.getElementById("prevStartBtn").href = `/learning/lessons/${data.id}`;
+        document.getElementById("prevStartBtn").innerText = data.is_done ? "Xem lại bài học →" : "Bắt đầu học ngay →";
+        previewModal.show();
+      })
+      .catch(err => console.error(err));
+    });
+  });
+});
+</script>
 {% endblock %}

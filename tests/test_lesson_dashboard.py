@@ -40,7 +40,7 @@ def test_lesson_dashboard_render(client):
 
     res = client.get("/lessons")
     assert res.status_code == 200
-    assert "Bảng điều khiển bài học".encode("utf-8") in res.data
+    assert "Bảng điều khiển & Thư viện bài học".encode("utf-8") in res.data
     assert "Tổng số bài học".encode("utf-8") in res.data
     assert "Tiến độ Bài học theo Cấp độ".encode("utf-8") in res.data
 
