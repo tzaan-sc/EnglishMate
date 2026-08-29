@@ -1,0 +1,315 @@
+{% extends "base.html" %}
+{% block title %}Ôn tập từ vựng (SRS): {{ word.word }} · EnglishMate{% endblock %}
+
+{% block content %}
+<div class="container-fluid max-w-4xl py-4">
+
+  <!-- Header & Navigation Bar -->
+  <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3 mb-4">
+    <div class="d-flex align-items-center gap-2">
+      <a href="{{ url_for('learning.vocabulary') }}" class="btn btn-light rounded-circle p-2 shadow-xs" title="Quay lại Bảng điều khiển">
+        <i class="ph ph-arrow-left fs-5"></i>
+      </a>
+      <div>
+        <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle rounded-pill px-2.5 py-0.5 small fw-bold">
+          SRS Lượt ôn {{ index + 1 }} / {{ total_words }}
+        </span>
+        <h5 class="fw-bold text-dark mb-0 d-inline-block ms-2">Ôn Tập Từ Vựng (SRS)</h5>
+      </div>
+    </div>
+
+    <!-- Mode Selector & SRS Indicators -->
+    <div class="d-flex align-items-center flex-wrap gap-2">
+      <div class="btn-group rounded-pill border shadow-xs bg-white p-1">
+        <a href="{{ url_for('learning.review_vocabulary', index=index, mode='flashcard') }}" class="btn btn-xs rounded-pill px-3 fw-bold {% if mode=='flashcard' %}btn-primary{% else %}btn-light text-secondary{% endif %}">
+          🎴 Flashcard
+        </a>
+        <a href="{{ url_for('learning.review_vocabulary', index=index, mode='meaning') }}" class="btn btn-xs rounded-pill px-3 fw-bold {% if mode=='meaning' %}btn-primary{% else %}btn-light text-secondary{% endif %}">
+          📖 Chọn Nghĩa
+        </a>
+        <a href="{{ url_for('learning.review_vocabulary', index=index, mode='audio') }}" class="btn btn-xs rounded-pill px-3 fw-bold {% if mode=='audio' %}btn-primary{% else %}btn-light text-secondary{% endif %}">
+          🔊 Âm Thanh
+        </a>
+        <a href="{{ url_for('learning.review_vocabulary', index=index, mode='spelling') }}" class="btn btn-xs rounded-pill px-3 fw-bold {% if mode=='spelling' %}btn-primary{% else %}btn-light text-secondary{% endif %}">
+          ✍️ Chính Tả
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main SRS Card Container -->
+  <div class="card border-0 shadow-lg rounded-4 overflow-hidden bg-white mb-4 position-relative">
+
+    <!-- Review Progress Bar -->
+    <div class="progress rounded-0" style="height: 6px;">
+      <div class="progress-bar bg-warning rounded-0" role="progressbar" style="width: {{ ((index + 1) / total_words * 100)|round }}%;"></div>
+    </div>
+
+    <div class="p-4 p-md-5">
+
+      <!-- SRS Status & Meta Info -->
+      <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-4 bg-light-subtle border rounded-4 p-3">
+        <div class="d-flex align-items-center gap-2">
+          <!-- SRS Level Indicator (1-7) -->
+          <span class="badge bg-primary rounded-pill px-3 py-1.5 fw-bold shadow-xs">
+            ⭐ SRS Level {{ progress.srs_level if progress else 1 }}/7
+          </span>
+          <!-- Review Count Display -->
+          <span class="badge bg-white text-dark border rounded-pill px-3 py-1.5 small fw-semibold">
+            🔄 Đã ôn: {{ progress.review_count if progress else 0 }} lần
+          </span>
+        </div>
+
+        <div class="d-flex align-items-center gap-3 small text-muted">
+          <!-- Last Review Date -->
+          <span>Lần ôn cuối: <strong>{{ progress.last_reviewed_at.strftime('%d/%m/%Y') if (progress and progress.last_reviewed_at) else 'Chưa có' }}</strong></span>
+          <!-- Next Review Date -->
+          <span>Hạn ôn kế: <strong class="text-primary">{{ progress.next_review_at.strftime('%d/%m/%Y') if (progress and progress.next_review_at) else 'Hôm nay' }}</strong></span>
+        </div>
+      </div>
+
+      <!-- MODE 1: FLASHCARD MODE -->
+      {% if mode == 'flashcard' %}
+      <div class="text-center py-4">
+        <h1 class="display-3 fw-extrabold text-dark mb-2 font-monospace tracking-wide">{{ word.word }}</h1>
+        <div class="d-inline-flex align-items-center gap-2 bg-light border rounded-pill px-3 py-1.5 mb-4">
+          <span class="badge bg-secondary-subtle text-secondary rounded-pill px-2.5 py-1 text-uppercase fw-bold">{{ word.part_of_speech }}</span>
+          <span class="text-muted fs-5 font-monospace">{{ word.pronunciation }}</span>
+          <button type="button" class="btn btn-primary rounded-circle p-2 ms-1 border-0 shadow-xs" onclick="speakWord('{{ word.word }}')">
+            <i class="ph ph-speaker-high fs-5"></i>
+          </button>
+        </div>
+
+        <!-- Hidden Answer Box -->
+        <div id="flashcardAnswerBox" class="card border rounded-4 p-4 mt-3 bg-primary-subtle border-primary-subtle text-start d-none">
+          <span class="text-primary small fw-extrabold text-uppercase d-block mb-1">Nghĩa tiếng Việt</span>
+          <h4 class="fw-bold text-dark mb-2">{{ word.meaning_vi }}</h4>
+          <hr class="my-2 opacity-25">
+          <span class="text-primary small fw-extrabold text-uppercase d-block mb-1">Ví dụ câu</span>
+          <p class="fst-italic text-dark fs-6 mb-1">“{{ word.example_en }}”</p>
+          <p class="text-secondary small mb-0">— {{ word.example_vi }}</p>
+        </div>
+
+        <div id="showAnswerBtnContainer" class="mt-4">
+          <button type="button" class="btn btn-outline-primary rounded-pill px-4 py-2 fw-bold shadow-xs" onclick="toggleFlashcardAnswer()">
+            👁️ Hiện đáp án
+          </button>
+        </div>
+      </div>
+
+      <!-- MODE 2: MEANING REVIEW MODE -->
+      {% elif mode == 'meaning' %}
+      <div class="py-3">
+        <div class="text-center mb-4">
+          <span class="badge bg-primary-subtle text-primary rounded-pill px-3 py-1 fw-bold mb-2">CHẾ ĐỘ ÔN NGHĨA</span>
+          <h1 class="display-4 fw-extrabold text-dark mb-2 font-monospace">{{ word.word }}</h1>
+          <p class="text-secondary fs-5 font-monospace">{{ word.pronunciation }}</p>
+        </div>
+
+        <h6 class="fw-bold text-dark mb-3">Chọn nghĩa đúng của từ vựng trên:</h6>
+        <div class="row g-3" id="meaningChoicesGrid">
+          {% for choice in choices %}
+          <div class="col-md-6">
+            <button type="button" class="btn btn-white border rounded-4 p-3 text-start w-100 h-100 shadow-xs option-btn" onclick="checkChoice(this, '{{ choice }}', '{{ word.meaning_vi }}')">
+              <span class="fw-bold text-dark fs-6 d-block">{{ choice }}</span>
+            </button>
+          </div>
+          {% endfor %}
+        </div>
+
+        <div id="choiceFeedbackBox" class="alert d-none mt-4 rounded-4 p-3 fw-bold"></div>
+      </div>
+
+      <!-- MODE 3: AUDIO REVIEW MODE -->
+      {% elif mode == 'audio' %}
+      <div class="py-4 text-center">
+        <span class="badge bg-warning-subtle text-warning-emphasis rounded-pill px-3 py-1 fw-bold mb-3 d-inline-block">CHẾ ĐỘ ÔN ÂM THANH</span>
+        <div class="mb-4">
+          <button type="button" class="btn btn-primary rounded-circle p-4 shadow-lg border-0 mb-3" onclick="speakWord('{{ word.word }}')">
+            <i class="ph ph-speaker-high display-4"></i>
+          </button>
+          <p class="text-secondary fw-semibold">Nhấp vào biểu tượng loa để nghe lại phát âm từ vựng</p>
+        </div>
+
+        <h6 class="fw-bold text-dark mb-3 text-start">Chọn từ/nghĩa bạn vừa nghe được:</h6>
+        <div class="row g-3" id="audioChoicesGrid">
+          {% for choice in choices %}
+          <div class="col-md-6">
+            <button type="button" class="btn btn-white border rounded-4 p-3 text-start w-100 h-100 shadow-xs option-btn" onclick="checkChoice(this, '{{ choice }}', '{{ word.meaning_vi }}')">
+              <span class="fw-bold text-dark fs-6 d-block">{{ choice }}</span>
+            </button>
+          </div>
+          {% endfor %}
+        </div>
+
+        <div id="audioAnswerReveal" class="card border rounded-4 p-3 mt-4 text-start d-none bg-light">
+          <strong class="text-dark">Từ đúng: {{ word.word }}</strong> ({{ word.pronunciation }}) — <span>{{ word.meaning_vi }}</span>
+        </div>
+      </div>
+
+      <!-- MODE 4: SPELLING REVIEW MODE -->
+      {% elif mode == 'spelling' %}
+      <div class="py-3">
+        <div class="text-center mb-4">
+          <span class="badge bg-info-subtle text-info-emphasis rounded-pill px-3 py-1 fw-bold mb-2">CHẾ ĐỘ ÔN CHÍNH TẢ</span>
+          <h3 class="fw-bold text-dark mb-2">{{ word.meaning_vi }}</h3>
+          <p class="text-secondary small">Gợi ý loại từ: <span class="badge bg-light text-dark border">{{ word.part_of_speech }}</span> · Gợi ý IPA: <span class="font-monospace">{{ word.pronunciation }}</span></p>
+        </div>
+
+        <div class="max-w-md mx-auto mb-4">
+          <div class="input-group input-group-lg shadow-xs rounded-4 overflow-hidden">
+            <input type="text" id="spellingInput" class="form-control font-monospace fw-bold text-center border-end-0" placeholder="Gõ từ tiếng Anh tại đây..." autocomplete="off">
+            <button type="button" class="btn btn-primary px-4 fw-bold" onclick="checkSpelling('{{ word.word }}')">Kiểm tra</button>
+          </div>
+        </div>
+
+        <div id="spellingFeedbackBox" class="alert d-none max-w-md mx-auto rounded-4 p-3 text-center fw-bold"></div>
+      </div>
+      {% endif %}
+
+    </div>
+
+    <!-- Rating Action Footer Buttons -->
+    <div class="card-footer bg-light p-3 p-md-4 border-top">
+      <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+        
+        <!-- Skip Button -->
+        <form method="post" action="{{ url_for('learning.review_vocabulary_submit') }}" class="m-0">
+          {{ form.hidden_tag() }}
+          <input type="hidden" name="word_id" value="{{ word.id }}">
+          <input type="hidden" name="mode" value="{{ mode }}">
+          <input type="hidden" name="index" value="{{ index }}">
+          <input type="hidden" name="total_words" value="{{ total_words }}">
+          <input type="hidden" name="rating" value="skip">
+          <button type="submit" class="btn btn-light border rounded-pill px-3.5 fw-semibold text-secondary">
+            ⏭️ Bỏ qua ôn
+          </button>
+        </form>
+
+        <!-- Correct / Incorrect & Easy / Good / Hard Rating Buttons -->
+        <div class="d-flex align-items-center gap-2 flex-wrap">
+          <!-- Incorrect (Quên) -->
+          <form method="post" action="{{ url_for('learning.review_vocabulary_submit') }}" class="m-0">
+            {{ form.hidden_tag() }}
+            <input type="hidden" name="word_id" value="{{ word.id }}">
+            <input type="hidden" name="mode" value="{{ mode }}">
+            <input type="hidden" name="index" value="{{ index }}">
+            <input type="hidden" name="total_words" value="{{ total_words }}">
+            <input type="hidden" name="rating" value="incorrect">
+            <button type="submit" class="btn btn-outline-danger rounded-pill px-3 fw-bold">
+              ❌ Quên (-1 Level)
+            </button>
+          </form>
+
+          <!-- Hard (Khó) -->
+          <form method="post" action="{{ url_for('learning.review_vocabulary_submit') }}" class="m-0">
+            {{ form.hidden_tag() }}
+            <input type="hidden" name="word_id" value="{{ word.id }}">
+            <input type="hidden" name="mode" value="{{ mode }}">
+            <input type="hidden" name="index" value="{{ index }}">
+            <input type="hidden" name="total_words" value="{{ total_words }}">
+            <input type="hidden" name="rating" value="hard">
+            <button type="submit" class="btn btn-outline-warning text-dark rounded-pill px-3 fw-bold">
+              ⚡ Khó (Giữ Level)
+            </button>
+          </form>
+
+          <!-- Good / Correct (Tốt) -->
+          <form method="post" action="{{ url_for('learning.review_vocabulary_submit') }}" class="m-0">
+            {{ form.hidden_tag() }}
+            <input type="hidden" name="word_id" value="{{ word.id }}">
+            <input type="hidden" name="mode" value="{{ mode }}">
+            <input type="hidden" name="index" value="{{ index }}">
+            <input type="hidden" name="total_words" value="{{ total_words }}">
+            <input type="hidden" name="rating" value="good">
+            <button type="submit" class="btn btn-primary rounded-pill px-3.5 fw-bold shadow-xs">
+              👍 Tốt (+1 Level)
+            </button>
+          </form>
+
+          <!-- Easy (Dễ) -->
+          <form method="post" action="{{ url_for('learning.review_vocabulary_submit') }}" class="m-0">
+            {{ form.hidden_tag() }}
+            <input type="hidden" name="word_id" value="{{ word.id }}">
+            <input type="hidden" name="mode" value="{{ mode }}">
+            <input type="hidden" name="index" value="{{ index }}">
+            <input type="hidden" name="total_words" value="{{ total_words }}">
+            <input type="hidden" name="rating" value="easy">
+            <button type="submit" class="btn btn-success rounded-pill px-4 fw-bold shadow-xs">
+              ⭐ Dễ (+2 Level)
+            </button>
+          </form>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+function speakWord(text) {
+    if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.lang = 'en-US';
+        utterance.rate = 0.9;
+        window.speechSynthesis.speak(utterance);
+    }
+}
+
+function toggleFlashcardAnswer() {
+    const box = document.getElementById("flashcardAnswerBox");
+    if (box) {
+        box.classList.toggle("d-none");
+    }
+}
+
+function checkChoice(btn, selected, target) {
+    const feedback = document.getElementById("choiceFeedbackBox") || document.getElementById("audioAnswerReveal");
+    const buttons = document.querySelectorAll(".option-btn");
+    buttons.forEach(b => b.disabled = true);
+
+    if (selected === target) {
+        btn.classList.remove("btn-white");
+        btn.classList.add("btn-success", "text-white");
+    } else {
+        btn.classList.remove("btn-white");
+        btn.classList.add("btn-danger", "text-white");
+        buttons.forEach(b => {
+            if (b.innerText.trim() === target) {
+                b.classList.remove("btn-white");
+                b.classList.add("btn-success", "text-white");
+            }
+        });
+    }
+    if (feedback) {
+        feedback.classList.remove("d-none");
+    }
+}
+
+function checkSpelling(correctWord) {
+    const input = document.getElementById("spellingInput");
+    const feedback = document.getElementById("spellingFeedbackBox");
+    if (!input || !feedback) return;
+
+    const val = input.value.trim().toLowerCase();
+    const target = correctWord.trim().toLowerCase();
+
+    if (val === target) {
+        feedback.className = "alert alert-success mt-3 rounded-4 p-3 text-center fw-bold";
+        feedback.innerText = "🎉 Chính xác! Bạn đã ghi nhớ chính tả từ này.";
+    } else {
+        feedback.className = "alert alert-danger mt-3 rounded-4 p-3 text-center fw-bold";
+        feedback.innerText = `❌ Chưa chính xác. Đáp án đúng là: "${correctWord}"`;
+    }
+    feedback.classList.remove("d-none");
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+    {% if mode == 'audio' %}
+    speakWord("{{ word.word }}");
+    {% endif %}
+});
+</script>
+{% endblock %}

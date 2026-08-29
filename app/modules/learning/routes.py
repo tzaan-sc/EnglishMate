@@ -1,5 +1,5 @@
 import random
-from datetime import date
+from datetime import date, datetime, timedelta
 
 from flask import abort, flash, redirect, render_template, request, url_for
 from flask_login import current_user, login_required
@@ -97,6 +97,13 @@ def vocabulary():
     daily_goal = getattr(current_user, "daily_vocab_goal", 20) or 20
     daily_goal_pct = min(100, round(((today_learned_count + today_reviewed_count) / daily_goal) * 100)) if daily_goal > 0 else 0
 
+    now_dt = datetime.utcnow()
+    due_words_count = VocabularyProgress.query.filter(
+        VocabularyProgress.user_id == current_user.id,
+        (VocabularyProgress.learned_count > 0) | (VocabularyProgress.review_count > 0),
+        (VocabularyProgress.next_review_at <= now_dt) | (VocabularyProgress.next_review_at.is_(None))
+    ).count()
+
     topics = [r[0] for r in db.session.query(Vocabulary.topic).distinct().order_by(Vocabulary.topic).all()]
     words_list = query.order_by(Vocabulary.word).all()
 
@@ -114,6 +121,7 @@ def vocabulary():
         learning_count=learning_count,
         new_vocab_count=new_vocab_count,
         review_vocab_count=review_vocab_count,
+        due_words_count=due_words_count,
         overall_progress_pct=overall_progress_pct,
         level_stats=level_stats,
         today_learned_count=today_learned_count,
@@ -741,3 +749,171 @@ def game_submit():
         session.pop(session_key)
         
     return {"status": "ok"}
+
+
+# ==========================================
+# VOCABULARY REVIEW (SRS) ROUTES
+# ==========================================
+
+@bp.get("/vocabulary/review")
+@login_required
+def review_vocabulary():
+    mode = request.args.get("mode", "flashcard")
+    try:
+        index = int(request.args.get("index", 0))
+    except ValueError:
+        index = 0
+
+    now_dt = datetime.utcnow()
+
+    # Fetch due vocabulary progress records for current user
+    due_progress = VocabularyProgress.query.filter(
+        VocabularyProgress.user_id == current_user.id,
+        (VocabularyProgress.learned_count > 0) | (VocabularyProgress.review_count > 0),
+        (VocabularyProgress.next_review_at <= now_dt) | (VocabularyProgress.next_review_at.is_(None))
+    ).order_by(VocabularyProgress.next_review_at.asc()).all()
+
+    if not due_progress:
+        due_progress = VocabularyProgress.query.filter(
+            VocabularyProgress.user_id == current_user.id,
+            (VocabularyProgress.learned_count > 0) | (VocabularyProgress.review_count > 0)
+        ).all()
+
+    if not due_progress:
+        sample_words = Vocabulary.query.order_by(Vocabulary.id).limit(10).all()
+        if not sample_words:
+            flash("Chưa có từ vựng nào trong hệ thống.", "info")
+            return redirect(url_for("learning.vocabulary"))
+        due_word_ids = [w.id for w in sample_words]
+    else:
+        due_word_ids = [p.vocabulary_id for p in due_progress]
+
+    total_words = len(due_word_ids)
+    if index < 0 or index >= total_words:
+        index = 0
+
+    current_vocab_id = due_word_ids[index]
+    word = db.get_or_404(Vocabulary, current_vocab_id)
+    progress = VocabularyProgress.query.filter_by(user_id=current_user.id, vocabulary_id=word.id).first()
+
+    if not progress:
+        progress = VocabularyProgress(
+            user_id=current_user.id,
+            vocabulary_id=word.id,
+            learned_count=0,
+            review_count=0,
+            srs_level=1,
+            next_review_at=now_dt
+        )
+        db.session.add(progress)
+        db.session.commit()
+
+    choices = []
+    if mode in ("meaning", "audio"):
+        other_words = Vocabulary.query.filter(Vocabulary.id != word.id).all()
+        sample_size = min(3, len(other_words))
+        distractor_meanings = [w.meaning_vi for w in random.sample(other_words, sample_size)] if sample_size > 0 else []
+        choices = distractor_meanings + [word.meaning_vi]
+        random.shuffle(choices)
+
+    return render_template(
+        "learning/review_vocabulary.html",
+        word=word,
+        progress=progress,
+        index=index,
+        total_words=total_words,
+        mode=mode,
+        choices=choices,
+        form=ActionForm()
+    )
+
+
+@bp.post("/vocabulary/review/submit")
+@login_required
+def review_vocabulary_submit():
+    from flask import session
+    word_id = request.form.get("word_id", type=int)
+    rating = request.form.get("rating", "good")
+    mode = request.form.get("mode", "flashcard")
+    index = request.form.get("index", 0, type=int)
+    total_words = request.form.get("total_words", 1, type=int)
+
+    word = db.get_or_404(Vocabulary, word_id)
+    progress = VocabularyProgress.query.filter_by(user_id=current_user.id, vocabulary_id=word.id).first()
+    if not progress:
+        progress = VocabularyProgress(user_id=current_user.id, vocabulary_id=word.id, learned_count=0, review_count=0)
+        db.session.add(progress)
+
+    now_dt = datetime.utcnow()
+    srs_intervals = {1: 1, 2: 2, 3: 4, 4: 7, 5: 14, 6: 30, 7: 90}
+
+    if "srs_session" not in session:
+        session["srs_session"] = {
+            "total_reviewed": 0,
+            "mastered_ids": [],
+            "need_more_ids": []
+        }
+
+    sess_data = session["srs_session"]
+
+    if rating != "skip":
+        progress.review_count = (progress.review_count or 0) + 1
+        progress.last_reviewed_at = now_dt
+        curr_level = progress.srs_level or 1
+
+        if rating == "easy":
+            new_level = min(7, curr_level + 2)
+            days = srs_intervals[new_level]
+        elif rating in ("good", "correct"):
+            new_level = min(7, curr_level + 1)
+            days = srs_intervals[new_level]
+        elif rating == "hard":
+            new_level = max(1, curr_level)
+            days = 1
+            if word.id not in sess_data["need_more_ids"]:
+                sess_data["need_more_ids"].append(word.id)
+        elif rating == "incorrect":
+            new_level = max(1, curr_level - 1)
+            days = 1
+            if word.id not in sess_data["need_more_ids"]:
+                sess_data["need_more_ids"].append(word.id)
+
+        progress.srs_level = new_level
+        progress.next_review_at = now_dt + timedelta(days=days)
+        sess_data["total_reviewed"] += 1
+
+        if new_level == 7 and word.id not in sess_data["mastered_ids"]:
+            sess_data["mastered_ids"].append(word.id)
+
+        db.session.commit()
+        record_daily_activity(current_user)
+        session.modified = True
+
+    if index + 1 < total_words:
+        return redirect(url_for("learning.review_vocabulary", mode=mode, index=index + 1))
+    else:
+        return redirect(url_for("learning.review_summary"))
+
+
+@bp.get("/vocabulary/review/summary")
+@login_required
+def review_summary():
+    from flask import session
+    sess_data = session.get("srs_session", {
+        "total_reviewed": 0,
+        "mastered_ids": [],
+        "need_more_ids": []
+    })
+
+    mastered_words = Vocabulary.query.filter(Vocabulary.id.in_(sess_data["mastered_ids"])).all() if sess_data["mastered_ids"] else []
+    need_more_words = Vocabulary.query.filter(Vocabulary.id.in_(sess_data["need_more_ids"])).all() if sess_data["need_more_ids"] else []
+
+    total_revived = sess_data["total_reviewed"]
+    session.pop("srs_session", None)
+
+    return render_template(
+        "learning/review_summary.html",
+        total_reviewed=total_revived,
+        mastered_words=mastered_words,
+        need_more_words=need_more_words
+    )

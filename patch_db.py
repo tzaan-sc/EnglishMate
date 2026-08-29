@@ -162,6 +162,8 @@ if db_path.exists():
     new_vp_cols = [
         ("is_favorite", "BOOLEAN NOT NULL DEFAULT 0"),
         ("is_skipped", "BOOLEAN NOT NULL DEFAULT 0"),
+        ("srs_level", "INTEGER NOT NULL DEFAULT 1"),
+        ("next_review_at", "DATETIME DEFAULT CURRENT_TIMESTAMP"),
     ]
     for col_name, col_type in new_vp_cols:
         if col_name not in vp_cols:

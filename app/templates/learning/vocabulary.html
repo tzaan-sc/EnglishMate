@@ -25,6 +25,24 @@
     </div>
   </div>
 
+  <!-- SRS Review Due Words Notification Banner -->
+  {% if due_words_count > 0 %}
+  <div class="alert alert-warning border-0 shadow-sm rounded-4 p-3 mb-4 d-flex align-items-center justify-content-between flex-wrap gap-2">
+    <div class="d-flex align-items-center gap-3">
+      <div class="bg-warning text-dark rounded-circle p-2.5 d-flex align-items-center justify-content-center shadow-xs" style="width: 42px; height: 42px;">
+        <i class="ph ph-clock-counter-clockwise fs-4 fw-bold"></i>
+      </div>
+      <div>
+        <h6 class="fw-bold text-dark mb-0">Bạn có {{ due_words_count }} từ vựng đến hạn ôn tập (SRS)!</h6>
+        <p class="text-secondary small mb-0">Ôn tập đúng thời điểm giúp ghi nhớ từ vựng lâu hơn theo thuật toán lặp lại ngắt quãng.</p>
+      </div>
+    </div>
+    <a href="{{ url_for('learning.review_vocabulary') }}" class="btn btn-warning rounded-pill px-4 fw-bold shadow-xs text-dark">
+      🔄 Ôn tập ngay ({{ due_words_count }})
+    </a>
+  </div>
+  {% endif %}
+
   <!-- Section 1: Stat Cards Grid -->
   <div class="row g-3 mb-4">
     <div class="col-6 col-lg-3">

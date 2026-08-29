@@ -1,0 +1,101 @@
+{% extends "base.html" %}
+{% block title %}Tóm tắt phiên ôn tập SRS · EnglishMate{% endblock %}
+
+{% block content %}
+<div class="container-fluid max-w-4xl py-5">
+  
+  <!-- Hero Congratulation Banner -->
+  <div class="card border-0 shadow-lg rounded-4 overflow-hidden bg-white text-center p-5 mb-4 position-relative">
+    <div class="bg-primary-subtle text-primary rounded-circle p-4 d-inline-flex align-items-center justify-content-center mx-auto mb-3" style="width: 80px; height: 80px;">
+      <i class="ph ph-trophy display-4"></i>
+    </div>
+    <h2 class="fw-extrabold text-dark mb-1">Hoàn thành phiên ôn tập SRS! 🎉</h2>
+    <p class="text-secondary mb-4">Bạn đã xuất sắc hoàn thành lượt lặp lại ngắt quãng để củng cố trí nhớ dài hạn.</p>
+
+    <!-- Session Overview Metrics Grid -->
+    <div class="row g-3 justify-content-center max-w-2xl mx-auto mb-4">
+      <div class="col-md-4">
+        <div class="border rounded-4 p-3 bg-light-subtle h-100">
+          <span class="text-muted small d-block mb-1">Tổng số từ đã ôn</span>
+          <h3 class="fw-bold text-dark mb-0">{{ total_reviewed }}</h3>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="border rounded-4 p-3 bg-success-subtle text-success h-100 border-success-subtle">
+          <span class="text-success small d-block mb-1">Thành thạo phiên này</span>
+          <h3 class="fw-bold mb-0">{{ mastered_words|length }}</h3>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="border rounded-4 p-3 bg-warning-subtle text-warning-emphasis h-100 border-warning-subtle">
+          <span class="text-warning-emphasis small d-block mb-1">Cần ôn thêm</span>
+          <h3 class="fw-bold mb-0">{{ need_more_words|length }}</h3>
+        </div>
+      </div>
+    </div>
+
+    <!-- Details Sections -->
+    <div class="row g-4 text-start">
+      <!-- Words Mastered in Session -->
+      <div class="col-md-6">
+        <div class="card border rounded-4 p-4 h-100 bg-white">
+          <h6 class="fw-bold text-success mb-3 d-flex align-items-center gap-2">
+            <i class="ph ph-check-circle fs-5"></i> Từ đạt thành thạo (SRS Level 7)
+          </h6>
+          {% if mastered_words %}
+          <div class="d-flex flex-column gap-2">
+            {% for w in mastered_words %}
+            <div class="d-flex align-items-center justify-content-between p-2 rounded-3 bg-light-subtle border">
+              <div>
+                <strong class="text-dark">{{ w.word }}</strong>
+                <small class="text-muted d-block">{{ w.meaning_vi }}</small>
+              </div>
+              <span class="badge bg-success rounded-pill px-2.5 py-1">Mastered</span>
+            </div>
+            {% endfor %}
+          </div>
+          {% else %}
+          <p class="text-muted small mb-0">Chưa có từ nào chạm mốc Level 7 trong phiên này. Hãy tiếp tục duy trì chuỗi ôn tập nhé!</p>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- Words Needing More Review -->
+      <div class="col-md-6">
+        <div class="card border rounded-4 p-4 h-100 bg-white">
+          <h6 class="fw-bold text-warning-emphasis mb-3 d-flex align-items-center gap-2">
+            <i class="ph ph-warning-circle fs-5"></i> Từ cần ôn thêm (Hard / Incorrect)
+          </h6>
+          {% if need_more_words %}
+          <div class="d-flex flex-column gap-2">
+            {% for w in need_more_words %}
+            <div class="d-flex align-items-center justify-content-between p-2 rounded-3 bg-light-subtle border">
+              <div>
+                <strong class="text-dark">{{ w.word }}</strong>
+                <small class="text-muted d-block">{{ w.meaning_vi }}</small>
+              </div>
+              <span class="badge bg-warning text-dark rounded-pill px-2.5 py-1">Cần ôn</span>
+            </div>
+            {% endfor %}
+          </div>
+          {% else %}
+          <p class="text-muted small mb-0">Tuyệt vời! Bạn không trả lời sai từ nào trong phiên ôn này.</p>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <!-- Navigation Action Buttons -->
+    <div class="d-flex align-items-center justify-content-center gap-3 mt-5">
+      <a href="{{ url_for('learning.review_vocabulary') }}" class="btn btn-outline-primary rounded-pill px-4 fw-bold shadow-xs">
+        🔄 Ôn tập lượt tiếp
+      </a>
+      <a href="{{ url_for('learning.vocabulary') }}" class="btn btn-primary rounded-pill px-4 fw-bold shadow-xs">
+        📊 Về Bảng điều khiển từ vựng
+      </a>
+    </div>
+
+  </div>
+
+</div>
+{% endblock %}
