@@ -1,0 +1,120 @@
+{% extends "base.html" %}
+{% block title %}{{ title }} · Admin EnglishMate{% endblock %}
+
+{% block content %}
+<div class="container-fluid max-w-4xl py-4">
+
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <a href="{{ url_for('admin.exams_list') }}" class="btn btn-light rounded-pill px-3 text-secondary">
+      ← Quay lại danh sách đề thi
+    </a>
+  </div>
+
+  <div class="card border-0 shadow-sm rounded-4 bg-white p-4 p-md-5">
+    <h3 class="fw-bold text-dark mb-4">{{ title }}</h3>
+
+    <form method="POST">
+      {{ form.hidden_tag() }}
+
+      <!-- Exam Title Input -->
+      <div class="mb-4">
+        <label class="form-label fw-semibold text-dark">Tiêu đề đề thi <span class="text-danger">*</span></label>
+        <input type="text" name="title" class="form-control form-control-lg rounded-3" placeholder="Ví dụ: Đề Thi Thử TOEIC Full Listening & Reading..." value="{{ exam.title if exam else '' }}" required>
+      </div>
+
+      <div class="row g-3 mb-4">
+        <!-- Exam Category Selection -->
+        <div class="col-md-6">
+          <label class="form-label fw-semibold text-dark">Danh mục đề thi</label>
+          <select name="category" class="form-select form-select-lg rounded-3">
+            <option value="TOEIC" {{ 'selected' if exam and exam.category=='TOEIC' }}>TOEIC Simulation</option>
+            <option value="IELTS" {{ 'selected' if exam and exam.category=='IELTS' }}>IELTS Practice</option>
+            <option value="TOEFL" {{ 'selected' if exam and exam.category=='TOEFL' }}>TOEFL Preparation</option>
+            <option value="Placement" {{ 'selected' if exam and exam.category=='Placement' }}>Placement Test (Kiểm tra xếp lớp)</option>
+            <option value="Progress" {{ 'selected' if exam and exam.category=='Progress' }}>Progress Assessment (Đánh giá tiến độ)</option>
+            <option value="Custom" {{ 'selected' if exam and exam.category=='Custom' }}>Custom Skill Test</option>
+          </select>
+        </div>
+
+        <!-- Exam Difficulty Setting -->
+        <div class="col-md-6">
+          <label class="form-label fw-semibold text-dark">Độ khó đề thi</label>
+          <select name="difficulty" class="form-select form-select-lg rounded-3">
+            <option value="Easy" {{ 'selected' if exam and exam.difficulty=='Easy' }}>Dễ (Easy)</option>
+            <option value="Medium" {{ 'selected' if exam and exam.difficulty=='Medium' or not exam }}>Trung bình (Medium)</option>
+            <option value="Hard" {{ 'selected' if exam and exam.difficulty=='Hard' }}>Khó (Hard)</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="row g-3 mb-4">
+        <!-- Exam Duration Setting -->
+        <div class="col-md-6">
+          <label class="form-label fw-semibold text-dark">Thời lượng bài thi (Phút)</label>
+          <input type="number" name="duration_minutes" class="form-control form-control-lg rounded-3" value="{{ exam.duration_minutes if exam else 15 }}" min="1" max="300" required>
+        </div>
+
+        <!-- Question Count Setting -->
+        <div class="col-md-6">
+          <label class="form-label fw-semibold text-dark">Số lượng câu hỏi</label>
+          <input type="number" name="question_count" class="form-control form-control-lg rounded-3" value="{{ exam.question_count if exam else 10 }}" min="1" max="200" required>
+        </div>
+      </div>
+
+      <div class="row g-3 mb-4">
+        <!-- Question Bank Selection -->
+        <div class="col-md-6">
+          <label class="form-label fw-semibold text-dark">Ngân hàng câu hỏi</label>
+          <select name="question_bank" class="form-select form-select-lg rounded-3">
+            <option value="General" {{ 'selected' if exam and exam.question_bank=='General' }}>Tất cả ngân hàng (General)</option>
+            <option value="Grammar Bank" {{ 'selected' if exam and exam.question_bank=='Grammar Bank' }}>Ngân hàng Ngữ Pháp (Grammar)</option>
+            <option value="Vocabulary Bank" {{ 'selected' if exam and exam.question_bank=='Vocabulary Bank' }}>Ngân hàng Từ Vựng (Vocabulary)</option>
+            <option value="TOEIC Bank" {{ 'selected' if exam and exam.question_bank=='TOEIC Bank' }}>Ngân hàng TOEIC</option>
+            <option value="IELTS Bank" {{ 'selected' if exam and exam.question_bank=='IELTS Bank' }}>Ngân hàng IELTS</option>
+          </select>
+        </div>
+
+        <!-- Random vs Manual Question Selection -->
+        <div class="col-md-6">
+          <label class="form-label fw-semibold text-dark">Kiểu chọn câu hỏi</label>
+          <select name="selection_type" id="selectionTypeSelect" class="form-select form-select-lg rounded-3">
+            <option value="random" {{ 'selected' if exam and exam.selection_type=='random' or not exam }}>🎲 Ngẫu nhiên từ hệ thống (Random)</option>
+            <option value="manual" {{ 'selected' if exam and exam.selection_type=='manual' }}>✋ Chọn thủ công theo ID câu hỏi (Manual)</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Manual Question Selection IDs -->
+      <div class="mb-4" id="manualIdsBox" style="display: {{ 'block' if exam and exam.selection_type=='manual' else 'none' }};">
+        <label class="form-label fw-semibold text-dark">Danh sách ID câu hỏi (phân cách bằng dấu phẩy)</label>
+        <input type="text" name="selected_question_ids" class="form-control rounded-3 font-monospace" placeholder="Ví dụ: 1, 4, 12, 15, 23" value="{{ exam.selected_question_ids if exam else '' }}">
+      </div>
+
+      <!-- Publish Toggle Button -->
+      <div class="form-check form-switch mb-4 p-3 bg-light rounded-3">
+        <input class="form-check-input ms-0 me-3" type="checkbox" name="is_published" id="isPublishedSwitch" {{ 'checked' if not exam or exam.is_published }}>
+        <label class="form-check-label fw-bold text-dark" for="isPublishedSwitch">Xuất bản đề thi ngay (Publish exam for users)</label>
+      </div>
+
+      <div class="d-flex justify-content-end gap-2">
+        <a href="{{ url_for('admin.exams_list') }}" class="btn btn-light rounded-pill px-4">Hủy bỏ</a>
+        <button type="submit" class="btn btn-primary rounded-pill px-5 fw-bold shadow-xs">
+          💾 {{ 'Lưu cập nhật' if exam else 'Tạo Đề Thi Mới' }}
+        </button>
+      </div>
+    </form>
+
+  </div>
+
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+  const sel = document.getElementById("selectionTypeSelect");
+  const box = document.getElementById("manualIdsBox");
+  sel.addEventListener("change", function() {
+    box.style.display = (this.value === "manual") ? "block" : "none";
+  });
+});
+</script>
+{% endblock %}

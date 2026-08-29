@@ -381,9 +381,27 @@ if db_path.exists():
             updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
         )
     """)
+
+    # Create exam table if not exists
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS exam (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            title VARCHAR(160) NOT NULL,
+            category VARCHAR(80) NOT NULL,
+            duration_minutes INTEGER NOT NULL DEFAULT 15,
+            difficulty VARCHAR(20) NOT NULL DEFAULT 'Medium',
+            question_bank VARCHAR(80) NOT NULL DEFAULT 'General',
+            selection_type VARCHAR(20) NOT NULL DEFAULT 'random',
+            selected_question_ids TEXT,
+            question_count INTEGER NOT NULL DEFAULT 10,
+            is_published BOOLEAN NOT NULL DEFAULT 1,
+            created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+        )
+    """)
     conn.commit()
 
     conn.close()
-    print("Database patched successfully with Quiz List enhancements!")
+    print("Database patched successfully with Exam Management enhancements!")
 else:
     print("Database file not found at", db_path)

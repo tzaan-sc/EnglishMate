@@ -61,11 +61,19 @@ class ToeicAttemptAnswer(db.Model):
 
 class Exam(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    category = db.Column(db.String(50), nullable=False, index=True)  # e.g., TOEIC, IELTS, THPT
+    category = db.Column(db.String(50), nullable=False, index=True)  # e.g., TOEIC, IELTS, THPT, Custom, Placement, Progress
     title = db.Column(db.String(255), nullable=False)
     duration = db.Column(db.Integer, nullable=False, default=120)  # in minutes
+    duration_minutes = db.Column(db.Integer, nullable=False, default=15)
+    difficulty = db.Column(db.String(20), nullable=False, default="Medium")
+    question_bank = db.Column(db.String(80), nullable=False, default="General")
+    selection_type = db.Column(db.String(20), nullable=False, default="random")
+    selected_question_ids = db.Column(db.Text, nullable=True)
+    question_count = db.Column(db.Integer, nullable=False, default=10)
+    is_published = db.Column(db.Boolean, nullable=False, default=True)
     is_active = db.Column(db.Boolean, default=True)
     created_at = db.Column(db.DateTime(timezone=True), default=now, nullable=False)
+    updated_at = db.Column(db.DateTime(timezone=True), default=now, onupdate=now, nullable=False)
 
 
 class ExamQuestion(db.Model):

@@ -1,0 +1,125 @@
+{% extends "base.html" %}
+{% block title %}Quản Lý Đề Thi (Admin) · EnglishMate{% endblock %}
+
+{% block content %}
+<div class="container-fluid max-w-7xl py-4">
+
+  <!-- Header -->
+  <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
+    <div>
+      <h3 class="fw-bold text-dark mb-1">📝 Quản Lý Đề Thi (Exam Management)</h3>
+      <p class="text-secondary small mb-0">Quản trị danh mục, cấu hình câu hỏi, xuất bản và xem phân tích hiệu suất bài thi.</p>
+    </div>
+
+    <!-- Create New Exam Button -->
+    <a href="{{ url_for('admin.exam_create') }}" class="btn btn-primary rounded-pill px-4 fw-bold shadow-xs">
+      ➕ Tạo Đề Thi Mới
+    </a>
+  </div>
+
+  <!-- 4 Stat Overview Cards -->
+  <div class="row g-3 mb-4">
+    <div class="col-md-3 col-6">
+      <div class="card border-0 shadow-xs rounded-4 p-3 bg-white text-center">
+        <span class="text-muted small d-block mb-1">Tổng đề thi</span>
+        <h3 class="fw-bold text-primary mb-0">{{ stats.total_exams }}</h3>
+      </div>
+    </div>
+    <div class="col-md-3 col-6">
+      <div class="card border-0 shadow-xs rounded-4 p-3 bg-white text-center">
+        <span class="text-muted small d-block mb-1">Đã xuất bản</span>
+        <h3 class="fw-bold text-success mb-0">{{ stats.published_count }}</h3>
+      </div>
+    </div>
+    <div class="col-md-3 col-6">
+      <div class="card border-0 shadow-xs rounded-4 p-3 bg-white text-center">
+        <span class="text-muted small d-block mb-1">Bản nháp</span>
+        <h3 class="fw-bold text-warning mb-0">{{ stats.draft_count }}</h3>
+      </div>
+    </div>
+    <div class="col-md-3 col-6">
+      <div class="card border-0 shadow-xs rounded-4 p-3 bg-white text-center">
+        <span class="text-muted small d-block mb-1">Tổng lượt thi</span>
+        <h3 class="fw-bold text-info mb-0">{{ stats.total_attempts }}</h3>
+      </div>
+    </div>
+  </div>
+
+  <!-- Exams Table Card -->
+  <div class="card border-0 shadow-sm rounded-4 bg-white overflow-hidden">
+    <div class="table-responsive">
+      <table class="table table-hover align-middle mb-0">
+        <thead class="table-light">
+          <tr>
+            <th class="ps-4">ID</th>
+            <th>Tiêu đề đề thi</th>
+            <th>Danh mục</th>
+            <th>Thời lượng</th>
+            <th>Độ khó</th>
+            <th>Kiểu chọn câu</th>
+            <th>Số câu</th>
+            <th>Trạng thái</th>
+            <th class="text-end pe-4">Thao tác</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for e in exams %}
+          <tr>
+            <td class="ps-4 font-monospace text-secondary">#{{ e.id }}</td>
+            <td>
+              <div class="fw-bold text-dark">{{ e.title }}</div>
+              <small class="text-muted">Ngân hàng: {{ e.question_bank }}</small>
+            </td>
+            <td><span class="badge bg-secondary-subtle text-secondary border rounded-pill px-3">{{ e.category }}</span></td>
+            <td><span class="fw-semibold">{{ e.duration_minutes }} phút</span></td>
+            <td>
+              <span class="badge {{ 'bg-success-subtle text-success' if e.difficulty=='Easy' else ('bg-warning-subtle text-warning-emphasis' if e.difficulty=='Medium' else 'bg-danger-subtle text-danger') }} rounded-pill px-2.5">
+                {{ e.difficulty }}
+              </span>
+            </td>
+            <td>
+              <span class="small font-monospace">{{ '🎲 Ngẫu nhiên' if e.selection_type=='random' else '✋ Thủ công' }}</span>
+            </td>
+            <td><span class="fw-bold">{{ e.question_count }} câu</span></td>
+            <td>
+              {% if e.is_published %}
+              <span class="badge bg-success rounded-pill px-2.5">Đã xuất bản</span>
+              {% else %}
+              <span class="badge bg-secondary rounded-pill px-2.5">Bản nháp</span>
+              {% endif %}
+            </td>
+            <td class="text-end pe-4">
+              <div class="btn-group btn-group-sm">
+                <!-- Preview -->
+                <a href="{{ url_for('admin.exam_detail_preview', exam_id=e.id) }}" class="btn btn-outline-secondary" title="Xem trước đề thi">👁️</a>
+                
+                <!-- Edit -->
+                <a href="{{ url_for('admin.exam_edit', exam_id=e.id) }}" class="btn btn-outline-primary" title="Chỉnh sửa">✏️</a>
+                
+                <!-- Toggle Publish -->
+                <form action="{{ url_for('admin.exam_toggle_publish', exam_id=e.id) }}" method="POST" class="d-inline">
+                  {{ form.hidden_tag() }}
+                  <button type="submit" class="btn btn-outline-info" title="{{ 'Ẩn đề thi' if e.is_published else 'Xuất bản' }}">
+                    {{ '🌐' if e.is_published else '🔒' }}
+                  </button>
+                </form>
+
+                <!-- Stats Analytics -->
+                <a href="{{ url_for('admin.exam_stats_analytics', exam_id=e.id) }}" class="btn btn-outline-success" title="Xem thống kê">📊</a>
+
+                <!-- Delete -->
+                <form action="{{ url_for('admin.exam_delete', exam_id=e.id) }}" method="POST" class="d-inline" onsubmit="return confirm('Bạn có chắc chắn muốn xóa đề thi này?');">
+                  {{ form.hidden_tag() }}
+                  <button type="submit" class="btn btn-outline-danger" title="Xóa đề thi">🗑️</button>
+                </form>
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+{% endblock %}

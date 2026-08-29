@@ -5,6 +5,7 @@ from flask_login import current_user, login_required
 
 from ...extensions import db
 from ..auth.models import User
+from ..exams.models import Exam
 from ..learning.models import Lesson, Question, QuizAttempt, Vocabulary
 from . import bp
 from .forms import ConfirmForm, LessonForm, VocabularyForm
@@ -410,3 +411,195 @@ def exam_preview():
         })
     except Exception as e:
         return jsonify({"success": False, "error": str(e)}), 500
+
+
+# ==========================================
+# ADMIN EXAM MANAGEMENT ROUTES (Section 4.5)
+# ==========================================
+
+def ensure_initial_admin_exams():
+    if Exam.query.count() > 0:
+        return
+
+    sample_exams = [
+        Exam(
+            title="Đề Thi Thử TOEIC Mô Phỏng Full 200 Câu",
+            category="TOEIC",
+            duration_minutes=120,
+            difficulty="Medium",
+            question_bank="TOEIC Bank",
+            selection_type="random",
+            question_count=200,
+            is_published=True
+        ),
+        Exam(
+            title="Đề Luyện Thi IELTS Academic Reading & Writing",
+            category="IELTS",
+            duration_minutes=60,
+            difficulty="Hard",
+            question_bank="IELTS Bank",
+            selection_type="manual",
+            selected_question_ids="1,2,3,4,5",
+            question_count=40,
+            is_published=True
+        ),
+        Exam(
+            title="Đề Kiểm Tra Phân Loại Đầu Vào (Placement Test)",
+            category="Placement",
+            duration_minutes=45,
+            difficulty="Medium",
+            question_bank="Grammar & Vocabulary",
+            selection_type="random",
+            question_count=50,
+            is_published=True
+        )
+    ]
+    db.session.add_all(sample_exams)
+    db.session.commit()
+
+
+@bp.route("/exams")
+@admin_required
+def exams_list():
+    ensure_initial_admin_exams()
+    exams_data = Exam.query.order_by(Exam.id.desc()).all()
+
+    total_exams = len(exams_data)
+    published_count = sum(1 for e in exams_data if e.is_published)
+    total_attempts = QuizAttempt.query.count()
+
+    stats_overview = {
+        "total_exams": total_exams,
+        "published_count": published_count,
+        "draft_count": total_exams - published_count,
+        "total_attempts": total_attempts
+    }
+
+    return render_template(
+        "admin/exams.html",
+        exams=exams_data,
+        stats=stats_overview,
+        form=ConfirmForm()
+    )
+
+
+@bp.route("/exams/new", methods=["GET", "POST"])
+@admin_required
+def exam_create():
+    if request.method == "POST":
+        title = request.form.get("title", "").strip()
+        category = request.form.get("category", "Custom").strip()
+        duration_minutes = int(request.form.get("duration_minutes", 15))
+        difficulty = request.form.get("difficulty", "Medium").strip()
+        question_bank = request.form.get("question_bank", "General").strip()
+        selection_type = request.form.get("selection_type", "random").strip()
+        selected_ids = request.form.get("selected_question_ids", "").strip()
+        question_count = int(request.form.get("question_count", 10))
+        is_published = bool(request.form.get("is_published"))
+
+        if not title:
+            flash("Vui lòng nhập tiêu đề đề thi.", "danger")
+            return render_template("admin/exam_form.html", title="Tạo đề thi mới", form=ConfirmForm())
+
+        exam = Exam(
+            title=title,
+            category=category,
+            duration_minutes=duration_minutes,
+            difficulty=difficulty,
+            question_bank=question_bank,
+            selection_type=selection_type,
+            selected_question_ids=selected_ids,
+            question_count=question_count,
+            is_published=is_published
+        )
+        db.session.add(exam)
+        db.session.commit()
+
+        flash(f"Đã tạo đề thi '{exam.title}' thành công!", "success")
+        return redirect(url_for("admin.exams_list"))
+
+    return render_template("admin/exam_form.html", title="Tạo đề thi mới", exam=None, form=ConfirmForm())
+
+
+@bp.route("/exams/<int:exam_id>/edit", methods=["GET", "POST"])
+@admin_required
+def exam_edit(exam_id):
+    exam = db.get_or_404(Exam, exam_id)
+
+    if request.method == "POST":
+        exam.title = request.form.get("title", exam.title).strip()
+        exam.category = request.form.get("category", exam.category).strip()
+        exam.duration_minutes = int(request.form.get("duration_minutes", exam.duration_minutes))
+        exam.difficulty = request.form.get("difficulty", exam.difficulty).strip()
+        exam.question_bank = request.form.get("question_bank", exam.question_bank).strip()
+        exam.selection_type = request.form.get("selection_type", exam.selection_type).strip()
+        exam.selected_question_ids = request.form.get("selected_question_ids", "").strip()
+        exam.question_count = int(request.form.get("question_count", exam.question_count))
+        exam.is_published = bool(request.form.get("is_published"))
+
+        db.session.commit()
+        flash(f"Đã cập nhật đề thi '{exam.title}'.", "success")
+        return redirect(url_for("admin.exams_list"))
+
+    return render_template("admin/exam_form.html", title="Chỉnh sửa đề thi", exam=exam, form=ConfirmForm())
+
+
+@bp.post("/exams/<int:exam_id>/publish")
+@admin_required
+def exam_toggle_publish(exam_id):
+    exam = db.get_or_404(Exam, exam_id)
+    exam.is_published = not exam.is_published
+    db.session.commit()
+
+    msg = f"Đã xuất bản đề thi '{exam.title}'." if exam.is_published else f"Đã chuyển đề thi '{exam.title}' về trạng thái nháp."
+    flash(msg, "info")
+    return redirect(url_for("admin.exams_list"))
+
+
+@bp.post("/exams/<int:exam_id>/delete")
+@admin_required
+def exam_delete(exam_id):
+    exam = db.get_or_404(Exam, exam_id)
+    title = exam.title
+    db.session.delete(exam)
+    db.session.commit()
+
+    flash(f"Đã xóa đề thi '{title}' thành công.", "success")
+    return redirect(url_for("admin.exams_list"))
+
+
+@bp.route("/exams/<int:exam_id>/preview")
+@admin_required
+def exam_detail_preview(exam_id):
+    exam = db.get_or_404(Exam, exam_id)
+    questions = Question.query.limit(exam.question_count).all()
+
+    return render_template("admin/exam_preview.html", exam=exam, questions=questions)
+
+
+@bp.route("/exams/<int:exam_id>/stats")
+@admin_required
+def exam_stats_analytics(exam_id):
+    exam = db.get_or_404(Exam, exam_id)
+    attempts = QuizAttempt.query.filter_by(topic=exam.title).order_by(QuizAttempt.created_at.desc()).all()
+    if not attempts:
+        attempts = QuizAttempt.query.order_by(QuizAttempt.created_at.desc()).limit(10).all()
+
+    total_att = len(attempts)
+    avg_score = round(sum(a.score for a in attempts) / total_att, 1) if total_att > 0 else 0
+    total_q = sum(a.total_questions for a in attempts)
+    avg_acc = int((sum(a.score for a in attempts) / total_q) * 100) if total_q > 0 else 0
+    pass_count = sum(1 for a in attempts if (a.score / a.total_questions) >= 0.6) if total_q > 0 else 0
+    pass_rate = int((pass_count / total_att) * 100) if total_att > 0 else 0
+    avg_duration = int(sum(a.duration_seconds or 0 for a in attempts) / total_att) if total_att > 0 else 0
+
+    analytics = {
+        "total_attempts": total_att,
+        "avg_score": avg_score,
+        "avg_acc": avg_acc,
+        "pass_count": pass_count,
+        "pass_rate": pass_rate,
+        "avg_duration": avg_duration
+    }
+
+    return render_template("admin/exam_stats.html", exam=exam, attempts=attempts, analytics=analytics)
