@@ -18,6 +18,8 @@ if db_path.exists():
         ("failed_login_attempts", "INTEGER NOT NULL DEFAULT 0"),
         ("lockout_until", "DATETIME"),
         ("last_login_at", "DATETIME"),
+        ("reset_token", "VARCHAR(100)"),
+        ("reset_token_expiry", "DATETIME"),
     ]
 
     for col_name, col_type in new_cols:

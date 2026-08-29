@@ -107,7 +107,7 @@
   <div class="{% if current_user.is_authenticated %}flash-stack px-3 mt-3{% else %}flash-stack container mt-3{% endif %}">
     {% for category, message in get_flashed_messages(with_categories=true) %}
       <div class="alert alert-{{ category }} alert-dismissible fade show shadow-sm" role="alert">
-        {{ message }}
+        {{ message|safe }}
         <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
       </div>
     {% endfor %}

@@ -1,4 +1,5 @@
 import random
+import secrets
 from datetime import date, datetime, timedelta, timezone
 
 from flask_login import UserMixin
@@ -26,6 +27,8 @@ class User(UserMixin, db.Model):
     failed_login_attempts = db.Column(db.Integer, nullable=False, default=0)
     lockout_until = db.Column(db.DateTime(timezone=True), nullable=True)
     last_login_at = db.Column(db.DateTime(timezone=True), nullable=True)
+    reset_token = db.Column(db.String(100), nullable=True)
+    reset_token_expiry = db.Column(db.DateTime(timezone=True), nullable=True)
     current_streak = db.Column(db.Integer, nullable=False, default=0)
     longest_streak = db.Column(db.Integer, nullable=False, default=0)
     last_activity_date = db.Column(db.Date, nullable=True)
@@ -82,6 +85,22 @@ class User(UserMixin, db.Model):
         self.failed_login_attempts = 0
         self.lockout_until = None
         self.last_login_at = datetime.now(timezone.utc)
+
+    def generate_reset_token(self):
+        self.reset_token = secrets.token_urlsafe(32)
+        self.reset_token_expiry = datetime.now(timezone.utc) + timedelta(hours=1)
+        return self.reset_token
+
+    def verify_reset_token(self, token):
+        if not self.reset_token or not self.reset_token_expiry:
+            return False
+        if self.reset_token != token:
+            return False
+        current_time = datetime.now(timezone.utc)
+        expiry = self.reset_token_expiry
+        if expiry.tzinfo is None:
+            expiry = expiry.replace(tzinfo=timezone.utc)
+        return current_time <= expiry
 
     @property
     def is_admin(self):

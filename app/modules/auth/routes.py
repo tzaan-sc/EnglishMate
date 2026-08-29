@@ -8,13 +8,51 @@ from flask_login import current_user, login_user, logout_user
 from ...extensions import db
 from .models import User
 from . import bp
-from .forms import ForgotPasswordForm, LoginForm, RegisterForm, VerifyEmailForm
+from .forms import ForgotPasswordForm, LoginForm, RegisterForm, ResetPasswordForm, VerifyEmailForm
+
+
+from app.utils.email import send_email
 
 
 def is_safe_url(target):
     ref = urlparse(request.host_url)
     test = urlparse(urljoin(request.host_url, target))
     return test.scheme in ("http", "https") and ref.netloc == test.netloc
+
+
+def log_dev_reset_link(email, reset_url):
+    print(f"\n🔗 [DEV RESET LINK] {email} ➔ {reset_url}\n", flush=True)
+    html_content = f"""
+    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 8px;">
+        <h2 style="color: #2b8a3e;">EnglishMate - Khôi phục mật khẩu</h2>
+        <p>Xin chào,</p>
+        <p>Chúng tôi nhận được yêu cầu khôi phục mật khẩu cho tài khoản liên kết với email này.</p>
+        <p>Vui lòng nhấn vào nút bên dưới để tiến hành đặt lại mật khẩu mới (Đường dẫn có hiệu lực trong 1 giờ):</p>
+        <p style="text-align: center; margin: 30px 0;">
+            <a href="{reset_url}" style="background-color: #2b8a3e; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold; display: inline-block;">Đặt lại mật khẩu</a>
+        </p>
+        <p>Hoặc copy đường dẫn sau: <a href="{reset_url}">{reset_url}</a></p>
+        <p style="color: #888; font-size: 12px; margin-top: 30px;">Nếu bạn không yêu cầu khôi phục mật khẩu, vui lòng bỏ qua email này.</p>
+    </div>
+    """
+    send_email(email, "Khôi phục mật khẩu tài khoản EnglishMate", html_content)
+
+
+def log_dev_otp_code(email, code):
+    print(f"\n🔑 [DEV OTP] {email} ➔ Mã OTP: {code}\n", flush=True)
+
+    html_content = f"""
+    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 8px;">
+        <h2 style="color: #2b8a3e;">EnglishMate - Mã xác minh OTP</h2>
+        <p>Xin chào,</p>
+        <p>Cảm ơn bạn đã đăng ký tài khoản tại EnglishMate. Đây là mã OTP xác minh địa chỉ email của bạn:</p>
+        <div style="background-color: #f1f3f5; padding: 15px; text-align: center; border-radius: 6px; font-size: 28px; font-weight: bold; letter-spacing: 4px; color: #2b8a3e; margin: 20px 0;">
+            {code}
+        </div>
+        <p>Mã OTP này có hiệu lực trong vòng 15 phút. Vui lòng không chia sẻ mã này với bất kỳ ai.</p>
+    </div>
+    """
+    send_email(email, "Mã xác minh OTP tài khoản EnglishMate", html_content)
 
 
 @bp.route("/register", methods=["GET", "POST"])
@@ -33,7 +71,8 @@ def register():
             code = user.generate_verification_code()
             db.session.add(user)
             db.session.commit()
-            flash(f"Đăng ký thành công! Mã xác minh OTP đã gửi đến email {email}: {code}", "info")
+            log_dev_otp_code(email, code)
+            flash(f"Đăng ký thành công! Mã xác minh OTP đã được gửi đến email <strong>{email}</strong>. Vui lòng kiểm tra hộp thư đến (hoặc kiểm tra Terminal ở chế độ Dev).", "info")
             return redirect(url_for("auth.verify_email", user_id=user.id))
     return render_template("auth/register.html", form=form)
 
@@ -74,7 +113,8 @@ def resend_verification(user_id):
 
     code = user.generate_verification_code()
     db.session.commit()
-    flash(f"Mã OTP xác minh mới đã được gửi: {code}", "info")
+    log_dev_otp_code(user.email, code)
+    flash(f"Mã OTP xác minh mới đã được gửi đến email <strong>{user.email}</strong>. Vui lòng kiểm tra hộp thư đến (hoặc kiểm tra Terminal ở chế độ Dev).", "info")
     return redirect(url_for("auth.verify_email", user_id=user.id))
 
 
@@ -353,11 +393,38 @@ def forgot_password():
         email = form.email.data.strip().lower()
         user = User.query.filter_by(email=email).first()
         if user:
-            flash(f"Hướng dẫn khôi phục mật khẩu đã được gửi tới email {email}.", "success")
+            token = user.generate_reset_token()
+            db.session.commit()
+            reset_url = url_for("auth.reset_password", token=token, _external=True)
+            log_dev_reset_link(email, reset_url)
+            flash(f"Hướng dẫn khôi phục mật khẩu đã được gửi đến email <strong>{email}</strong>. Vui lòng kiểm tra hộp thư đến (hoặc kiểm tra Terminal ở chế độ Dev).", "success")
         else:
-            flash(f"Nếu email {email} tồn tại trong hệ thống, bạn sẽ nhận được liên kết khôi phục.", "info")
+            flash(f"Nếu email <strong>{email}</strong> tồn tại trong hệ thống, bạn sẽ nhận được liên kết khôi phục.", "info")
         return redirect(url_for("auth.login"))
     return render_template("auth/forgot_password.html", form=form)
+
+
+@bp.route("/reset-password/<token>", methods=["GET", "POST"])
+def reset_password(token):
+    if current_user.is_authenticated:
+        return redirect(url_for("main.dashboard"))
+    user = User.query.filter_by(reset_token=token).first()
+    if not user or not user.verify_reset_token(token):
+        flash("Đường dẫn khôi phục mật khẩu không hợp lệ hoặc đã hết hạn (1 giờ). Vui lòng thử lại.", "danger")
+        return redirect(url_for("auth.forgot_password"))
+
+    form = ResetPasswordForm()
+    if form.validate_on_submit():
+        user.set_password(form.password.data)
+        user.reset_token = None
+        user.reset_token_expiry = None
+        user.failed_login_attempts = 0
+        user.lockout_until = None
+        db.session.commit()
+        flash("Đặt lại mật khẩu thành công! Bạn có thể đăng nhập ngay bây giờ.", "success")
+        return redirect(url_for("auth.login"))
+
+    return render_template("auth/reset_password.html", form=form, token=token)
 
 
 @bp.post("/logout")

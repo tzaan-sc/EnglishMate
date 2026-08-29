@@ -23,6 +23,12 @@ class ForgotPasswordForm(FlaskForm):
     submit = SubmitField("Gửi đường dẫn khôi phục")
 
 
+class ResetPasswordForm(FlaskForm):
+    password = PasswordField("Mật khẩu mới", validators=[DataRequired(message="Vui lòng nhập mật khẩu mới."), Length(min=6, max=128)])
+    confirm_password = PasswordField("Nhập lại mật khẩu mới", validators=[DataRequired(message="Vui lòng xác nhận mật khẩu mới."), EqualTo("password", message="Mật khẩu nhập lại không khớp.")])
+    submit = SubmitField("Đặt lại mật khẩu")
+
+
 class LoginForm(FlaskForm):
     email = StringField("Email", validators=[DataRequired(), Email()])
     password = PasswordField("Mật khẩu", validators=[DataRequired()])

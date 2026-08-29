@@ -108,6 +108,51 @@ def test_forgot_password_page(client):
 
     res_post = client.post("/auth/forgot-password", data={"email": "student@test.com"}, follow_redirects=True)
     assert res_post.status_code == 200
-    assert "Hướng dẫn khôi phục mật khẩu đã được gửi".encode("utf-8") in res_post.data
+    assert "Hướng dẫn khôi phục mật khẩu đã được gửi đến email".encode("utf-8") in res_post.data
+
+
+def test_full_password_reset_flow(client):
+    # Request password reset
+    res = client.post("/auth/forgot-password", data={"email": "student@test.com"}, follow_redirects=True)
+    assert res.status_code == 200
+
+    with client.application.app_context():
+        user = User.query.filter_by(email="student@test.com").first()
+        assert user.reset_token is not None
+        token = user.reset_token
+
+    # Invalid token test
+    res_invalid = client.get("/auth/reset-password/invalid_token_123", follow_redirects=True)
+    assert "Đường dẫn khôi phục mật khẩu không hợp lệ".encode("utf-8") in res_invalid.data
+
+    # Valid token test GET
+    res_reset_get = client.get(f"/auth/reset-password/{token}")
+    assert res_reset_get.status_code == 200
+    assert "Đặt lại mật khẩu".encode("utf-8") in res_reset_get.data
+
+    # Valid token test POST (Mismatch passwords)
+    res_mismatch = client.post(
+        f"/auth/reset-password/{token}",
+        data={"password": "NewSecret123!", "confirm_password": "Different123!"},
+        follow_redirects=True,
+    )
+    assert "Mật khẩu nhập lại không khớp".encode("utf-8") in res_mismatch.data
+
+    # Valid token test POST (Matching passwords)
+    res_reset_post = client.post(
+        f"/auth/reset-password/{token}",
+        data={"password": "NewSecret123!", "confirm_password": "NewSecret123!"},
+        follow_redirects=True,
+    )
+    assert "Đặt lại mật khẩu thành công".encode("utf-8") in res_reset_post.data
+
+    # Verify user token cleared and login works with new password
+    with client.application.app_context():
+        user = User.query.filter_by(email="student@test.com").first()
+        assert user.reset_token is None
+
+    res_new_login = client.post("/auth/login", data={"email": "student@test.com", "password": "NewSecret123!"}, follow_redirects=True)
+    assert res_new_login.status_code == 200
+    assert "student".encode("utf-8") in res_new_login.data
 
 
