@@ -1,0 +1,209 @@
+{% extends "base.html" %}
+{% block title %}Kết Quả Bài Quiz · EnglishMate{% endblock %}
+
+{% block content %}
+<div class="container-fluid max-w-5xl py-4">
+
+  <!-- Action Toolbar Header -->
+  <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
+    <a href="{{ url_for('learning.quiz_dashboard') }}" class="btn btn-light rounded-pill px-3 py-1.5 fw-semibold text-secondary shadow-xs">
+      ← Quay lại Bảng điều khiển Quiz
+    </a>
+
+    <div class="d-flex gap-2">
+      <!-- Retake Quiz Option -->
+      {% if matching_quiz %}
+      <a href="{{ url_for('learning.quiz_start_session', quiz_id=matching_quiz.id) }}" class="btn btn-warning text-dark rounded-pill px-4 py-1.5 fw-bold shadow-xs">
+        🔄 Làm lại bài quiz này
+      </a>
+      {% else %}
+      <a href="{{ url_for('learning.grammar_exercises_setup') }}" class="btn btn-warning text-dark rounded-pill px-4 py-1.5 fw-bold shadow-xs">
+        🔄 Thử bài quiz khác
+      </a>
+      {% endif %}
+
+      <!-- Share Results Button -->
+      <button type="button" class="btn btn-outline-primary rounded-pill px-3 py-1.5 fw-bold shadow-xs" data-bs-toggle="modal" data-bs-target="#shareModal">
+        🔗 Chia sẻ kết quả
+      </button>
+
+      <!-- Download Report PDF Button -->
+      <a href="{{ url_for('learning.quiz_results_pdf', attempt_id=attempt.id) }}" target="_blank" class="btn btn-outline-secondary rounded-pill px-3 py-1.5 fw-semibold shadow-xs">
+        📄 Tải báo cáo PDF / In
+      </a>
+    </div>
+  </div>
+
+  <!-- Hero Score Banner -->
+  <div class="card border-0 shadow-sm rounded-4 p-4 p-md-5 bg-white text-center mb-4">
+    <span class="badge {{ grade.color }} rounded-pill px-3 py-1.5 fs-6 font-semibold align-self-center mb-3">
+      Xếp loại: {{ grade.text }}
+    </span>
+
+    <h2 class="fw-bold text-dark mb-1">{{ attempt.topic }}</h2>
+    <p class="text-secondary small mb-4">Cấp độ: {{ attempt.level }} · Ngày nộp bài: {{ attempt.created_at.strftime('%d/%m/%Y %H:%M') }}</p>
+
+    <!-- Big Score & Accuracy Circle Display -->
+    <div class="d-inline-flex align-items-center justify-content-center bg-light border rounded-circle mx-auto p-4 mb-3 shadow-xs" style="width: 140px; height: 140px;">
+      <div>
+        <h1 class="fw-bold text-primary mb-0" style="font-size: 2.8rem;">{{ attempt.score }}</h1>
+        <span class="text-muted small font-semibold">/ {{ total_questions }} điểm</span>
+      </div>
+    </div>
+
+    <h4 class="fw-bold text-dark">Tỷ lệ chính xác: <span class="text-primary">{{ accuracy_rate }}%</span></h4>
+  </div>
+
+  <!-- Detailed Score & Time Breakdown Cards (4 Grid Cards) -->
+  <div class="row g-3 mb-4">
+    <!-- Card 1: Correct Answers -->
+    <div class="col-md-3 col-6">
+      <div class="card border-0 shadow-xs rounded-4 p-3 bg-white text-center h-100">
+        <span class="text-muted small d-block mb-1">Số câu đúng</span>
+        <h3 class="fw-bold text-success mb-0">✓ {{ correct_count }}</h3>
+      </div>
+    </div>
+
+    <!-- Card 2: Incorrect Answers -->
+    <div class="col-md-3 col-6">
+      <div class="card border-0 shadow-xs rounded-4 p-3 bg-white text-center h-100">
+        <span class="text-muted small d-block mb-1">Số câu sai</span>
+        <h3 class="fw-bold text-danger mb-0">❌ {{ incorrect_count }}</h3>
+      </div>
+    </div>
+
+    <!-- Card 3: Unanswered -->
+    <div class="col-md-3 col-6">
+      <div class="card border-0 shadow-xs rounded-4 p-3 bg-white text-center h-100">
+        <span class="text-muted small d-block mb-1">Bỏ trống</span>
+        <h3 class="fw-bold text-warning-emphasis mb-0">⚪ {{ unanswered_count }}</h3>
+      </div>
+    </div>
+
+    <!-- Card 4: Time Spent Analysis -->
+    <div class="col-md-3 col-6">
+      <div class="card border-0 shadow-xs rounded-4 p-3 bg-white text-center h-100">
+        <span class="text-muted small d-block mb-1">Thời gian dùng</span>
+        <h3 class="fw-bold text-info-emphasis mb-0">⏱️ {{ duration_sec }}s</h3>
+        <small class="text-muted">TB {{ avg_time_per_q }}s / câu</small>
+      </div>
+    </div>
+  </div>
+
+  <!-- Answers Review Section with Tabs -->
+  <div class="card border-0 shadow-sm rounded-4 p-4 bg-white mb-4">
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4 border-bottom pb-3">
+      <h5 class="fw-bold text-dark mb-0">📝 Xem Chi Tiết Câu Hỏi & Đáp Án</h5>
+
+      <!-- Filter Tabs -->
+      <div class="btn-group rounded-pill p-1 bg-light">
+        <button type="button" class="btn btn-sm rounded-pill btn-tab active fw-bold px-3" data-filter="all">Tất cả ({{ total_questions }})</button>
+        <button type="button" class="btn btn-sm rounded-pill btn-tab text-danger fw-bold px-3" data-filter="incorrect">Chỉ câu sai ({{ incorrect_count }})</button>
+        <button type="button" class="btn btn-sm rounded-pill btn-tab text-success fw-bold px-3" data-filter="correct">Chỉ câu đúng ({{ correct_count }})</button>
+      </div>
+    </div>
+
+    <!-- Questions Review Cards List -->
+    <div class="d-flex flex-column gap-4" id="reviewList">
+      {% for ans in answers %}
+      {% set q = ans.question %}
+      {% set is_corr = ans.is_correct %}
+
+      <div class="card border p-4 rounded-4 q-review-item" data-status="{{ 'correct' if is_corr else 'incorrect' }}">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <span class="badge bg-light text-dark border rounded-pill px-3 py-1 font-semibold">Câu {{ loop.index }}</span>
+          
+          {% if is_corr %}
+          <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-3 py-1 fw-bold">✓ ĐÚNG (+1 điểm)</span>
+          {% elif ans.selected_option %}
+          <span class="badge bg-danger-subtle text-danger border border-danger-subtle rounded-pill px-3 py-1 fw-bold">❌ SAI (-0 điểm)</span>
+          {% else %}
+          <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle rounded-pill px-3 py-1 fw-bold">⚪ BỎ TRỐNG</span>
+          {% endif %}
+        </div>
+
+        {% if q %}
+        <h6 class="fw-bold text-dark lh-base mb-3" style="font-size: 1.05rem;">{{ q.question_text }}</h6>
+
+        <!-- Answer Options Breakdown -->
+        <div class="row g-2 mb-3">
+          {% for opt_key, opt_val in [('A', q.option_a), ('B', q.option_b), ('C', q.option_c), ('D', q.option_d)] %}
+          {% set is_user_choice = (ans.selected_option == opt_key) %}
+          {% set is_correct_choice = (q.correct_option == opt_key) %}
+
+          <div class="col-md-6">
+            <div class="p-3 rounded-3 border d-flex align-items-center justify-content-between 
+                        {{ 'bg-success-subtle border-success text-success-emphasis fw-bold' if is_correct_choice else ('bg-danger-subtle border-danger text-danger-emphasis fw-bold' if is_user_choice else 'bg-light text-secondary') }}">
+              <div>
+                <span class="me-2">{{ opt_key }}.</span>
+                <span>{{ opt_val }}</span>
+              </div>
+              {% if is_correct_choice %}
+              <span class="badge bg-success rounded-pill px-2">Đáp án đúng</span>
+              {% elif is_user_choice %}
+              <span class="badge bg-danger rounded-pill px-2">Lựa chọn của bạn</span>
+              {% endif %}
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+
+        <!-- Explanations Display Callout -->
+        <div class="p-3 bg-info-subtle border-start border-4 border-info rounded-3 text-info-emphasis small lh-lg">
+          <strong>💡 Giải thích chi tiết:</strong> {{ q.explanation }}
+        </div>
+        {% endif %}
+      </div>
+      {% endfor %}
+    </div>
+
+  </div>
+
+</div>
+
+<!-- Share Results Modal -->
+<div class="modal fade" id="shareModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content border-0 shadow-lg rounded-4 p-4 text-center">
+      <div class="fs-1 mb-2">🎉</div>
+      <h4 class="fw-bold text-dark mb-2">Chia Sẻ Kết Quả Quiz</h4>
+      <p class="text-secondary small mb-4">Bạn vừa đạt <strong>{{ attempt.score }}/{{ total_questions }} điểm ({{ accuracy_rate }}%)</strong> trong bài test {{ attempt.topic }}!</p>
+
+      <div class="input-group mb-3">
+        <input type="text" class="form-control" id="shareUrlInput" value="{{ request.url }}" readonly>
+        <button class="btn btn-primary fw-bold px-3" type="button" id="btnCopyShare">Sao chép Link</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+  // Filter tabs for answers review
+  document.querySelectorAll(".btn-tab").forEach(tab => {
+    tab.addEventListener("click", function() {
+      document.querySelectorAll(".btn-tab").forEach(t => t.classList.remove("active", "btn-dark"));
+      this.classList.add("active", "btn-dark");
+
+      const filter = this.dataset.filter;
+      document.querySelectorAll(".q-review-item").forEach(item => {
+        if (filter === "all" || item.dataset.status === filter) {
+          item.style.display = "block";
+        } else {
+          item.style.display = "none";
+        }
+      });
+    });
+  });
+
+  // Copy share URL
+  document.getElementById("btnCopyShare").addEventListener("click", function() {
+    const shareInput = document.getElementById("shareUrlInput");
+    shareInput.select();
+    navigator.clipboard.writeText(shareInput.value);
+    this.textContent = "Đã sao chép! ✓";
+    setTimeout(() => { this.textContent = "Sao chép Link"; }, 2000);
+  });
+});
+</script>
+{% endblock %}

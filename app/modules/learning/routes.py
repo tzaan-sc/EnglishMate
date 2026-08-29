@@ -2741,4 +2741,95 @@ def quiz_submit_session(quiz_id):
     session.pop(sess_key, None)
 
     flash("Chúc mừng bạn đã hoàn thành và nộp bài Quiz!", "success")
-    return redirect(url_for("learning.grammar_exercise_summary", attempt_id=attempt.id))
+    return redirect(url_for("learning.quiz_results", attempt_id=attempt.id))
+
+
+# ==========================================
+# QUIZ RESULTS ROUTES (Section 4.4)
+# ==========================================
+
+@bp.route("/quizzes/results/<int:attempt_id>")
+@bp.route("/quizzes/summary/<int:attempt_id>")
+@login_required
+def quiz_results(attempt_id):
+    attempt = db.session.get(QuizAttempt, attempt_id)
+    if not attempt or attempt.user_id != current_user.id:
+        flash("Không tìm thấy kết quả lượt làm bài quiz.", "danger")
+        return redirect(url_for("learning.quiz_dashboard"))
+
+    answers = attempt.answers or []
+    total_questions = attempt.total_questions or len(answers)
+    score = attempt.score or 0
+
+    correct_count = sum(1 for a in answers if a.is_correct)
+    incorrect_count = sum(1 for a in answers if not a.is_correct and a.selected_option)
+    unanswered_count = max(0, total_questions - (correct_count + incorrect_count))
+
+    accuracy_rate = int((score / total_questions) * 100) if total_questions > 0 else 0
+    duration_sec = attempt.duration_seconds or 0
+    avg_time_per_q = int(duration_sec / total_questions) if total_questions > 0 else 0
+
+    if accuracy_rate >= 90:
+        grade = {"text": "Xuất sắc 🌟", "color": "bg-success"}
+    elif accuracy_rate >= 80:
+        grade = {"text": "Giỏi 🎯", "color": "bg-primary"}
+    elif accuracy_rate >= 60:
+        grade = {"text": "Khá 👍", "color": "bg-warning text-dark"}
+    else:
+        grade = {"text": "Cần cố gắng 💡", "color": "bg-danger"}
+
+    # Automatically add incorrect answers to error log
+    for ans in answers:
+        if not ans.is_correct:
+            existing_log = GrammarErrorLog.query.filter_by(
+                user_id=current_user.id,
+                question_id=ans.question_id,
+                attempt_id=attempt.id
+            ).first()
+            if not existing_log:
+                db.session.add(GrammarErrorLog(
+                    user_id=current_user.id,
+                    question_id=ans.question_id,
+                    attempt_id=attempt.id,
+                    user_answer=ans.selected_option or "",
+                    correct_answer=ans.question.correct_option if ans.question else "A",
+                    is_resolved=False
+                ))
+    db.session.commit()
+
+    matching_quiz = Quiz.query.filter_by(title=attempt.topic).first()
+
+    return render_template(
+        "learning/quiz_results.html",
+        attempt=attempt,
+        answers=answers,
+        total_questions=total_questions,
+        correct_count=correct_count,
+        incorrect_count=incorrect_count,
+        unanswered_count=unanswered_count,
+        accuracy_rate=accuracy_rate,
+        duration_sec=duration_sec,
+        avg_time_per_q=avg_time_per_q,
+        grade=grade,
+        matching_quiz=matching_quiz,
+        form=ActionForm()
+    )
+
+
+@bp.route("/quizzes/results/<int:attempt_id>/pdf")
+@login_required
+def quiz_results_pdf(attempt_id):
+    attempt = db.session.get(QuizAttempt, attempt_id)
+    if not attempt or attempt.user_id != current_user.id:
+        flash("Không tìm thấy kết quả lượt làm bài.", "danger")
+        return redirect(url_for("learning.quiz_dashboard"))
+
+    answers = attempt.answers or []
+    accuracy_rate = int((attempt.score / attempt.total_questions) * 100) if attempt.total_questions > 0 else 0
+
+    return render_template(
+        "learning/quiz_results_pdf.html",
+        attempt=attempt,
+        answers=answers,
+        accuracy_rate=accuracy_rate
+    )
