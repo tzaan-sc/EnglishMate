@@ -1,0 +1,290 @@
+{% extends "base.html" %}
+{% block title %}Quản lý Từ vựng Chuyên sâu · EnglishMate{% endblock %}
+
+{% block content %}
+<div class="container-fluid max-w-6xl py-4">
+
+  <!-- Page Header -->
+  <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
+    <div class="d-flex align-items-center gap-3">
+      <a href="{{ url_for('learning.vocabulary') }}" class="btn btn-light rounded-circle p-2 shadow-xs" title="Quay lại Bảng điều khiển">
+        <i class="ph ph-arrow-left fs-5"></i>
+      </a>
+      <div>
+        <span class="badge bg-dark text-white rounded-pill px-3 py-1 mb-1 font-semibold">
+          TRUNG TÂM QUẢN LÝ TỪ VỰNG
+        </span>
+        <h2 class="fw-bold text-dark mb-0">Quản Lý & Tra Cứu Từ Vựng</h2>
+      </div>
+    </div>
+    <div>
+      <span class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill px-3 py-2 fw-bold fs-6">
+        📚 Hiển thị: {{ items|length }} từ vựng
+      </span>
+    </div>
+  </div>
+
+  <!-- Section 1: Advanced Search & Multi-Criteria Filter Bar -->
+  <div class="card border-0 shadow-sm rounded-4 p-4 bg-white mb-4">
+    <form method="get" class="row g-3 align-items-end">
+      
+      <!-- Search Input (English & Vietnamese) -->
+      <div class="col-md-4">
+        <label class="form-label fw-bold text-muted small mb-1">🔍 Tìm kiếm tiếng Anh / tiếng Việt</label>
+        <div class="input-group">
+          <span class="input-group-text bg-transparent border-end-0"><i class="ph ph-magnifying-glass text-muted"></i></span>
+          <input class="form-control border-start-0 ps-0" name="q" value="{{ q }}" placeholder="Nhập từ tiếng Anh hoặc nghĩa Việt...">
+        </div>
+      </div>
+
+      <!-- Filter Level -->
+      <div class="col-6 col-md-2">
+        <label class="form-label fw-bold text-muted small mb-1">Cấp độ (CEFR)</label>
+        <select class="form-select" name="level">
+          <option value="">Tất cả Level</option>
+          {% for lvl in levels %}
+          <option value="{{ lvl }}" {{ 'selected' if level==lvl }}>{{ lvl }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <!-- Filter Topic -->
+      <div class="col-6 col-md-2">
+        <label class="form-label fw-bold text-muted small mb-1">Chủ đề</label>
+        <select class="form-select" name="topic">
+          <option value="">Tất cả Chủ đề</option>
+          {% for tp in topics %}
+          <option value="{{ tp }}" {{ 'selected' if topic==tp }}>{{ tp }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <!-- Filter Status -->
+      <div class="col-6 col-md-2">
+        <label class="form-label fw-bold text-muted small mb-1">Trạng thái tiến độ</label>
+        <select class="form-select" name="status">
+          <option value="">Tất cả trạng thái</option>
+          <option value="new" {{ 'selected' if status=='new' }}>Spark Từ mới</option>
+          <option value="learning" {{ 'selected' if status=='learning' }}>📖 Đang học</option>
+          <option value="reviewing" {{ 'selected' if status=='reviewing' }}>⏰ Đến hạn ôn</option>
+          <option value="mastered" {{ 'selected' if status=='mastered' }}>🏆 Thành thạo</option>
+        </select>
+      </div>
+
+      <!-- Filter SRS Level -->
+      <div class="col-6 col-md-2">
+        <label class="form-label fw-bold text-muted small mb-1">Mức SRS (1-7)</label>
+        <select class="form-select" name="srs_level">
+          <option value="">Tất cả SRS</option>
+          {% for lvl_num in range(1, 8) %}
+          <option value="{{ lvl_num }}" {{ 'selected' if srs_level==lvl_num|string }}>SRS Level {{ lvl_num }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <!-- Sort Options -->
+      <div class="col-md-3">
+        <label class="form-label fw-bold text-muted small mb-1">Sắp xếp theo</label>
+        <select class="form-select" name="sort">
+          <option value="alpha_asc" {{ 'selected' if sort=='alpha_asc' }}>Bảng chữ cái (A ➔ Z)</option>
+          <option value="alpha_desc" {{ 'selected' if sort=='alpha_desc' }}>Bảng chữ cái (Z ➔ A)</option>
+          <option value="learned_desc" {{ 'selected' if sort=='learned_desc' }}>Ngày học mới nhất</option>
+          <option value="learned_asc" {{ 'selected' if sort=='learned_asc' }}>Ngày học cũ nhất</option>
+          <option value="review_asc" {{ 'selected' if sort=='review_asc' }}>Ngày ôn tập gần nhất</option>
+        </select>
+      </div>
+
+      <!-- Submit & Reset Buttons -->
+      <div class="col-md-3 d-flex gap-2">
+        <button type="submit" class="btn btn-dark rounded-pill fw-bold flex-grow-1">Lọc & Tìm kiếm</button>
+        <a href="{{ url_for('learning.manage_vocabulary') }}" class="btn btn-outline-secondary rounded-pill px-3">Xóa lọc</a>
+      </div>
+
+    </form>
+  </div>
+
+  <!-- Section 2: Bulk Action Bar -->
+  <form method="post" action="{{ url_for('learning.bulk_vocab_action') }}" id="bulkActionForm">
+    {{ form.hidden_tag() }}
+
+    <div class="card border-0 shadow-xs rounded-4 p-3 bg-white mb-3 d-flex flex-row align-items-center justify-content-between flex-wrap gap-2">
+      <div class="d-flex align-items-center gap-3">
+        <div class="form-check m-0">
+          <input class="form-check-input cursor-pointer" type="checkbox" id="selectAllCheckbox" onchange="toggleSelectAll(this)">
+          <label class="form-check-label fw-bold text-dark cursor-pointer mb-0" for="selectAllCheckbox">Chọn tất cả</label>
+        </div>
+        <span class="text-muted small" id="selectedCountText">(Đã chọn 0 từ)</span>
+      </div>
+
+      <div class="d-flex align-items-center gap-2">
+        <select name="bulk_action" class="form-select form-select-sm rounded-pill border-secondary-subtle" style="min-width: 220px;">
+          <option value="">-- Chọn thao tác hàng loạt --</option>
+          <option value="learn">+ Đánh dấu đã học hàng loạt</option>
+          <option value="reset">🔄 Đặt lại tiến độ hàng loạt</option>
+          <option value="delete">🗑️ Xóa khỏi danh sách học hàng loạt</option>
+        </select>
+        <button type="submit" class="btn btn-sm btn-dark rounded-pill px-3 fw-bold">Thực hiện</button>
+      </div>
+    </div>
+
+    <!-- Section 3: Vocabulary Management List Cards -->
+    <div class="vocab-manage-list">
+      {% for item in items %}
+      <div class="card border-0 shadow-xs rounded-4 p-3 mb-2 bg-white position-relative">
+        <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
+
+          <!-- Checkbox & Word Title Info -->
+          <div class="d-flex align-items-center gap-3" style="min-width: 260px;">
+            <input class="form-check-input item-checkbox cursor-pointer" type="checkbox" name="vocab_ids" value="{{ item.vocab.id }}" onchange="updateSelectedCount()">
+            
+            <span class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-circle p-2 fw-bold" style="width: 36px; height: 36px; line-height: 18px;">
+              {{ item.vocab.level }}
+            </span>
+
+            <div>
+              <div class="d-flex align-items-center gap-2">
+                <h4 class="fw-bold text-dark mb-0">{{ item.vocab.word }}</h4>
+                <!-- Status Badge -->
+                {% if item.status == 'mastered' %}
+                <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-2 py-0.5 small fw-bold">Thành thạo</span>
+                {% elif item.status == 'reviewing' %}
+                <span class="badge bg-danger-subtle text-danger border border-danger-subtle rounded-pill px-2 py-0.5 small fw-bold">Cần ôn</span>
+                {% elif item.status == 'learning' %}
+                <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle rounded-pill px-2 py-0.5 small fw-bold">Đang học</span>
+                {% else %}
+                <span class="badge bg-light text-muted border rounded-pill px-2 py-0.5 small">Từ mới</span>
+                {% endif %}
+              </div>
+              <small class="text-muted">{{ item.vocab.pronunciation }} · <span class="fst-italic">{{ item.vocab.part_of_speech }}</span></small>
+            </div>
+          </div>
+
+          <!-- Meaning & Custom Notes Preview -->
+          <div class="flex-grow-1 px-md-3" style="max-width: 450px;">
+            <strong class="text-dark d-block mb-1">{{ item.vocab.meaning_vi }}</strong>
+            {% if item.personal_notes %}
+            <div class="badge bg-info-subtle text-info-emphasis border border-info-subtle rounded-3 p-1.5 small text-start font-sans d-inline-block max-w-full text-truncate">
+              📝 Ghi chú: {{ item.personal_notes }}
+            </div>
+            {% endif %}
+            {% if item.custom_example %}
+            <div class="text-secondary small fst-italic mt-0.5">
+              “{{ item.custom_example }}”
+            </div>
+            {% endif %}
+          </div>
+
+          <!-- SRS Info & Action Buttons -->
+          <div class="d-flex align-items-center gap-2 flex-wrap">
+            <span class="badge bg-light text-dark border rounded-pill px-3 py-1.5 small">
+              ⭐ SRS Lvl {{ item.srs_level }}
+            </span>
+
+            <!-- Edit Notes Modal Trigger -->
+            <button type="button" class="btn btn-outline-primary btn-sm rounded-pill px-3 fw-semibold" data-bs-toggle="modal" data-bs-target="#editNotesModal_{{ item.vocab.id }}">
+              👁️ Chi tiết & Ghi chú
+            </button>
+
+            <!-- Reset Progress -->
+            <form method="post" action="{{ url_for('learning.reset_word_progress', vocab_id=item.vocab.id) }}" class="m-0" onsubmit="return confirm('Bạn có chắc muốn đặt lại tiến độ học cho từ này?')">
+              {{ form.hidden_tag() }}
+              <button type="submit" class="btn btn-light border btn-sm rounded-circle p-2 text-secondary" title="Đặt lại tiến độ từ vựng">
+                <i class="ph ph-arrows-counter-clockwise fs-5"></i>
+              </button>
+            </form>
+
+            <!-- Delete Progress -->
+            <form method="post" action="{{ url_for('learning.delete_word_progress', vocab_id=item.vocab.id) }}" class="m-0" onsubmit="return confirm('Bạn có chắc muốn xóa từ này khỏi danh sách học?')">
+              {{ form.hidden_tag() }}
+              <button type="submit" class="btn btn-light border btn-sm rounded-circle p-2 text-danger" title="Xóa khỏi danh sách học">
+                <i class="ph ph-trash fs-5"></i>
+              </button>
+            </form>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Modal Edit Personal Notes & Custom Examples for item -->
+      <div class="modal fade" id="editNotesModal_{{ item.vocab.id }}" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+          <div class="modal-content border-0 rounded-4 shadow-lg">
+            <div class="modal-header border-0 pb-0">
+              <h5 class="modal-title fw-bold text-dark d-flex align-items-center gap-2">
+                <span class="badge bg-primary rounded-pill">{{ item.vocab.level }}</span>
+                {{ item.vocab.word }}
+                <span class="text-muted fs-6 font-monospace">({{ item.vocab.pronunciation }})</span>
+              </h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="post" action="{{ url_for('learning.update_word_notes', vocab_id=item.vocab.id) }}">
+              <div class="modal-body p-4">
+                {{ form.hidden_tag() }}
+
+                <!-- Vocabulary Details Card -->
+                <div class="bg-light border rounded-4 p-3 mb-4">
+                  <span class="text-primary small fw-extrabold text-uppercase d-block mb-1">Nghĩa chuẩn tiếng Việt</span>
+                  <h5 class="fw-bold text-dark mb-2">{{ item.vocab.meaning_vi }}</h5>
+                  <p class="fst-italic text-dark small mb-1">“{{ item.vocab.example_en }}”</p>
+                  <p class="text-secondary small mb-0">— {{ item.vocab.example_vi }}</p>
+
+                  {% if item.vocab.collocations or item.vocab.synonyms or item.vocab.antonyms %}
+                  <hr class="my-2 opacity-25">
+                  <div class="row g-2 small">
+                    {% if item.vocab.collocations %}<div class="col-md-4"><strong>Collocations:</strong> {{ item.vocab.collocations }}</div>{% endif %}
+                    {% if item.vocab.synonyms %}<div class="col-md-4"><strong>Đồng nghĩa:</strong> {{ item.vocab.synonyms }}</div>{% endif %}
+                    {% if item.vocab.antonyms %}<div class="col-md-4"><strong>Trái nghĩa:</strong> {{ item.vocab.antonyms }}</div>{% endif %}
+                  </div>
+                  {% endif %}
+                </div>
+
+                <!-- Personal Notes Form Input -->
+                <div class="mb-3">
+                  <label class="form-label fw-semibold text-dark">📝 Ghi chú cá nhân (Personal Notes)</label>
+                  <textarea name="personal_notes" class="form-control rounded-3" rows="3" placeholder="Nhập mẹo ghi chú, ngữ cảnh nhớ từ riêng của bạn...">{{ item.personal_notes }}</textarea>
+                </div>
+
+                <!-- Custom Example Input -->
+                <div class="mb-3">
+                  <label class="form-label fw-semibold text-dark">✍️ Câu ví dụ tự tạo (Custom Example Sentence)</label>
+                  <input type="text" name="custom_example" class="form-control rounded-3" value="{{ item.custom_example }}" placeholder="Nhập câu ví dụ tiếng Anh do bạn tự đặt...">
+                </div>
+
+              </div>
+              <div class="modal-footer border-0 justify-content-end pt-0 pb-4 pe-4">
+                <button type="button" class="btn btn-light rounded-pill" data-bs-dismiss="modal">Hủy</button>
+                <button type="submit" class="btn btn-primary rounded-pill px-4 fw-bold shadow-xs">Lưu Ghi Chú</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+
+      {% else %}
+      <div class="card border-0 shadow-sm rounded-4 p-5 text-center bg-white">
+        <i class="ph ph-folder-open fs-1 text-muted mb-2"></i>
+        <h5 class="fw-bold text-muted mb-1">Không tìm thấy từ vựng phù hợp</h5>
+        <p class="text-secondary small mb-0">Vui lòng thay đổi từ khóa hoặc bộ lọc trên thanh tìm kiếm.</p>
+      </div>
+      {% endfor %}
+    </div>
+
+  </form>
+</div>
+
+<script>
+function toggleSelectAll(master) {
+    const checkboxes = document.querySelectorAll(".item-checkbox");
+    checkboxes.forEach(cb => cb.checked = master.checked);
+    updateSelectedCount();
+}
+
+function updateSelectedCount() {
+    const checked = document.querySelectorAll(".item-checkbox:checked");
+    const countText = document.getElementById("selectedCountText");
+    if (countText) {
+        countText.innerText = `(Đã chọn ${checked.length} từ)`;
+    }
+}
+</script>
+{% endblock %}

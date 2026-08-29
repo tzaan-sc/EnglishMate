@@ -72,6 +72,8 @@ class VocabularyProgress(db.Model):
     is_skipped = db.Column(db.Boolean, nullable=False, default=False)
     last_reviewed_at = db.Column(db.DateTime(timezone=True), default=now, nullable=False)
     next_review_at = db.Column(db.DateTime(timezone=True), default=now, nullable=True)
+    personal_notes = db.Column(db.Text, nullable=True)
+    custom_example = db.Column(db.Text, nullable=True)
     user = db.relationship("User", backref="vocabulary_progress")
     vocabulary = db.relationship("Vocabulary", backref="progress_records")
     __table_args__ = (db.UniqueConstraint("user_id", "vocabulary_id"),)

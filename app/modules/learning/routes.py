@@ -917,3 +917,193 @@ def review_summary():
         mastered_words=mastered_words,
         need_more_words=need_more_words
     )
+
+
+# ==========================================
+# VOCABULARY MANAGEMENT ROUTES
+# ==========================================
+
+@bp.get("/vocabulary/manage")
+@login_required
+def manage_vocabulary():
+    q = request.args.get("q", "").strip()
+    level = request.args.get("level", "")
+    topic = request.args.get("topic", "")
+    status = request.args.get("status", "")
+    srs_lvl_arg = request.args.get("srs_level", "")
+    sort_by = request.args.get("sort", "alpha_asc")
+
+    query = Vocabulary.query
+
+    if q:
+        query = query.filter(
+            Vocabulary.word.ilike(f"%{q}%") | Vocabulary.meaning_vi.ilike(f"%{q}%")
+        )
+
+    if level:
+        query = query.filter_by(level=level)
+
+    if topic:
+        query = query.filter_by(topic=topic)
+
+    all_progress = VocabularyProgress.query.filter_by(user_id=current_user.id).all()
+    progress_map = {p.vocabulary_id: p for p in all_progress}
+
+    all_vocab = query.all()
+    now_dt = datetime.utcnow()
+
+    filtered_list = []
+    for vocab in all_vocab:
+        p = progress_map.get(vocab.id)
+        learned_cnt = p.learned_count if p else 0
+        review_cnt = p.review_count if p else 0
+        srs_lvl = p.srs_level if p else 1
+        next_rev = p.next_review_at if p else None
+
+        if not p or (learned_cnt == 0 and review_cnt == 0):
+            item_status = "new"
+        elif srs_lvl >= 7 or (learned_cnt >= 3 and review_cnt >= 3):
+            item_status = "mastered"
+        elif next_rev and next_rev <= now_dt:
+            item_status = "reviewing"
+        else:
+            item_status = "learning"
+
+        if status and item_status != status:
+            continue
+
+        if srs_lvl_arg and srs_lvl_arg.isdigit():
+            if srs_lvl != int(srs_lvl_arg):
+                continue
+
+        filtered_list.append({
+            "vocab": vocab,
+            "progress": p,
+            "status": item_status,
+            "srs_level": srs_lvl,
+            "learned_count": learned_cnt,
+            "review_count": review_cnt,
+            "last_reviewed_at": p.last_reviewed_at if p else None,
+            "next_review_at": next_rev,
+            "personal_notes": p.personal_notes if p else "",
+            "custom_example": p.custom_example if p else "",
+        })
+
+    if sort_by == "alpha_asc":
+        filtered_list.sort(key=lambda x: x["vocab"].word.lower())
+    elif sort_by == "alpha_desc":
+        filtered_list.sort(key=lambda x: x["vocab"].word.lower(), reverse=True)
+    elif sort_by == "learned_desc":
+        filtered_list.sort(key=lambda x: x["last_reviewed_at"] or datetime.min, reverse=True)
+    elif sort_by == "learned_asc":
+        filtered_list.sort(key=lambda x: x["last_reviewed_at"] or datetime.min)
+    elif sort_by == "review_desc":
+        filtered_list.sort(key=lambda x: x["next_review_at"] or datetime.min, reverse=True)
+    elif sort_by == "review_asc":
+        filtered_list.sort(key=lambda x: x["next_review_at"] or datetime.min)
+
+    topics = [r[0] for r in db.session.query(Vocabulary.topic).distinct().order_by(Vocabulary.topic).all()]
+    levels = ["A1", "A2", "B1", "B2", "C1", "C2"]
+
+    return render_template(
+        "learning/manage_vocabulary.html",
+        items=filtered_list,
+        topics=topics,
+        levels=levels,
+        q=q,
+        level=level,
+        topic=topic,
+        status=status,
+        srs_level=srs_lvl_arg,
+        sort=sort_by,
+        form=ActionForm(),
+    )
+
+
+@bp.post("/vocabulary/<int:vocab_id>/notes")
+@login_required
+def update_word_notes(vocab_id):
+    word = db.get_or_404(Vocabulary, vocab_id)
+    notes = request.form.get("personal_notes", "").strip()
+    custom_example = request.form.get("custom_example", "").strip()
+
+    progress = VocabularyProgress.query.filter_by(user_id=current_user.id, vocabulary_id=word.id).first()
+    if not progress:
+        progress = VocabularyProgress(user_id=current_user.id, vocabulary_id=word.id)
+        db.session.add(progress)
+
+    progress.personal_notes = notes
+    progress.custom_example = custom_example
+    db.session.commit()
+
+    flash(f"Đã cập nhật ghi chú cá nhân cho từ “{word.word}”.", "success")
+    return redirect(request.referrer or url_for("learning.manage_vocabulary"))
+
+
+@bp.post("/vocabulary/<int:vocab_id>/reset-progress")
+@login_required
+def reset_word_progress(vocab_id):
+    word = db.get_or_404(Vocabulary, vocab_id)
+    progress = VocabularyProgress.query.filter_by(user_id=current_user.id, vocabulary_id=word.id).first()
+    if progress:
+        progress.learned_count = 0
+        progress.review_count = 0
+        progress.srs_level = 1
+        progress.next_review_at = datetime.utcnow()
+        db.session.commit()
+
+    flash(f"Đã đặt lại tiến độ học cho từ “{word.word}”.", "info")
+    return redirect(request.referrer or url_for("learning.manage_vocabulary"))
+
+
+@bp.post("/vocabulary/<int:vocab_id>/delete-progress")
+@login_required
+def delete_word_progress(vocab_id):
+    word = db.get_or_404(Vocabulary, vocab_id)
+    progress = VocabularyProgress.query.filter_by(user_id=current_user.id, vocabulary_id=word.id).first()
+    if progress:
+        db.session.delete(progress)
+        db.session.commit()
+
+    flash(f"Đã xóa từ “{word.word}” khỏi danh sách học cá nhân.", "warning")
+    return redirect(request.referrer or url_for("learning.manage_vocabulary"))
+
+
+@bp.post("/vocabulary/bulk-action")
+@login_required
+def bulk_vocab_action():
+    action = request.form.get("bulk_action", "")
+    vocab_ids = request.form.getlist("vocab_ids")
+
+    valid_ids = [int(vid) for vid in vocab_ids if vid.isdigit()]
+    if not valid_ids or not action:
+        flash("Vui lòng chọn ít nhất một từ vựng và hành động tương ứng.", "warning")
+        return redirect(request.referrer or url_for("learning.manage_vocabulary"))
+
+    now_dt = datetime.utcnow()
+    count = 0
+
+    for vid in valid_ids:
+        progress = VocabularyProgress.query.filter_by(user_id=current_user.id, vocabulary_id=vid).first()
+        if action == "learn":
+            if not progress:
+                progress = VocabularyProgress(user_id=current_user.id, vocabulary_id=vid)
+                db.session.add(progress)
+            progress.learned_count = (progress.learned_count or 0) + 1
+            progress.last_reviewed_at = now_dt
+            count += 1
+        elif action == "reset":
+            if progress:
+                progress.learned_count = 0
+                progress.review_count = 0
+                progress.srs_level = 1
+                progress.next_review_at = now_dt
+                count += 1
+        elif action == "delete":
+            if progress:
+                db.session.delete(progress)
+                count += 1
+
+    db.session.commit()
+    flash(f"Đã thực hiện thao tác hàng loạt thành công trên {count} từ vựng.", "success")
+    return redirect(request.referrer or url_for("learning.manage_vocabulary"))
