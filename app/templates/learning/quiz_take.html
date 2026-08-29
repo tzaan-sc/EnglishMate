@@ -1,0 +1,398 @@
+{% extends "base.html" %}
+{% block title %}{{ quiz_session.title }} · Làm Bài Quiz EnglishMate{% endblock %}
+
+{% block content %}
+<div class="container-fluid max-w-6xl py-4" id="quizContainer">
+
+  <!-- Top Header Bar -->
+  <div class="card border-0 shadow-sm rounded-4 p-3 bg-white mb-4">
+    <div class="d-flex flex-wrap align-items-center justify-content-between gap-3">
+      <!-- Title & Category -->
+      <div>
+        <div class="d-flex align-items-center gap-2 mb-1">
+          <span class="badge bg-primary-subtle text-primary rounded-pill px-2.5 py-1 fw-bold small">{{ quiz_session.level }}</span>
+          <span class="badge bg-secondary-subtle text-secondary rounded-pill px-2.5 py-1 small">{{ quiz_session.skill }}</span>
+        </div>
+        <h4 class="fw-bold text-dark mb-0">{{ quiz_session.title }}</h4>
+      </div>
+
+      <!-- Action & Timer Controls -->
+      <div class="d-flex align-items-center gap-3">
+        <!-- Instructions Modal Button -->
+        <button type="button" class="btn btn-outline-info rounded-pill px-3 py-1.5 fw-semibold small" data-bs-toggle="modal" data-bs-target="#instructionsModal">
+          ℹ️ Hướng dẫn
+        </button>
+
+        <!-- Pause / Resume Button -->
+        <button type="button" class="btn btn-outline-warning text-dark-emphasis rounded-pill px-3 py-1.5 fw-semibold small" id="btnPause">
+          ⏸️ Tạm dừng
+        </button>
+
+        <!-- Timer Display -->
+        <div class="bg-light border rounded-pill px-3 py-1.5 d-flex align-items-center gap-2 fw-bold text-dark fs-5 shadow-xs">
+          ⏱️ <span id="timerDisplay">00:00</span>
+        </div>
+
+        <!-- Submit Button -->
+        <button type="button" class="btn btn-danger rounded-pill px-4 py-1.5 fw-bold shadow-xs" data-bs-toggle="modal" data-bs-target="#submitConfirmModal">
+          📤 Nộp bài
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="row g-4">
+    <!-- Left Column: Question Navigation Grid (Jump to question) -->
+    <div class="col-lg-3">
+      <div class="card border-0 shadow-sm rounded-4 p-3 bg-white h-100">
+        <h6 class="fw-bold text-dark mb-3 border-bottom pb-2 d-flex align-items-center justify-content-between">
+          <span>🧩 Danh sách câu hỏi</span>
+          <span class="badge bg-primary rounded-pill" id="badgeAnsweredCount">{{ answered_count }}/{{ total_questions }}</span>
+        </h6>
+
+        <!-- Filter Marked Questions Toggle -->
+        <div class="form-check form-switch mb-3">
+          <input class="form-check-input" type="checkbox" id="filterMarkedToggle">
+          <label class="form-check-label small fw-semibold text-secondary" for="filterMarkedToggle">
+            🚩 Chỉ xem câu đã đánh dấu (<span id="badgeMarkedCount">{{ marked_count }}</span>)
+          </label>
+        </div>
+
+        <!-- Question Grid Pills -->
+        <div class="d-flex flex-wrap gap-2 mb-3" id="navGrid">
+          {% for i in range(total_questions) %}
+          {% set q_str = i|string %}
+          {% set is_ans = q_str in answers and answers[q_str] %}
+          {% set is_marked = i in marked_reviews %}
+          {% set is_curr = i == current_idx %}
+
+          <a href="{{ url_for('learning.quiz_take', quiz_id=quiz_id, q_idx=i) }}" 
+             class="btn btn-sm rounded-circle fw-bold p-0 d-flex align-items-center justify-content-center q-nav-item {{ 'q-marked' if is_marked else '' }}" 
+             data-q-idx="{{ i }}"
+             style="width: 38px; height: 38px; position: relative; {{ 'border: 2.5px solid #0d6efd;' if is_curr else '' }} {{ 'background-color: #0d6efd; color: #fff;' if is_ans and not is_curr else ('background-color: #e9ecef; color: #212529;' if not is_curr else '') }}">
+            {{ i + 1 }}
+            {% if is_marked %}
+            <span class="position-absolute top-0 start-100 translate-middle p-1 bg-warning border border-light rounded-circle"></span>
+            {% endif %}
+          </a>
+          {% endfor %}
+        </div>
+
+        <!-- Legend -->
+        <div class="pt-3 border-top small text-muted">
+          <div class="d-flex align-items-center gap-2 mb-1">
+            <span class="badge bg-primary rounded-circle p-1"></span> Đã làm
+          </div>
+          <div class="d-flex align-items-center gap-2 mb-1">
+            <span class="badge bg-light border text-dark rounded-circle p-1"></span> Chưa làm
+          </div>
+          <div class="d-flex align-items-center gap-2">
+            <span class="badge bg-warning rounded-circle p-1"></span> Đã đánh dấu cờ 🚩
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Right Column: Question Workspace & Options -->
+    <div class="col-lg-9">
+      <div class="card border-0 shadow-sm rounded-4 p-4 bg-white mb-4">
+        
+        <!-- Progress Bar & Question Counter -->
+        <div class="d-flex justify-content-between align-items-center mb-2">
+          <span class="fw-bold text-primary fs-6">Câu {{ current_idx + 1 }} / {{ total_questions }} câu hỏi</span>
+          {% set current_q_str = current_idx|string %}
+          {% set is_curr_marked = current_idx in marked_reviews %}
+          
+          <!-- Mark for review 🚩 button -->
+          <button type="button" class="btn btn-sm {{ 'btn-warning text-dark' if is_curr_marked else 'btn-outline-warning text-dark-emphasis' }} rounded-pill px-3 fw-bold btn-toggle-mark" data-q-idx="{{ current_idx }}">
+            <i class="ph-fill ph-flag me-1"></i> {{ 'Đã đánh dấu 🚩' if is_curr_marked else 'Đánh dấu xem lại 🚩' }}
+          </button>
+        </div>
+
+        {% set progress_pct = ((answered_count * 100) // total_questions) if total_questions > 0 else 0 %}
+        <div class="progress rounded-pill mb-4" style="height: 8px;">
+          <div class="progress-bar bg-primary rounded-pill" style="width: {{ progress_pct }}%;"></div>
+        </div>
+
+        <!-- Question Text -->
+        {% if current_question %}
+        <div class="p-4 bg-light rounded-4 mb-4 border">
+          <h5 class="fw-bold text-dark lh-base mb-0">{{ current_question.text }}</h5>
+        </div>
+
+        <!-- Option Pills A, B, C, D -->
+        <form id="answerForm" method="post" action="{{ url_for('learning.quiz_save_answer', quiz_id=quiz_id) }}">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <input type="hidden" name="q_idx" value="{{ current_idx }}">
+          <input type="hidden" name="elapsed_seconds" id="elapsedInput" value="0">
+
+          {% set curr_ans = answers.get(current_q_str, '') %}
+          <div class="d-flex flex-column gap-3 mb-4">
+            {% for opt_key, opt_val in [('A', current_question.option_a), ('B', current_question.option_b), ('C', current_question.option_c), ('D', current_question.option_d)] %}
+            <label class="card border p-3 rounded-4 cursor-pointer option-pill transition {{ 'border-primary bg-primary-subtle' if curr_ans == opt_key else 'hover-bg-light' }}">
+              <div class="d-flex align-items-center gap-3">
+                <input class="form-check-input option-radio fs-5 my-0" type="radio" name="option" value="{{ opt_key }}" {{ 'checked' if curr_ans == opt_key }}>
+                <span class="fw-bold fs-5 text-primary">{{ opt_key }}.</span>
+                <span class="fs-6 text-dark fw-medium">{{ opt_val }}</span>
+              </div>
+            </label>
+            {% endfor %}
+          </div>
+        </form>
+        {% endif %}
+
+        <!-- Navigation Buttons Bottom Bar -->
+        <div class="d-flex justify-content-between align-items-center pt-3 border-top">
+          <a href="{{ url_for('learning.quiz_take', quiz_id=quiz_id, q_idx=current_idx - 1) }}" 
+             class="btn btn-outline-secondary rounded-pill px-4 fw-bold {{ 'disabled' if current_idx == 0 }}">
+            ← Câu trước
+          </a>
+
+          {% if current_idx < total_questions - 1 %}
+          <a href="{{ url_for('learning.quiz_take', quiz_id=quiz_id, q_idx=current_idx + 1) }}" 
+             class="btn btn-primary rounded-pill px-4 fw-bold">
+            Câu tiếp theo →
+          </a>
+          {% else %}
+          <button type="button" class="btn btn-danger rounded-pill px-4 fw-bold" data-bs-toggle="modal" data-bs-target="#submitConfirmModal">
+            📤 Hoàn thành & Nộp bài
+          </button>
+          {% endif %}
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- Instructions Modal -->
+<div class="modal fade" id="instructionsModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content border-0 shadow-lg rounded-4 p-3">
+      <div class="modal-header border-0 pb-0">
+        <h5 class="fw-bold text-dark mb-0">ℹ️ Hướng Dẫn Làm Bài Quiz</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body text-secondary lh-lg fs-6">
+        <ol class="ps-3 mb-0">
+          <li class="mb-2">Đồng hồ sẽ tự động đếm ngược thời gian làm bài. Khi hết giờ, bài quiz sẽ tự động được nộp.</li>
+          <li class="mb-2">Sử dụng khối số thứ tự câu hỏi bên trái để chuyển nhanh đến câu hỏi bất kỳ.</li>
+          <li class="mb-2">Sử dụng nút <strong>Đánh dấu cờ 🚩</strong> để ghi nhớ những câu cần kiểm tra lại trước khi nộp bài.</li>
+          <li class="mb-2">Bạn có thể bấm <strong>Tạm dừng ⏸️</strong> nếu có việc bận đột xuất.</li>
+        </ol>
+      </div>
+      <div class="modal-footer border-0 pt-0">
+        <button type="button" class="btn btn-primary w-100 rounded-pill fw-bold" data-bs-dismiss="modal">Đã hiểu & Tiếp tục làm bài</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Pause / Resume Modal -->
+<div class="modal fade" id="pauseModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content border-0 shadow-lg rounded-4 p-4 text-center">
+      <div class="fs-1 mb-2">⏸️</div>
+      <h4 class="fw-bold text-dark mb-2">Bài Quiz Đang Tạm Dừng</h4>
+      <p class="text-secondary small mb-4">Đồng hồ đếm ngược đã ngưng chạy. Khi sẵn sàng, bấm nút bên dưới để tiếp tục.</p>
+      <button type="button" class="btn btn-warning text-dark btn-lg w-100 rounded-pill fw-bold" id="btnResume">
+        ▶️ Tiếp tục làm bài ngay
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Submit Confirmation Modal -->
+<div class="modal fade" id="submitConfirmModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content border-0 shadow-lg rounded-4 p-4">
+      <h4 class="fw-bold text-dark mb-3 text-center">📤 Xác Nhận Nộp Bài Quiz</h4>
+      
+      <div class="p-3 bg-light rounded-4 mb-4">
+        <div class="d-flex justify-content-between mb-2">
+          <span class="text-muted">Tổng số câu hỏi:</span>
+          <strong class="text-dark">{{ total_questions }} câu</strong>
+        </div>
+        <div class="d-flex justify-content-between mb-2">
+          <span class="text-muted">Số câu đã hoàn thành:</span>
+          <strong class="text-success" id="modalAnswered">{{ answered_count }} câu</strong>
+        </div>
+        <div class="d-flex justify-content-between mb-2">
+          <span class="text-muted">Số câu còn bỏ trống:</span>
+          <strong class="text-danger" id="modalUnanswered">{{ unanswered_count }} câu</strong>
+        </div>
+        <div class="d-flex justify-content-between">
+          <span class="text-muted">Số câu đang đánh dấu cờ 🚩:</span>
+          <strong class="text-warning" id="modalMarked">{{ marked_count }} câu</strong>
+        </div>
+      </div>
+
+      <p class="text-secondary small text-center mb-4">Bạn có chắc chắn muốn kết thúc lượt làm bài và nộp để chấm điểm không?</p>
+
+      <form method="post" action="{{ url_for('learning.quiz_submit_session', quiz_id=quiz_id) }}" id="submitForm">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <input type="hidden" name="elapsed_seconds" id="finalElapsedInput" value="0">
+
+        <div class="d-flex gap-2">
+          <button type="button" class="btn btn-outline-secondary w-50 rounded-pill fw-bold" data-bs-dismiss="modal">Quay lại kiểm tra</button>
+          <button type="submit" class="btn btn-danger w-50 rounded-pill fw-bold">Xác nhận nộp bài</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+  const csrfToken = "{{ csrf_token() }}";
+  const quizId = "{{ quiz_id }}";
+  const durationSec = {{ quiz_session.duration_seconds or 900 }};
+  let elapsedSec = {{ quiz_session.elapsed_seconds or 0 }};
+  let isPaused = {{ 'true' if quiz_session.is_paused else 'false' }};
+  let timerInterval = null;
+
+  const timerDisplay = document.getElementById("timerDisplay");
+  const elapsedInput = document.getElementById("elapsedInput");
+  const finalElapsedInput = document.getElementById("finalElapsedInput");
+  const pauseModal = new bootstrap.Modal(document.getElementById("pauseModal"));
+
+  function formatTimer(totalSec) {
+    const remainSec = Math.max(0, durationSec - totalSec);
+    const m = Math.floor(remainSec / 60).toString().padStart(2, '0');
+    const s = (remainSec % 60).toString().padStart(2, '0');
+    return `${m}:${s}`;
+  }
+
+  function updateTimerUI() {
+    timerDisplay.textContent = formatTimer(elapsedSec);
+    if (elapsedInput) elapsedInput.value = elapsedSec;
+    if (finalElapsedInput) finalElapsedInput.value = elapsedSec;
+  }
+
+  function startTimer() {
+    if (timerInterval) clearInterval(timerInterval);
+    timerInterval = setInterval(() => {
+      if (!isPaused) {
+        elapsedSec++;
+        updateTimerUI();
+        if (elapsedSec >= durationSec) {
+          clearInterval(timerInterval);
+          alert("Thời gian làm bài đã hết! Hệ thống đang nộp bài tự động.");
+          document.getElementById("submitForm").submit();
+        }
+      }
+    }, 1000);
+  }
+
+  updateTimerUI();
+  if (isPaused) {
+    pauseModal.show();
+  } else {
+    startTimer();
+  }
+
+  // Handle Radio Option Selection
+  document.querySelectorAll(".option-radio").forEach(radio => {
+    radio.addEventListener("change", function() {
+      const selectedOpt = this.value;
+      const qIdx = document.querySelector("input[name='q_idx']").value;
+
+      fetch(`/learning/quizzes/${quizId}/answer`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-CSRFToken": csrfToken,
+          "X-Requested-With": "XMLHttpRequest"
+        },
+        body: JSON.stringify({
+          q_idx: qIdx,
+          option: selectedOpt,
+          elapsed_seconds: elapsedSec
+        })
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          // Highlight active option card UI
+          document.querySelectorAll(".option-pill").forEach(card => card.classList.remove("border-primary", "bg-primary-subtle"));
+          this.closest(".option-pill").classList.add("border-primary", "bg-primary-subtle");
+
+          if (document.getElementById("badgeAnsweredCount")) {
+            document.getElementById("badgeAnsweredCount").textContent = `${data.answered_count}/{{ total_questions }}`;
+          }
+        }
+      });
+    });
+  });
+
+  // Handle Toggle Mark Review
+  document.querySelectorAll(".btn-toggle-mark").forEach(btn => {
+    btn.addEventListener("click", function() {
+      const qIdx = this.dataset.qIdx;
+
+      fetch(`/learning/quizzes/${quizId}/answer`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-CSRFToken": csrfToken,
+          "X-Requested-With": "XMLHttpRequest"
+        },
+        body: JSON.stringify({
+          q_idx: qIdx,
+          toggle_mark: true,
+          elapsed_seconds: elapsedSec
+        })
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          location.reload();
+        }
+      });
+    });
+  });
+
+  // Handle Pause & Resume
+  document.getElementById("btnPause").addEventListener("click", function() {
+    isPaused = true;
+    pauseModal.show();
+    fetch(`/learning/quizzes/${quizId}/pause`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-CSRFToken": csrfToken
+      },
+      body: JSON.stringify({ is_paused: true, elapsed_seconds: elapsedSec })
+    });
+  });
+
+  document.getElementById("btnResume").addEventListener("click", function() {
+    isPaused = false;
+    pauseModal.hide();
+    startTimer();
+    fetch(`/learning/quizzes/${quizId}/pause`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-CSRFToken": csrfToken
+      },
+      body: JSON.stringify({ is_paused: false, elapsed_seconds: elapsedSec })
+    });
+  });
+
+  // Filter Marked Questions Switch
+  document.getElementById("filterMarkedToggle").addEventListener("change", function() {
+    const isOnlyMarked = this.checked;
+    document.querySelectorAll(".q-nav-item").forEach(item => {
+      if (isOnlyMarked && !item.classList.contains("q-marked")) {
+        item.style.display = "none";
+      } else {
+        item.style.display = "flex";
+      }
+    });
+  });
+});
+</script>
+{% endblock %}

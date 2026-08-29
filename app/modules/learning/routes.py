@@ -2520,3 +2520,225 @@ def quiz_detail_preview(quiz_id):
             "view_count": quiz.view_count
         }
     })
+
+
+# ==========================================
+# QUIZ TAKING ROUTES (Section 4.3)
+# ==========================================
+
+@bp.route("/quizzes/<int:quiz_id>/start")
+@login_required
+def quiz_start_session(quiz_id):
+    quiz = db.session.get(Quiz, quiz_id)
+    if not quiz:
+        flash("Không tìm thấy bài quiz.", "danger")
+        return redirect(url_for("learning.quiz_list"))
+
+    ensure_initial_grammar_questions()
+    questions = Question.query.filter_by(level=quiz.level).limit(quiz.question_count).all()
+    if not questions:
+        questions = Question.query.limit(quiz.question_count).all()
+
+    questions_data = []
+    for q in questions:
+        q_text = getattr(q, 'question_text', getattr(q, 'text', ''))
+        questions_data.append({
+            "id": q.id,
+            "text": q_text,
+            "option_a": q.option_a,
+            "option_b": q.option_b,
+            "option_c": q.option_c,
+            "option_d": q.option_d,
+            "correct_option": q.correct_option,
+            "explanation": q.explanation
+        })
+
+    sess_key = f"quiz_session_{quiz.id}"
+    session[sess_key] = {
+        "quiz_id": quiz.id,
+        "title": quiz.title,
+        "category": quiz.category,
+        "level": quiz.level,
+        "skill": quiz.skill,
+        "difficulty": quiz.difficulty,
+        "duration_minutes": quiz.duration_minutes,
+        "duration_seconds": quiz.duration_minutes * 60,
+        "questions": questions_data,
+        "answers": {},
+        "marked_reviews": [],
+        "current_idx": 0,
+        "start_time": datetime.utcnow().isoformat(),
+        "elapsed_seconds": 0,
+        "is_paused": False
+    }
+
+    in_prog = session.get("in_progress_quizzes", [])
+    if quiz.id not in in_prog:
+        in_prog.append(quiz.id)
+        session["in_progress_quizzes"] = in_prog
+
+    return redirect(url_for("learning.quiz_take", quiz_id=quiz.id))
+
+
+@bp.route("/quizzes/<int:quiz_id>/take")
+@login_required
+def quiz_take(quiz_id):
+    sess_key = f"quiz_session_{quiz_id}"
+    q_sess = session.get(sess_key)
+
+    if not q_sess:
+        return redirect(url_for("learning.quiz_start_session", quiz_id=quiz_id))
+
+    current_idx = request.args.get("q_idx", type=int)
+    if current_idx is not None and 0 <= current_idx < len(q_sess["questions"]):
+        q_sess["current_idx"] = current_idx
+        session.modified = True
+
+    current_idx = q_sess.get("current_idx", 0)
+    current_question = q_sess["questions"][current_idx] if q_sess["questions"] else None
+
+    answers = q_sess.get("answers", {})
+    marked = q_sess.get("marked_reviews", [])
+    total_q = len(q_sess["questions"])
+    answered_count = len([k for k, v in answers.items() if v])
+    unanswered_count = total_q - answered_count
+    marked_count = len(marked)
+
+    return render_template(
+        "learning/quiz_take.html",
+        quiz_session=q_sess,
+        quiz_id=quiz_id,
+        current_idx=current_idx,
+        current_question=current_question,
+        total_questions=total_q,
+        answered_count=answered_count,
+        unanswered_count=unanswered_count,
+        marked_count=marked_count,
+        answers=answers,
+        marked_reviews=marked,
+        form=ActionForm()
+    )
+
+
+@bp.post("/quizzes/<int:quiz_id>/answer")
+@login_required
+def quiz_save_answer(quiz_id):
+    sess_key = f"quiz_session_{quiz_id}"
+    q_sess = session.get(sess_key)
+    if not q_sess:
+        return jsonify({"success": False, "message": "Phiên bài quiz đã hết hạn."}), 404
+
+    data = request.get_json() or request.form
+    q_idx = int(data.get("q_idx", q_sess.get("current_idx", 0)))
+    option = data.get("option")
+    toggle_mark = data.get("toggle_mark")
+    elapsed = data.get("elapsed_seconds")
+
+    if elapsed is not None:
+        q_sess["elapsed_seconds"] = int(elapsed)
+
+    if option is not None:
+        q_sess["answers"][str(q_idx)] = option
+
+    if toggle_mark:
+        marked = q_sess.get("marked_reviews", [])
+        if q_idx in marked:
+            marked.remove(q_idx)
+        else:
+            marked.append(q_idx)
+        q_sess["marked_reviews"] = marked
+
+    q_sess["current_idx"] = q_idx
+    session.modified = True
+
+    if request.is_json or request.headers.get("X-Requested-With") == "XMLHttpRequest":
+        return jsonify({
+            "success": True,
+            "q_idx": q_idx,
+            "answers": q_sess["answers"],
+            "marked_reviews": q_sess["marked_reviews"],
+            "answered_count": len([k for k, v in q_sess["answers"].items() if v]),
+            "marked_count": len(q_sess["marked_reviews"])
+        })
+
+    return redirect(url_for("learning.quiz_take", quiz_id=quiz_id, q_idx=q_idx))
+
+
+@bp.post("/quizzes/<int:quiz_id>/pause")
+@login_required
+def quiz_pause_session(quiz_id):
+    sess_key = f"quiz_session_{quiz_id}"
+    q_sess = session.get(sess_key)
+    if not q_sess:
+        return jsonify({"success": False, "message": "Không tìm thấy phiên bài quiz."}), 404
+
+    data = request.get_json() or request.form
+    is_paused = data.get("is_paused")
+    elapsed = data.get("elapsed_seconds")
+
+    if elapsed is not None:
+        q_sess["elapsed_seconds"] = int(elapsed)
+
+    if is_paused is not None:
+        q_sess["is_paused"] = bool(is_paused)
+    else:
+        q_sess["is_paused"] = not q_sess.get("is_paused", False)
+
+    session.modified = True
+    return jsonify({"success": True, "is_paused": q_sess["is_paused"], "elapsed_seconds": q_sess["elapsed_seconds"]})
+
+
+@bp.post("/quizzes/<int:quiz_id>/submit")
+@login_required
+def quiz_submit_session(quiz_id):
+    sess_key = f"quiz_session_{quiz_id}"
+    q_sess = session.get(sess_key)
+
+    if not q_sess:
+        flash("Phiên bài quiz không khả dụng hoặc đã nộp.", "warning")
+        return redirect(url_for("learning.quiz_list"))
+
+    questions = q_sess.get("questions", [])
+    answers = q_sess.get("answers", {})
+    elapsed = request.form.get("elapsed_seconds") or q_sess.get("elapsed_seconds", 0)
+    duration_sec = int(elapsed) if elapsed else 0
+
+    score = 0
+    total_q = len(questions)
+
+    attempt = QuizAttempt(
+        user_id=current_user.id,
+        level=q_sess.get("level", "A1"),
+        topic=q_sess.get("title", "General"),
+        score=0,
+        total_questions=total_q,
+        duration_seconds=duration_sec,
+        created_at=datetime.utcnow()
+    )
+    db.session.add(attempt)
+    db.session.flush()
+
+    for idx, q_item in enumerate(questions):
+        user_ans = answers.get(str(idx), "")
+        is_corr = (user_ans.upper() == q_item["correct_option"].upper()) if user_ans else False
+        if is_corr:
+            score += 1
+
+        db.session.add(QuizAttemptAnswer(
+            attempt_id=attempt.id,
+            question_id=q_item["id"],
+            selected_option=user_ans,
+            is_correct=is_corr
+        ))
+
+    attempt.score = score
+    db.session.commit()
+
+    in_prog = session.get("in_progress_quizzes", [])
+    if quiz_id in in_prog:
+        in_prog.remove(quiz_id)
+        session["in_progress_quizzes"] = in_prog
+    session.pop(sess_key, None)
+
+    flash("Chúc mừng bạn đã hoàn thành và nộp bài Quiz!", "success")
+    return redirect(url_for("learning.grammar_exercise_summary", attempt_id=attempt.id))
