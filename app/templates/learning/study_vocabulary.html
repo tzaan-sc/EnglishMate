@@ -1,0 +1,253 @@
+{% extends "base.html" %}
+{% block title %}Học từ vựng: {{ word.word }} · EnglishMate{% endblock %}
+
+{% block content %}
+<div class="container-fluid max-w-4xl py-4">
+
+  <!-- Top Navigation & Controls Bar -->
+  <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3 mb-4">
+    <div class="d-flex align-items-center gap-2">
+      <a href="{{ url_for('learning.vocabulary') }}" class="btn btn-light rounded-circle p-2 shadow-xs" title="Quay lại Bảng điều khiển">
+        <i class="ph ph-arrow-left fs-5"></i>
+      </a>
+      <div>
+        <span class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill px-2.5 py-0.5 small">
+          Từ {{ index + 1 }} / {{ total_words }}
+        </span>
+        <h5 class="fw-bold text-dark mb-0 d-inline-block ms-2">Học Từ Vựng Tương Tác</h5>
+      </div>
+    </div>
+
+    <!-- Mode Toggle & Settings -->
+    <div class="d-flex align-items-center flex-wrap gap-2">
+      <!-- Auto-play Audio Switch -->
+      <div class="form-check form-switch bg-white border rounded-pill px-3 py-1.5 shadow-xs mb-0 d-flex align-items-center gap-2">
+        <input class="form-check-input mt-0" type="checkbox" id="autoplaySwitch" {% if autoplay %}checked{% endif %} onchange="toggleSetting('autoplay', this.checked)">
+        <label class="form-check-label small text-secondary fw-semibold cursor-pointer mb-0" for="autoplaySwitch">Tự động đọc 🔊</label>
+      </div>
+
+      <!-- Show/Hide Meaning Switch -->
+      <button type="button" class="btn btn-white border rounded-pill px-3 py-1.5 shadow-xs text-secondary small fw-semibold d-inline-flex align-items-center gap-1.5" onclick="toggleSetting('show_meaning', {% if show_meaning %}0{% else %}1{% endif %})">
+        <i class="ph {% if show_meaning %}ph-eye{% else %}ph-eye-slash text-danger{% endif %} fs-5"></i>
+        <span>{% if show_meaning %}Ẩn nghĩa{% else %}Hiện nghĩa{% endif %}</span>
+      </button>
+
+      <!-- Favorite Button -->
+      <form method="post" action="{{ url_for('learning.favorite_word', word_id=word.id) }}" class="m-0">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <button type="submit" class="btn {% if is_favorite %}btn-danger{% else %}btn-white border{% endif %} rounded-circle p-2 shadow-xs" title="Thêm vào yêu thích">
+          <i class="ph-fill ph-heart fs-5"></i>
+        </button>
+      </form>
+
+      <!-- Report Button -->
+      <button type="button" class="btn btn-white border rounded-circle p-2 shadow-xs text-secondary" data-bs-toggle="modal" data-bs-target="#reportWordModal" title="Báo cáo sai sót">
+        <i class="ph ph-flag fs-5"></i>
+      </button>
+
+      <!-- Mode Toggles -->
+      <div class="btn-group rounded-pill border shadow-xs bg-white p-1">
+        <a href="{{ url_for('learning.study_vocabulary', index=index, level=level, topic=topic, mode='study') }}" class="btn btn-xs rounded-pill px-3 fw-bold {% if mode=='study' %}btn-primary{% else %}btn-light text-secondary{% endif %}">
+          📖 Thẻ học
+        </a>
+        <a href="{{ url_for('learning.flashcards', level=level, topic=topic) }}" class="btn btn-xs rounded-pill px-3 fw-bold {% if mode=='flashcard' %}btn-primary{% else %}btn-light text-secondary{% endif %}">
+          🎴 Flashcard
+        </a>
+        <a href="{{ url_for('learning.quiz', level=level, topic=topic) }}" class="btn btn-xs rounded-pill px-3 fw-bold {% if mode=='quiz' %}btn-primary{% else %}btn-light text-secondary{% endif %}">
+          ❓ Quiz
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Word Card -->
+  <div class="card border-0 shadow-lg rounded-4 overflow-hidden bg-white mb-4 position-relative">
+
+    <!-- Progress Indicator Bar -->
+    <div class="progress rounded-0" style="height: 5px;">
+      <div class="progress-bar bg-primary" role="progressbar" style="width: {{ ((index + 1) / total_words * 100)|round }}%;"></div>
+    </div>
+
+    <div class="p-4 p-md-5">
+
+      <!-- Card Top Pills -->
+      <div class="d-flex align-items-center justify-content-between mb-4">
+        <div class="d-flex align-items-center gap-2">
+          <span class="badge bg-primary text-white rounded-pill px-3 py-1 fw-bold">{{ word.level }}</span>
+          <span class="badge bg-light text-secondary border rounded-pill px-3 py-1">{{ word.topic }}</span>
+        </div>
+        {% if is_learned %}
+        <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-3 py-1 fw-bold d-inline-flex align-items-center gap-1">
+          <i class="ph ph-check-circle"></i> Đã thành thạo
+        </span>
+        {% endif %}
+      </div>
+
+      <!-- Main Word & Audio Player Section -->
+      <div class="text-center py-3 mb-4">
+        <h1 class="display-3 fw-extrabold text-dark mb-2 font-monospace tracking-wide">{{ word.word }}</h1>
+
+        <div class="d-inline-flex align-items-center gap-2 bg-light-subtle border rounded-pill px-3 py-1.5">
+          <span class="badge bg-secondary-subtle text-secondary rounded-pill px-2.5 py-1 text-uppercase fw-bold">{{ word.part_of_speech }}</span>
+          <span class="text-muted fs-5 fw-semibold font-monospace">{{ word.pronunciation }}</span>
+          <button type="button" class="btn btn-primary rounded-circle p-2 ms-1 border-0 shadow-xs" onclick="speakWord('{{ word.word }}')" title="Nghe phát âm">
+            <i class="ph ph-speaker-high fs-5"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Optional Related Image -->
+      {% if word.image_url %}
+      <div class="text-center mb-4">
+        <img src="{{ word.image_url }}" alt="{{ word.word }}" class="img-fluid rounded-4 shadow-sm max-h-48 object-fit-cover border">
+      </div>
+      {% endif %}
+
+      <!-- Meaning & Examples (Masked if show_meaning is false) -->
+      <div class="card border rounded-4 p-4 mb-4 {% if not show_meaning %}bg-light opacity-75 position-relative{% else %}bg-primary-subtle border-primary-subtle{% endif %}">
+        {% if not show_meaning %}
+        <div class="text-center py-4 cursor-pointer" onclick="toggleSetting('show_meaning', 1)">
+          <i class="ph ph-eye-slash fs-2 text-secondary mb-2 d-block"></i>
+          <span class="fw-bold text-secondary">Nghĩa tiếng Việt đã được che để kiểm tra trí nhớ.</span><br>
+          <small class="text-muted">Nhấn vào đây hoặc nút con mắt để xem đáp án.</small>
+        </div>
+        {% else %}
+        <div class="mb-3">
+          <span class="text-primary small fw-extrabold text-uppercase d-block mb-1">Nghĩa tiếng Việt</span>
+          <h4 class="fw-bold text-dark mb-0">{{ word.meaning_vi }}</h4>
+        </div>
+        <hr class="my-3 opacity-25">
+        <div>
+          <span class="text-primary small fw-extrabold text-uppercase d-block mb-1">Ví dụ câu thực tế</span>
+          <p class="fst-italic text-dark fs-5 mb-1">“{{ word.example_en }}”</p>
+          <p class="text-secondary small mb-0">— {{ word.example_vi }}</p>
+        </div>
+        {% endif %}
+      </div>
+
+      <!-- Advanced Information (Collocations, Synonyms, Antonyms) -->
+      <div class="row g-3">
+        {% if word.collocations %}
+        <div class="col-md-4">
+          <div class="border rounded-3 p-3 bg-white h-100">
+            <span class="text-muted small fw-bold text-uppercase d-block mb-1">💡 Collocations</span>
+            <span class="text-dark small fw-semibold">{{ word.collocations }}</span>
+          </div>
+        </div>
+        {% endif %}
+
+        {% if word.synonyms %}
+        <div class="col-md-4">
+          <div class="border rounded-3 p-3 bg-white h-100">
+            <span class="text-success small fw-bold text-uppercase d-block mb-1">🔗 Từ đồng nghĩa</span>
+            <span class="text-dark small fw-semibold">{{ word.synonyms }}</span>
+          </div>
+        </div>
+        {% endif %}
+
+        {% if word.antonyms %}
+        <div class="col-md-4">
+          <div class="border rounded-3 p-3 bg-white h-100">
+            <span class="text-danger small fw-bold text-uppercase d-block mb-1">⚡ Từ trái nghĩa</span>
+            <span class="text-dark small fw-semibold">{{ word.antonyms }}</span>
+          </div>
+        </div>
+        {% endif %}
+      </div>
+
+    </div>
+
+    <!-- Footer Controls -->
+    <div class="card-footer bg-light p-3 p-md-4 border-top d-flex justify-content-between align-items-center gap-2 flex-wrap">
+
+      <!-- Previous Word -->
+      {% if index > 0 %}
+      <a href="{{ url_for('learning.study_vocabulary', index=index - 1, level=level, topic=topic, autoplay=1 if autoplay else 0, show_meaning=1 if show_meaning else 0) }}" class="btn btn-outline-secondary rounded-pill px-4 fw-semibold">
+        ◄ Từ trước
+      </a>
+      {% else %}
+      <button class="btn btn-outline-secondary rounded-pill px-4 fw-semibold" disabled>◄ Từ trước</button>
+      {% endif %}
+
+      <div class="d-flex align-items-center gap-2">
+        <!-- Skip Word -->
+        <form method="post" action="{{ url_for('learning.skip_word', word_id=word.id, next_index=index + 1 if index < total_words - 1 else 0, level=level, topic=topic) }}" class="m-0">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <button type="submit" class="btn btn-light border rounded-pill px-3.5 fw-semibold text-secondary">
+            ⏭️ Bỏ qua
+          </button>
+        </form>
+
+        <!-- Mark as Learned & Go Next -->
+        <form method="post" action="{{ url_for('learning.learn_word', word_id=word.id) }}" class="m-0">
+          {{ form.hidden_tag() }}
+          <button type="submit" class="btn btn-success rounded-pill px-4 fw-bold shadow-xs">
+            ✓ Đã học từ này
+          </button>
+        </form>
+      </div>
+
+      <!-- Next Word -->
+      {% if index < total_words - 1 %}
+      <a href="{{ url_for('learning.study_vocabulary', index=index + 1, level=level, topic=topic, autoplay=1 if autoplay else 0, show_meaning=1 if show_meaning else 0) }}" class="btn btn-primary rounded-pill px-4 fw-bold">
+        Từ tiếp ►
+      </a>
+      {% else %}
+      <a href="{{ url_for('learning.vocabulary') }}" class="btn btn-primary rounded-pill px-4 fw-bold">
+        Hoàn thành bài học 🎉
+      </a>
+      {% endif %}
+
+    </div>
+  </div>
+</div>
+
+<!-- Modal Report Word Error -->
+<div class="modal fade" id="reportWordModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content border-0 rounded-4 shadow-lg">
+      <div class="modal-header border-0 pb-0">
+        <h5 class="modal-title fw-bold">Báo cáo sai sót từ vựng: {{ word.word }}</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <form method="post" action="{{ url_for('learning.report_word', word_id=word.id) }}">
+        <div class="modal-body p-4">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Nội dung báo cáo lỗi</label>
+            <textarea name="reason" class="form-control rounded-3" rows="3" placeholder="Vui lòng mô tả chi tiết lỗi phát âm, dịch nghĩa hoặc câu ví dụ..." required></textarea>
+          </div>
+        </div>
+        <div class="modal-footer border-0 justify-content-end pt-0 pb-4 pe-4">
+          <button type="button" class="btn btn-light rounded-pill" data-bs-dismiss="modal">Hủy</button>
+          <button type="submit" class="btn btn-danger rounded-pill px-4 fw-bold">Gửi Báo Cáo</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+function speakWord(text) {
+    if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.lang = 'en-US';
+        utterance.rate = 0.9;
+        window.speechSynthesis.speak(utterance);
+    }
+}
+
+function toggleSetting(key, val) {
+    const url = new URL(window.location.href);
+    url.searchParams.set(key, val);
+    window.location.href = url.toString();
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+    {% if autoplay %}
+    speakWord("{{ word.word }}");
+    {% endif %}
+});
+</script>
+{% endblock %}

@@ -12,7 +12,10 @@
       <h2 class="fw-bold text-dark mb-1">Bảng điều khiển từ vựng</h2>
       <p class="text-secondary small mb-0">Theo dõi tiến độ tích lũy từ vựng, cấp độ thành thạo và mục tiêu học tập hàng ngày.</p>
     </div>
-    <div class="d-flex gap-2">
+    <div class="d-flex gap-2 flex-wrap">
+      <a href="{{ url_for('learning.study_vocabulary') }}" class="btn btn-primary rounded-pill px-4 fw-bold shadow-xs">
+        🚀 Bắt đầu học từ mới
+      </a>
       <a href="{{ url_for('learning.flashcards') }}" class="btn btn-outline-primary rounded-pill px-3 fw-semibold">
         🎴 Thẻ Flashcard
       </a>

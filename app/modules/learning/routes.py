@@ -8,7 +8,7 @@ from sqlalchemy import func
 from ...extensions import db
 from ..auth.models import record_daily_activity
 from .models import (Lesson, LessonProgress, Question, QuizAttempt, QuizAttemptAnswer,
-                       Vocabulary, VocabularyProgress)
+                       Vocabulary, VocabularyProgress, WordReport)
 from . import bp
 from .forms import ActionForm, QuizStartForm
 
@@ -151,6 +151,110 @@ def learn_word(word_id):
     progress.last_reviewed_at = func.now()
     db.session.commit()
     flash(f"Đã thêm “{word.word}” vào từ đã học.", "success")
+    return redirect(request.referrer or url_for("learning.vocabulary"))
+
+
+@bp.get("/vocabulary/study")
+@login_required
+def study_vocabulary():
+    level = request.args.get("level", "")
+    topic = request.args.get("topic", "")
+    try:
+        index = int(request.args.get("index", 0))
+    except ValueError:
+        index = 0
+
+    autoplay = request.args.get("autoplay", "0") == "1"
+    show_meaning = request.args.get("show_meaning", "1") == "1"
+    mode = request.args.get("mode", "study")
+
+    query = Vocabulary.query
+    if level:
+        query = query.filter_by(level=level)
+    if topic:
+        query = query.filter_by(topic=topic)
+
+    words = query.order_by(Vocabulary.id).all()
+    if not words:
+        flash("Chưa có từ vựng nào thuộc cấp độ hoặc chủ đề này.", "info")
+        return redirect(url_for("learning.vocabulary"))
+
+    if index < 0 or index >= len(words):
+        index = 0
+
+    current_word = words[index]
+
+    progress = VocabularyProgress.query.filter_by(user_id=current_user.id, vocabulary_id=current_word.id).first()
+    is_favorite = progress.is_favorite if progress else False
+    is_learned = (progress.learned_count > 0 or progress.review_count > 0) if progress else False
+
+    topics = [r[0] for r in db.session.query(Vocabulary.topic).distinct().order_by(Vocabulary.topic).all()]
+    levels = ["A1", "A2", "B1", "B2", "C1", "C2"]
+
+    return render_template(
+        "learning/study_vocabulary.html",
+        word=current_word,
+        index=index,
+        total_words=len(words),
+        level=level,
+        topic=topic,
+        autoplay=autoplay,
+        show_meaning=show_meaning,
+        mode=mode,
+        is_favorite=is_favorite,
+        is_learned=is_learned,
+        topics=topics,
+        levels=levels,
+        form=ActionForm(),
+    )
+
+
+@bp.post("/vocabulary/<int:word_id>/favorite")
+@login_required
+def favorite_word(word_id):
+    word = db.get_or_404(Vocabulary, word_id)
+    progress = VocabularyProgress.query.filter_by(user_id=current_user.id, vocabulary_id=word.id).first()
+    if not progress:
+        progress = VocabularyProgress(user_id=current_user.id, vocabulary_id=word.id, learned_count=0, review_count=0)
+        db.session.add(progress)
+
+    progress.is_favorite = not progress.is_favorite
+    db.session.commit()
+    msg = f"Đã thêm “{word.word}” vào mục yêu thích." if progress.is_favorite else f"Đã bỏ “{word.word}” khỏi danh sách yêu thích."
+    flash(msg, "success")
+    return redirect(request.referrer or url_for("learning.vocabulary"))
+
+
+@bp.post("/vocabulary/<int:word_id>/skip")
+@login_required
+def skip_word(word_id):
+    word = db.get_or_404(Vocabulary, word_id)
+    progress = VocabularyProgress.query.filter_by(user_id=current_user.id, vocabulary_id=word.id).first()
+    if not progress:
+        progress = VocabularyProgress(user_id=current_user.id, vocabulary_id=word.id, learned_count=0, review_count=0)
+        db.session.add(progress)
+
+    progress.is_skipped = True
+    db.session.commit()
+    flash(f"Đã bỏ qua từ “{word.word}”.", "info")
+
+    next_index = request.args.get("next_index", 0)
+    level = request.args.get("level", "")
+    topic = request.args.get("topic", "")
+    return redirect(url_for("learning.study_vocabulary", index=next_index, level=level, topic=topic))
+
+
+@bp.post("/vocabulary/<int:word_id>/report")
+@login_required
+def report_word(word_id):
+    word = db.get_or_404(Vocabulary, word_id)
+    reason = request.form.get("reason", "").strip() or "Báo cáo lỗi nội dung từ vựng"
+
+    report = WordReport(user_id=current_user.id, vocabulary_id=word.id, reason=reason)
+    db.session.add(report)
+    db.session.commit()
+
+    flash(f"Cảm ơn bạn đã báo cáo sai sót cho từ “{word.word}”. Ban quản trị sẽ kiểm tra lại.", "success")
     return redirect(request.referrer or url_for("learning.vocabulary"))
 
 

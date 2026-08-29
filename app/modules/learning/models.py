@@ -25,6 +25,10 @@ class Vocabulary(db.Model):
     example_vi = db.Column(db.String(300), nullable=False)
     topic = db.Column(db.String(80), nullable=False, index=True)
     level = db.Column(db.String(2), nullable=False, index=True)
+    image_url = db.Column(db.String(255), nullable=True)
+    collocations = db.Column(db.String(300), nullable=True)
+    synonyms = db.Column(db.String(200), nullable=True)
+    antonyms = db.Column(db.String(200), nullable=True)
     created_at = db.Column(db.DateTime(timezone=True), default=now, nullable=False)
     updated_at = db.Column(db.DateTime(timezone=True), default=now, onupdate=now, nullable=False)
 
@@ -63,10 +67,24 @@ class VocabularyProgress(db.Model):
     vocabulary_id = db.Column(db.Integer, db.ForeignKey("vocabulary.id"), nullable=False, index=True)
     learned_count = db.Column(db.Integer, nullable=False, default=0)
     review_count = db.Column(db.Integer, nullable=False, default=0)
+    is_favorite = db.Column(db.Boolean, nullable=False, default=False)
+    is_skipped = db.Column(db.Boolean, nullable=False, default=False)
     last_reviewed_at = db.Column(db.DateTime(timezone=True), default=now, nullable=False)
     user = db.relationship("User", backref="vocabulary_progress")
     vocabulary = db.relationship("Vocabulary", backref="progress_records")
     __table_args__ = (db.UniqueConstraint("user_id", "vocabulary_id"),)
+
+
+class WordReport(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False, index=True)
+    vocabulary_id = db.Column(db.Integer, db.ForeignKey("vocabulary.id"), nullable=False, index=True)
+    reason = db.Column(db.String(255), nullable=False)
+    status = db.Column(db.String(20), nullable=False, default="PENDING")
+    created_at = db.Column(db.DateTime(timezone=True), default=now, nullable=False)
+
+    user = db.relationship("User", backref="word_reports")
+    vocabulary = db.relationship("Vocabulary", backref="reports")
 
 
 class QuizAttempt(db.Model):

@@ -143,7 +143,46 @@ if db_path.exists():
         cursor.executemany("INSERT INTO role_permission (role_id, permission_id) VALUES (?, ?)", [(mod_role_id, p_id) for p_id in mod_perms])
         conn.commit()
 
+    # Patch vocabulary table columns
+    cursor.execute("PRAGMA table_info(vocabulary)")
+    vocab_cols = [row[1] for row in cursor.fetchall()]
+    new_vocab_cols = [
+        ("image_url", "VARCHAR(255)"),
+        ("collocations", "VARCHAR(300)"),
+        ("synonyms", "VARCHAR(200)"),
+        ("antonyms", "VARCHAR(200)"),
+    ]
+    for col_name, col_type in new_vocab_cols:
+        if col_name not in vocab_cols:
+            cursor.execute(f"ALTER TABLE vocabulary ADD COLUMN {col_name} {col_type}")
+
+    # Patch vocabulary_progress table columns
+    cursor.execute("PRAGMA table_info(vocabulary_progress)")
+    vp_cols = [row[1] for row in cursor.fetchall()]
+    new_vp_cols = [
+        ("is_favorite", "BOOLEAN NOT NULL DEFAULT 0"),
+        ("is_skipped", "BOOLEAN NOT NULL DEFAULT 0"),
+    ]
+    for col_name, col_type in new_vp_cols:
+        if col_name not in vp_cols:
+            cursor.execute(f"ALTER TABLE vocabulary_progress ADD COLUMN {col_name} {col_type}")
+
+    # Create word_report table if not exists
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS word_report (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id INTEGER NOT NULL,
+            vocabulary_id INTEGER NOT NULL,
+            reason VARCHAR(255) NOT NULL,
+            status VARCHAR(20) NOT NULL DEFAULT 'PENDING',
+            created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (user_id) REFERENCES user (id),
+            FOREIGN KEY (vocabulary_id) REFERENCES vocabulary (id)
+        )
+    """)
+    conn.commit()
+
     conn.close()
-    print("Database patched successfully with RBAC tables and initial seed data!")
+    print("Database patched successfully with Vocabulary Learning enhancements!")
 else:
     print("Database file not found at", db_path)
