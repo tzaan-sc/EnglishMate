@@ -2239,3 +2239,102 @@ def grammar_rule_print_view(rule_id):
         return redirect(url_for("learning.grammar_reference_index"))
 
     return render_template("learning/grammar_rule_print.html", rule=rule)
+
+
+# ==========================================
+# QUIZ DASHBOARD ROUTES (Section 4.1)
+# ==========================================
+
+def ensure_initial_user_quiz_attempts(user):
+    if QuizAttempt.query.filter_by(user_id=user.id).count() > 0:
+        return
+
+    sample_attempts = [
+        QuizAttempt(user_id=user.id, level="A1", topic="Vocabulary", score=9, total_questions=10, duration_seconds=120, created_at=datetime.utcnow() - timedelta(days=2)),
+        QuizAttempt(user_id=user.id, level="A2", topic="Grammar", score=5, total_questions=10, duration_seconds=180, created_at=datetime.utcnow() - timedelta(days=1)),
+        QuizAttempt(user_id=user.id, level="B1", topic="TOEIC", score=8, total_questions=10, duration_seconds=210, created_at=datetime.utcnow()),
+        QuizAttempt(user_id=user.id, level="B1", topic="Reading", score=4, total_questions=10, duration_seconds=240, created_at=datetime.utcnow()),
+    ]
+    db.session.add_all(sample_attempts)
+    db.session.commit()
+
+
+def calculate_quiz_dashboard_metrics(user_id):
+    attempts = QuizAttempt.query.filter_by(user_id=user_id).order_by(QuizAttempt.created_at.desc()).all()
+
+    total_quizzes_completed = len(attempts)
+    total_score = sum(a.score for a in attempts)
+    total_questions = sum(a.total_questions for a in attempts)
+    total_duration = sum(a.duration_seconds or 0 for a in attempts)
+
+    overall_accuracy_rate = int((total_score / total_questions) * 100) if total_questions > 0 else 0
+    avg_time_seconds = int(total_duration / total_quizzes_completed) if total_quizzes_completed > 0 else 0
+
+    dates_with_quiz = sorted({a.created_at.date() for a in attempts if a.created_at}, reverse=True)
+    streak = 0
+    today = date.today()
+    current_check = today
+
+    if dates_with_quiz:
+        if dates_with_quiz[0] == today or dates_with_quiz[0] == (today - timedelta(days=1)):
+            current_check = dates_with_quiz[0]
+            while current_check in dates_with_quiz:
+                streak += 1
+                current_check -= timedelta(days=1)
+
+    category_map = {}
+    for a in attempts:
+        cat = a.topic or "General"
+        if cat not in category_map:
+            category_map[cat] = {"count": 0, "score": 0, "total_q": 0, "duration": 0}
+        category_map[cat]["count"] += 1
+        category_map[cat]["score"] += a.score
+        category_map[cat]["total_q"] += a.total_questions
+        category_map[cat]["duration"] += (a.duration_seconds or 0)
+
+    category_stats = []
+    weak_categories = []
+
+    for cat, data in category_map.items():
+        cat_acc = int((data["score"] / data["total_q"]) * 100) if data["total_q"] > 0 else 0
+        cat_item = {
+            "name": cat,
+            "count": data["count"],
+            "score": data["score"],
+            "total_q": data["total_q"],
+            "accuracy_rate": cat_acc,
+            "avg_time": int(data["duration"] / data["count"]) if data["count"] > 0 else 0
+        }
+        category_stats.append(cat_item)
+
+        if cat_acc < 60:
+            weak_categories.append(cat_item)
+
+    category_stats.sort(key=lambda x: x["count"], reverse=True)
+    weak_categories.sort(key=lambda x: x["accuracy_rate"])
+
+    return {
+        "total_quizzes_completed": total_quizzes_completed,
+        "overall_score": total_score,
+        "total_questions": total_questions,
+        "accuracy_rate": overall_accuracy_rate,
+        "avg_time_seconds": avg_time_seconds,
+        "quiz_streak": max(streak, 1) if total_quizzes_completed > 0 else 0,
+        "category_stats": category_stats,
+        "weak_categories": weak_categories,
+        "recent_attempts": attempts[:10]
+    }
+
+
+@bp.route("/quizzes/dashboard")
+@bp.route("/quizzes")
+@login_required
+def quiz_dashboard():
+    ensure_initial_user_quiz_attempts(current_user)
+    metrics = calculate_quiz_dashboard_metrics(current_user.id)
+
+    return render_template(
+        "learning/quiz_dashboard.html",
+        metrics=metrics,
+        form=ActionForm()
+    )

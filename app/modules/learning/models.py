@@ -111,6 +111,7 @@ class QuizAttempt(db.Model):
     topic = db.Column(db.String(80), nullable=False)
     score = db.Column(db.Integer, nullable=False)
     total_questions = db.Column(db.Integer, nullable=False)
+    duration_seconds = db.Column(db.Integer, nullable=False, default=0)
     created_at = db.Column(db.DateTime(timezone=True), default=now, nullable=False)
     user = db.relationship("User", backref="quiz_attempts")
 

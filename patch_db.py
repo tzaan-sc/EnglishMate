@@ -200,6 +200,12 @@ if db_path.exists():
     if "view_count" not in existing_lesson_cols:
         cursor.execute("ALTER TABLE lesson ADD COLUMN view_count INTEGER NOT NULL DEFAULT 0")
 
+    # Patch quiz_attempt table (duration_seconds)
+    cursor.execute("PRAGMA table_info(quiz_attempt)")
+    existing_quiz_cols = [row[1] for row in cursor.fetchall()]
+    if "duration_seconds" not in existing_quiz_cols:
+        cursor.execute("ALTER TABLE quiz_attempt ADD COLUMN duration_seconds INTEGER NOT NULL DEFAULT 0")
+
     # Create lesson_favorite table if not exists
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS lesson_favorite (
