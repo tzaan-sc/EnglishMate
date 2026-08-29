@@ -1,8 +1,338 @@
-{% extends "base.html" %}{% block title %}{{ lesson.title }} · EnglishMate{% endblock %}
-{% block content %}<section class="page-section"><div class="container lesson-layout">
-  <a class="back-link" href="{{ url_for('learning.lessons') }}">← Thư viện bài học</a>
-  <div class="lesson-header"><div><div class="mb-3"><span class="badge-soft">{{ lesson.level }}</span><span class="badge-soft">{{ lesson.skill }}</span></div><h1>{{ lesson.title }}</h1><p>{{ lesson.short_description }}</p></div><span class="lesson-header-mark">Aa</span></div>
-  <article class="lesson-content"><div class="content-label">NỘI DUNG BÀI HỌC</div><div class="prose">{{ lesson.content }}</div><div class="example-box"><h3>Ví dụ thực tế</h3>{% for example in lesson.examples.splitlines() if example.strip() %}<p><span>{{ loop.index }}</span>{{ example }}</p>{% endfor %}</div></article>
-  <div class="lesson-complete">{% if completed %}<div><span class="complete-check">✓</span><b>Bạn đã hoàn thành bài này</b><small>Tiếp tục giữ nhịp học nhé!</small></div><a class="btn btn-outline-primary" href="{{ url_for('learning.lessons') }}">Chọn bài tiếp theo</a>{% else %}<div><b>Đã nắm được nội dung?</b><small>Đánh dấu để cập nhật tiến độ của bạn.</small></div><form method="post" action="{{ url_for('learning.complete_lesson', lesson_id=lesson.id) }}">{{ form.hidden_tag() }}<button class="btn btn-primary btn-lg">✓ Đánh dấu hoàn thành</button></form>{% endif %}</div>
-</div></section>{% endblock %}
+{% extends "base.html" %}
+{% block title %}{{ lesson.title }} · EnglishMate{% endblock %}
 
+{% block content %}
+<div class="container-fluid max-w-4xl py-4">
+
+  <!-- Top Back Link & Toolbar -->
+  <div class="d-flex align-items-center justify-content-between mb-4">
+    <a class="btn btn-light rounded-pill px-3 py-1.5 fw-semibold text-secondary shadow-xs" href="{{ url_for('learning.lessons') }}">
+      <i class="ph ph-arrow-left me-1"></i> Thư viện bài học
+    </a>
+    <div class="d-flex gap-2">
+      <!-- Favorite Button -->
+      <button type="button" class="btn btn-light rounded-circle p-2 shadow-xs btn-fav-toggle" data-lesson-id="{{ lesson.id }}" title="Đánh dấu yêu thích">
+        <i class="ph-fill ph-heart fs-5 {{ 'text-danger' if is_favorite else 'text-muted opacity-50' }}"></i>
+      </button>
+      <!-- Share Button -->
+      <button type="button" class="btn btn-outline-secondary rounded-pill px-3 py-1.5 fw-semibold shadow-xs" data-bs-toggle="modal" data-bs-target="#shareLessonModal">
+        <i class="ph ph-share-network me-1"></i> Chia sẻ
+      </button>
+      <!-- Report Button -->
+      <button type="button" class="btn btn-outline-danger rounded-pill px-3 py-1.5 fw-semibold shadow-xs" data-bs-toggle="modal" data-bs-target="#reportLessonModal">
+        <i class="ph ph-warning-circle me-1"></i> Báo cáo
+      </button>
+    </div>
+  </div>
+
+  <!-- Lesson Header Card -->
+  <div class="card border-0 shadow-sm rounded-4 p-4 bg-white mb-4">
+    <div class="d-flex align-items-center gap-2 mb-2">
+      <span class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill px-3 py-1 fw-bold">
+        {{ lesson.level }}
+      </span>
+      <span class="badge bg-light text-dark border rounded-pill px-3 py-1 fw-semibold">
+        {{ lesson.skill }}
+      </span>
+      {% if completed %}
+      <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-3 py-1 fw-bold ms-auto">
+        ✓ Đã hoàn thành
+      </span>
+      {% endif %}
+    </div>
+
+    <!-- Lesson Title & Description -->
+    <h2 class="fw-bold text-dark mb-2">{{ lesson.title }}</h2>
+    <p class="text-secondary mb-0 fs-6">{{ lesson.short_description }}</p>
+  </div>
+
+  <!-- Reading Progress Bar & Section Navigation Tabs -->
+  <div class="card border-0 shadow-sm rounded-4 p-3 bg-white mb-4">
+    <div class="d-flex align-items-center justify-content-between mb-2">
+      <span class="fw-bold text-dark small" id="sectionProgressText">Tiến độ bài học: Phần 1 / 3 (33%)</span>
+      <small class="text-muted"><i class="ph ph-eye"></i> {{ lesson.view_count or 1 }} lượt học</small>
+    </div>
+    <div class="progress rounded-pill mb-3" style="height: 8px;">
+      <div class="progress-bar bg-primary rounded-pill transition" id="sectionProgressBar" role="progressbar" style="width: 33%;"></div>
+    </div>
+
+    <!-- Section Navigation Buttons Bar -->
+    <div class="nav nav-pills nav-fill gap-2" id="lessonSectionsTab" role="tablist">
+      <button class="nav-link active rounded-pill fw-bold" id="tab-sec1" data-bs-toggle="tab" data-bs-target="#sec1" type="button" role="tab" onclick="updateSectionProgress(1)">
+        1. Lý thuyết chính
+      </button>
+      <button class="nav-link rounded-pill fw-bold" id="tab-sec2" data-bs-toggle="tab" data-bs-target="#sec2" type="button" role="tab" onclick="updateSectionProgress(2)">
+        2. Ví dụ & Giải thích
+      </button>
+      <button class="nav-link rounded-pill fw-bold" id="tab-sec3" data-bs-toggle="tab" data-bs-target="#sec3" type="button" role="tab" onclick="updateSectionProgress(3)">
+        3. Ghi chú & Đánh giá
+      </button>
+    </div>
+  </div>
+
+  <!-- Section Contents Tab Content -->
+  <div class="tab-content" id="lessonSectionsContent">
+
+    <!-- Section 1: Theory Content -->
+    <div class="tab-pane fade show active" id="sec1" role="tabpanel">
+      <div class="card border-0 shadow-sm rounded-4 p-4 bg-white mb-4 position-relative">
+        <div class="d-flex align-items-center justify-content-between mb-3 border-bottom pb-2">
+          <h5 class="fw-bold text-dark mb-0">📖 Phần 1: Lý thuyết & Nội dung bài học</h5>
+          <button type="button" class="btn btn-sm btn-outline-warning rounded-pill btn-bm-toggle" data-section="1">
+            <i class="ph-fill ph-bookmark {{ 'text-warning' if 1 in bookmarks else 'text-muted opacity-50' }}"></i> Bookmark
+          </button>
+        </div>
+        <div class="prose text-dark lh-lg" style="font-size: 1.05rem; white-space: pre-line;">{{ lesson.content }}</div>
+      </div>
+    </div>
+
+    <!-- Section 2: Examples & Detailed Explanations -->
+    <div class="tab-pane fade" id="sec2" role="tabpanel">
+      <div class="card border-0 shadow-sm rounded-4 p-4 bg-white mb-4 position-relative">
+        <div class="d-flex align-items-center justify-content-between mb-3 border-bottom pb-2">
+          <h5 class="fw-bold text-dark mb-0">💡 Phần 2: Ví dụ minh họa & Giải thích chi tiết</h5>
+          <button type="button" class="btn btn-sm btn-outline-warning rounded-pill btn-bm-toggle" data-section="2">
+            <i class="ph-fill ph-bookmark {{ 'text-warning' if 2 in bookmarks else 'text-muted opacity-50' }}"></i> Bookmark
+          </button>
+        </div>
+        
+        <h6 class="fw-bold text-primary mb-3">Ví dụ thực tế sử dụng:</h6>
+        <div class="bg-light border-start border-4 border-primary rounded-3 p-3 mb-4">
+          {% for example in lesson.examples.splitlines() if example.strip() %}
+          <div class="d-flex gap-2 mb-2">
+            <span class="badge bg-primary rounded-circle" style="width: 22px; height: 22px; line-height: 14px;">{{ loop.index }}</span>
+            <span class="text-dark fw-semibold">{{ example }}</span>
+          </div>
+          {% endfor %}
+        </div>
+
+        <h6 class="fw-bold text-dark mb-2">Giải thích chuyên sâu:</h6>
+        <p class="text-secondary lh-lg">
+          Hãy áp dụng các mẫu câu trên vào giao tiếp hàng ngày hoặc bài thi đọc/viết để ghi nhớ sâu sắc cấu trúc ngữ pháp và từ vựng này.
+        </p>
+      </div>
+    </div>
+
+    <!-- Section 3: Notes & Completion -->
+    <div class="tab-pane fade" id="sec3" role="tabpanel">
+      <div class="card border-0 shadow-sm rounded-4 p-4 bg-white mb-4">
+        <div class="d-flex align-items-center justify-content-between mb-3 border-bottom pb-2">
+          <h5 class="fw-bold text-dark mb-0">📝 Phần 3: Ghi chú cá nhân của bạn</h5>
+          <button type="button" class="btn btn-sm btn-outline-warning rounded-pill btn-bm-toggle" data-section="3">
+            <i class="ph-fill ph-bookmark {{ 'text-warning' if 3 in bookmarks else 'text-muted opacity-50' }}"></i> Bookmark
+          </button>
+        </div>
+
+        <!-- Add Lesson Notes Form -->
+        <form id="noteForm" action="{{ url_for('learning.save_lesson_note', lesson_id=lesson.id) }}" method="post" class="mb-4">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <div class="mb-3">
+            <label class="form-label fw-bold text-dark">Ghi chép mẹo học / lưu ý cá nhân cho bài này:</label>
+            <textarea class="form-control rounded-3 p-3" name="note" id="noteInput" rows="4" placeholder="Nhập ghi chú của bạn tại đây...">{{ user_note }}</textarea>
+          </div>
+          <div class="d-flex justify-content-between align-items-center">
+            <small class="text-muted" id="noteStatusText">Tự động lưu khi gõ...</small>
+            <button type="submit" class="btn btn-outline-primary rounded-pill px-4 fw-bold shadow-xs">
+              💾 Lưu Ghi Chú
+            </button>
+          </div>
+        </form>
+
+        <!-- Complete Lesson Box -->
+        <div class="p-4 bg-primary-subtle border border-primary-subtle rounded-4 text-center">
+          {% if completed %}
+          <div class="mb-3">
+            <span class="badge bg-success text-white rounded-circle p-2 fs-5 mb-2">✓</span>
+            <h5 class="fw-bold text-success mb-1">Tuyệt vời! Bạn đã hoàn thành bài học này.</h5>
+            <p class="text-secondary small mb-0">Hệ thống đã ghi nhận tiến độ học tập tích lũy cho tài khoản của bạn.</p>
+          </div>
+          <a class="btn btn-outline-primary rounded-pill px-4 fw-bold" href="{{ url_for('learning.lessons') }}">Quay lại Thư viện bài học</a>
+          {% else %}
+          <div class="mb-3">
+            <h5 class="fw-bold text-dark mb-1">Bạn đã sẵn sàng hoàn thành bài học?</h5>
+            <p class="text-secondary small mb-0">Nhấn nút bên dưới để cập nhật tiến độ học tập và tích lũy điểm thưởng.</p>
+          </div>
+          <form method="post" action="{{ url_for('learning.complete_lesson', lesson_id=lesson.id) }}">
+            {{ form.hidden_tag() }}
+            <button class="btn btn-primary btn-lg rounded-pill px-5 py-2.5 fw-bold shadow-xs">
+              ✓ Đánh dấu hoàn thành bài học
+            </button>
+          </form>
+          {% endif %}
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Bottom Section-by-Section Step Control Buttons -->
+  <div class="card border-0 shadow-sm rounded-4 p-3 bg-white d-flex flex-row justify-content-between align-items-center">
+    <button type="button" class="btn btn-outline-secondary rounded-pill px-4 fw-bold" id="prevSectionBtn" onclick="navigateSection(-1)" disabled>
+      ← Phần trước
+    </button>
+    <button type="button" class="btn btn-primary rounded-pill px-4 fw-bold" id="nextSectionBtn" onclick="navigateSection(1)">
+      Phần tiếp theo →
+    </button>
+  </div>
+
+</div>
+
+<!-- Modal 1: Share Lesson Modal -->
+<div class="modal fade" id="shareLessonModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content border-0 shadow-lg rounded-4">
+      <div class="modal-header border-0">
+        <h5 class="modal-title fw-bold text-dark"><i class="ph ph-share-network text-primary me-2"></i> Chia sẻ Bài học</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body p-4">
+        <p class="text-secondary small mb-3">Sao chép đường dẫn bên dưới để chia sẻ bài học này với bạn bè:</p>
+        <div class="input-group mb-3">
+          <input type="text" class="form-control rounded-start-3" id="shareUrlInput" value="{{ request.url }}" readonly>
+          <button class="btn btn-primary rounded-end-3 fw-bold" type="button" onclick="copyShareUrl()">Sao chép</button>
+        </div>
+        <div class="alert alert-success d-none mb-0 py-2 small rounded-3" id="copyAlert">Đã sao chép liên kết vào khay nhớ tạm!</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal 2: Report Lesson Modal -->
+<div class="modal fade" id="reportLessonModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content border-0 shadow-lg rounded-4">
+      <form id="reportForm" action="{{ url_for('learning.report_lesson', lesson_id=lesson.id) }}" method="post">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <div class="modal-header border-0">
+          <h5 class="modal-title fw-bold text-dark"><i class="ph ph-warning-circle text-danger me-2"></i> Báo cáo Nội dung Bài học</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body p-4">
+          <div class="mb-3">
+            <label class="form-label fw-bold text-dark">Lý do báo cáo:</label>
+            <select name="reason" class="form-select rounded-3" required>
+              <option value="Lỗi chính tả / Ngữ pháp">Lỗi chính tả / Ngữ pháp</option>
+              <option value="Nội dung khó hiểu">Nội dung khó hiểu</option>
+              <option value="Thiếu ví dụ minh họa">Thiếu ví dụ minh họa</option>
+              <option value="Khác">Khác</option>
+            </select>
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-bold text-dark">Chi tiết góp ý:</label>
+            <textarea name="details" class="form-control rounded-3" rows="3" placeholder="Mô tả cụ thể vị trí hoặc vấn đề bạn phát hiện..."></textarea>
+          </div>
+        </div>
+        <div class="modal-footer border-0 pt-0">
+          <button type="button" class="btn btn-secondary rounded-pill px-4" data-bs-dismiss="modal">Hủy</button>
+          <button type="submit" class="btn btn-danger rounded-pill px-4 fw-bold">Gửi Báo Cáo</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+let currentSec = 1;
+const csrfToken = "{{ csrf_token() }}";
+
+function updateSectionProgress(sec) {
+  currentSec = sec;
+  const pct = Math.round((sec / 3) * 100);
+  document.getElementById("sectionProgressText").innerText = `Tiến độ bài học: Phần ${sec} / 3 (${pct}%)`;
+  document.getElementById("sectionProgressBar").style.width = `${pct}%`;
+
+  document.getElementById("prevSectionBtn").disabled = (sec === 1);
+  if (sec === 3) {
+    document.getElementById("nextSectionBtn").innerText = "Đã ở phần cuối";
+    document.getElementById("nextSectionBtn").disabled = true;
+  } else {
+    document.getElementById("nextSectionBtn").innerText = "Phần tiếp theo →";
+    document.getElementById("nextSectionBtn").disabled = false;
+  }
+}
+
+function navigateSection(delta) {
+  const newSec = currentSec + delta;
+  if (newSec >= 1 && newSec <= 3) {
+    const tabEl = document.getElementById(`tab-sec${newSec}`);
+    const tab = new bootstrap.Tab(tabEl);
+    tab.show();
+    updateSectionProgress(newSec);
+  }
+}
+
+function copyShareUrl() {
+  const urlInput = document.getElementById("shareUrlInput");
+  urlInput.select();
+  navigator.clipboard.writeText(urlInput.value);
+  document.getElementById("copyAlert").classList.remove("d-none");
+  setTimeout(() => {
+    document.getElementById("copyAlert").classList.add("d-none");
+  }, 3000);
+}
+
+document.addEventListener("DOMContentLoaded", function() {
+  // Favorite AJAX
+  document.querySelectorAll(".btn-fav-toggle").forEach(btn => {
+    btn.addEventListener("click", function(e) {
+      e.preventDefault();
+      const lessonId = this.dataset.lessonId;
+      const heartIcon = this.querySelector("i");
+
+      fetch(`/learning/lessons/${lessonId}/favorite`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-CSRFToken": csrfToken,
+          "X-Requested-With": "XMLHttpRequest"
+        }
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          if (data.is_favorite) {
+            heartIcon.classList.remove("text-muted", "opacity-50");
+            heartIcon.classList.add("text-danger");
+          } else {
+            heartIcon.classList.remove("text-danger");
+            heartIcon.classList.add("text-muted", "opacity-50");
+          }
+        }
+      });
+    });
+  });
+
+  // Bookmark AJAX
+  document.querySelectorAll(".btn-bm-toggle").forEach(btn => {
+    btn.addEventListener("click", function(e) {
+      e.preventDefault();
+      const sectionIdx = this.dataset.section;
+      const bmIcon = this.querySelector("i");
+
+      fetch(`/learning/lessons/{{ lesson.id }}/bookmark`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-CSRFToken": csrfToken,
+          "X-Requested-With": "XMLHttpRequest"
+        },
+        body: JSON.stringify({ section_index: sectionIdx })
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          if (data.is_bookmarked) {
+            bmIcon.classList.remove("text-muted", "opacity-50");
+            bmIcon.classList.add("text-warning");
+          } else {
+            bmIcon.classList.remove("text-warning");
+            bmIcon.classList.add("text-muted", "opacity-50");
+          }
+        }
+      });
+    });
+  });
+});
+</script>
+{% endblock %}

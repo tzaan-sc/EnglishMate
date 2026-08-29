@@ -173,3 +173,40 @@ class GameSession(db.Model):
     created_at = db.Column(db.DateTime(timezone=True), default=now, nullable=False)
     
     user = db.relationship("User", backref=db.backref("game_sessions", cascade="all, delete-orphan"))
+
+
+class LessonNote(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False, index=True)
+    lesson_id = db.Column(db.Integer, db.ForeignKey("lesson.id"), nullable=False, index=True)
+    content = db.Column(db.Text, nullable=False)
+    updated_at = db.Column(db.DateTime(timezone=True), default=now, onupdate=now, nullable=False)
+
+    user = db.relationship("User", backref="lesson_notes")
+    lesson = db.relationship("Lesson", backref="user_notes")
+    __table_args__ = (db.UniqueConstraint("user_id", "lesson_id", name="uq_user_lesson_note"),)
+
+
+class LessonBookmark(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False, index=True)
+    lesson_id = db.Column(db.Integer, db.ForeignKey("lesson.id"), nullable=False, index=True)
+    section_index = db.Column(db.Integer, nullable=False, default=1)
+    created_at = db.Column(db.DateTime(timezone=True), default=now, nullable=False)
+
+    user = db.relationship("User", backref="lesson_bookmarks")
+    lesson = db.relationship("Lesson", backref="bookmarks")
+    __table_args__ = (db.UniqueConstraint("user_id", "lesson_id", "section_index", name="uq_user_lesson_bookmark"),)
+
+
+class LessonReport(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False, index=True)
+    lesson_id = db.Column(db.Integer, db.ForeignKey("lesson.id"), nullable=False, index=True)
+    reason = db.Column(db.String(100), nullable=False)
+    details = db.Column(db.Text, nullable=True)
+    status = db.Column(db.String(20), nullable=False, default="PENDING")
+    created_at = db.Column(db.DateTime(timezone=True), default=now, nullable=False)
+
+    user = db.relationship("User", backref="lesson_reports")
+    lesson = db.relationship("Lesson", backref="content_reports")

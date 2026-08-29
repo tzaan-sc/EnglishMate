@@ -212,9 +212,52 @@ if db_path.exists():
             UNIQUE (user_id, lesson_id)
         )
     """)
+
+    # Create lesson_note table if not exists
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS lesson_note (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id INTEGER NOT NULL,
+            lesson_id INTEGER NOT NULL,
+            content TEXT NOT NULL,
+            updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (user_id) REFERENCES user (id),
+            FOREIGN KEY (lesson_id) REFERENCES lesson (id),
+            UNIQUE (user_id, lesson_id)
+        )
+    """)
+
+    # Create lesson_bookmark table if not exists
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS lesson_bookmark (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id INTEGER NOT NULL,
+            lesson_id INTEGER NOT NULL,
+            section_index INTEGER NOT NULL DEFAULT 1,
+            created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (user_id) REFERENCES user (id),
+            FOREIGN KEY (lesson_id) REFERENCES lesson (id),
+            UNIQUE (user_id, lesson_id, section_index)
+        )
+    """)
+
+    # Create lesson_report table if not exists
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS lesson_report (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id INTEGER NOT NULL,
+            lesson_id INTEGER NOT NULL,
+            reason VARCHAR(100) NOT NULL,
+            details TEXT,
+            status VARCHAR(20) NOT NULL DEFAULT 'PENDING',
+            created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (user_id) REFERENCES user (id),
+            FOREIGN KEY (lesson_id) REFERENCES lesson (id)
+        )
+    """)
     conn.commit()
 
     conn.close()
-    print("Database patched successfully with Vocabulary Learning & Lesson List enhancements!")
+    print("Database patched successfully with Vocabulary Learning & Lesson Content enhancements!")
 else:
     print("Database file not found at", db_path)

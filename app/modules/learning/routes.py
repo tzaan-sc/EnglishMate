@@ -7,7 +7,8 @@ from sqlalchemy import func
 
 from ...extensions import db
 from ..auth.models import record_daily_activity
-from .models import (Lesson, LessonFavorite, LessonProgress, Question, QuizAttempt, QuizAttemptAnswer,
+from .models import (Lesson, LessonBookmark, LessonFavorite, LessonNote, LessonProgress,
+                       LessonReport, Question, QuizAttempt, QuizAttemptAnswer,
                        Vocabulary, VocabularyProgress, WordReport)
 from . import bp
 from .forms import ActionForm, QuizStartForm
@@ -189,8 +190,103 @@ def lesson_detail(lesson_id):
     lesson = Lesson.query.filter_by(id=lesson_id, is_active=True).first_or_404()
     lesson.view_count = (lesson.view_count or 0) + 1
     db.session.commit()
+
     completed = LessonProgress.query.filter_by(user_id=current_user.id, lesson_id=lesson.id).first()
-    return render_template("learning/lesson_detail.html", lesson=lesson, completed=completed, form=ActionForm())
+    note_record = LessonNote.query.filter_by(user_id=current_user.id, lesson_id=lesson.id).first()
+    bookmarks = [b.section_index for b in LessonBookmark.query.filter_by(user_id=current_user.id, lesson_id=lesson.id).all()]
+    is_favorite = LessonFavorite.query.filter_by(user_id=current_user.id, lesson_id=lesson.id).first() is not None
+
+    return render_template(
+        "learning/lesson_detail.html",
+        lesson=lesson,
+        completed=completed,
+        user_note=note_record.content if note_record else "",
+        bookmarks=bookmarks,
+        is_favorite=is_favorite,
+        form=ActionForm()
+    )
+
+
+@bp.post("/lessons/<int:lesson_id>/notes")
+@login_required
+def save_lesson_note(lesson_id):
+    lesson = Lesson.query.filter_by(id=lesson_id, is_active=True).first_or_404()
+    note_text = ""
+    if request.is_json and request.json:
+        note_text = request.json.get("note", "").strip()
+    else:
+        note_text = request.form.get("note", "").strip()
+
+    note_record = LessonNote.query.filter_by(user_id=current_user.id, lesson_id=lesson.id).first()
+    if not note_record:
+        note_record = LessonNote(user_id=current_user.id, lesson_id=lesson.id, content=note_text)
+        db.session.add(note_record)
+    else:
+        note_record.content = note_text
+    db.session.commit()
+
+    if request.is_json or request.headers.get("X-Requested-With") == "XMLHttpRequest":
+        return jsonify({"success": True, "message": "Đã lưu ghi chú bài học thành công!"})
+
+    flash("Đã lưu ghi chú bài học thành công!", "success")
+    return redirect(url_for("learning.lesson_detail", lesson_id=lesson.id))
+
+
+@bp.post("/lessons/<int:lesson_id>/bookmark")
+@login_required
+def toggle_lesson_bookmark(lesson_id):
+    lesson = Lesson.query.filter_by(id=lesson_id, is_active=True).first_or_404()
+    section_index = 1
+    if request.is_json and request.json:
+        section_index = int(request.json.get("section_index", 1))
+    else:
+        section_index = request.form.get("section_index", type=int) or 1
+
+    bm = LessonBookmark.query.filter_by(user_id=current_user.id, lesson_id=lesson.id, section_index=section_index).first()
+    if bm:
+        db.session.delete(bm)
+        db.session.commit()
+        is_bm = False
+        msg = f"Đã bỏ bookmark Phần {section_index}."
+    else:
+        db.session.add(LessonBookmark(user_id=current_user.id, lesson_id=lesson.id, section_index=section_index))
+        db.session.commit()
+        is_bm = True
+        msg = f"Đã bookmark thành công Phần {section_index}!"
+
+    if request.is_json or request.headers.get("X-Requested-With") == "XMLHttpRequest":
+        return jsonify({"success": True, "is_bookmarked": is_bm, "message": msg})
+
+    flash(msg, "success" if is_bm else "info")
+    return redirect(url_for("learning.lesson_detail", lesson_id=lesson.id))
+
+
+@bp.post("/lessons/<int:lesson_id>/report")
+@login_required
+def report_lesson(lesson_id):
+    lesson = Lesson.query.filter_by(id=lesson_id, is_active=True).first_or_404()
+    reason = ""
+    details = ""
+    if request.is_json and request.json:
+        reason = request.json.get("reason", "").strip()
+        details = request.json.get("details", "").strip()
+    else:
+        reason = request.form.get("reason", "").strip()
+        details = request.form.get("details", "").strip()
+
+    if not reason:
+        reason = "Khác"
+
+    report = LessonReport(user_id=current_user.id, lesson_id=lesson.id, reason=reason, details=details)
+    db.session.add(report)
+    db.session.commit()
+
+    msg = "Đã gửi báo cáo nội dung bài học thành công. Cảm ơn sự đóng góp của bạn!"
+    if request.is_json or request.headers.get("X-Requested-With") == "XMLHttpRequest":
+        return jsonify({"success": True, "message": msg})
+
+    flash(msg, "success")
+    return redirect(url_for("learning.lesson_detail", lesson_id=lesson.id))
 
 
 @bp.post("/lessons/<int:lesson_id>/complete")
