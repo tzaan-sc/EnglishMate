@@ -16,15 +16,96 @@ from .forms import ActionForm, QuizStartForm
 @bp.get("/lessons")
 @login_required
 def lessons():
-    level, skill = request.args.get("level", ""), request.args.get("skill", "")
+    level = request.args.get("level", "").strip()
+    skill = request.args.get("skill", "").strip()
+    q = request.args.get("q", "").strip()
+
+    all_lessons = Lesson.query.filter_by(is_active=True).order_by(Lesson.level, Lesson.id).all()
+    user_progress_list = LessonProgress.query.filter_by(user_id=current_user.id).all()
+    done = {p.lesson_id for p in user_progress_list}
+
+    total_lessons = len(all_lessons)
+    completed_count = len(done)
+    in_progress_count = max(0, total_lessons - completed_count)
+
+    # Level progress breakdown (A1-C2)
+    levels = ["A1", "A2", "B1", "B2", "C1", "C2"]
+    level_stats = []
+    for lvl in levels:
+        lvl_lessons = [l for l in all_lessons if l.level == lvl]
+        lvl_total = len(lvl_lessons)
+        lvl_done = sum(1 for l in lvl_lessons if l.id in done)
+        lvl_pct = round((lvl_done / lvl_total * 100)) if lvl_total > 0 else 0
+        level_stats.append({
+            "level": lvl,
+            "total": lvl_total,
+            "done": lvl_done,
+            "pct": lvl_pct
+        })
+
+    # Skill progress breakdown
+    skills = ["Vocabulary", "Grammar", "Reading", "Listening", "Speaking"]
+    skill_stats = []
+    for sk in skills:
+        sk_lessons = [l for l in all_lessons if l.skill == sk]
+        sk_total = len(sk_lessons)
+        sk_done = sum(1 for l in sk_lessons if l.id in done)
+        sk_pct = round((sk_done / sk_total * 100)) if sk_total > 0 else 0
+        skill_stats.append({
+            "skill": sk,
+            "total": sk_total,
+            "done": sk_done,
+            "pct": sk_pct
+        })
+
+    # Current lesson (most recent progress) & Recommended next lesson
+    sorted_progress = sorted(user_progress_list, key=lambda p: p.completed_at, reverse=True)
+    current_lesson = Lesson.query.get(sorted_progress[0].lesson_id) if sorted_progress else (all_lessons[0] if all_lessons else None)
+    
+    recommended_lesson = None
+    for l in all_lessons:
+        if l.id not in done:
+            recommended_lesson = l
+            break
+    if not recommended_lesson and all_lessons:
+        recommended_lesson = all_lessons[0]
+
+    # Daily lesson goal
+    today_date = date.today()
+    today_completed_lessons = sum(1 for p in user_progress_list if p.completed_at and p.completed_at.date() == today_date)
+    daily_lesson_goal = 2
+    daily_goal_pct = min(100, round((today_completed_lessons / daily_lesson_goal * 100))) if daily_lesson_goal > 0 else 0
+
+    # Filtered query for lesson library display
     query = Lesson.query.filter_by(is_active=True)
     if level:
         query = query.filter_by(level=level)
     if skill:
         query = query.filter_by(skill=skill)
-    done = {p.lesson_id for p in LessonProgress.query.filter_by(user_id=current_user.id).all()}
-    return render_template("learning/lessons.html", lessons=query.order_by(Lesson.level, Lesson.id).all(),
-                           level=level, skill=skill, done=done)
+    if q:
+        query = query.filter(Lesson.title.ilike(f"%{q}%") | Lesson.short_description.ilike(f"%{q}%"))
+
+    lessons_list = query.order_by(Lesson.level, Lesson.id).all()
+
+    return render_template(
+        "learning/lessons.html",
+        lessons=lessons_list,
+        level=level,
+        skill=skill,
+        q=q,
+        done=done,
+        total_lessons=total_lessons,
+        completed_count=completed_count,
+        in_progress_count=in_progress_count,
+        level_stats=level_stats,
+        skill_stats=skill_stats,
+        current_lesson=current_lesson,
+        recommended_lesson=recommended_lesson,
+        today_completed_lessons=today_completed_lessons,
+        daily_lesson_goal=daily_lesson_goal,
+        daily_goal_pct=daily_goal_pct,
+        form=ActionForm()
+    )
 
 
 @bp.get("/lessons/<int:lesson_id>")
