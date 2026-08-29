@@ -382,23 +382,25 @@ if db_path.exists():
         )
     """)
 
-    # Create exam table if not exists
-    cursor.execute("""
-        CREATE TABLE IF NOT EXISTS exam (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            title VARCHAR(160) NOT NULL,
-            category VARCHAR(80) NOT NULL,
-            duration_minutes INTEGER NOT NULL DEFAULT 15,
-            difficulty VARCHAR(20) NOT NULL DEFAULT 'Medium',
-            question_bank VARCHAR(80) NOT NULL DEFAULT 'General',
-            selection_type VARCHAR(20) NOT NULL DEFAULT 'random',
-            selected_question_ids TEXT,
-            question_count INTEGER NOT NULL DEFAULT 10,
-            is_published BOOLEAN NOT NULL DEFAULT 1,
-            created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-            updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
-        )
-    """)
+    # Ensure all columns exist on exam table
+    cursor.execute("PRAGMA table_info(exam);")
+    exam_columns = [column[1] for column in cursor.fetchall()]
+
+    new_exam_columns = [
+        ("duration_minutes", "INTEGER DEFAULT 15"),
+        ("difficulty", "VARCHAR(20) DEFAULT 'Medium'"),
+        ("question_bank", "VARCHAR(80) DEFAULT 'General'"),
+        ("selection_type", "VARCHAR(20) DEFAULT 'random'"),
+        ("selected_question_ids", "TEXT"),
+        ("question_count", "INTEGER DEFAULT 10"),
+        ("is_published", "BOOLEAN DEFAULT 1"),
+        ("updated_at", "DATETIME")
+    ]
+
+    for col_name, col_type in new_exam_columns:
+        if col_name not in exam_columns:
+            cursor.execute(f"ALTER TABLE exam ADD COLUMN {col_name} {col_type};")
+
     conn.commit()
 
     conn.close()
