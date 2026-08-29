@@ -1107,3 +1107,128 @@ def bulk_vocab_action():
     db.session.commit()
     flash(f"Đã thực hiện thao tác hàng loạt thành công trên {count} từ vựng.", "success")
     return redirect(request.referrer or url_for("learning.manage_vocabulary"))
+
+
+# ==========================================
+# VOCABULARY STATISTICS ROUTES
+# ==========================================
+
+@bp.get("/vocabulary/stats")
+@login_required
+def vocabulary_stats():
+    current_streak = getattr(current_user, "current_streak", 0) or 0
+    longest_streak = getattr(current_user, "longest_streak", 0) or 0
+
+    user_progress = VocabularyProgress.query.filter_by(user_id=current_user.id).all()
+    progress_map = {p.vocabulary_id: p for p in user_progress}
+
+    srs_distribution = {lvl: 0 for lvl in range(1, 8)}
+    learned_words_count = 0
+    mastered_count = 0
+    retention_count = 0
+
+    for p in user_progress:
+        if p.learned_count > 0 or p.review_count > 0:
+            learned_words_count += 1
+            lvl = p.srs_level if p.srs_level in range(1, 8) else 1
+            srs_distribution[lvl] += 1
+            if lvl >= 7 or (p.learned_count >= 3 and p.review_count >= 3):
+                mastered_count += 1
+            if lvl >= 4:
+                retention_count += 1
+
+    accuracy_rate = round((mastered_count / learned_words_count * 100)) if learned_words_count > 0 else 100
+    review_success_rate = round((sum(1 for p in user_progress if p.srs_level >= 3) / learned_words_count * 100)) if learned_words_count > 0 else 100
+    retention_rate = round((retention_count / learned_words_count * 100)) if learned_words_count > 0 else 100
+
+    all_topics = [r[0] for r in db.session.query(Vocabulary.topic).distinct().order_by(Vocabulary.topic).all()]
+    topic_breakdown = []
+
+    for t in all_topics:
+        topic_words = Vocabulary.query.filter_by(topic=t).all()
+        t_total = len(topic_words)
+        if t_total == 0:
+            continue
+        t_mastered = sum(
+            1 for w in topic_words
+            if w.id in progress_map and (progress_map[w.id].srs_level >= 7 or progress_map[w.id].learned_count >= 3)
+        )
+        t_pct = round((t_mastered / t_total) * 100)
+        topic_breakdown.append({
+            "topic": t,
+            "total": t_total,
+            "mastered": t_mastered,
+            "pct": t_pct
+        })
+
+    topic_breakdown.sort(key=lambda x: x["pct"], reverse=True)
+    weak_topics = sorted([tb for tb in topic_breakdown if tb["pct"] < 100], key=lambda x: x["pct"])[:3]
+
+    mastered_progress = [
+        p for p in user_progress
+        if p.srs_level >= 7 or (p.learned_count >= 3 and p.review_count >= 3)
+    ]
+    mastered_progress.sort(key=lambda p: p.last_reviewed_at or datetime.min, reverse=True)
+
+    mastered_timeline = []
+    for p in mastered_progress[:15]:
+        v = Vocabulary.query.get(p.vocabulary_id)
+        if v:
+            mastered_timeline.append({
+                "vocab": v,
+                "date": p.last_reviewed_at
+            })
+
+    today = date.today()
+    daily_labels = []
+    daily_values = []
+    for i in range(6, -1, -1):
+        day = today - timedelta(days=i)
+        daily_labels.append(day.strftime("%d/%m"))
+        cnt = sum(
+            1 for p in user_progress
+            if p.last_reviewed_at and p.last_reviewed_at.date() <= day
+        )
+        daily_values.append(cnt)
+
+    weekly_labels = ["Tuần 4 trước", "Tuần 3 trước", "Tuần 2 trước", "Tuần này"]
+    weekly_values = []
+    for i in range(3, -1, -1):
+        target_date = today - timedelta(weeks=i)
+        cnt = sum(
+            1 for p in user_progress
+            if p.last_reviewed_at and p.last_reviewed_at.date() <= target_date
+        )
+        weekly_values.append(cnt)
+
+    monthly_labels = ["M1", "M2", "M3", "M4", "M5", "M6"]
+    monthly_values = []
+    for i in range(5, -1, -1):
+        target_date = today - timedelta(days=30 * i)
+        monthly_labels[5 - i] = target_date.strftime("T%m/%Y")
+        cnt = sum(
+            1 for p in user_progress
+            if p.last_reviewed_at and p.last_reviewed_at.date() <= target_date
+        )
+        monthly_values.append(cnt)
+
+    return render_template(
+        "learning/vocabulary_stats.html",
+        current_streak=current_streak,
+        longest_streak=longest_streak,
+        learned_words_count=learned_words_count,
+        mastered_count=mastered_count,
+        accuracy_rate=accuracy_rate,
+        review_success_rate=review_success_rate,
+        retention_rate=retention_rate,
+        srs_distribution=srs_distribution,
+        topic_breakdown=topic_breakdown,
+        weak_topics=weak_topics,
+        mastered_timeline=mastered_timeline,
+        daily_labels=daily_labels,
+        daily_values=daily_values,
+        weekly_labels=weekly_labels,
+        weekly_values=weekly_values,
+        monthly_labels=monthly_labels,
+        monthly_values=monthly_values,
+    )

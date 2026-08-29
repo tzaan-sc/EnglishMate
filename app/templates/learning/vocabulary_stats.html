@@ -1,0 +1,273 @@
+{% extends "base.html" %}
+{% block title %}Thống kê & Phân tích Từ vựng · EnglishMate{% endblock %}
+
+{% block content %}
+<div class="container-fluid max-w-6xl py-4">
+
+  <!-- Page Header -->
+  <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
+    <div class="d-flex align-items-center gap-3">
+      <a href="{{ url_for('learning.vocabulary') }}" class="btn btn-light rounded-circle p-2 shadow-xs" title="Quay lại Bảng điều khiển">
+        <i class="ph ph-arrow-left fs-5"></i>
+      </a>
+      <div>
+        <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-3 py-1 mb-1 font-semibold">
+          ANALYTICS & DASHBOARD
+        </span>
+        <h2 class="fw-bold text-dark mb-0">Thống Kê Từ Vựng Toàn Diện</h2>
+      </div>
+    </div>
+    <div class="d-flex gap-2">
+      <a href="{{ url_for('learning.review_vocabulary') }}" class="btn btn-warning rounded-pill px-4 fw-bold text-dark shadow-xs">
+        🔄 Luyện tập SRS
+      </a>
+    </div>
+  </div>
+
+  <!-- Section 1: Key Metric Cards Grid -->
+  <div class="row g-3 mb-4">
+    <!-- Streak Stat Card -->
+    <div class="col-6 col-lg-3">
+      <div class="card border-0 shadow-sm rounded-4 p-3 bg-white h-100">
+        <div class="d-flex align-items-center gap-3">
+          <div class="bg-danger-subtle text-danger rounded-circle p-3 d-flex align-items-center justify-content-center" style="width: 50px; height: 50px;">
+            <i class="ph ph-fire fs-3"></i>
+          </div>
+          <div>
+            <span class="text-muted small d-block mb-0.5">Chuỗi học liên tiếp</span>
+            <h3 class="fw-extrabold text-danger mb-0">{{ current_streak }} <small class="fs-6 fw-normal text-muted">ngày</small></h3>
+            <small class="text-secondary opacity-75" style="font-size: 0.75rem;">Kỷ kỷ: {{ longest_streak }} ngày</small>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Learning Accuracy Rate Card -->
+    <div class="col-6 col-lg-3">
+      <div class="card border-0 shadow-sm rounded-4 p-3 bg-white h-100">
+        <div class="d-flex align-items-center gap-3">
+          <div class="bg-primary-subtle text-primary rounded-circle p-3 d-flex align-items-center justify-content-center" style="width: 50px; height: 50px;">
+            <i class="ph ph-target fs-3"></i>
+          </div>
+          <div>
+            <span class="text-muted small d-block mb-0.5">Tỷ lệ chính xác học</span>
+            <h3 class="fw-extrabold text-primary mb-0">{{ accuracy_rate }}%</h3>
+            <small class="text-secondary opacity-75" style="font-size: 0.75rem;">Đã thành thạo: {{ mastered_count }} từ</small>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Review Success Rate Card -->
+    <div class="col-6 col-lg-3">
+      <div class="card border-0 shadow-sm rounded-4 p-3 bg-white h-100">
+        <div class="d-flex align-items-center gap-3">
+          <div class="bg-success-subtle text-success rounded-circle p-3 d-flex align-items-center justify-content-center" style="width: 50px; height: 50px;">
+            <i class="ph ph-check-circle fs-3"></i>
+          </div>
+          <div>
+            <span class="text-muted small d-block mb-0.5">Tỷ lệ ôn thành công</span>
+            <h3 class="fw-extrabold text-success mb-0">{{ review_success_rate }}%</h3>
+            <small class="text-secondary opacity-75" style="font-size: 0.75rem;">Đã học: {{ learned_words_count }} từ</small>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Vocabulary Retention Rate Card -->
+    <div class="col-6 col-lg-3">
+      <div class="card border-0 shadow-sm rounded-4 p-3 bg-white h-100">
+        <div class="d-flex align-items-center gap-3">
+          <div class="bg-warning-subtle text-warning-emphasis rounded-circle p-3 d-flex align-items-center justify-content-center" style="width: 50px; height: 50px;">
+            <i class="ph ph-brain fs-3"></i>
+          </div>
+          <div>
+            <span class="text-muted small d-block mb-0.5">Tỷ lệ giữ lại từ vựng</span>
+            <h3 class="fw-extrabold text-warning-emphasis mb-0">{{ retention_rate }}%</h3>
+            <small class="text-secondary opacity-75" style="font-size: 0.75rem;">SRS Level 4+ dài hạn</small>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Section 2: Vocabulary Growth Chart (Daily / Weekly / Monthly) -->
+  <div class="card border-0 shadow-sm rounded-4 p-4 bg-white mb-4">
+    <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-4">
+      <div>
+        <h5 class="fw-bold text-dark mb-0 d-flex align-items-center gap-2">
+          <i class="ph ph-chart-bar text-primary fs-4"></i> Biểu đồ tăng trưởng từ vựng
+        </h5>
+        <span class="text-muted small">Theo dõi quá trình tích lũy từ vựng qua từng mốc thời gian</span>
+      </div>
+
+      <!-- Growth Chart Timeframe Selector Tabs -->
+      <ul class="nav nav-pills bg-light rounded-pill p-1 border shadow-xs" id="growthTab" role="tablist">
+        <li class="nav-item" role="presentation">
+          <button class="nav-link active rounded-pill px-3 py-1 text-xs fw-bold" id="daily-tab" data-bs-toggle="pill" data-bs-target="#daily-growth" type="button" role="tab">7 Ngày Qua</button>
+        </li>
+        <li class="nav-item" role="presentation">
+          <button class="nav-link rounded-pill px-3 py-1 text-xs fw-bold" id="weekly-tab" data-bs-toggle="pill" data-bs-target="#weekly-growth" type="button" role="tab">4 Tuần Qua</button>
+        </li>
+        <li class="nav-item" role="presentation">
+          <button class="nav-link rounded-pill px-3 py-1 text-xs fw-bold" id="monthly-tab" data-bs-toggle="pill" data-bs-target="#monthly-growth" type="button" role="tab">6 Tháng Qua</button>
+        </li>
+      </ul>
+    </div>
+
+    <div class="tab-content" id="growthTabContent">
+      
+      <!-- Daily Growth Tab -->
+      <div class="tab-pane fade show active" id="daily-growth" role="tabpanel">
+        <div class="d-flex align-items-end justify-content-between gap-2 pt-4 px-2" style="height: 220px;">
+          {% for i in range(daily_labels|length) %}
+          {% set val = daily_values[i] %}
+          {% set max_val = daily_values|max if daily_values|max > 0 else 1 %}
+          {% set height_pct = ((val / max_val) * 100)|round %}
+          <div class="d-flex flex-column align-items-center flex-grow-1 h-100 justify-content-end">
+            <span class="badge bg-primary-subtle text-primary rounded-pill px-2 py-0.5 small mb-2 fw-bold">{{ val }}</span>
+            <div class="bg-primary rounded-top w-100 max-w-12 transition-all shadow-xs" style="height: {{ height_pct if height_pct > 15 else 15 }}%;"></div>
+            <span class="text-muted small mt-2 fw-semibold" style="font-size: 0.75rem;">{{ daily_labels[i] }}</span>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+
+      <!-- Weekly Growth Tab -->
+      <div class="tab-pane fade" id="weekly-growth" role="tabpanel">
+        <div class="d-flex align-items-end justify-content-between gap-2 pt-4 px-2" style="height: 220px;">
+          {% for i in range(weekly_labels|length) %}
+          {% set val = weekly_values[i] %}
+          {% set max_val = weekly_values|max if weekly_values|max > 0 else 1 %}
+          {% set height_pct = ((val / max_val) * 100)|round %}
+          <div class="d-flex flex-column align-items-center flex-grow-1 h-100 justify-content-end">
+            <span class="badge bg-success-subtle text-success rounded-pill px-2 py-0.5 small mb-2 fw-bold">{{ val }}</span>
+            <div class="bg-success rounded-top w-100 max-w-16 transition-all shadow-xs" style="height: {{ height_pct if height_pct > 15 else 15 }}%;"></div>
+            <span class="text-muted small mt-2 fw-semibold" style="font-size: 0.75rem;">{{ weekly_labels[i] }}</span>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+
+      <!-- Monthly Growth Tab -->
+      <div class="tab-pane fade" id="monthly-growth" role="tabpanel">
+        <div class="d-flex align-items-end justify-content-between gap-2 pt-4 px-2" style="height: 220px;">
+          {% for i in range(monthly_labels|length) %}
+          {% set val = monthly_values[i] %}
+          {% set max_val = monthly_values|max if monthly_values|max > 0 else 1 %}
+          {% set height_pct = ((val / max_val) * 100)|round %}
+          <div class="d-flex flex-column align-items-center flex-grow-1 h-100 justify-content-end">
+            <span class="badge bg-info-subtle text-info-emphasis rounded-pill px-2 py-0.5 small mb-2 fw-bold">{{ val }}</span>
+            <div class="bg-info rounded-top w-100 max-w-12 transition-all shadow-xs" style="height: {{ height_pct if height_pct > 15 else 15 }}%;"></div>
+            <span class="text-muted small mt-2 fw-semibold" style="font-size: 0.75rem;">{{ monthly_labels[i] }}</span>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Section 3: SRS Level Distribution (Levels 1 to 7) -->
+  <div class="card border-0 shadow-sm rounded-4 p-4 bg-white mb-4">
+    <h5 class="fw-bold text-dark mb-3 d-flex align-items-center gap-2">
+      <i class="ph ph-stack text-warning fs-4"></i> Biểu đồ phân phối mức SRS Level (1–7)
+    </h5>
+    
+    <div class="row g-3">
+      {% for lvl in range(1, 8) %}
+      {% set cnt = srs_distribution[lvl] %}
+      {% set pct = ((cnt / learned_words_count * 100)|round) if learned_words_count > 0 else 0 %}
+      <div class="col-md-6 col-lg-3">
+        <div class="border rounded-4 p-3 bg-light-subtle">
+          <div class="d-flex justify-content-between align-items-center mb-1">
+            <span class="badge {% if lvl==7 %}bg-success{% else %}bg-primary-subtle text-primary border border-primary-subtle{% endif %} rounded-pill px-2.5 py-1 fw-bold">
+              Level {{ lvl }} {% if lvl==7 %}(Mastered){% endif %}
+            </span>
+            <strong class="text-dark fs-6">{{ cnt }} từ</strong>
+          </div>
+          <div class="progress rounded-pill my-2" style="height: 8px;">
+            <div class="progress-bar {% if lvl==7 %}bg-success{% elif lvl >= 4 %}bg-primary{% else %}bg-warning{% endif %} rounded-pill" role="progressbar" style="width: {{ pct }}%;"></div>
+          </div>
+          <small class="text-muted" style="font-size: 0.75rem;">Tỷ lệ: {{ pct }}% tổng từ đã học</small>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <div class="row g-4 mb-4">
+    <!-- Section 4: Topic Mastery Breakdown & Weak Topics Alert -->
+    <div class="col-lg-7">
+      <div class="card border-0 shadow-sm rounded-4 p-4 bg-white h-100">
+        <h5 class="fw-bold text-dark mb-3 d-flex align-items-center gap-2">
+          <i class="ph ph-folders text-success fs-4"></i> Phân tích độ thành thạo theo Chủ đề
+        </h5>
+
+        <!-- Weak Topics Alert Banner -->
+        {% if weak_topics %}
+        <div class="alert alert-warning border-0 rounded-4 p-3 mb-3 d-flex align-items-center gap-3">
+          <i class="ph ph-warning-circle fs-3 text-warning-emphasis"></i>
+          <div>
+            <strong class="text-dark d-block">Gợi ý ôn tập (Chủ đề còn yếu):</strong>
+            <span class="small text-secondary">
+              Bạn nên tập trung ôn thêm từ vựng thuộc các chủ đề:
+              {% for wt in weak_topics %}
+              <strong class="text-dark">{{ wt.topic }} ({{ wt.pct }}%)</strong>{% if not loop.last %}, {% endif %}
+              {% endfor %}
+            </span>
+          </div>
+        </div>
+        {% endif %}
+
+        <div class="d-flex flex-column gap-3">
+          {% for tb in topic_breakdown %}
+          <div>
+            <div class="d-flex justify-content-between align-items-center mb-1">
+              <span class="fw-bold text-dark">{{ tb.topic }}</span>
+              <span class="small text-muted">{{ tb.mastered }}/{{ tb.total }} từ thành thạo (<strong>{{ tb.pct }}%</strong>)</span>
+            </div>
+            <div class="progress rounded-pill" style="height: 10px;">
+              <div class="progress-bar {% if tb.pct >= 80 %}bg-success{% elif tb.pct >= 40 %}bg-primary{% else %}bg-warning{% endif %} rounded-pill" role="progressbar" style="width: {{ tb.pct }}%;"></div>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Section 5: Mastered Words Timeline -->
+    <div class="col-lg-5">
+      <div class="card border-0 shadow-sm rounded-4 p-4 bg-white h-100">
+        <h5 class="fw-bold text-dark mb-3 d-flex align-items-center gap-2">
+          <i class="ph ph-clock-counter-clockwise text-primary fs-4"></i> Timeline Từ đã thành thạo
+        </h5>
+        
+        {% if mastered_timeline %}
+        <div class="d-flex flex-column gap-2.5 overflow-auto max-h-96 pe-1">
+          {% for mt in mastered_timeline %}
+          <div class="d-flex align-items-center justify-content-between p-2.5 rounded-4 border bg-light-subtle">
+            <div>
+              <strong class="text-dark font-monospace d-block">{{ mt.vocab.word }}</strong>
+              <small class="text-muted">{{ mt.vocab.meaning_vi }}</small>
+            </div>
+            <div class="text-end">
+              <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-2.5 py-1 small fw-bold">Level 7</span>
+              <small class="text-muted d-block mt-0.5" style="font-size: 0.7rem;">{{ mt.date.strftime('%d/%m/%Y') if mt.date else '' }}</small>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+        {% else %}
+        <div class="text-center py-5 text-muted">
+          <i class="ph ph-folder-open fs-1 mb-2 d-block"></i>
+          <span>Chưa có từ nào chạm mốc Level 7 Thành thạo.</span>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+</div>
+{% endblock %}
