@@ -1,0 +1,200 @@
+{% extends "base.html" %}
+{% block title %}Lịch Sử Kiểm Tra · EnglishMate{% endblock %}
+
+{% block content %}
+<div class="container-fluid max-w-7xl py-4">
+
+  <!-- Header & Top Actions -->
+  <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
+    <div>
+      <h3 class="fw-bold text-dark mb-1">📜 Lịch Sử Kiểm Tra (Test History)</h3>
+      <p class="text-secondary small mb-0">Theo dõi toàn bộ quá trình thực hành, xem lại giải thích và so sánh tiến độ kết quả thi.</p>
+    </div>
+
+    <div class="d-flex gap-2">
+      <!-- Compare Selected Button -->
+      <button type="button" id="btnCompareSelected" class="btn btn-outline-primary rounded-pill px-4 fw-bold shadow-xs">
+        ⚖️ So Sánh Các Bài Đã Chọn
+      </button>
+
+      <!-- Export CSV Button -->
+      <a href="{{ url_for('exams.test_export_csv') }}" class="btn btn-primary rounded-pill px-4 fw-bold shadow-xs">
+        📥 Xuất Lịch Sử (CSV)
+      </a>
+    </div>
+  </div>
+
+  <!-- 4 Summary Stat Cards -->
+  <div class="row g-3 mb-4">
+    <div class="col-md-3 col-6">
+      <div class="card border-0 shadow-xs rounded-4 p-3 bg-white text-center">
+        <span class="text-muted small d-block mb-1">Tổng lượt làm bài</span>
+        <h3 class="fw-bold text-primary mb-0">{{ summary.total_tests }}</h3>
+      </div>
+    </div>
+    <div class="col-md-3 col-6">
+      <div class="card border-0 shadow-xs rounded-4 p-3 bg-white text-center">
+        <span class="text-muted small d-block mb-1">Điểm trung bình</span>
+        <h3 class="fw-bold text-success mb-0">{{ summary.avg_score_pct }}%</h3>
+      </div>
+    </div>
+    <div class="col-md-3 col-6">
+      <div class="card border-0 shadow-xs rounded-4 p-3 bg-white text-center">
+        <span class="text-muted small d-block mb-1">Điểm cao nhất</span>
+        <h3 class="fw-bold text-warning-emphasis mb-0">{{ summary.best_score_pct }}%</h3>
+      </div>
+    </div>
+    <div class="col-md-3 col-6">
+      <div class="card border-0 shadow-xs rounded-4 p-3 bg-white text-center">
+        <span class="text-muted small d-block mb-1">Tổng thời gian thi</span>
+        <h3 class="fw-bold text-info mb-0">{{ summary.total_time_min }} phút</h3>
+      </div>
+    </div>
+  </div>
+
+  <!-- Multi-dimensional Filter & Sorting Toolbar -->
+  <div class="card border-0 shadow-sm rounded-4 p-4 bg-white mb-4">
+    <form method="GET" action="{{ url_for('exams.test_history') }}" class="row g-3 align-items-end">
+      <!-- Filter by Test Type -->
+      <div class="col-md-3 col-6">
+        <label class="form-label fw-semibold text-dark small">Loại bài kiểm tra</label>
+        <select name="type" class="form-select rounded-pill">
+          <option value="">-- Tất cả loại --</option>
+          <option value="Quiz" {{ 'selected' if filter_type=='Quiz' }}>Quiz</option>
+          <option value="TOEIC" {{ 'selected' if filter_type=='TOEIC' }}>TOEIC Simulation</option>
+          <option value="IELTS" {{ 'selected' if filter_type=='IELTS' }}>IELTS Practice</option>
+          <option value="TOEFL" {{ 'selected' if filter_type=='TOEFL' }}>TOEFL Preparation</option>
+          <option value="Placement" {{ 'selected' if filter_type=='Placement' }}>Placement Test</option>
+          <option value="Progress" {{ 'selected' if filter_type=='Progress' }}>Progress Assessment</option>
+          <option value="Grammar" {{ 'selected' if filter_type=='Grammar' }}>Bài tập Ngữ Pháp</option>
+        </select>
+      </div>
+
+      <!-- Filter by Date Range -->
+      <div class="col-md-2 col-6">
+        <label class="form-label fw-semibold text-dark small">Từ ngày</label>
+        <input type="date" name="date_from" class="form-control rounded-pill" value="{{ date_from }}">
+      </div>
+      <div class="col-md-2 col-6">
+        <label class="form-label fw-semibold text-dark small">Đến ngày</label>
+        <input type="date" name="date_to" class="form-control rounded-pill" value="{{ date_to }}">
+      </div>
+
+      <!-- Filter by Score Range -->
+      <div class="col-md-2 col-6">
+        <label class="form-label fw-semibold text-dark small">Điểm từ (%)</label>
+        <input type="number" name="min_score" class="form-control rounded-pill" placeholder="0" min="0" max="100" value="{{ min_score }}">
+      </div>
+
+      <!-- Sort by Date/Score -->
+      <div class="col-md-2 col-6">
+        <label class="form-label fw-semibold text-dark small">Sắp xếp theo</label>
+        <select name="sort" class="form-select rounded-pill">
+          <option value="date_desc" {{ 'selected' if sort_by=='date_desc' }}>Mới nhất</option>
+          <option value="date_asc" {{ 'selected' if sort_by=='date_asc' }}>Cũ nhất</option>
+          <option value="score_desc" {{ 'selected' if sort_by=='score_desc' }}>Điểm cao nhất</option>
+          <option value="score_asc" {{ 'selected' if sort_by=='score_asc' }}>Điểm thấp nhất</option>
+        </select>
+      </div>
+
+      <!-- Submit & Reset Buttons -->
+      <div class="col-md-1 col-12 d-flex gap-1">
+        <button type="submit" class="btn btn-primary rounded-pill w-100 fw-bold">Lọc</button>
+      </div>
+    </form>
+  </div>
+
+  <!-- History Records List Table -->
+  <div class="card border-0 shadow-sm rounded-4 bg-white overflow-hidden">
+    <div class="table-responsive">
+      <table class="table table-hover align-middle mb-0">
+        <thead class="table-light">
+          <tr>
+            <th class="ps-4" style="width: 40px;">
+              <input type="checkbox" id="selectAllCheckbox" class="form-check-input">
+            </th>
+            <th>Loại bài</th>
+            <th>Tiêu đề bài kiểm tra</th>
+            <th>Ngày làm bài</th>
+            <th>Điểm số</th>
+            <th>Tỷ lệ chính xác</th>
+            <th>Thời gian</th>
+            <th class="text-end pe-4">Thao tác</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for r in records %}
+          <tr>
+            <td class="ps-4">
+              <input type="checkbox" class="form-check-input record-checkbox" value="{{ r.source }}_{{ r.id }}">
+            </td>
+            <td>
+              <span class="badge bg-secondary-subtle text-secondary border rounded-pill px-3">{{ r.type }}</span>
+            </td>
+            <td>
+              <div class="fw-bold text-dark">{{ r.title }}</div>
+              <small class="text-muted font-monospace">Source: {{ r.source|upper }}-{{ r.id }}</small>
+            </td>
+            <td>
+              <small class="text-secondary">{{ r.created_at.strftime('%d/%m/%Y %H:%M') if r.created_at else '' }}</small>
+            </td>
+            <td><span class="fw-bold text-primary">{{ r.score_display }}</span></td>
+            <td>
+              <div class="d-flex align-items-center gap-2" style="width: 140px;">
+                <div class="progress flex-grow-1" style="height: 6px;">
+                  <div class="progress-bar {{ 'bg-success' if r.accuracy_pct>=80 else ('bg-info' if r.accuracy_pct>=60 else 'bg-danger') }}" style="width: {{ r.accuracy_pct }}%;"></div>
+                </div>
+                <span class="small font-monospace fw-bold">{{ r.accuracy_pct }}%</span>
+              </div>
+            </td>
+            <td><span class="small text-muted">{{ r.duration_sec }}s</span></td>
+            <td class="text-end pe-4">
+              <div class="btn-group btn-group-sm">
+                <!-- Review Specific Test -->
+                <a href="{{ r.review_url }}" class="btn btn-outline-primary" title="Xem lại bài thi">👁️ Xem lại</a>
+                
+                <!-- Delete Test Record -->
+                <form action="{{ url_for('exams.test_delete_record', source=r.source, record_id=r.id) }}" method="POST" class="d-inline" onsubmit="return confirm('Bạn có chắc chắn muốn xóa bản ghi này?');">
+                  {{ form.hidden_tag() }}
+                  <button type="submit" class="btn btn-outline-danger" title="Xóa bản ghi">🗑️</button>
+                </form>
+              </div>
+            </td>
+          </tr>
+          {% else %}
+          <tr>
+            <td colspan="8" class="text-center py-5 text-muted">
+              <span class="fs-1 d-block mb-2">📜</span>
+              Chưa có bản ghi lịch sử kiểm tra nào phù hợp với bộ lọc.
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+  const selectAll = document.getElementById("selectAllCheckbox");
+  const checkboxes = document.querySelectorAll(".record-checkbox");
+  
+  if (selectAll) {
+    selectAll.addEventListener("change", function() {
+      checkboxes.forEach(cb => cb.checked = this.checked);
+    });
+  }
+
+  document.getElementById("btnCompareSelected").addEventListener("click", function() {
+    const selected = Array.from(checkboxes).filter(cb => cb.checked).map(cb => cb.value);
+    if (selected.length < 2) {
+      alert("Vui lòng chọn ít nhất 2 bài kiểm tra để so sánh!");
+      return;
+    }
+    window.location.href = "{{ url_for('exams.test_compare') }}?ids=" + selected.join(",");
+  });
+});
+</script>
+{% endblock %}

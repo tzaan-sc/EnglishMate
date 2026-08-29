@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+{% block title %}So Sánh Lượt Thi · EnglishMate{% endblock %}
+
+{% block content %}
+<div class="container-fluid max-w-6xl py-4">
+
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <a href="{{ url_for('exams.test_history') }}" class="btn btn-light rounded-pill px-3 text-secondary">
+      ← Quay lại Lịch sử kiểm tra
+    </a>
+  </div>
+
+  <div class="card border-0 shadow-sm rounded-4 bg-white p-4 p-md-5">
+    <div class="text-center mb-5">
+      <span class="fs-1 mb-2 d-block">⚖️</span>
+      <h3 class="fw-bold text-dark mb-1">So Sánh Tiến Độ Lượt Làm Bài Thi</h3>
+      <p class="text-secondary small">Đối chiếu kết quả, tỷ lệ chính xác và thời gian làm bài giữa các lượt thi để đánh giá sự tiến bộ.</p>
+    </div>
+
+    <!-- Side-by-Side Comparison Table -->
+    <div class="table-responsive">
+      <table class="table table-bordered align-middle text-center mb-0">
+        <thead class="table-light">
+          <tr>
+            <th class="text-start" style="width: 220px;">Tiêu chí so sánh</th>
+            {% for r in records %}
+            <th class="fw-bold text-primary fs-6">{{ r.title }}</th>
+            {% endfor %}
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="fw-bold text-start text-dark">Loại bài thi</td>
+            {% for r in records %}
+            <td><span class="badge bg-secondary-subtle text-secondary rounded-pill px-3">{{ r.type }}</span></td>
+            {% endfor %}
+          </tr>
+          <tr>
+            <td class="fw-bold text-start text-dark">Ngày thực hiện</td>
+            {% for r in records %}
+            <td><small class="text-secondary">{{ r.date }}</small></td>
+            {% endfor %}
+          </tr>
+          <tr>
+            <td class="fw-bold text-start text-dark">Điểm số đạt được</td>
+            {% for r in records %}
+            <td><span class="fw-bold text-primary fs-5">{{ r.score_display }}</span></td>
+            {% endfor %}
+          </tr>
+          <tr>
+            <td class="fw-bold text-start text-dark">Tỷ lệ chính xác (%)</td>
+            {% for r in records %}
+            <td>
+              <div class="d-flex flex-column align-items-center">
+                <span class="fw-bold fs-4 {{ 'text-success' if r.accuracy_pct>=80 else ('text-info' if r.accuracy_pct>=60 else 'text-danger') }}">{{ r.accuracy_pct }}%</span>
+                <div class="progress w-75 mt-1" style="height: 8px;">
+                  <div class="progress-bar {{ 'bg-success' if r.accuracy_pct>=80 else ('bg-info' if r.accuracy_pct>=60 else 'bg-danger') }}" style="width: {{ r.accuracy_pct }}%;"></div>
+                </div>
+              </div>
+            </td>
+            {% endfor %}
+          </tr>
+          <tr>
+            <td class="fw-bold text-start text-dark">Thời gian thi</td>
+            {% for r in records %}
+            <td><span class="text-muted">{{ r.duration_sec }} giây</span></td>
+            {% endfor %}
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+{% endblock %}

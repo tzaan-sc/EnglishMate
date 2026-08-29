@@ -518,3 +518,307 @@ def specialized_timed_practice():
         return redirect(url_for("exams.attempt_exam", submission_id=submission.id, mode="timed_practice"))
 
     return render_template("exams/timed_practice.html", form=ActionForm())
+
+
+# ==========================================
+# TEST HISTORY ROUTES (Section 4.7)
+# ==========================================
+
+from datetime import datetime
+import io
+import csv
+from flask import Response
+from app.modules.learning.models import QuizAttempt, GrammarExerciseAttempt
+
+@bp.route("/history")
+@bp.route("/exams/history")
+@login_required
+def test_history():
+    test_type = request.args.get("type", "").strip()
+    date_from_str = request.args.get("date_from", "").strip()
+    date_to_str = request.args.get("date_to", "").strip()
+    min_score_str = request.args.get("min_score", "").strip()
+    max_score_str = request.args.get("max_score", "").strip()
+    sort_by = request.args.get("sort", "date_desc").strip()
+
+    records = []
+
+    # 1. Fetch QuizAttempt records
+    if not test_type or test_type in ["Quiz", "All"]:
+        quiz_attempts = QuizAttempt.query.filter_by(user_id=current_user.id).all()
+        for q in quiz_attempts:
+            total_q = q.total_questions or 10
+            score_val = q.score or 0
+            acc = int((score_val / total_q) * 100) if total_q > 0 else 0
+            records.append({
+                "id": q.id,
+                "source": "quiz",
+                "type": "Quiz",
+                "title": q.topic or "Bài Quiz Kiểm Tra",
+                "score_display": f"{score_val}/{total_q}",
+                "accuracy_pct": acc,
+                "duration_sec": q.duration_seconds or 0,
+                "created_at": q.created_at,
+                "review_url": url_for("learning.quiz_results", attempt_id=q.id)
+            })
+
+    # 2. Fetch ToeicAttempt records
+    if not test_type or test_type in ["TOEIC", "All"]:
+        toeic_attempts = ToeicAttempt.query.filter_by(user_id=current_user.id, is_submitted=True).all()
+        for t in toeic_attempts:
+            total_q = t.total_questions or 100
+            score_val = t.score or 0
+            acc = int((score_val / total_q) * 100) if total_q > 0 else 0
+            test_title = t.test.title if t.test else "Bài Thi Mô Phỏng TOEIC"
+            records.append({
+                "id": t.id,
+                "source": "toeic",
+                "type": "TOEIC",
+                "title": test_title,
+                "score_display": f"{score_val}/{total_q}",
+                "accuracy_pct": acc,
+                "duration_sec": t.time_spent or 0,
+                "created_at": t.completed_at or t.created_at,
+                "review_url": url_for("exams.toeic_result", attempt_id=t.id)
+            })
+
+    # 3. Fetch ExamSubmission records
+    if not test_type or test_type in ["IELTS", "TOEFL", "Placement", "Progress", "Mock", "Custom", "All"]:
+        submissions = ExamSubmission.query.filter_by(user_id=current_user.id).all()
+        for s in submissions:
+            ex = s.exam
+            ex_cat = ex.category if ex else "Exam"
+            if test_type and test_type not in ["All", ex_cat]:
+                continue
+            total_q = ex.question_count if ex else 10
+            score_val = int(s.total_score or 0)
+            acc = int((score_val / total_q) * 100) if total_q > 0 else 0
+            records.append({
+                "id": s.id,
+                "source": "submission",
+                "type": ex_cat,
+                "title": ex.title if ex else "Đề Thi Chuyên Biệt",
+                "score_display": f"{score_val}/{total_q}",
+                "accuracy_pct": acc,
+                "duration_sec": (ex.duration_minutes * 60) if ex else 0,
+                "created_at": s.completed_at or s.created_at,
+                "review_url": url_for("exams.exam_result", submission_id=s.id)
+            })
+
+    # 4. Fetch GrammarExerciseAttempt records
+    if not test_type or test_type in ["Grammar", "All"]:
+        grammar_attempts = GrammarExerciseAttempt.query.filter_by(user_id=current_user.id).all()
+        for g in grammar_attempts:
+            total_q = g.total_questions or 10
+            score_val = g.score or 0
+            acc = int((score_val / total_q) * 100) if total_q > 0 else 0
+            records.append({
+                "id": g.id,
+                "source": "grammar",
+                "type": "Grammar",
+                "title": f"Bài Tập Ngữ Pháp ({g.topic})",
+                "score_display": f"{score_val}/{total_q}",
+                "accuracy_pct": acc,
+                "duration_sec": 0,
+                "created_at": g.completed_at,
+                "review_url": url_for("learning.grammar_exercise_summary", attempt_id=g.id)
+            })
+
+    # Apply date filters
+    if date_from_str:
+        try:
+            d_from = datetime.strptime(date_from_str, "%Y-%m-%d")
+            records = [r for r in records if r["created_at"] and r["created_at"].replace(tzinfo=None) >= d_from]
+        except ValueError:
+            pass
+
+    if date_to_str:
+        try:
+            d_to = datetime.strptime(date_to_str, "%Y-%m-%d").replace(hour=23, minute=59, second=59)
+            records = [r for r in records if r["created_at"] and r["created_at"].replace(tzinfo=None) <= d_to]
+        except ValueError:
+            pass
+
+    # Apply score range filters
+    if min_score_str.isdigit():
+        min_s = int(min_score_str)
+        records = [r for r in records if r["accuracy_pct"] >= min_s]
+
+    if max_score_str.isdigit():
+        max_s = int(max_score_str)
+        records = [r for r in records if r["accuracy_pct"] <= max_s]
+
+    # Apply sorting
+    if sort_by == "date_asc":
+        records.sort(key=lambda r: r["created_at"] or datetime.min)
+    elif sort_by == "score_desc":
+        records.sort(key=lambda r: r["accuracy_pct"], reverse=True)
+    elif sort_by == "score_asc":
+        records.sort(key=lambda r: r["accuracy_pct"])
+    else: # date_desc
+        records.sort(key=lambda r: r["created_at"] or datetime.min, reverse=True)
+
+    # Summary metrics calculation
+    total_tests = len(records)
+    avg_score_pct = int(sum(r["accuracy_pct"] for r in records) / total_tests) if total_tests > 0 else 0
+    best_score_pct = max((r["accuracy_pct"] for r in records), default=0)
+    total_time_sec = sum(r["duration_sec"] for r in records)
+
+    summary = {
+        "total_tests": total_tests,
+        "avg_score_pct": avg_score_pct,
+        "best_score_pct": best_score_pct,
+        "total_time_min": int(total_time_sec / 60)
+    }
+
+    return render_template(
+        "exams/test_history.html",
+        records=records,
+        summary=summary,
+        filter_type=test_type,
+        date_from=date_from_str,
+        date_to=date_to_str,
+        min_score=min_score_str,
+        max_score=max_score_str,
+        sort_by=sort_by,
+        form=ActionForm()
+    )
+
+
+@bp.route("/history/review/<string:source>/<int:record_id>")
+@bp.route("/exams/history/review/<string:source>/<int:record_id>")
+@login_required
+def test_review_detail(source, record_id):
+    if source == "quiz":
+        return redirect(url_for("learning.quiz_results", attempt_id=record_id))
+    elif source == "toeic":
+        return redirect(url_for("exams.toeic_result", attempt_id=record_id))
+    elif source == "submission":
+        return redirect(url_for("exams.exam_result", submission_id=record_id))
+    elif source == "grammar":
+        return redirect(url_for("learning.grammar_exercise_summary", attempt_id=record_id))
+
+    flash("Không tìm thấy bản ghi kiểm tra.", "danger")
+    return redirect(url_for("exams.test_history"))
+
+
+@bp.route("/history/compare")
+@bp.route("/exams/history/compare")
+@login_required
+def test_compare():
+    ids_str = request.args.get("ids", "").strip()
+    id_list = [id.strip() for id in ids_str.split(",") if id.strip()]
+
+    all_records = []
+
+    for item in id_list:
+        parts = item.split("_")
+        if len(parts) != 2 or not parts[1].isdigit():
+            continue
+        src, rec_id = parts[0], int(parts[1])
+
+        if src == "quiz":
+            q = db.session.get(QuizAttempt, rec_id)
+            if q and q.user_id == current_user.id:
+                total_q = q.total_questions or 10
+                score_v = q.score or 0
+                acc = int((score_v / total_q) * 100) if total_q > 0 else 0
+                all_records.append({
+                    "id": item,
+                    "title": q.topic or "Bài Quiz Kiểm Tra",
+                    "type": "Quiz",
+                    "score_display": f"{score_v}/{total_q}",
+                    "accuracy_pct": acc,
+                    "duration_sec": q.duration_seconds or 0,
+                    "date": q.created_at.strftime('%d/%m/%Y %H:%M') if q.created_at else ""
+                })
+        elif src == "submission":
+            s = db.session.get(ExamSubmission, rec_id)
+            if s and s.user_id == current_user.id:
+                ex = s.exam
+                total_q = ex.question_count if ex else 10
+                score_v = int(s.total_score or 0)
+                acc = int((score_v / total_q) * 100) if total_q > 0 else 0
+                all_records.append({
+                    "id": item,
+                    "title": ex.title if ex else "Đề Thi Chuyên Biệt",
+                    "type": ex.category if ex else "Exam",
+                    "score_display": f"{score_v}/{total_q}",
+                    "accuracy_pct": acc,
+                    "duration_sec": (ex.duration_minutes * 60) if ex else 0,
+                    "date": s.completed_at.strftime('%d/%m/%Y %H:%M') if s.completed_at else ""
+                })
+
+    if not all_records:
+        flash("Vui lòng chọn ít nhất 2 bài thi để so sánh.", "warning")
+        return redirect(url_for("exams.test_history"))
+
+    return render_template("exams/test_compare.html", records=all_records)
+
+
+@bp.route("/history/export")
+@bp.route("/exams/history/export")
+@login_required
+def test_export_csv():
+    quiz_attempts = QuizAttempt.query.filter_by(user_id=current_user.id).all()
+    submissions = ExamSubmission.query.filter_by(user_id=current_user.id).all()
+
+    output = io.StringIO()
+    writer = csv.writer(output)
+    writer.writerow(["ID", "Loai Bai Thi", "Tieu De", "Diem So", "Ty Le Chinh Xac (%)", "Ngay Lam Bai"])
+
+    for q in quiz_attempts:
+        total_q = q.total_questions or 10
+        score_val = q.score or 0
+        acc = int((score_val / total_q) * 100) if total_q > 0 else 0
+        date_str = q.created_at.strftime('%d/%m/%Y %H:%M') if q.created_at else ""
+        writer.writerow([f"QUIZ-{q.id}", "Quiz", q.topic, f"{score_val}/{total_q}", f"{acc}%", date_str])
+
+    for s in submissions:
+        ex = s.exam
+        total_q = ex.question_count if ex else 10
+        score_val = int(s.total_score or 0)
+        acc = int((score_val / total_q) * 100) if total_q > 0 else 0
+        date_str = s.completed_at.strftime('%d/%m/%Y %H:%M') if s.completed_at else ""
+        title_str = ex.title if ex else "Exam"
+        cat_str = ex.category if ex else "Exam"
+        writer.writerow([f"EXAM-{s.id}", cat_str, title_str, f"{score_val}/{total_q}", f"{acc}%", date_str])
+
+    output.seek(0)
+    return Response(
+        output.getvalue(),
+        mimetype="text/csv",
+        headers={"Content-Disposition": "attachment;filename=test_history_export.csv"}
+    )
+
+
+@bp.route("/history/<string:source>/<int:record_id>/delete", methods=["POST"])
+@bp.route("/exams/history/<string:source>/<int:record_id>/delete", methods=["POST"])
+@login_required
+def test_delete_record(source, record_id):
+    if source == "quiz":
+        rec = db.session.get(QuizAttempt, record_id)
+        if rec and rec.user_id == current_user.id:
+            db.session.delete(rec)
+            db.session.commit()
+            flash("Đã xóa bản ghi bài quiz thành công.", "success")
+    elif source == "submission":
+        rec = db.session.get(ExamSubmission, record_id)
+        if rec and rec.user_id == current_user.id:
+            db.session.delete(rec)
+            db.session.commit()
+            flash("Đã xóa bản ghi lượt thi thành công.", "success")
+    elif source == "toeic":
+        rec = db.session.get(ToeicAttempt, record_id)
+        if rec and rec.user_id == current_user.id:
+            db.session.delete(rec)
+            db.session.commit()
+            flash("Đã xóa bản ghi bài thi TOEIC thành công.", "success")
+    elif source == "grammar":
+        rec = db.session.get(GrammarExerciseAttempt, record_id)
+        if rec and rec.user_id == current_user.id:
+            db.session.delete(rec)
+            db.session.commit()
+            flash("Đã xóa bản ghi bài tập ngữ pháp thành công.", "success")
+
+    return redirect(url_for("exams.test_history"))
