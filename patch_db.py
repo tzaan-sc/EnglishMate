@@ -291,9 +291,44 @@ if db_path.exists():
             UNIQUE (user_id, topic_id)
         )
     """)
+
+    # Create grammar_exercise_attempt table if not exists
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS grammar_exercise_attempt (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id INTEGER NOT NULL,
+            topic_id INTEGER,
+            difficulty VARCHAR(20) NOT NULL DEFAULT 'Easy',
+            question_count INTEGER NOT NULL DEFAULT 10,
+            score INTEGER NOT NULL DEFAULT 0,
+            total_questions INTEGER NOT NULL DEFAULT 10,
+            duration_seconds INTEGER NOT NULL DEFAULT 0,
+            completed_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (user_id) REFERENCES user (id),
+            FOREIGN KEY (topic_id) REFERENCES grammar_topic (id)
+        )
+    """)
+
+    # Create grammar_error_log table if not exists
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS grammar_error_log (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id INTEGER NOT NULL,
+            question_id INTEGER NOT NULL,
+            attempt_id INTEGER,
+            user_answer VARCHAR(1) NOT NULL,
+            correct_answer VARCHAR(1) NOT NULL,
+            is_resolved BOOLEAN NOT NULL DEFAULT 0,
+            created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (user_id) REFERENCES user (id),
+            FOREIGN KEY (question_id) REFERENCES question (id),
+            FOREIGN KEY (attempt_id) REFERENCES grammar_exercise_attempt (id)
+        )
+    """)
     conn.commit()
 
     conn.close()
-    print("Database patched successfully with Grammar Learning enhancements!")
+    print("Database patched successfully with Grammar Exercises & Error Log enhancements!")
 else:
     print("Database file not found at", db_path)

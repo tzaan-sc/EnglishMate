@@ -1,0 +1,170 @@
+{% extends "base.html" %}
+{% block title %}Đang làm bài tập ngữ pháp · EnglishMate{% endblock %}
+
+{% block content %}
+<div class="container-fluid max-w-4xl py-4">
+
+  <!-- Exercise Header Bar: Timer & Progress -->
+  <div class="card border-0 shadow-sm rounded-4 p-3 bg-white mb-4">
+    <div class="d-flex align-items-center justify-content-between mb-2">
+      <div class="d-flex align-items-center gap-2">
+        <span class="badge bg-primary rounded-pill px-3 py-1 fw-bold" id="qCurrentBadge">Câu 1 / {{ questions|length }}</span>
+        <span class="text-secondary small font-semibold">
+          {{ topic.title if topic else 'Bài tập Ngữ pháp Tổng hợp' }}
+        </span>
+      </div>
+      <div class="d-flex align-items-center gap-2 bg-light px-3 py-1.5 rounded-pill border">
+        <i class="ph ph-timer text-danger fs-5"></i>
+        <span class="fw-bold text-dark" id="timerDisplay">00:00</span>
+      </div>
+    </div>
+    <div class="progress rounded-pill" style="height: 8px;">
+      <div class="progress-bar bg-primary rounded-pill transition" id="qProgressBar" role="progressbar" style="width: 10%;"></div>
+    </div>
+  </div>
+
+  <!-- Exercise Form -->
+  <form id="exerciseForm" action="{{ url_for('learning.submit_grammar_exercise') }}" method="post">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+    <!-- Questions Stack -->
+    {% for q in questions %}
+    {% set q_idx = loop.index %}
+    <div class="question-card card border-0 shadow-sm rounded-4 p-4 bg-white mb-4 {{ '' if loop.first else 'd-none' }}" id="qCard_{{ loop.index }}" data-q-index="{{ loop.index }}">
+      
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <span class="badge bg-light text-dark border rounded-pill px-3 py-1 font-semibold">
+          Level: {{ q.level }}
+        </span>
+        <!-- Mark for Review Button -->
+        <button type="button" class="btn btn-outline-warning btn-sm rounded-pill px-3 btn-mark-review" data-q-index="{{ loop.index }}">
+          <i class="ph ph-flag me-1"></i> <span class="flag-text">Đánh dấu xem lại</span>
+        </button>
+      </div>
+
+      <!-- Question Text -->
+      <h4 class="fw-bold text-dark mb-4 lh-base" style="font-size: 1.25rem;">
+        {{ loop.index }}. {{ q.question_text }}
+      </h4>
+
+      <!-- Answer Options (A, B, C, D) -->
+      <div class="d-flex flex-column gap-3 mb-4">
+        {% for opt_key, opt_val in q.options.items() %}
+        <label class="option-pill p-3 border rounded-3 d-flex align-items-center gap-3 cursor-pointer transition">
+          <input type="radio" name="q_{{ q.id }}" value="{{ opt_key }}" class="form-check-input flex-shrink-0" onchange="onSelectOption({{ q_idx }})">
+          <span class="badge bg-light text-dark border rounded-circle p-2 fs-6 font-bold" style="width: 32px; height: 32px; line-height: 16px;">{{ opt_key }}</span>
+          <span class="fw-semibold text-dark fs-6">{{ opt_val }}</span>
+        </label>
+        {% endfor %}
+      </div>
+
+      <!-- Grammar Rule Reference Accordion/Toggle -->
+      <div class="accordion accordion-flush mb-2 border rounded-3" id="accRule_{{ q.id }}">
+        <div class="accordion-item rounded-3">
+          <h2 class="accordion-header">
+            <button class="accordion-button collapsed py-2 px-3 small fw-bold text-primary" type="button" data-bs-toggle="collapse" data-bs-target="#colRule_{{ q.id }}">
+              💡 Xem Tham Chiếu Quy Tắc Ngữ Pháp
+            </button>
+          </h2>
+          <div id="colRule_{{ q.id }}" class="accordion-collapse collapse" data-bs-parent="#accRule_{{ q.id }}">
+            <div class="accordion-body small text-secondary bg-light p-3">
+              <p class="mb-1 fw-bold text-dark">Giải thích quy tắc:</p>
+              <p class="mb-0">{{ q.explanation }}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+    {% endfor %}
+
+    <!-- Bottom Navigation Bar -->
+    <div class="card border-0 shadow-sm rounded-4 p-3 bg-white d-flex flex-row justify-content-between align-items-center">
+      <button type="button" class="btn btn-outline-secondary rounded-pill px-4 fw-bold" id="btnPrevQ" onclick="changeQuestion(-1)" disabled>
+        ← Câu trước
+      </button>
+
+      <button type="button" class="btn btn-primary rounded-pill px-4 fw-bold" id="btnNextQ" onclick="changeQuestion(1)">
+        Câu tiếp theo →
+      </button>
+
+      <button type="submit" class="btn btn-success rounded-pill px-5 fw-bold shadow-xs d-none" id="btnSubmitEx">
+        ✓ Nộp Bài Tập
+      </button>
+    </div>
+
+  </form>
+
+</div>
+
+<script>
+let currentIdx = 1;
+const totalQ = {{ questions|length }};
+let secondsElapsed = 0;
+let timerInterval = null;
+
+function updateUI() {
+  document.querySelectorAll(".question-card").forEach((card, idx) => {
+    if (idx + 1 === currentIdx) {
+      card.classList.remove("d-none");
+    } else {
+      card.classList.add("d-none");
+    }
+  });
+
+  const pct = Math.round((currentIdx / totalQ) * 100);
+  document.getElementById("qCurrentBadge").innerText = `Câu ${currentIdx} / ${totalQ}`;
+  document.getElementById("qProgressBar").style.width = `${pct}%`;
+
+  document.getElementById("btnPrevQ").disabled = (currentIdx === 1);
+
+  if (currentIdx === totalQ) {
+    document.getElementById("btnNextQ").classList.add("d-none");
+    document.getElementById("btnSubmitEx").classList.remove("d-none");
+  } else {
+    document.getElementById("btnNextQ").classList.remove("d-none");
+    document.getElementById("btnSubmitEx").classList.add("d-none");
+  }
+}
+
+function changeQuestion(delta) {
+  const newIdx = currentIdx + delta;
+  if (newIdx >= 1 && newIdx <= totalQ) {
+    currentIdx = newIdx;
+    updateUI();
+  }
+}
+
+function onSelectOption(qIndex) {
+  // Option selected handler
+}
+
+document.addEventListener("DOMContentLoaded", function() {
+  updateUI();
+
+  // Timer
+  timerInterval = setInterval(() => {
+    secondsElapsed++;
+    const m = String(Math.floor(secondsElapsed / 60)).padStart(2, '0');
+    const s = String(secondsElapsed % 60).padStart(2, '0');
+    document.getElementById("timerDisplay").innerText = `${m}:${s}`;
+  }, 1000);
+
+  // Mark for review toggle
+  document.querySelectorAll(".btn-mark-review").forEach(btn => {
+    btn.addEventListener("click", function() {
+      const isMarked = this.classList.contains("btn-warning");
+      if (isMarked) {
+        this.classList.remove("btn-warning", "text-dark");
+        this.classList.add("btn-outline-warning");
+        this.querySelector(".flag-text").innerText = "Đánh dấu xem lại";
+      } else {
+        this.classList.remove("btn-outline-warning");
+        this.classList.add("btn-warning", "text-dark");
+        this.querySelector(".flag-text").innerText = "🚩 Đã đánh dấu";
+      }
+    });
+  });
+});
+</script>
+{% endblock %}

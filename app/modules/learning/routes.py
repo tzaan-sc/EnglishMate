@@ -1,15 +1,16 @@
 import random
 from datetime import date, datetime, timedelta
 
-from flask import abort, flash, jsonify, redirect, render_template, request, url_for
+from flask import abort, flash, jsonify, redirect, render_template, request, session, url_for
 from flask_login import current_user, login_required
 from sqlalchemy import func
 
 from ...extensions import db
 from ..auth.models import record_daily_activity
-from .models import (GrammarProgress, GrammarTopic, Lesson, LessonBookmark, LessonFavorite,
-                       LessonNote, LessonProgress, LessonReport, Question, QuizAttempt,
-                       QuizAttemptAnswer, Vocabulary, VocabularyProgress, WordReport)
+from .models import (GrammarErrorLog, GrammarExerciseAttempt, GrammarProgress, GrammarTopic,
+                       Lesson, LessonBookmark, LessonFavorite, LessonNote, LessonProgress,
+                       LessonReport, Question, QuizAttempt, QuizAttemptAnswer, Vocabulary,
+                       VocabularyProgress, WordReport)
 from . import bp
 from .forms import ActionForm, QuizStartForm
 
@@ -1778,3 +1779,279 @@ def favorite_grammar_topic(topic_id):
 
     flash(msg, "success" if prog.is_favorite else "info")
     return redirect(request.referrer or url_for("learning.grammar_overview"))
+
+
+# ==========================================
+# GRAMMAR EXERCISES ROUTES (Section 3.5)
+# ==========================================
+
+def ensure_initial_grammar_questions():
+    if Question.query.filter_by(topic="Grammar").count() > 0:
+        return
+
+    sample_questions = [
+        Question(
+            question_text="She ______ at a technology company in Hanoi.",
+            option_a="work",
+            option_b="works",
+            option_c="working",
+            option_d="worked",
+            correct_option="B",
+            explanation="Chủ ngữ là 'She' (ngôi thứ 3 số ít) ở thì hiện tại đơn ➔ Động từ thêm 's/es' (works).",
+            level="A1",
+            topic="Grammar"
+        ),
+        Question(
+            question_text="Look! The train ______ into the station.",
+            option_a="comes",
+            option_b="is coming",
+            option_c="came",
+            option_d="has come",
+            correct_option="B",
+            explanation="Dấu hiệu 'Look!' chỉ hành động đang diễn ra ngay tại thời điểm nói ➔ Dùng thì Hiện tại tiếp diễn (is coming).",
+            level="A1",
+            topic="Grammar"
+        ),
+        Question(
+            question_text="We ______ the ancient citadel last weekend.",
+            option_a="visit",
+            option_b="are visiting",
+            option_c="visited",
+            option_d="will visit",
+            correct_option="C",
+            explanation="Dấu hiệu 'last weekend' chỉ thời điểm xác định trong quá khứ ➔ Dùng thì Quá khứ đơn (visited).",
+            level="A2",
+            topic="Grammar"
+        ),
+        Question(
+            question_text="If it ______ tomorrow, we will stay at home.",
+            option_a="rains",
+            option_b="will rain",
+            option_c="rained",
+            option_d="is raining",
+            correct_option="A",
+            explanation="Câu điều kiện loại 1: Mệnh đề If dùng thì Hiện tại đơn (rains), mệnh đề chính dùng Will + V_inf.",
+            level="B1",
+            topic="Grammar"
+        ),
+        Question(
+            question_text="You ______ drink more water every day for better health.",
+            option_a="should",
+            option_b="must to",
+            option_c="ought",
+            option_d="had better to",
+            correct_option="A",
+            explanation="Sau động từ khuyết thiếu 'should' dùng V_inf trực tiếp để đưa ra lời khuyên.",
+            level="A2",
+            topic="Grammar"
+        ),
+        Question(
+            question_text="They ______ an important business proposal right now.",
+            option_a="discuss",
+            option_b="are discussing",
+            option_c="discussed",
+            option_d="have discussed",
+            correct_option="B",
+            explanation="Dấu hiệu 'right now' ➔ Thì Hiện tại tiếp diễn (are discussing).",
+            level="B1",
+            topic="Grammar"
+        )
+    ]
+    db.session.add_all(sample_questions)
+    db.session.commit()
+
+
+@bp.route("/grammar/exercises")
+@login_required
+def grammar_exercises_setup():
+    ensure_initial_grammar_topics()
+    ensure_initial_grammar_questions()
+
+    topics = GrammarTopic.query.filter_by(is_active=True).all()
+    recent_attempts = GrammarExerciseAttempt.query.filter_by(user_id=current_user.id).order_by(GrammarExerciseAttempt.completed_at.desc()).limit(5).all()
+
+    return render_template(
+        "learning/grammar_exercises_setup.html",
+        topics=topics,
+        recent_attempts=recent_attempts,
+        form=ActionForm()
+    )
+
+
+@bp.post("/grammar/exercises/start")
+@login_required
+def start_grammar_exercise():
+    ensure_initial_grammar_questions()
+
+    topic_id = request.form.get("topic_id", type=int)
+    difficulty = request.form.get("difficulty", "Easy").strip()
+    question_count = request.form.get("question_count", type=int, default=10)
+
+    query = Question.query
+    if difficulty in ("Easy", "Medium", "Hard"):
+        level_map = {"Easy": ["A1", "A2"], "Medium": ["B1", "B2"], "Hard": ["C1", "C2"]}
+        query = query.filter(Question.level.in_(level_map.get(difficulty, ["A1", "A2"])))
+
+    questions = query.limit(question_count).all()
+    if not questions:
+        questions = Question.query.limit(question_count).all()
+
+    q_ids = [q.id for q in questions]
+
+    session["grammar_exercise"] = {
+        "topic_id": topic_id,
+        "difficulty": difficulty,
+        "question_ids": q_ids,
+        "answers": {},
+        "marked_reviews": [],
+        "start_time": datetime.utcnow().isoformat()
+    }
+
+    return redirect(url_for("learning.do_grammar_exercise"))
+
+
+@bp.route("/grammar/exercises/do")
+@login_required
+def do_grammar_exercise():
+    sess_data = session.get("grammar_exercise")
+    if not sess_data or not sess_data.get("question_ids"):
+        flash("Vui lòng thiết lập bài tập trước khi bắt đầu.", "warning")
+        return redirect(url_for("learning.grammar_exercises_setup"))
+
+    q_ids = sess_data.get("question_ids", [])
+    questions = Question.query.filter(Question.id.in_(q_ids)).all()
+
+    q_map = {q.id: q for q in questions}
+    ordered_questions = [q_map[qid] for qid in q_ids if qid in q_map]
+
+    topic = None
+    if sess_data.get("topic_id"):
+        topic = db.session.get(GrammarTopic, sess_data.get("topic_id"))
+
+    return render_template(
+        "learning/grammar_exercises_do.html",
+        questions=ordered_questions,
+        topic=topic,
+        sess_data=sess_data,
+        form=ActionForm()
+    )
+
+
+@bp.post("/grammar/exercises/submit")
+@login_required
+def submit_grammar_exercise():
+    sess_data = session.get("grammar_exercise")
+    if not sess_data:
+        flash("Phiên bài tập không hợp lệ.", "danger")
+        return redirect(url_for("learning.grammar_exercises_setup"))
+
+    q_ids = sess_data.get("question_ids", [])
+    questions = Question.query.filter(Question.id.in_(q_ids)).all()
+
+    user_answers = {}
+    score = 0
+    incorrect_questions = []
+
+    for q in questions:
+        ans = request.form.get(f"q_{q.id}", "").strip().upper()
+        user_answers[str(q.id)] = ans
+        if ans == q.correct_option:
+            score += 1
+        else:
+            incorrect_questions.append((q, ans))
+
+    start_time_str = sess_data.get("start_time")
+    duration = 0
+    if start_time_str:
+        try:
+            start_dt = datetime.fromisoformat(start_time_str)
+            duration = int((datetime.utcnow() - start_dt).total_seconds())
+        except Exception:
+            duration = 60
+
+    attempt = GrammarExerciseAttempt(
+        user_id=current_user.id,
+        topic_id=sess_data.get("topic_id"),
+        difficulty=sess_data.get("difficulty", "Easy"),
+        question_count=len(questions),
+        score=score,
+        total_questions=len(questions),
+        duration_seconds=max(duration, 5)
+    )
+    db.session.add(attempt)
+    db.session.commit()
+
+    for q, ans in incorrect_questions:
+        err = GrammarErrorLog(
+            user_id=current_user.id,
+            question_id=q.id,
+            attempt_id=attempt.id,
+            user_answer=ans if ans else "N/A",
+            correct_answer=q.correct_option,
+            is_resolved=False
+        )
+        db.session.add(err)
+
+    if score > 0:
+        record_daily_activity(current_user)
+
+    db.session.commit()
+    session.pop("grammar_exercise", None)
+
+    flash("Đã nộp bài tập ngữ pháp thành công!", "success")
+    return redirect(url_for("learning.grammar_exercise_summary", attempt_id=attempt.id))
+
+
+@bp.route("/grammar/exercises/summary/<int:attempt_id>")
+@login_required
+def grammar_exercise_summary(attempt_id):
+    attempt = db.session.get(GrammarExerciseAttempt, attempt_id)
+    if not attempt or attempt.user_id != current_user.id:
+        flash("Không tìm thấy kết quả bài tập.", "danger")
+        return redirect(url_for("learning.grammar_exercises_setup"))
+
+    error_logs = GrammarErrorLog.query.filter_by(attempt_id=attempt.id).all()
+    incorrect_q_ids = [e.question_id for e in error_logs]
+    incorrect_questions = Question.query.filter(Question.id.in_(incorrect_q_ids)).all() if incorrect_q_ids else []
+
+    error_detail_map = {e.question_id: e for e in error_logs}
+
+    pct = int((attempt.score / attempt.total_questions) * 100) if attempt.total_questions > 0 else 0
+
+    return render_template(
+        "learning/grammar_exercises_summary.html",
+        attempt=attempt,
+        error_logs=error_logs,
+        incorrect_questions=incorrect_questions,
+        error_detail_map=error_detail_map,
+        pct=pct,
+        form=ActionForm()
+    )
+
+
+@bp.post("/grammar/exercises/retry/<int:attempt_id>")
+@login_required
+def retry_grammar_exercise(attempt_id):
+    attempt = db.session.get(GrammarExerciseAttempt, attempt_id)
+    if not attempt or attempt.user_id != current_user.id:
+        flash("Không tìm thấy thông tin lượt tập.", "danger")
+        return redirect(url_for("learning.grammar_exercises_setup"))
+
+    error_logs = GrammarErrorLog.query.filter_by(attempt_id=attempt.id).all()
+    q_ids = [e.question_id for e in error_logs]
+
+    if not q_ids:
+        flash("Bạn không có câu sai nào trong lượt tập này! Rất xuất sắc!", "info")
+        return redirect(url_for("learning.grammar_exercises_setup"))
+
+    session["grammar_exercise"] = {
+        "topic_id": attempt.topic_id,
+        "difficulty": attempt.difficulty,
+        "question_ids": q_ids,
+        "answers": {},
+        "marked_reviews": [],
+        "start_time": datetime.utcnow().isoformat()
+    }
+
+    flash("Đã mở chế độ Thử lại các câu sai!", "info")
+    return redirect(url_for("learning.do_grammar_exercise"))

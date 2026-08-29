@@ -241,3 +241,34 @@ class GrammarProgress(db.Model):
     user = db.relationship("User", backref="grammar_progress_records")
     topic = db.relationship("GrammarTopic", backref="progress_records")
     __table_args__ = (db.UniqueConstraint("user_id", "topic_id", name="uq_user_grammar_topic"),)
+
+
+class GrammarExerciseAttempt(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False, index=True)
+    topic_id = db.Column(db.Integer, db.ForeignKey("grammar_topic.id"), nullable=True, index=True)
+    difficulty = db.Column(db.String(20), nullable=False, default="Easy")
+    question_count = db.Column(db.Integer, nullable=False, default=10)
+    score = db.Column(db.Integer, nullable=False, default=0)
+    total_questions = db.Column(db.Integer, nullable=False, default=10)
+    duration_seconds = db.Column(db.Integer, nullable=False, default=0)
+    completed_at = db.Column(db.DateTime(timezone=True), default=now, nullable=False)
+
+    user = db.relationship("User", backref="grammar_exercise_attempts")
+    topic = db.relationship("GrammarTopic", backref="exercise_attempts")
+
+
+class GrammarErrorLog(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False, index=True)
+    question_id = db.Column(db.Integer, db.ForeignKey("question.id"), nullable=False, index=True)
+    attempt_id = db.Column(db.Integer, db.ForeignKey("grammar_exercise_attempt.id"), nullable=True, index=True)
+    user_answer = db.Column(db.String(1), nullable=False)
+    correct_answer = db.Column(db.String(1), nullable=False)
+    is_resolved = db.Column(db.Boolean, nullable=False, default=False)
+    created_at = db.Column(db.DateTime(timezone=True), default=now, nullable=False)
+    updated_at = db.Column(db.DateTime(timezone=True), default=now, onupdate=now, nullable=False)
+
+    user = db.relationship("User", backref="grammar_error_logs")
+    question = db.relationship("Question", backref="grammar_error_logs")
+    attempt = db.relationship("GrammarExerciseAttempt", backref="error_logs")

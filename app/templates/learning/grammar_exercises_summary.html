@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+{% block title %}Kết Quả Bài Tập Ngữ Pháp · EnglishMate{% endblock %}
+
+{% block content %}
+<div class="container-fluid max-w-4xl py-4">
+
+  <!-- Summary Banner Card -->
+  <div class="card border-0 shadow-sm rounded-4 p-5 bg-white text-center mb-4">
+    <div class="mb-3">
+      {% if pct >= 80 %}
+      <div class="bg-success-subtle text-success rounded-circle d-inline-flex p-3 fs-1 mb-2">🏆</div>
+      <h2 class="fw-bold text-success mb-1">Xuất Sắc! Bạn Đã Đạt {{ pct }}%</h2>
+      <p class="text-secondary small mb-0">Nắm vững ngữ pháp vô cùng ấn tượng. Hãy tiếp tục duy trì phong độ!</p>
+      {% elif pct >= 50 %}
+      <div class="bg-warning-subtle text-warning-emphasis rounded-circle d-inline-flex p-3 fs-1 mb-2">⭐</div>
+      <h2 class="fw-bold text-warning-emphasis mb-1">Khá Tốt! Bạn Đạt {{ pct }}%</h2>
+      <p class="text-secondary small mb-0">Bạn đã làm tốt. Hãy xem lại các câu chưa chính xác bên dưới để cải thiện thêm.</p>
+      {% else %}
+      <div class="bg-danger-subtle text-danger rounded-circle d-inline-flex p-3 fs-1 mb-2">💪</div>
+      <h2 class="fw-bold text-danger mb-1">Cố Gắng Lên! Bạn Đạt {{ pct }}%</h2>
+      <p class="text-secondary small mb-0">Đừng nản lòng, hãy xem giải thích chi tiết và thử lại các câu sai bên dưới nhé!</p>
+      {% endif %}
+    </div>
+
+    <!-- Stat Pills -->
+    <div class="d-flex justify-content-center gap-4 py-3 bg-light rounded-4 my-2">
+      <div>
+        <span class="text-muted small d-block">Điểm số</span>
+        <h4 class="fw-bold text-dark mb-0">{{ attempt.score }} / {{ attempt.total_questions }}</h4>
+      </div>
+      <div class="border-end"></div>
+      <div>
+        <span class="text-muted small d-block">Tỷ lệ đúng</span>
+        <h4 class="fw-bold text-primary mb-0">{{ pct }}%</h4>
+      </div>
+      <div class="border-end"></div>
+      <div>
+        <span class="text-muted small d-block">Thời gian</span>
+        <h4 class="fw-bold text-dark mb-0">{{ attempt.duration_seconds }}s</h4>
+      </div>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="d-flex justify-content-center gap-3 mt-4">
+      <a href="{{ url_for('learning.grammar_exercises_setup') }}" class="btn btn-outline-secondary rounded-pill px-4 fw-bold">
+        ← Làm bài tập mới
+      </a>
+
+      {% if incorrect_questions %}
+      <form method="post" action="{{ url_for('learning.retry_grammar_exercise', attempt_id=attempt.id) }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <button type="submit" class="btn btn-warning rounded-pill px-4 fw-bold shadow-xs text-dark">
+          🔄 Thử lại {{ incorrect_questions|length }} câu sai
+        </button>
+      </form>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Incorrect Questions Review Section -->
+  {% if incorrect_questions %}
+  <div class="card border-0 shadow-sm rounded-4 p-4 bg-white mb-4">
+    <div class="d-flex align-items-center justify-content-between mb-3 border-bottom pb-2">
+      <h5 class="fw-bold text-dark mb-0">❌ Xem lại các câu trả lời sai (Đã tự động lưu vào Nhật ký lỗi)</h5>
+      <span class="badge bg-danger-subtle text-danger rounded-pill px-3 py-1 fw-bold">{{ incorrect_questions|length }} câu sai</span>
+    </div>
+
+    <div class="d-flex flex-column gap-4">
+      {% for q in incorrect_questions %}
+      {% set err = error_detail_map.get(q.id) %}
+      <div class="p-4 border rounded-4 bg-light">
+        <h6 class="fw-bold text-dark mb-2">Câu {{ loop.index }}: {{ q.question_text }}</h6>
+        
+        <div class="d-flex gap-3 mb-3">
+          <span class="badge bg-danger text-white rounded-pill px-3 py-1">
+            Đáp án của bạn: {{ err.user_answer if err else 'N/A' }}
+          </span>
+          <span class="badge bg-success text-white rounded-pill px-3 py-1">
+            Đáp án đúng: {{ q.correct_option }} ({{ q.options[q.correct_option] }})
+          </span>
+        </div>
+
+        <div class="p-3 bg-white rounded-3 border">
+          <span class="fw-bold text-primary small d-block mb-1">💡 Giải thích chi tiết & Tham chiếu quy tắc:</span>
+          <p class="text-secondary small mb-0">{{ q.explanation }}</p>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+  {% else %}
+  <div class="card border-0 shadow-sm rounded-4 p-4 bg-white text-center">
+    <div class="text-success fs-1 mb-2">🎉</div>
+    <h5 class="fw-bold text-success mb-1">Không có câu trả lời sai nào!</h5>
+    <p class="text-secondary small mb-0">Bạn đã hoàn thành hoàn hảo lượt tập này.</p>
+  </div>
+  {% endif %}
+
+</div>
+{% endblock %}

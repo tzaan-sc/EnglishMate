@@ -1,0 +1,122 @@
+{% extends "base.html" %}
+{% block title %}Luyện Tập Ngữ Pháp · EnglishMate{% endblock %}
+
+{% block content %}
+<div class="container-fluid max-w-5xl py-4">
+
+  <!-- Header -->
+  <div class="d-flex align-items-center justify-content-between mb-4">
+    <div>
+      <a class="btn btn-light rounded-pill px-3 py-1.5 fw-semibold text-secondary shadow-xs mb-2" href="{{ url_for('learning.grammar_overview') }}">
+        <i class="ph ph-arrow-left me-1"></i> Thư viện Ngữ pháp
+      </a>
+      <h2 class="fw-bold text-dark mb-1">Luyện Tập Bài Tập Ngữ Pháp</h2>
+      <p class="text-secondary small mb-0">Tùy chỉnh chủ đề, độ khó và số lượng câu hỏi để rèn luyện kỹ năng ngữ pháp.</p>
+    </div>
+  </div>
+
+  <div class="row g-4">
+    <!-- Left Column: Setup Form -->
+    <div class="col-lg-7">
+      <div class="card border-0 shadow-sm rounded-4 p-4 bg-white">
+        <h5 class="fw-bold text-dark mb-3 border-bottom pb-2">⚙️ Thiêt lập bài tập</h5>
+
+        <form action="{{ url_for('learning.start_grammar_exercise') }}" method="post">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+          <!-- Topic Selector -->
+          <div class="mb-4">
+            <label class="form-label fw-bold text-dark">Chủ đề ngữ pháp:</label>
+            <select name="topic_id" class="form-select form-select-lg rounded-3 fs-6">
+              <option value="">-- Tất cả chủ đề ngữ pháp --</option>
+              {% for t in topics %}
+              <option value="{{ t.id }}">[{{ t.level }}] {{ t.title }} ({{ t.category }})</option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <!-- Difficulty Selector -->
+          <div class="mb-4">
+            <label class="form-label fw-bold text-dark mb-2">Độ khó bài tập:</label>
+            <div class="row g-2">
+              <div class="col-4">
+                <input type="radio" class="btn-check" name="difficulty" id="diffEasy" value="Easy" checked>
+                <label class="btn btn-outline-success w-100 rounded-3 py-2 fw-semibold" for="diffEasy">
+                  🟢 Dễ (A1-A2)
+                </label>
+              </div>
+              <div class="col-4">
+                <input type="radio" class="btn-check" name="difficulty" id="diffMed" value="Medium">
+                <label class="btn btn-outline-warning text-dark-emphasis w-100 rounded-3 py-2 fw-semibold" for="diffMed">
+                  🟡 Trung bình (B1-B2)
+                </label>
+              </div>
+              <div class="col-4">
+                <input type="radio" class="btn-check" name="difficulty" id="diffHard" value="Hard">
+                <label class="btn btn-outline-danger w-100 rounded-3 py-2 fw-semibold" for="diffHard">
+                  🔴 Nâng cao (C1-C2)
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <!-- Question Count Selector -->
+          <div class="mb-4">
+            <label class="form-label fw-bold text-dark mb-2">Số lượng câu hỏi:</label>
+            <div class="d-flex gap-2">
+              {% for num in [5, 10, 15, 20] %}
+              <input type="radio" class="btn-check" name="question_count" id="qc_{{ num }}" value="{{ num }}" {{ 'checked' if num==10 }}>
+              <label class="btn btn-outline-primary flex-fill rounded-3 py-2 fw-bold" for="qc_{{ num }}">
+                {{ num }} Câu
+              </label>
+              {% endfor %}
+            </div>
+          </div>
+
+          <!-- Submit Button -->
+          <button type="submit" class="btn btn-primary btn-lg w-100 rounded-pill py-3 fw-bold shadow-xs">
+            🚀 Bắt đầu bài tập
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <!-- Right Column: Recent Attempts Log -->
+    <div class="col-lg-5">
+      <div class="card border-0 shadow-sm rounded-4 p-4 bg-white h-100">
+        <h5 class="fw-bold text-dark mb-3 border-bottom pb-2">📊 Lượt luyện tập gần đây</h5>
+
+        <div class="d-flex flex-column gap-3">
+          {% for att in recent_attempts %}
+          {% set pct = int((att.score / att.total_questions) * 100) if att.total_questions > 0 else 0 %}
+          <div class="p-3 bg-light rounded-3 d-flex align-items-center justify-content-between">
+            <div>
+              <span class="fw-bold text-dark d-block">
+                {{ att.topic.title if att.topic else 'Tổng hợp Ngữ pháp' }}
+              </span>
+              <small class="text-muted">
+                {{ att.completed_at.strftime('%d/%m/%Y %H:%M') }} · {{ att.duration_seconds }}s
+              </small>
+            </div>
+            <div class="text-end">
+              <span class="badge {{ 'bg-success' if pct>=80 else ('bg-warning text-dark' if pct>=50 else 'bg-danger') }} rounded-pill px-3 py-1 fs-6 font-bold">
+                {{ att.score }}/{{ att.total_questions }} ({{ pct }}%)
+              </span>
+              <a href="{{ url_for('learning.grammar_exercise_summary', attempt_id=att.id) }}" class="d-block text-primary small font-semibold mt-1">
+                Xem lại →
+              </a>
+            </div>
+          </div>
+          {% else %}
+          <div class="text-center py-4 text-muted">
+            <i class="ph ph-note-pencil fs-2 mb-2"></i>
+            <p class="small mb-0">Bạn chưa làm bài tập ngữ pháp nào. Hãy thử ngay bài tập đầu tiên nhé!</p>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+{% endblock %}
