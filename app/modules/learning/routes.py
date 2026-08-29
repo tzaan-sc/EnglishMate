@@ -1,4 +1,5 @@
 import random
+from datetime import date
 
 from flask import abort, flash, redirect, render_template, request, url_for
 from flask_login import current_user, login_required
@@ -62,11 +63,77 @@ def vocabulary():
         query = query.filter_by(level=level)
     if topic:
         query = query.filter_by(topic=topic)
-    learned = {p.vocabulary_id for p in VocabularyProgress.query.filter_by(user_id=current_user.id)
-               .filter(VocabularyProgress.learned_count > 0).all()}
+
+    all_progress = VocabularyProgress.query.filter_by(user_id=current_user.id).all()
+    progress_map = {p.vocabulary_id: p for p in all_progress}
+    learned = {p.vocabulary_id for p in all_progress if p.learned_count > 0}
+
+    total_vocab_count = Vocabulary.query.count()
+    mastered_count = sum(1 for p in all_progress if p.learned_count >= 3 or p.review_count >= 3)
+    learning_count = sum(1 for p in all_progress if (0 < p.learned_count < 3) or (0 < p.review_count < 3))
+    new_vocab_count = max(0, total_vocab_count - (mastered_count + learning_count))
+    review_vocab_count = sum(1 for p in all_progress if p.review_count > 0 or p.learned_count > 0)
+
+    overall_progress_pct = round(((mastered_count + learning_count) / total_vocab_count * 100)) if total_vocab_count > 0 else 0
+
+    levels = ["A1", "A2", "B1", "B2", "C1", "C2"]
+    level_stats = []
+    for lvl in levels:
+        lvl_total = Vocabulary.query.filter_by(level=lvl).count()
+        if lvl_total > 0:
+            lvl_words = [v.id for v in Vocabulary.query.filter_by(level=lvl).all()]
+            lvl_learned = sum(1 for wid in lvl_words if wid in progress_map and (progress_map[wid].learned_count > 0 or progress_map[wid].review_count > 0))
+            lvl_pct = round((lvl_learned / lvl_total) * 100)
+            level_stats.append({
+                "level": lvl,
+                "total": lvl_total,
+                "learned": lvl_learned,
+                "pct": lvl_pct
+            })
+
+    today_date = date.today()
+    today_learned_count = sum(1 for p in all_progress if p.learned_count > 0 and p.last_reviewed_at and p.last_reviewed_at.date() == today_date)
+    today_reviewed_count = sum(1 for p in all_progress if p.review_count > 0 and p.last_reviewed_at and p.last_reviewed_at.date() == today_date)
+    daily_goal = getattr(current_user, "daily_vocab_goal", 20) or 20
+    daily_goal_pct = min(100, round(((today_learned_count + today_reviewed_count) / daily_goal) * 100)) if daily_goal > 0 else 0
+
     topics = [r[0] for r in db.session.query(Vocabulary.topic).distinct().order_by(Vocabulary.topic).all()]
-    return render_template("learning/vocabulary.html", words=query.order_by(Vocabulary.word).all(),
-                           learned=learned, topics=topics, search=search, level=level, topic=topic, form=ActionForm())
+    words_list = query.order_by(Vocabulary.word).all()
+
+    return render_template(
+        "learning/vocabulary.html",
+        words=words_list,
+        learned=learned,
+        topics=topics,
+        search=search,
+        level=level,
+        topic=topic,
+        form=ActionForm(),
+        total_vocab_count=total_vocab_count,
+        mastered_count=mastered_count,
+        learning_count=learning_count,
+        new_vocab_count=new_vocab_count,
+        review_vocab_count=review_vocab_count,
+        overall_progress_pct=overall_progress_pct,
+        level_stats=level_stats,
+        today_learned_count=today_learned_count,
+        today_reviewed_count=today_reviewed_count,
+        daily_goal=daily_goal,
+        daily_goal_pct=daily_goal_pct,
+    )
+
+
+@bp.post("/vocabulary/set-goal")
+@login_required
+def set_vocab_goal():
+    goal = request.form.get("goal")
+    if goal and goal.isdigit() and int(goal) in (20, 30, 40):
+        current_user.daily_vocab_goal = int(goal)
+        db.session.commit()
+        flash(f"Đã cập nhật mục tiêu học từ vựng hàng ngày thành {goal} từ/ngày.", "success")
+    else:
+        flash("Mục tiêu từ vựng không hợp lệ (Vui lòng chọn 20, 30 hoặc 40 từ).", "danger")
+    return redirect(request.referrer or url_for("learning.vocabulary"))
 
 
 @bp.post("/vocabulary/<int:word_id>/learn")
@@ -78,9 +145,9 @@ def learn_word(word_id):
         abort(400)
     progress = VocabularyProgress.query.filter_by(user_id=current_user.id, vocabulary_id=word.id).first()
     if not progress:
-        progress = VocabularyProgress(user_id=current_user.id, vocabulary_id=word.id)
+        progress = VocabularyProgress(user_id=current_user.id, vocabulary_id=word.id, learned_count=0, review_count=0)
         db.session.add(progress)
-    progress.learned_count += 1
+    progress.learned_count = (progress.learned_count or 0) + 1
     progress.last_reviewed_at = func.now()
     db.session.commit()
     flash(f"Đã thêm “{word.word}” vào từ đã học.", "success")
@@ -113,12 +180,12 @@ def review_flashcard(word_id, action):
         abort(400)
     progress = VocabularyProgress.query.filter_by(user_id=current_user.id, vocabulary_id=word.id).first()
     if not progress:
-        progress = VocabularyProgress(user_id=current_user.id, vocabulary_id=word.id)
+        progress = VocabularyProgress(user_id=current_user.id, vocabulary_id=word.id, learned_count=0, review_count=0)
         db.session.add(progress)
     if action == "known":
-        progress.learned_count += 1
+        progress.learned_count = (progress.learned_count or 0) + 1
     else:
-        progress.review_count += 1
+        progress.review_count = (progress.review_count or 0) + 1
     progress.last_reviewed_at = func.now()
     db.session.commit()
     return ("", 204)

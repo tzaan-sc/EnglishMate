@@ -1,7 +1,226 @@
-{% extends "base.html" %}{% block title %}Từ vựng · EnglishMate{% endblock %}
-{% block content %}<section class="page-section"><div class="container">
-  <div class="page-heading"><span class="eyebrow">WORD COLLECTION</span><h1>Xây vốn từ, mở rộng thế giới.</h1><p>Tìm kiếm, lọc và đánh dấu những từ bạn muốn ghi nhớ.</p></div>
-  <form class="filter-bar filter-wide" method="get"><input class="form-control" name="q" value="{{ search }}" placeholder="Tìm một từ tiếng Anh..."><select class="form-select" name="topic"><option value="">Mọi chủ đề</option>{% for x in topics %}<option {{ 'selected' if topic==x }}>{{ x }}</option>{% endfor %}</select><select class="form-select" name="level"><option value="">Mọi cấp độ</option>{% for x in ['A1','A2','B1','B2','C1'] %}<option {{ 'selected' if level==x }}>{{ x }}</option>{% endfor %}</select><button class="btn btn-dark">Tìm kiếm</button></form>
-  <div class="vocab-list mt-4">{% for word in words %}<article class="vocab-row"><div class="word-main"><span class="level-dot">{{ word.level }}</span><div><h3>{{ word.word }}</h3><small>{{ word.pronunciation }} · {{ word.part_of_speech }}</small></div></div><div class="word-meaning"><b>{{ word.meaning_vi }}</b><p>{{ word.example_en }} <span>— {{ word.example_vi }}</span></p></div><span class="topic-chip">{{ word.topic }}</span><form method="post" action="{{ url_for('learning.learn_word', word_id=word.id) }}">{{ form.hidden_tag() }}<button class="btn {{ 'btn-success' if word.id in learned else 'btn-outline-primary' }} btn-sm" {{ 'disabled' if word.id in learned }}>{{ '✓ Đã học' if word.id in learned else '+ Đã học' }}</button></form></article>{% else %}<div class="empty-state"><b>Không tìm thấy từ phù hợp.</b></div>{% endfor %}</div>
-</div></section>{% endblock %}
+{% extends "base.html" %}
+{% block title %}Bảng điều khiển Từ vựng · EnglishMate{% endblock %}
 
+{% block content %}
+<div class="container-fluid max-w-6xl py-4">
+  <!-- Page Header -->
+  <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
+    <div>
+      <span class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill px-3 py-1 mb-2 font-semibold">
+        HỆ THỐNG TỪ VỰNG THÔNG MINH
+      </span>
+      <h2 class="fw-bold text-dark mb-1">Bảng điều khiển từ vựng</h2>
+      <p class="text-secondary small mb-0">Theo dõi tiến độ tích lũy từ vựng, cấp độ thành thạo và mục tiêu học tập hàng ngày.</p>
+    </div>
+    <div class="d-flex gap-2">
+      <a href="{{ url_for('learning.flashcards') }}" class="btn btn-outline-primary rounded-pill px-3 fw-semibold">
+        🎴 Thẻ Flashcard
+      </a>
+      <a href="{{ url_for('learning.game_lobby') }}" class="btn btn-warning rounded-pill px-3 fw-semibold text-dark">
+        ⚡ Game Phản Xạ
+      </a>
+    </div>
+  </div>
+
+  <!-- Section 1: Stat Cards Grid -->
+  <div class="row g-3 mb-4">
+    <div class="col-6 col-lg-3">
+      <div class="card border-0 shadow-sm rounded-4 p-3 bg-white h-100">
+        <div class="d-flex align-items-center gap-3">
+          <div class="bg-primary-subtle text-primary rounded-circle p-3 d-flex align-items-center justify-content-center" style="width: 48px; height: 48px;">
+            <i class="ph ph-books fs-4"></i>
+          </div>
+          <div>
+            <span class="text-muted small d-block">Tổng số từ vựng</span>
+            <h3 class="fw-bold text-dark mb-0">{{ total_vocab_count }}</h3>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-6 col-lg-3">
+      <div class="card border-0 shadow-sm rounded-4 p-3 bg-white h-100">
+        <div class="d-flex align-items-center gap-3">
+          <div class="bg-success-subtle text-success rounded-circle p-3 d-flex align-items-center justify-content-center" style="width: 48px; height: 48px;">
+            <i class="ph ph-check-circle fs-4"></i>
+          </div>
+          <div>
+            <span class="text-muted small d-block">Đã thành thạo</span>
+            <h3 class="fw-bold text-success mb-0">{{ mastered_count }}</h3>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-6 col-lg-3">
+      <div class="card border-0 shadow-sm rounded-4 p-3 bg-white h-100">
+        <div class="d-flex align-items-center gap-3">
+          <div class="bg-warning-subtle text-warning rounded-circle p-3 d-flex align-items-center justify-content-center" style="width: 48px; height: 48px;">
+            <i class="ph ph-hourglass-high fs-4"></i>
+          </div>
+          <div>
+            <span class="text-muted small d-block">Đang ghi nhớ</span>
+            <h3 class="fw-bold text-warning-emphasis mb-0">{{ learning_count }}</h3>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-6 col-lg-3">
+      <div class="card border-0 shadow-sm rounded-4 p-3 bg-white h-100">
+        <div class="d-flex align-items-center gap-3">
+          <div class="bg-info-subtle text-info rounded-circle p-3 d-flex align-items-center justify-content-center" style="width: 48px; height: 48px;">
+            <i class="ph ph-sparkle fs-4"></i>
+          </div>
+          <div>
+            <span class="text-muted small d-block">Từ vựng mới</span>
+            <h3 class="fw-bold text-info mb-0">{{ new_vocab_count }}</h3>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Section 2: Progress & Daily Goal Section -->
+  <div class="row g-4 mb-4">
+    <!-- Overall Progress -->
+    <div class="col-lg-6">
+      <div class="card border-0 shadow-sm rounded-4 p-4 bg-white h-100">
+        <div class="d-flex align-items-center justify-content-between mb-3">
+          <h5 class="fw-bold mb-0 text-dark d-flex align-items-center gap-2">
+            <i class="ph ph-chart-line-up text-primary fs-4"></i> Tiến độ vốn từ tổng quan
+          </h5>
+          <span class="fw-bold text-primary fs-5">{{ overall_progress_pct }}%</span>
+        </div>
+        <div class="progress rounded-pill mb-3" style="height: 12px;">
+          <div class="progress-bar bg-primary rounded-pill" role="progressbar" style="width: {{ overall_progress_pct }}%;"></div>
+        </div>
+        <div class="d-flex justify-content-between text-muted small">
+          <span>Đã học: <strong>{{ mastered_count + learning_count }} / {{ total_vocab_count }} từ</strong></span>
+          <span>Cần ôn tập: <strong class="text-warning-emphasis">{{ review_vocab_count }} từ</strong></span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Daily Goal Selector & Today Stats -->
+    <div class="col-lg-6">
+      <div class="card border-0 shadow-sm rounded-4 p-4 bg-white h-100">
+        <div class="d-flex align-items-center justify-content-between mb-3">
+          <h5 class="fw-bold mb-0 text-dark d-flex align-items-center gap-2">
+            <i class="ph ph-target text-danger fs-4"></i> Mục tiêu học từ hôm nay
+          </h5>
+          <!-- Set Daily Goal Form -->
+          <form method="post" action="{{ url_for('learning.set_vocab_goal') }}" class="d-flex align-items-center gap-1 m-0">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <span class="text-muted small me-1">Mục tiêu:</span>
+            <button type="submit" name="goal" value="20" class="btn btn-xs rounded-pill px-2.5 {% if daily_goal == 20 %}btn-danger fw-bold{% else %}btn-outline-secondary{% endif %}">20</button>
+            <button type="submit" name="goal" value="30" class="btn btn-xs rounded-pill px-2.5 {% if daily_goal == 30 %}btn-danger fw-bold{% else %}btn-outline-secondary{% endif %}">30</button>
+            <button type="submit" name="goal" value="40" class="btn btn-xs rounded-pill px-2.5 {% if daily_goal == 40 %}btn-danger fw-bold{% else %}btn-outline-secondary{% endif %}">40</button>
+          </form>
+        </div>
+
+        <div class="progress rounded-pill mb-3" style="height: 12px;">
+          <div class="progress-bar bg-danger rounded-pill" role="progressbar" style="width: {{ daily_goal_pct }}%;"></div>
+        </div>
+
+        <div class="d-flex justify-content-between text-muted small">
+          <span>Hôm nay: <strong class="text-dark">{{ today_learned_count }} học mới + {{ today_reviewed_count }} ôn tập</strong></span>
+          <span>Tiến độ: <strong class="text-danger">{{ today_learned_count + today_reviewed_count }} / {{ daily_goal }} từ ({{ daily_goal_pct }}%)</strong></span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Section 3: Level Vocabulary Progress Breakdown (A1-C2) -->
+  <div class="card border-0 shadow-sm rounded-4 p-4 bg-white mb-4">
+    <h5 class="fw-bold text-dark mb-3 d-flex align-items-center gap-2">
+      <i class="ph ph-steps text-success fs-4"></i> Tiến độ từ vựng theo Cấp độ (CEFR)
+    </h5>
+    <div class="row g-3">
+      {% for st in level_stats %}
+      <div class="col-6 col-md-4 col-lg-2">
+        <div class="border rounded-4 p-3 bg-light-subtle text-center">
+          <span class="badge bg-success-subtle text-success border border-success-subtle rounded-circle p-2 mb-2 d-inline-block fw-bold" style="width: 38px; height: 38px; line-height: 20px;">
+            {{ st.level }}
+          </span>
+          <h6 class="fw-bold text-dark mb-1">{{ st.pct }}%</h6>
+          <div class="progress rounded-pill mb-2" style="height: 6px;">
+            <div class="progress-bar bg-success rounded-pill" role="progressbar" style="width: {{ st.pct }}%;"></div>
+          </div>
+          <small class="text-muted" style="font-size: 0.75rem;">{{ st.learned }}/{{ st.total }} từ</small>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <!-- Section 4: Filter & Search Bar -->
+  <div class="card border-0 shadow-sm rounded-4 p-3 bg-white mb-4">
+    <form method="get" class="row g-2 align-items-center">
+      <div class="col-md-5">
+        <div class="input-group">
+          <span class="input-group-text bg-transparent border-end-0"><i class="ph ph-magnifying-glass text-muted"></i></span>
+          <input class="form-control border-start-0 ps-0" name="q" value="{{ search }}" placeholder="Tìm một từ tiếng Anh...">
+        </div>
+      </div>
+      <div class="col-md-3">
+        <select class="form-select" name="topic">
+          <option value="">Mọi chủ đề</option>
+          {% for x in topics %}
+          <option value="{{ x }}" {{ 'selected' if topic==x }}>{{ x }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-md-2">
+        <select class="form-select" name="level">
+          <option value="">Mọi cấp độ</option>
+          {% for x in ['A1','A2','B1','B2','C1','C2'] %}
+          <option value="{{ x }}" {{ 'selected' if level==x }}>{{ x }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-md-2">
+        <button class="btn btn-dark w-100 rounded-pill fw-semibold">Tìm kiếm</button>
+      </div>
+    </form>
+  </div>
+
+  <!-- Section 5: Vocabulary List Row Display -->
+  <div class="vocab-list">
+    {% for word in words %}
+    <article class="card border-0 shadow-xs rounded-4 p-3 mb-2 bg-white d-flex flex-row align-items-center justify-content-between flex-wrap gap-3">
+      <div class="d-flex align-items-center gap-3" style="min-width: 200px;">
+        <span class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-circle p-2 fw-bold" style="width: 36px; height: 36px; line-height: 18px;">
+          {{ word.level }}
+        </span>
+        <div>
+          <h4 class="fw-bold text-dark mb-0">{{ word.word }}</h4>
+          <small class="text-muted">{{ word.pronunciation }} · <span class="fst-italic">{{ word.part_of_speech }}</span></small>
+        </div>
+      </div>
+
+      <div class="flex-grow-1 px-md-3" style="max-width: 500px;">
+        <strong class="text-dark d-block mb-0.5">{{ word.meaning_vi }}</strong>
+        <p class="text-secondary small mb-0">{{ word.example_en }} <span class="text-muted">— {{ word.example_vi }}</span></p>
+      </div>
+
+      <div class="d-flex align-items-center gap-3">
+        <span class="badge bg-light text-secondary border rounded-pill px-3 py-1.5 small">{{ word.topic }}</span>
+        <form method="post" action="{{ url_for('learning.learn_word', word_id=word.id) }}" class="m-0">
+          {{ form.hidden_tag() }}
+          <button class="btn {{ 'btn-success' if word.id in learned else 'btn-outline-primary' }} btn-sm rounded-pill px-3 fw-semibold" {{ 'disabled' if word.id in learned }}>
+            {{ '✓ Đã học' if word.id in learned else '+ Đã học' }}
+          </button>
+        </form>
+      </div>
+    </article>
+    {% else %}
+    <div class="card border-0 shadow-sm rounded-4 p-5 text-center bg-white">
+      <i class="ph ph-folder-open fs-1 text-muted mb-2"></i>
+      <h5 class="fw-bold text-muted mb-1">Không tìm thấy từ vựng phù hợp</h5>
+      <p class="text-secondary small mb-0">Vui lòng chọn từ khóa hoặc bộ lọc cấp độ khác.</p>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}

@@ -25,6 +25,7 @@ if db_path.exists():
         ("pending_email", "VARCHAR(120)"),
         ("pending_email_otp", "VARCHAR(6)"),
         ("pending_email_expiry", "DATETIME"),
+        ("daily_vocab_goal", "INTEGER NOT NULL DEFAULT 20"),
     ]
 
     for col_name, col_type in new_cols:
