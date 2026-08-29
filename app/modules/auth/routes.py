@@ -1,12 +1,15 @@
 import os
+import secrets
+import time
+from datetime import datetime, timezone
 from urllib.parse import urlencode, urljoin, urlparse
 
 import requests
-from flask import current_app, flash, redirect, render_template, request, session, url_for
+from flask import current_app, flash, jsonify, redirect, render_template, request, session, url_for
 from flask_login import current_user, login_user, logout_user
 
 from ...extensions import db
-from .models import User
+from .models import User, UserSession, create_or_update_user_session
 from . import bp
 from .forms import ForgotPasswordForm, LoginForm, RegisterForm, ResetPasswordForm, VerifyEmailForm
 
@@ -18,6 +21,47 @@ def is_safe_url(target):
     ref = urlparse(request.host_url)
     test = urlparse(urljoin(request.host_url, target))
     return test.scheme in ("http", "https") and ref.netloc == test.netloc
+
+
+@bp.before_app_request
+def check_session_timeout():
+    if current_user.is_authenticated:
+        now_ts = time.time()
+        last_act = session.get("last_activity_ts")
+
+        # Exclude static files and ping requests
+        if request.endpoint and (request.endpoint.startswith("static") or request.endpoint == "auth.ping_session"):
+            if last_act and request.endpoint == "auth.ping_session":
+                session["last_activity_ts"] = now_ts
+            return None
+
+        # Check 30-minute inactivity (1800 seconds)
+        if last_act and (now_ts - last_act > 1800):
+            sess_key = session.get("session_key")
+            if sess_key:
+                user_sess = db.session.get(UserSession, sess_key)
+                if user_sess:
+                    user_sess.is_active = False
+                    db.session.commit()
+
+            logout_user()
+            session.clear()
+            flash("Phiên đăng nhập của bạn đã hết hạn do không hoạt động trong 30 phút. Vui lòng đăng nhập lại.", "warning")
+            return redirect(url_for("auth.login"))
+
+        # Update last activity
+        session["last_activity_ts"] = now_ts
+        sess_key = session.get("session_key")
+        if not sess_key:
+            sess_key = secrets.token_hex(16)
+            session["session_key"] = sess_key
+
+        create_or_update_user_session(
+            current_user.id,
+            sess_key,
+            request.remote_addr,
+            request.user_agent.string if request.user_agent else "",
+        )
 
 
 def log_dev_reset_link(email, reset_url):
@@ -427,9 +471,30 @@ def reset_password(token):
     return render_template("auth/reset_password.html", form=form, token=token)
 
 
+@bp.post("/ping-session")
+def ping_session():
+    if current_user.is_authenticated:
+        session["last_activity_ts"] = time.time()
+        sess_key = session.get("session_key")
+        if sess_key:
+            user_sess = db.session.get(UserSession, sess_key)
+            if user_sess:
+                user_sess.last_activity = datetime.now(timezone.utc)
+                db.session.commit()
+        return jsonify({"status": "ok", "message": "Session renewed"})
+    return jsonify({"status": "error", "message": "Unauthenticated"}), 401
+
+
 @bp.post("/logout")
 def logout():
+    sess_key = session.get("session_key")
+    if sess_key:
+        user_sess = db.session.get(UserSession, sess_key)
+        if user_sess:
+            user_sess.is_active = False
+            db.session.commit()
     logout_user()
+    session.clear()
     flash("Bạn đã đăng xuất.", "info")
     return redirect(url_for("main.index"))
 

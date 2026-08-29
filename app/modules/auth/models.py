@@ -199,3 +199,70 @@ def record_daily_activity(user, lessons_count=1):
 
     db.session.commit()
     return activity
+
+
+class UserSession(db.Model):
+    id = db.Column(db.String(64), primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False, index=True)
+    ip_address = db.Column(db.String(45), nullable=True)
+    user_agent = db.Column(db.String(255), nullable=True)
+    device_info = db.Column(db.String(100), nullable=True)
+    last_activity = db.Column(db.DateTime(timezone=True), default=now, nullable=False)
+    created_at = db.Column(db.DateTime(timezone=True), default=now, nullable=False)
+    is_active = db.Column(db.Boolean, nullable=False, default=True)
+
+    user = db.relationship("User", backref=db.backref("user_sessions", cascade="all, delete-orphan", lazy="dynamic"))
+
+
+def parse_device_info(user_agent_str):
+    if not user_agent_str:
+        return "Thiết bị không xác định"
+    ua = user_agent_str.lower()
+    browser = "Trình duyệt"
+    if "chrome" in ua and "edg" not in ua:
+        browser = "Chrome"
+    elif "edg" in ua:
+        browser = "Edge"
+    elif "firefox" in ua:
+        browser = "Firefox"
+    elif "safari" in ua and "chrome" not in ua:
+        browser = "Safari"
+
+    os_name = "HĐH"
+    if "windows" in ua:
+        os_name = "Windows"
+    elif "mac os" in ua or "macintosh" in ua:
+        os_name = "macOS"
+    elif "android" in ua:
+        os_name = "Android"
+    elif "iphone" in ua or "ipad" in ua:
+        os_name = "iOS"
+    elif "linux" in ua:
+        os_name = "Linux"
+
+    return f"{browser} trên {os_name}"
+
+
+def create_or_update_user_session(user_id, session_id, ip_address, user_agent_str):
+    if not session_id:
+        return None
+    user_sess = db.session.get(UserSession, session_id)
+    device_info = parse_device_info(user_agent_str)
+    if not user_sess:
+        user_sess = UserSession(
+            id=session_id,
+            user_id=user_id,
+            ip_address=ip_address or "127.0.0.1",
+            user_agent=(user_agent_str or "")[:255],
+            device_info=device_info,
+            last_activity=datetime.now(timezone.utc),
+            is_active=True,
+        )
+        db.session.add(user_sess)
+    else:
+        user_sess.last_activity = datetime.now(timezone.utc)
+        user_sess.is_active = True
+        user_sess.ip_address = ip_address or user_sess.ip_address
+        user_sess.device_info = device_info
+    db.session.commit()
+    return user_sess

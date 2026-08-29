@@ -33,6 +33,21 @@ if db_path.exists():
             cursor.execute(f"ALTER TABLE user ADD COLUMN {col_name} {col_type}")
 
     conn.commit()
+
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS user_session (
+        id VARCHAR(64) PRIMARY KEY,
+        user_id INTEGER NOT NULL,
+        ip_address VARCHAR(45),
+        user_agent VARCHAR(255),
+        device_info VARCHAR(100),
+        last_activity DATETIME NOT NULL,
+        created_at DATETIME NOT NULL,
+        is_active BOOLEAN NOT NULL DEFAULT 1,
+        FOREIGN KEY (user_id) REFERENCES user (id)
+    )
+    """)
+    conn.commit()
     conn.close()
     print("Database patched successfully!")
 else:

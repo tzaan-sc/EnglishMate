@@ -1,0 +1,131 @@
+{% if current_user.is_authenticated %}
+<!-- Session Timeout Warning Modal (5-minute warning before 30-min expiry) -->
+<div class="modal fade" id="sessionTimeoutModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 rounded-4 shadow-lg">
+            <div class="modal-header border-0 bg-warning-subtle text-warning-emphasis">
+                <h5 class="modal-title fw-bold d-flex align-items-center gap-2">
+                    <i class="ph ph-hourglass text-warning fs-4"></i> Cảnh báo hết phiên đăng nhập
+                </h5>
+            </div>
+            <div class="modal-body p-4 text-center">
+                <p class="mb-3 text-secondary">
+                    Phiên làm việc của bạn sẽ tự động kết thúc do không hoạt động trong 25 phút qua.
+                </p>
+                <div class="bg-light-subtle border rounded-3 p-3 mb-3 d-inline-block">
+                    <span class="text-muted small d-block mb-1">Thời gian còn lại:</span>
+                    <span id="sessionCountdownTimer" class="fs-1 fw-bold text-danger font-monospace">05:00</span>
+                </div>
+                <p class="small text-muted mb-0">Nhấn nút bên dưới để tiếp tục duy trì phiên làm việc của bạn.</p>
+            </div>
+            <div class="modal-footer border-0 justify-content-center pb-4">
+                <button type="button" id="renewSessionBtn" class="btn btn-primary rounded-pill px-4 btn-lg fw-bold shadow-xs">
+                    Tiếp tục phiên làm việc
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+(function() {
+    // 30 minutes total timeout = 1800 seconds
+    // Warning appears at 25 minutes = 1500 seconds
+    const WARNING_THRESHOLD = 1500 * 1000; // 25 mins in ms
+    const TOTAL_TIMEOUT = 1800 * 1000;    // 30 mins in ms
+
+    let lastInteractionTime = Date.now();
+    let warningModalObj = null;
+    let countdownInterval = null;
+    let isWarningShown = false;
+
+    function resetTimer() {
+        if (!isWarningShown) {
+            lastInteractionTime = Date.now();
+        }
+    }
+
+    // Listen to user interactions
+    ['mousemove', 'keydown', 'click', 'scroll'].forEach(evt => {
+        window.addEventListener(evt, resetTimer, { passive: true });
+    });
+
+    function checkInactivity() {
+        const elapsed = Date.now() - lastInteractionTime;
+
+        if (elapsed >= TOTAL_TIMEOUT) {
+            // Auto logout
+            window.location.href = "{{ url_for('auth.login') }}?timeout=1";
+            return;
+        }
+
+        if (elapsed >= WARNING_THRESHOLD && !isWarningShown) {
+            showWarningModal();
+        }
+    }
+
+    function showWarningModal() {
+        isWarningShown = true;
+        const modalEl = document.getElementById('sessionTimeoutModal');
+        if (modalEl && window.bootstrap) {
+            warningModalObj = new bootstrap.Modal(modalEl);
+            warningModalObj.show();
+
+            startCountdown();
+        }
+    }
+
+    function startCountdown() {
+        const timerEl = document.getElementById('sessionCountdownTimer');
+        
+        countdownInterval = setInterval(() => {
+            const elapsed = Date.now() - lastInteractionTime;
+            const remainingMs = TOTAL_TIMEOUT - elapsed;
+
+            if (remainingMs <= 0) {
+                clearInterval(countdownInterval);
+                window.location.href = "{{ url_for('auth.login') }}?timeout=1";
+                return;
+            }
+
+            const totalSecs = Math.floor(remainingMs / 1000);
+            const mins = Math.floor(totalSecs / 60);
+            const secs = totalSecs % 60;
+
+            if (timerEl) {
+                timerEl.textContent = String(mins).padStart(2, '0') + ':' + String(secs).padStart(2, '0');
+            }
+        }, 1000);
+    }
+
+    // Renew session button listener
+    document.addEventListener('DOMContentLoaded', () => {
+        const renewBtn = document.getElementById('renewSessionBtn');
+        if (renewBtn) {
+            renewBtn.addEventListener('click', async () => {
+                try {
+                    const response = await fetch("{{ url_for('auth.ping_session') }}", {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': '{{ csrf_token() }}'
+                        }
+                    });
+                    if (response.ok) {
+                        isWarningShown = false;
+                        lastInteractionTime = Date.now();
+                        if (countdownInterval) clearInterval(countdownInterval);
+                        if (warningModalObj) warningModalObj.hide();
+                    }
+                } catch (err) {
+                    console.error('Failed to renew session', err);
+                }
+            });
+        }
+    });
+
+    // Check inactivity every 5 seconds
+    setInterval(checkInactivity, 5000);
+})();
+</script>
+{% endif %}

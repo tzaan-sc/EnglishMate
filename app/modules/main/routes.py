@@ -3,12 +3,12 @@ import uuid
 from datetime import date, timedelta
 from pathlib import Path
 
-from flask import current_app, flash, redirect, render_template, request, url_for
+from flask import current_app, flash, redirect, render_template, request, session, url_for
 from flask_login import current_user, login_required, logout_user
 from sqlalchemy import func
 
 from ...extensions import db
-from ..auth.models import DailyActivity, User
+from ..auth.models import DailyActivity, User, UserSession
 from ..auth.routes import log_dev_otp_code
 from ..learning.models import Lesson, LessonProgress, QuizAttempt, VocabularyProgress
 from . import bp
@@ -74,6 +74,9 @@ def profile():
     delete_form = DeleteAccountForm()
     show_verify_modal = request.args.get("verify_email") == "1"
 
+    current_session_id = session.get("session_key")
+    active_sessions = UserSession.query.filter_by(user_id=current_user.id, is_active=True).order_by(UserSession.last_activity.desc()).all()
+
     return render_template(
         "main/profile.html",
         profile_form=profile_form,
@@ -82,6 +85,8 @@ def profile():
         password_form=password_form,
         delete_form=delete_form,
         show_verify_modal=show_verify_modal,
+        active_sessions=active_sessions,
+        current_session_id=current_session_id,
     )
 
 
@@ -199,5 +204,33 @@ def profile_delete_account():
         for error in form.errors.values():
             flash(f"Lỗi: {error[0]}", "danger")
 
+    return redirect(url_for("main.profile"))
+
+
+@bp.post("/sessions/revoke/<session_id>")
+@login_required
+def revoke_session_route(session_id):
+    user_sess = UserSession.query.filter_by(id=session_id, user_id=current_user.id).first()
+    if user_sess:
+        user_sess.is_active = False
+        db.session.commit()
+        flash("Đã hủy phiên đăng nhập thành công.", "success")
+    else:
+        flash("Không tìm thấy phiên đăng nhập.", "danger")
+    return redirect(url_for("main.profile"))
+
+
+@bp.post("/sessions/revoke-all")
+@login_required
+def revoke_all_sessions_route():
+    current_key = session.get("session_key")
+    sessions = UserSession.query.filter(UserSession.user_id == current_user.id, UserSession.is_active.is_(True)).all()
+    count = 0
+    for sess in sessions:
+        if sess.id != current_key:
+            sess.is_active = False
+            count += 1
+    db.session.commit()
+    flash(f"Đã đăng xuất khỏi {count} thiết bị khác.", "success")
     return redirect(url_for("main.profile"))
 
