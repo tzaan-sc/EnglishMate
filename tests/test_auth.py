@@ -84,3 +84,30 @@ def test_blocked_user_cannot_login(client):
     assert client.get("/dashboard").status_code == 302
 
 
+def test_login_attempts_and_lockout(client):
+    # Failed attempts 1 to 4
+    for i in range(1, 5):
+        res = client.post("/auth/login", data={"email": "student@test.com", "password": "wrong_password"}, follow_redirects=True)
+        assert res.status_code == 200
+        assert f"Bạn còn {5 - i} lần thử".encode("utf-8") in res.data
+
+    # 5th failed attempt -> Lockout
+    res_lockout = client.post("/auth/login", data={"email": "student@test.com", "password": "wrong_password"}, follow_redirects=True)
+    assert res_lockout.status_code == 200
+    assert "Tài khoản của bạn đã bị khóa 15 phút".encode("utf-8") in res_lockout.data
+
+    # Subsequent attempt during lockout -> Blocked
+    res_blocked = client.post("/auth/login", data={"email": "student@test.com", "password": "user123"}, follow_redirects=True)
+    assert "Tài khoản tạm thời bị khóa".encode("utf-8") in res_blocked.data
+
+
+def test_forgot_password_page(client):
+    res_get = client.get("/auth/forgot-password")
+    assert res_get.status_code == 200
+    assert "Khôi phục mật khẩu".encode("utf-8") in res_get.data
+
+    res_post = client.post("/auth/forgot-password", data={"email": "student@test.com"}, follow_redirects=True)
+    assert res_post.status_code == 200
+    assert "Hướng dẫn khôi phục mật khẩu đã được gửi".encode("utf-8") in res_post.data
+
+

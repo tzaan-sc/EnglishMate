@@ -8,7 +8,7 @@ from flask_login import current_user, login_user, logout_user
 from ...extensions import db
 from .models import User
 from . import bp
-from .forms import LoginForm, RegisterForm, VerifyEmailForm
+from .forms import ForgotPasswordForm, LoginForm, RegisterForm, VerifyEmailForm
 
 
 def is_safe_url(target):
@@ -310,18 +310,54 @@ def login():
         return redirect(url_for("main.dashboard"))
     form = LoginForm()
     if form.validate_on_submit():
-        user = User.query.filter_by(email=form.email.data.strip().lower()).first()
-        if user and user.check_password(form.password.data):
+        email = form.email.data.strip().lower()
+        user = User.query.filter_by(email=email).first()
+
+        if user:
+            is_locked, remaining_mins = user.is_locked_out()
+            if is_locked:
+                flash(f"Tài khoản tạm thời bị khóa do nhập sai mật khẩu 5 lần. Vui lòng thử lại sau {remaining_mins} phút.", "danger")
+                return render_template("auth/login.html", form=form)
+
             if not user.is_active:
                 flash("Tài khoản đã bị khóa. Vui lòng liên hệ quản trị viên.", "danger")
-            else:
+                return render_template("auth/login.html", form=form)
+
+            if user.check_password(form.password.data):
+                user.record_successful_login()
+                db.session.commit()
                 login_user(user, remember=form.remember.data)
                 flash(f"Chào mừng {user.username} trở lại!", "success")
                 next_url = request.args.get("next")
                 return redirect(next_url if next_url and is_safe_url(next_url) else url_for("main.dashboard"))
+            else:
+                attempts = user.record_failed_login()
+                db.session.commit()
+                if attempts >= 5:
+                    flash("Tài khoản của bạn đã bị khóa 15 phút do nhập sai mật khẩu 5 lần.", "danger")
+                else:
+                    remaining = 5 - attempts
+                    flash(f"Email hoặc mật khẩu không chính xác. Bạn còn {remaining} lần thử.", "danger")
         else:
             flash("Email hoặc mật khẩu không chính xác.", "danger")
-    return render_template("auth/register.html", form=form) if request.endpoint == "auth.register" else render_template("auth/login.html", form=form)
+
+    return render_template("auth/login.html", form=form)
+
+
+@bp.route("/forgot-password", methods=["GET", "POST"])
+def forgot_password():
+    if current_user.is_authenticated:
+        return redirect(url_for("main.dashboard"))
+    form = ForgotPasswordForm()
+    if form.validate_on_submit():
+        email = form.email.data.strip().lower()
+        user = User.query.filter_by(email=email).first()
+        if user:
+            flash(f"Hướng dẫn khôi phục mật khẩu đã được gửi tới email {email}.", "success")
+        else:
+            flash(f"Nếu email {email} tồn tại trong hệ thống, bạn sẽ nhận được liên kết khôi phục.", "info")
+        return redirect(url_for("auth.login"))
+    return render_template("auth/forgot_password.html", form=form)
 
 
 @bp.post("/logout")

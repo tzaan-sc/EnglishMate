@@ -15,6 +15,9 @@ if db_path.exists():
         ("email_verification_expiry", "DATETIME"),
         ("oauth_provider", "VARCHAR(20)"),
         ("oauth_id", "VARCHAR(100)"),
+        ("failed_login_attempts", "INTEGER NOT NULL DEFAULT 0"),
+        ("lockout_until", "DATETIME"),
+        ("last_login_at", "DATETIME"),
     ]
 
     for col_name, col_type in new_cols:

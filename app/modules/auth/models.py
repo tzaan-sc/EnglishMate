@@ -23,6 +23,9 @@ class User(UserMixin, db.Model):
     email_verification_expiry = db.Column(db.DateTime(timezone=True), nullable=True)
     oauth_provider = db.Column(db.String(20), nullable=True)
     oauth_id = db.Column(db.String(100), nullable=True)
+    failed_login_attempts = db.Column(db.Integer, nullable=False, default=0)
+    lockout_until = db.Column(db.DateTime(timezone=True), nullable=True)
+    last_login_at = db.Column(db.DateTime(timezone=True), nullable=True)
     current_streak = db.Column(db.Integer, nullable=False, default=0)
     longest_streak = db.Column(db.Integer, nullable=False, default=0)
     last_activity_date = db.Column(db.Date, nullable=True)
@@ -55,6 +58,30 @@ class User(UserMixin, db.Model):
             self.email_verification_expiry = None
             return True
         return False
+
+    def is_locked_out(self):
+        if not self.lockout_until:
+            return False, 0
+        current_time = datetime.now(timezone.utc)
+        lockout = self.lockout_until
+        if lockout.tzinfo is None:
+            lockout = lockout.replace(tzinfo=timezone.utc)
+        if current_time < lockout:
+            diff_seconds = (lockout - current_time).total_seconds()
+            remaining_mins = max(1, int(diff_seconds // 60) + (1 if diff_seconds % 60 > 0 else 0))
+            return True, remaining_mins
+        return False, 0
+
+    def record_failed_login(self):
+        self.failed_login_attempts = (self.failed_login_attempts or 0) + 1
+        if self.failed_login_attempts >= 5:
+            self.lockout_until = datetime.now(timezone.utc) + timedelta(minutes=15)
+        return self.failed_login_attempts
+
+    def record_successful_login(self):
+        self.failed_login_attempts = 0
+        self.lockout_until = None
+        self.last_login_at = datetime.now(timezone.utc)
 
     @property
     def is_admin(self):

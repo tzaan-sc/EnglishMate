@@ -93,4 +93,20 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     });
   }
+
+  // Show/Hide Password Eye Toggle
+  document.querySelectorAll(".toggle-password-btn").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const targetId = btn.getAttribute("data-target");
+      const targetInput = targetId ? document.getElementById(targetId) : btn.previousElementSibling;
+      if (targetInput) {
+        const isPassword = targetInput.type === "password";
+        targetInput.type = isPassword ? "text" : "password";
+        const icon = btn.querySelector("i");
+        if (icon) {
+          icon.className = isPassword ? "bi bi-eye-slash" : "bi bi-eye";
+        }
+      }
+    });
+  });
 });

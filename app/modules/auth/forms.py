@@ -18,6 +18,11 @@ class VerifyEmailForm(FlaskForm):
     submit = SubmitField("Xác nhận email")
 
 
+class ForgotPasswordForm(FlaskForm):
+    email = StringField("Email", validators=[DataRequired(message="Vui lòng nhập email."), Email(message="Email không hợp lệ.")])
+    submit = SubmitField("Gửi đường dẫn khôi phục")
+
+
 class LoginForm(FlaskForm):
     email = StringField("Email", validators=[DataRequired(), Email()])
     password = PasswordField("Mật khẩu", validators=[DataRequired()])
