@@ -26,23 +26,120 @@
         <div class="auth-form">
             <h2>Đăng ký</h2>
             <p class="text-secondary">Bắt đầu hành trình học tập của bạn.</p>
-            <form method="post">{{ form.hidden_tag() }}{{ field(form.username) }}{{ field(form.email) }}<div
-                    class="row">
-                    <div class="col-md-6">{{ field(form.password) }}</div>
+            <form method="post">
+                {{ form.hidden_tag() }}
+                {{ field(form.username) }}
+                {{ field(form.email) }}
+                <div class="row">
+                    <div class="col-md-6">
+                        {{ field(form.password) }}
+                        <!-- Dynamic Password Strength Meter -->
+                        <div id="password-strength-wrap" class="mb-3 d-none">
+                            <div class="progress" style="height: 6px;">
+                                <div id="password-strength-bar" class="progress-bar" role="progressbar" style="width: 0%;"></div>
+                            </div>
+                            <div class="d-flex justify-content-between align-items-center mt-1">
+                                <small id="password-strength-text" class="fw-semibold text-muted" style="font-size: 0.75rem;"></small>
+                                <small id="password-strength-hint" class="text-muted" style="font-size: 0.75rem;"></small>
+                            </div>
+                        </div>
+                    </div>
                     <div class="col-md-6">{{ field(form.confirm_password) }}</div>
-                </div>{{ form.submit(class="btn btn-primary w-100 btn-lg") }}</form>
+                </div>
+
+                <!-- Terms & Conditions Checkbox -->
+                <div class="form-check mb-2">
+                    {{ form.terms_agree(class="form-check-input" + (" is-invalid" if form.terms_agree.errors else "")) }}
+                    <label class="form-check-label small" for="{{ form.terms_agree.id }}">
+                        Tôi đồng ý với <a href="#" data-bs-toggle="modal" data-bs-target="#termsModal" class="text-success text-decoration-none fw-semibold">Điều khoản sử dụng</a>
+                    </label>
+                    {% for error in form.terms_agree.errors %}
+                        <div class="invalid-feedback d-block">{{ error }}</div>
+                    {% endfor %}
+                </div>
+
+                <!-- Privacy Policy Checkbox -->
+                <div class="form-check mb-3">
+                    {{ form.privacy_agree(class="form-check-input" + (" is-invalid" if form.privacy_agree.errors else "")) }}
+                    <label class="form-check-label small" for="{{ form.privacy_agree.id }}">
+                        Tôi đồng ý với <a href="#" data-bs-toggle="modal" data-bs-target="#privacyModal" class="text-success text-decoration-none fw-semibold">Chính sách bảo mật</a>
+                    </label>
+                    {% for error in form.privacy_agree.errors %}
+                        <div class="invalid-feedback d-block">{{ error }}</div>
+                    {% endfor %}
+                </div>
+
+                {{ form.submit(class="btn btn-primary w-100 btn-lg") }}
+            </form>
+
             <div class="auth-divider"><span>Hoặc</span></div>
-            <a href="#" class="btn btn-google w-100 d-flex align-items-center justify-content-center gap-2">
-                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 48 48">
-                    <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
-                    <path fill="#4285F4" d="M46.5 24c0-1.61-.15-3.16-.42-4.69H24v9.07h12.75c-.53 2.87-2.13 5.31-4.59 6.98l7.2 5.58C43.59 36.41 46.5 30.76 46.5 24z"/>
-                    <path fill="#FBBC05" d="M10.54 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.98-6.19z"/>
-                    <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.2-5.58c-2.11 1.41-4.8 2.39-8.69 2.39-6.26 0-11.57-4.22-13.46-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
-                </svg>
-                Tiếp tục với Google
-            </a>
+
+            <div class="d-flex flex-column gap-2">
+                <a href="{{ url_for('auth.google_login') }}" class="btn btn-google w-100 d-flex align-items-center justify-content-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 48 48">
+                        <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
+                        <path fill="#4285F4" d="M46.5 24c0-1.61-.15-3.16-.42-4.69H24v9.07h12.75c-.53 2.87-2.13 5.31-4.59 6.98l7.2 5.58C43.59 36.41 46.5 30.76 46.5 24z"/>
+                        <path fill="#FBBC05" d="M10.54 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.98-6.19z"/>
+                        <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.2-5.58c-2.11 1.41-4.8 2.39-8.69 2.39-6.26 0-11.57-4.22-13.46-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
+                    </svg>
+                    Tiếp tục với Google
+                </a>
+                <a href="{{ url_for('auth.facebook_login') }}" class="btn btn-facebook w-100 d-flex align-items-center justify-content-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 16 16">
+                        <path d="M16 8.049c0-4.446-3.582-8.05-8-8.05C3.58 0-.002 3.603-.002 8.05c0 4.017 2.926 7.347 6.75 7.951v-5.625h-2.03V8.05H6.75V6.275c0-2.017 1.195-3.131 3.022-3.131.876 0 1.791.157 1.791.157v1.98h-1.009c-.993 0-1.303.621-1.303 1.258v1.51h2.218l-.354 2.326H9.25V16c3.824-.604 6.75-3.934 6.75-7.951z"/>
+                    </svg>
+                    Tiếp tục với Facebook
+                </a>
+            </div>
+
             <p class="text-center mt-4 mb-0">Đã có tài khoản? <a href="{{ url_for('auth.login') }}">Đăng nhập</a></p>
         </div>
     </div>
 </section>
+
+<!-- Terms & Conditions Modal -->
+<div class="modal fade" id="termsModal" tabindex="-1" aria-labelledby="termsModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title fw-bold" id="termsModalLabel">Điều khoản sử dụng</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body small">
+                <h6>1. Giới thiệu</h6>
+                <p>Chào mừng bạn đến với EnglishMate. Khi đăng ký và sử dụng dịch vụ của chúng tôi, bạn đồng ý tuân thủ các quy định dưới đây.</p>
+                <h6>2. Tài khoản người dùng</h6>
+                <p>Bạn có trách nhiệm bảo mật thông tin tài khoản và mật khẩu của mình. Không chia sẻ tài khoản cho người khác sử dụng.</p>
+                <h6>3. Quy định học tập & Nội dung</h6>
+                <p>Mọi nội dung bài học, tài liệu và từ vựng trên EnglishMate thuộc bản quyền của hệ thống. Bạn không được sao chép thương mại khi chưa có sự đồng ý.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Đóng</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Privacy Policy Modal -->
+<div class="modal fade" id="privacyModal" tabindex="-1" aria-labelledby="privacyModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title fw-bold" id="privacyModalLabel">Chính sách bảo mật</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body small">
+                <h6>1. Thu thập thông tin</h6>
+                <p>EnglishMate thu thập các thông tin cá nhân cơ bản như Email, Tên đăng nhập để phục vụ mục đích quản lý tiến trình học tập.</p>
+                <h6>2. Sử dụng thông tin</h6>
+                <p>Dữ liệu của bạn được lưu trữ an toàn và chỉ sử dụng cho mục đích cá nhân hóa trải nghiệm học tập, gửi mã xác minh và thông báo hệ thống.</p>
+                <h6>3. Cam kết bảo mật</h6>
+                <p>Chúng tôi cam kết không bán hoặc chia sẻ thông tin cá nhân của bạn cho bất kỳ bên thứ ba nào vì mục đích thương mại.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Đóng</button>
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}

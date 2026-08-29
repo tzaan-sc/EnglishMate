@@ -1,3 +1,4 @@
+import random
 from datetime import date, datetime, timedelta, timezone
 
 from flask_login import UserMixin
@@ -17,6 +18,11 @@ class User(UserMixin, db.Model):
     password_hash = db.Column(db.String(255), nullable=False)
     role = db.Column(db.String(10), nullable=False, default="USER")
     is_active = db.Column(db.Boolean, nullable=False, default=True)
+    is_email_verified = db.Column(db.Boolean, nullable=False, default=False)
+    email_verification_code = db.Column(db.String(6), nullable=True)
+    email_verification_expiry = db.Column(db.DateTime(timezone=True), nullable=True)
+    oauth_provider = db.Column(db.String(20), nullable=True)
+    oauth_id = db.Column(db.String(100), nullable=True)
     current_streak = db.Column(db.Integer, nullable=False, default=0)
     longest_streak = db.Column(db.Integer, nullable=False, default=0)
     last_activity_date = db.Column(db.Date, nullable=True)
@@ -28,6 +34,27 @@ class User(UserMixin, db.Model):
 
     def check_password(self, password):
         return check_password_hash(self.password_hash, password)
+
+    def generate_verification_code(self):
+        self.email_verification_code = f"{random.randint(100000, 999999)}"
+        self.email_verification_expiry = datetime.now(timezone.utc) + timedelta(minutes=15)
+        return self.email_verification_code
+
+    def verify_email_code(self, code):
+        if not self.email_verification_code or not self.email_verification_expiry:
+            return False
+        current_time = datetime.now(timezone.utc)
+        expiry = self.email_verification_expiry
+        if expiry.tzinfo is None:
+            expiry = expiry.replace(tzinfo=timezone.utc)
+        if current_time > expiry:
+            return False
+        if self.email_verification_code == code.strip():
+            self.is_email_verified = True
+            self.email_verification_code = None
+            self.email_verification_expiry = None
+            return True
+        return False
 
     @property
     def is_admin(self):

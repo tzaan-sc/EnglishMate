@@ -1,0 +1,73 @@
+================================================================================
+          HƯỚNG DẪN CẤU HÌNH ĐĂNG KÝ / ĐĂNG NHẬP GOOGLE OAUTH 2.0 (ENGLISHMATE)
+================================================================================
+
+Tài liệu hướng dẫn từng bước lấy bộ khóa Google Client ID & Client Secret
+để tích hợp tính năng Đăng ký / Đăng nhập 1-click bằng Google trên EnglishMate.
+
+--------------------------------------------------------------------------------
+BƯỚC 1: TRUY CẬP GOOGLE CLOUD CONSOLE
+--------------------------------------------------------------------------------
+1. Truy cập vào trang quản lý khóa của Google:
+   https://console.cloud.google.com/apis/credentials
+
+2. Đăng nhập bằng tài khoản Google của bạn.
+
+--------------------------------------------------------------------------------
+BƯỚC 2: TẠO DỰ ÁN MỚI (NEW PROJECT)
+--------------------------------------------------------------------------------
+1. Nhấn vào danh sách dự án ở góc trên bên trái (ngay cạnh logo Google Cloud).
+2. Nhấn vào nút "New Project" (Dự án mới).
+3. Đặt tên dự án (Ví dụ: EnglishMate) và nhấn "Create" (Tạo).
+4. Chờ 5-10 giây để Google khởi tạo xong dự án.
+
+--------------------------------------------------------------------------------
+BƯỚC 3: CẤU HÌNH MÀN HÌNH ĐỒNG Ý OAUTH (OAUTH CONSENT SCREEN)
+--------------------------------------------------------------------------------
+1. Ở menu bên trái, chọn: APIs & Services -> OAuth consent screen.
+2. Chọn loại người dùng: "External" (Bên ngoài) -> Nhấn nút "Create".
+3. Điền các thông tin cơ bản:
+   - App name (Tên ứng dụng): EnglishMate
+   - User support email: Chọn email của bạn
+   - Developer contact information (Email liên hệ): Nhập email của bạn
+4. Nhấn "SAVE AND CONTINUE" qua tất cả các bước (Scopes, Test Users) cho đến khi hoàn tất.
+
+--------------------------------------------------------------------------------
+BƯỚC 4: TẠO KHÓA OAUTH CLIENT ID
+--------------------------------------------------------------------------------
+1. Ở menu bên trái, chọn tab "Credentials" (Thông tin xác thực).
+2. Ở mép trên màn hình, nhấn "+ CREATE CREDENTIALS" -> Chọn "OAuth client ID".
+3. Điền các mục như sau:
+   - Application type (Loại ứng dụng): Chọn "Web application"
+   - Name (Tên): EnglishMate Web
+   - Authorized redirect URIs (Đường dẫn chuyển hướng được ủy quyền):
+     Nhấn "+ ADD URI" và nhập 2 đường dẫn sau:
+     + http://127.0.0.1:5000/auth/google/callback
+     + http://localhost:5000/auth/google/callback
+4. Nhấn nút "CREATE" (Tạo).
+
+--------------------------------------------------------------------------------
+BƯỚC 5: DÁN VÀO TỆP .ENV CỦA DỰ ÁN
+--------------------------------------------------------------------------------
+1. Cửa sổ hiện ra sẽ cung cấp cho bạn:
+   - Client ID (Chuỗi dài dạng: xxxxx.apps.googleusercontent.com)
+   - Client Secret (Chuỗi bí mật)
+
+2. Mở tệp .env ở thư mục gốc dự án (d:\GITHUB\web-english\.env).
+3. Dán 2 chuỗi vào đằng sau dấu "=" tương ứng:
+
+   GOOGLE_CLIENT_ID=chuoi_client_id_cua_ban
+   GOOGLE_CLIENT_SECRET=chuoi_client_secret_cua_ban
+
+4. Bấm Ctrl + S để lưu tệp .env.
+
+--------------------------------------------------------------------------------
+BƯỚC 6: CHẠY LẠI ỨNG DỤNG & KIỂM TRẢ
+--------------------------------------------------------------------------------
+1. Khởi động lại ứng dụng Flask:
+   python run.py
+
+2. Truy cập http://127.0.0.1:5000/auth/register hoặc /auth/login.
+3. Bấm vào nút "Tiếp tục với Google" -> Màn hình đăng nhập chính thức của Google sẽ xuất hiện!
+
+================================================================================

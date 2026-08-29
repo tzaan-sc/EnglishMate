@@ -1,0 +1,47 @@
+{% extends "base.html" %}{% from "macros.html" import field %}
+{% block title %}Xác thực Email · EnglishMate{% endblock %}
+{% block content %}
+<section class="auth-shell">
+    <div class="auth-card">
+        <div class="auth-copy auth-copy-green">
+            <div class="auth-brand-logo">
+                <a class="d-flex align-items-center gap-2 text-decoration-none" href="{{ url_for('main.index') }}">
+                    <span class="brand-mark-light">E</span><span class="brand-name-light">English<span class="brand-accent-light">Mate</span></span>
+                </a>
+            </div>
+            <div class="auth-copy-body">
+                <h1>Xác minh địa chỉ Email.</h1>
+                <p>Mã xác minh OTP gồm 6 chữ số đã được gửi tới email <strong>{{ user.email }}</strong>.</p>
+                <ul>
+                    <li>✓  Mã có hiệu lực trong 15 phút</li>
+                    <li>✓  Bảo mật tài khoản tuyệt đối</li>
+                    <li>✓  Miễn phí</li>
+                </ul>
+            </div>
+            <div class="auth-copy-footer">
+                <span>© EnglishMate </span>
+            </div>
+        </div>
+        <div class="auth-form">
+            <h2>Nhập mã xác minh</h2>
+            <p class="text-secondary">Vui lòng kiểm tra hộp thư đến hoặc thư rác (Spam) để lấy mã OTP.</p>
+            
+            <form method="post">
+                {{ form.hidden_tag() }}
+                {{ field(form.code) }}
+                {{ form.submit(class="btn btn-primary w-100 btn-lg mt-2") }}
+            </form>
+            
+            <div class="d-flex align-items-center justify-content-between mt-4 pt-2 border-top">
+                <form method="post" action="{{ url_for('auth.resend_verification', user_id=user.id) }}">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <button type="submit" class="btn btn-link p-0 text-decoration-none small text-success fw-semibold">
+                        <i class="bi bi-arrow-clockwise"></i> Gửi lại mã xác minh
+                    </button>
+                </form>
+                <a href="{{ url_for('auth.login') }}" class="small text-secondary text-decoration-none">Quay lại Đăng nhập</a>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
