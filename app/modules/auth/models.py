@@ -38,6 +38,13 @@ class User(UserMixin, db.Model):
     longest_streak = db.Column(db.Integer, nullable=False, default=0)
     last_activity_date = db.Column(db.Date, nullable=True)
     daily_vocab_goal = db.Column(db.Integer, nullable=False, default=20)
+    vocab_review_priority = db.Column(db.String(20), nullable=False, default="due_date")
+    vocab_auto_play_audio = db.Column(db.Boolean, nullable=False, default=True)
+    vocab_accent = db.Column(db.String(10), nullable=False, default="en-US")
+    vocab_display_mode = db.Column(db.String(20), nullable=False, default="flashcard")
+    vocab_review_time = db.Column(db.String(20), nullable=False, default="anytime")
+    vocab_srs_algorithm = db.Column(db.String(20), nullable=False, default="standard")
+    vocab_notify_review_due = db.Column(db.Boolean, nullable=False, default=True)
     created_at = db.Column(db.DateTime(timezone=True), default=now, nullable=False)
     updated_at = db.Column(db.DateTime(timezone=True), default=now, onupdate=now, nullable=False)
 

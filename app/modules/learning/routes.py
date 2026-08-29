@@ -845,7 +845,13 @@ def review_vocabulary_submit():
         db.session.add(progress)
 
     now_dt = datetime.utcnow()
-    srs_intervals = {1: 1, 2: 2, 3: 4, 4: 7, 5: 14, 6: 30, 7: 90}
+    algo = getattr(current_user, "vocab_srs_algorithm", "standard") or "standard"
+    if algo == "aggressive":
+        srs_intervals = {1: 2, 2: 4, 3: 7, 4: 14, 5: 30, 6: 60, 7: 120}
+    elif algo == "conservative":
+        srs_intervals = {1: 1, 2: 1, 3: 2, 4: 4, 5: 7, 6: 14, 7: 30}
+    else:
+        srs_intervals = {1: 1, 2: 2, 3: 4, 4: 7, 5: 14, 6: 30, 7: 90}
 
     if "srs_session" not in session:
         session["srs_session"] = {
@@ -1232,3 +1238,46 @@ def vocabulary_stats():
         monthly_labels=monthly_labels,
         monthly_values=monthly_values,
     )
+
+
+# ==========================================
+# VOCABULARY SETTINGS ROUTES
+# ==========================================
+
+@bp.route("/vocabulary/settings", methods=["GET", "POST"])
+@login_required
+def vocabulary_settings():
+    if request.method == "POST":
+        goal = request.form.get("daily_vocab_goal", type=int)
+        if goal and 10 <= goal <= 50:
+            current_user.daily_vocab_goal = goal
+
+        priority = request.form.get("vocab_review_priority", "due_date")
+        if priority in ("due_date", "srs_level_asc", "srs_level_desc", "random"):
+            current_user.vocab_review_priority = priority
+
+        current_user.vocab_auto_play_audio = (request.form.get("vocab_auto_play_audio") == "on")
+
+        accent = request.form.get("vocab_accent", "en-US")
+        if accent in ("en-US", "en-GB"):
+            current_user.vocab_accent = accent
+
+        display_mode = request.form.get("vocab_display_mode", "flashcard")
+        if display_mode in ("flashcard", "list"):
+            current_user.vocab_display_mode = display_mode
+
+        review_time = request.form.get("vocab_review_time", "anytime")
+        if review_time in ("morning", "evening", "anytime"):
+            current_user.vocab_review_time = review_time
+
+        srs_algo = request.form.get("vocab_srs_algorithm", "standard")
+        if srs_algo in ("standard", "aggressive", "conservative"):
+            current_user.vocab_srs_algorithm = srs_algo
+
+        current_user.vocab_notify_review_due = (request.form.get("vocab_notify_review_due") == "on")
+
+        db.session.commit()
+        flash("Đã cập nhật các cài đặt từ vựng cá nhân thành công!", "success")
+        return redirect(url_for("learning.vocabulary_settings"))
+
+    return render_template("learning/vocabulary_settings.html")

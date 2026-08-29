@@ -1,0 +1,168 @@
+{% extends "base.html" %}
+{% block title %}Cài đặt Từ vựng · EnglishMate{% endblock %}
+
+{% block content %}
+<div class="container-fluid max-w-4xl py-4">
+
+  <!-- Page Header -->
+  <div class="d-flex align-items-center justify-content-between gap-3 mb-4">
+    <div class="d-flex align-items-center gap-3">
+      <a href="{{ url_for('learning.vocabulary') }}" class="btn btn-light rounded-circle p-2 shadow-xs" title="Quay lại Bảng điều khiển">
+        <i class="ph ph-arrow-left fs-5"></i>
+      </a>
+      <div>
+        <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle rounded-pill px-3 py-1 mb-1 font-semibold">
+          TÙY CHỈNH HỆ THỐNG
+        </span>
+        <h2 class="fw-bold text-dark mb-0">Cài Đặt Từ Vựng Cá Nhân</h2>
+      </div>
+    </div>
+  </div>
+
+  <form method="post" action="{{ url_for('learning.vocabulary_settings') }}">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+    <div class="row g-4">
+      
+      <!-- Card 1: Học tập & Mục tiêu Hàng ngày -->
+      <div class="col-md-6">
+        <div class="card border-0 shadow-sm rounded-4 p-4 bg-white h-100">
+          <h5 class="fw-bold text-dark mb-3 d-flex align-items-center gap-2">
+            <i class="ph ph-target text-danger fs-4"></i> Mục tiêu & Khung giờ học
+          </h5>
+
+          <!-- 1. Daily new words goal (10-50) -->
+          <div class="mb-4">
+            <label class="form-label fw-bold text-dark mb-1">Mục tiêu từ mới hàng ngày (10 - 50 từ/ngày)</label>
+            <p class="text-secondary small mb-2">Số lượng từ vựng bạn muốn đặt mục tiêu hoàn thành mỗi ngày.</p>
+            <div class="d-flex align-items-center gap-2 flex-wrap">
+              {% for g in [10, 20, 30, 40, 50] %}
+              <input type="radio" class="btn-check" name="daily_vocab_goal" id="goal_{{ g }}" value="{{ g }}" {% if current_user.daily_vocab_goal == g %}checked{% endif %}>
+              <label class="btn btn-outline-danger rounded-pill px-3 py-1.5 fw-bold" for="goal_{{ g }}">{{ g }} từ</label>
+              {% endfor %}
+            </div>
+          </div>
+
+          <hr class="my-3 opacity-25">
+
+          <!-- 6. Review time preference (morning/evening) -->
+          <div>
+            <label class="form-label fw-bold text-dark mb-1">Khung giờ ưu thích gợi ý ôn tập</label>
+            <p class="text-secondary small mb-2">Hệ thống sẽ điều chỉnh nhắc nhở dựa trên thời gian sinh hoạt của bạn.</p>
+            <select name="vocab_review_time" class="form-select rounded-3">
+              <option value="anytime" {% if current_user.vocab_review_time == 'anytime' %}selected{% endif %}>⏰ Bất kỳ lúc nào rảnh</option>
+              <option value="morning" {% if current_user.vocab_review_time == 'morning' %}selected{% endif %}>🌅 Buổi sáng (6:00 - 12:00)</option>
+              <option value="evening" {% if current_user.vocab_review_time == 'evening' %}selected{% endif %}>🌙 Buổi tối (18:00 - 23:00)</option>
+            </select>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Card 2: Âm thanh & Hiển thị -->
+      <div class="col-md-6">
+        <div class="card border-0 shadow-sm rounded-4 p-4 bg-white h-100">
+          <h5 class="fw-bold text-dark mb-3 d-flex align-items-center gap-2">
+            <i class="ph ph-speaker-high text-primary fs-4"></i> Phát âm & Hiển thị
+          </h5>
+
+          <!-- 4. Pronunciation accent selection (US/UK) -->
+          <div class="mb-4">
+            <label class="form-label fw-bold text-dark mb-1">Chọn giọng đọc phát âm chuẩn</label>
+            <p class="text-secondary small mb-2">Giọng phát âm AI khi nghe đọc từ vựng.</p>
+            <div class="d-flex gap-2">
+              <input type="radio" class="btn-check" name="vocab_accent" id="accent_us" value="en-US" {% if current_user.vocab_accent != 'en-GB' %}checked{% endif %}>
+              <label class="btn btn-outline-primary rounded-pill px-3 py-1.5 flex-grow-1 fw-bold" for="accent_us">🇺🇸 Giọng Mỹ (en-US)</label>
+
+              <input type="radio" class="btn-check" name="vocab_accent" id="accent_uk" value="en-GB" {% if current_user.vocab_accent == 'en-GB' %}checked{% endif %}>
+              <label class="btn btn-outline-primary rounded-pill px-3 py-1.5 flex-grow-1 fw-bold" for="accent_uk">🇬🇧 Giọng Anh (en-GB)</label>
+            </div>
+          </div>
+
+          <!-- 3. Audio auto-play toggle -->
+          <div class="form-check form-switch bg-light border rounded-4 p-3 mb-3 d-flex align-items-center justify-content-between">
+            <div>
+              <label class="form-check-label fw-bold text-dark cursor-pointer d-block" for="autoPlaySwitch">🔊 Tự động phát âm thanh</label>
+              <span class="text-secondary small">Tự động đọc phát âm từ vựng khi lật sang từ mới.</span>
+            </div>
+            <input class="form-check-input fs-4 ms-2 mt-0 cursor-pointer" type="checkbox" id="autoPlaySwitch" name="vocab_auto_play_audio" {% if current_user.vocab_auto_play_audio %}checked{% endif %}>
+          </div>
+
+          <!-- 5. Display mode preference (flashcard/list) -->
+          <div>
+            <label class="form-label fw-bold text-dark mb-1">Chế độ hiển thị mặc định</label>
+            <select name="vocab_display_mode" class="form-select rounded-3">
+              <option value="flashcard" {% if current_user.vocab_display_mode == 'flashcard' %}selected{% endif %}>🎴 Thẻ Flashcard tương tác</option>
+              <option value="list" {% if current_user.vocab_display_mode == 'list' %}selected{% endif %}>📄 Danh sách hàng ngang</option>
+            </select>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Card 3: Thuật toán SRS & Ưu tiên Ôn tập -->
+      <div class="col-md-6">
+        <div class="card border-0 shadow-sm rounded-4 p-4 bg-white h-100">
+          <h5 class="fw-bold text-dark mb-3 d-flex align-items-center gap-2">
+            <i class="ph ph-gear text-warning fs-4"></i> Thuật toán & Ưu tiên Ôn tập
+          </h5>
+
+          <!-- 7. SRS algorithm selection (standard/aggressive/conservative) -->
+          <div class="mb-4">
+            <label class="form-label fw-bold text-dark mb-1">Chọn kiểu Thuật toán SRS (Spaced Repetition)</label>
+            <p class="text-secondary small mb-2">Độ giãn cách thời gian giữa các lượt lặp lại ngắt quãng.</p>
+            <select name="vocab_srs_algorithm" class="form-select rounded-3">
+              <option value="standard" {% if current_user.vocab_srs_algorithm == 'standard' %}selected{% endif %}>⚖️ Tiêu chuẩn (Standard - Khuyên dùng)</option>
+              <option value="aggressive" {% if current_user.vocab_srs_algorithm == 'aggressive' %}selected{% endif %}>🚀 Tăng tốc (Aggressive - Lặp lại giãn cách xa hơn)</option>
+              <option value="conservative" {% if current_user.vocab_srs_algorithm == 'conservative' %}selected{% endif %}>🛡️ Thận trọng (Conservative - Lặp lại kỹ và nhiều hơn)</option>
+            </select>
+          </div>
+
+          <!-- 2. Review priority setting -->
+          <div>
+            <label class="form-label fw-bold text-dark mb-1">Thứ tự ưu tiên sắp xếp lượt ôn tập</label>
+            <select name="vocab_review_priority" class="form-select rounded-3">
+              <option value="due_date" {% if current_user.vocab_review_priority == 'due_date' %}selected{% endif %}>⏰ Đến hạn ôn trước (Due Date)</option>
+              <option value="srs_level_asc" {% if current_user.vocab_review_priority == 'srs_level_asc' %}selected{% endif %}>⭐ SRS Level thấp trước (Level 1 ➔ 7)</option>
+              <option value="srs_level_desc" {% if current_user.vocab_review_priority == 'srs_level_desc' %}selected{% endif %}>🏆 SRS Level cao trước (Level 7 ➔ 1)</option>
+              <option value="random" {% if current_user.vocab_review_priority == 'random' %}selected{% endif %}>🎲 Ngẫu nhiên (Random)</option>
+            </select>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Card 4: Thông báo & Nhắc nhở -->
+      <div class="col-md-6">
+        <div class="card border-0 shadow-sm rounded-4 p-4 bg-white h-100">
+          <h5 class="fw-bold text-dark mb-3 d-flex align-items-center gap-2">
+            <i class="ph ph-bell text-info fs-4"></i> Thông báo & Nhắc nhở
+          </h5>
+
+          <!-- 8. Notification settings for review due -->
+          <div class="form-check form-switch bg-light border rounded-4 p-3 mb-3 d-flex align-items-center justify-content-between">
+            <div>
+              <label class="form-check-label fw-bold text-dark cursor-pointer d-block" for="notifySwitch">🔔 Banner thông báo từ đến hạn ôn</label>
+              <span class="text-secondary small">Hiển thị Banner nhắc nhở trên Bảng điều khiển từ vựng khi có từ đến hạn ôn tập SRS.</span>
+            </div>
+            <input class="form-check-input fs-4 ms-2 mt-0 cursor-pointer" type="checkbox" id="notifySwitch" name="vocab_notify_review_due" {% if current_user.vocab_notify_review_due %}checked{% endif %}>
+          </div>
+
+          <div class="p-3 bg-info-subtle text-info-emphasis rounded-4 small">
+            💡 <strong>Mẹo:</strong> Bật thông báo sẽ giúp bạn không bao giờ bỏ lỡ điểm vàng lặp lại ngắt quãng để ghi nhớ từ vựng lâu nhất.
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Submit Save Settings Button Bar -->
+    <div class="mt-4 text-end">
+      <button type="submit" class="btn btn-primary rounded-pill px-5 py-2.5 fw-bold shadow-xs">
+        💾 Lưu Cài Đặt Từ Vựng
+      </button>
+    </div>
+
+  </form>
+</div>
+{% endblock %}

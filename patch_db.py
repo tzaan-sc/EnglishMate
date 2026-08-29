@@ -26,6 +26,13 @@ if db_path.exists():
         ("pending_email_otp", "VARCHAR(6)"),
         ("pending_email_expiry", "DATETIME"),
         ("daily_vocab_goal", "INTEGER NOT NULL DEFAULT 20"),
+        ("vocab_review_priority", "VARCHAR(20) NOT NULL DEFAULT 'due_date'"),
+        ("vocab_auto_play_audio", "BOOLEAN NOT NULL DEFAULT 1"),
+        ("vocab_accent", "VARCHAR(10) NOT NULL DEFAULT 'en-US'"),
+        ("vocab_display_mode", "VARCHAR(20) NOT NULL DEFAULT 'flashcard'"),
+        ("vocab_review_time", "VARCHAR(20) NOT NULL DEFAULT 'anytime'"),
+        ("vocab_srs_algorithm", "VARCHAR(20) NOT NULL DEFAULT 'standard'"),
+        ("vocab_notify_review_due", "BOOLEAN NOT NULL DEFAULT 1"),
     ]
 
     for col_name, col_type in new_cols:
