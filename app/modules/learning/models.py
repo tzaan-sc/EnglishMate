@@ -1,3 +1,4 @@
+from datetime import date
 from app.extensions import db
 from app.modules.auth.models import now
 
@@ -316,3 +317,56 @@ class Quiz(db.Model):
     is_active = db.Column(db.Boolean, nullable=False, default=True)
     created_at = db.Column(db.DateTime(timezone=True), default=now, nullable=False)
     updated_at = db.Column(db.DateTime(timezone=True), default=now, onupdate=now, nullable=False)
+
+
+class Badge(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    code = db.Column(db.String(50), unique=True, nullable=False, index=True)
+    name = db.Column(db.String(100), nullable=False)
+    description = db.Column(db.String(255), nullable=False)
+    icon = db.Column(db.String(50), nullable=False)
+    category = db.Column(db.String(50), nullable=False, default="GENERAL")
+    xp_reward = db.Column(db.Integer, default=50, nullable=False)
+    req_type = db.Column(db.String(50), nullable=False)
+    req_value = db.Column(db.Integer, default=1, nullable=False)
+    created_at = db.Column(db.DateTime(timezone=True), default=now, nullable=False)
+
+
+class UserBadge(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False, index=True)
+    badge_id = db.Column(db.Integer, db.ForeignKey("badge.id"), nullable=False, index=True)
+    unlocked_at = db.Column(db.DateTime(timezone=True), default=now, nullable=False)
+
+    user = db.relationship("User", backref="badges")
+    badge = db.relationship("Badge", backref="user_badges")
+    __table_args__ = (db.UniqueConstraint("user_id", "badge_id", name="uq_user_badge"),)
+
+
+class Challenge(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    code = db.Column(db.String(50), unique=True, nullable=False, index=True)
+    title = db.Column(db.String(150), nullable=False)
+    description = db.Column(db.String(255), nullable=False)
+    icon = db.Column(db.String(50), nullable=False, default="🎯")
+    action_type = db.Column(db.String(50), nullable=False)  # lesson, vocab, quiz, game, exam, streak
+    target = db.Column(db.Integer, default=1, nullable=False)
+    xp_reward = db.Column(db.Integer, default=30, nullable=False)
+    period = db.Column(db.String(20), default="DAILY", nullable=False)  # DAILY, WEEKLY
+    created_at = db.Column(db.DateTime(timezone=True), default=now, nullable=False)
+
+
+class UserChallenge(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False, index=True)
+    challenge_id = db.Column(db.Integer, db.ForeignKey("challenge.id"), nullable=False, index=True)
+    current_progress = db.Column(db.Integer, default=0, nullable=False)
+    is_completed = db.Column(db.Boolean, default=False, nullable=False)
+    is_claimed = db.Column(db.Boolean, default=False, nullable=False)
+    period_date = db.Column(db.Date, nullable=False, default=date.today, index=True)
+    completed_at = db.Column(db.DateTime(timezone=True), nullable=True)
+
+    user = db.relationship("User", backref="user_challenges")
+    challenge = db.relationship("Challenge", backref="user_challenges")
+    __table_args__ = (db.UniqueConstraint("user_id", "challenge_id", "period_date", name="uq_user_challenge_period"),)
+

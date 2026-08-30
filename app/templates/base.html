@@ -56,6 +56,13 @@
             <span class="streak-count">{{ current_streak_num }}</span>
           </div>
 
+          <!-- Level & XP pill -->
+          <a href="{{ url_for('learning.gamification_hub') }}" class="streak-pill text-decoration-none shadow-xs" title="Cấp độ {{ current_user.get_level() }} ({{ current_user.xp }} XP) - Xem Bảng xếp hạng & Thưởng" style="background-color: #f5f3ff; border-color: #ddd6fe; color: #7c3aed;">
+            <span class="streak-icon" style="font-size: 0.95rem; line-height: 1;">⚡</span>
+            <span class="streak-divider" style="background-color: #ddd6fe;"></span>
+            <span class="streak-count" style="color: #7c3aed;">Lv.{{ current_user.get_level() }}</span>
+          </a>
+
           <!-- Pro Upgrade button -->
           <a href="#" class="btn-upgrade-pro text-decoration-none">
             <span>★</span>

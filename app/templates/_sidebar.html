@@ -124,6 +124,14 @@
                     </a>
                 </li>
                 <li class="nav-item">
+                    <a class="nav-link nav-link-warning d-flex align-items-center gap-3 px-3 py-2.5 {% if request.path.startswith('/gamification') or request.path == '/leaderboard' %}active{% endif %}" href="{{ url_for('learning.gamification_hub') }}">
+                        <span class="menu-icon-box bg-warning-subtle text-warning fs-5">
+                            <i class="ph ph-trophy"></i>
+                        </span>
+                        <span>Xếp hạng & Thưởng</span>
+                    </a>
+                </li>
+                <li class="nav-item">
                     <a class="nav-link nav-link-dark d-flex align-items-center gap-3 px-3 py-2.5 {% if request.path.startswith(url_for('learning.progress')) %}active{% endif %}" href="{{ url_for('learning.progress') }}">
                         <span class="menu-icon-box bg-dark-subtle text-dark fs-5">
                             <i class="ph ph-trend-up"></i>

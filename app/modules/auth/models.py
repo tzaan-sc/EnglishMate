@@ -55,8 +55,90 @@ class User(UserMixin, db.Model):
     exam_auto_submit = db.Column(db.Boolean, nullable=False, default=True)
     exam_sound_effects = db.Column(db.Boolean, nullable=False, default=True)
     
+    # Gamification
+    xp = db.Column(db.Integer, nullable=False, default=0)
+    level = db.Column(db.Integer, nullable=False, default=1)
+    daily_goal_xp = db.Column(db.Integer, nullable=False, default=50)
+    daily_reward_claimed_date = db.Column(db.Date, nullable=True)
+    
     created_at = db.Column(db.DateTime(timezone=True), default=now, nullable=False)
     updated_at = db.Column(db.DateTime(timezone=True), default=now, onupdate=now, nullable=False)
+
+    def get_level(self):
+        LEVEL_TIERS = [
+            (1, 0, 100, "Tân thủ"),
+            (2, 100, 250, "Tập sự"),
+            (3, 250, 500, "Chăm chỉ"),
+            (4, 500, 1000, "Tiến bộ"),
+            (5, 1000, 2000, "Cao thủ"),
+            (6, 2000, 3500, "Chuyên gia"),
+            (7, 3500, 6000, "Bậc thầy"),
+            (8, 6000, 10000, "Huyền thoại"),
+            (9, 10000, 999999, "Thần đồng"),
+        ]
+        xp_val = self.xp or 0
+        lvl = 1
+        for level_num, min_xp, max_xp, title in LEVEL_TIERS:
+            if xp_val >= min_xp:
+                lvl = level_num
+            else:
+                break
+        if self.level != lvl:
+            self.level = lvl
+            try:
+                db.session.commit()
+            except Exception:
+                pass
+        return lvl
+
+    def get_level_info(self):
+        LEVEL_TIERS = [
+            (1, 0, 100, "Tân thủ"),
+            (2, 100, 250, "Tập sự"),
+            (3, 250, 500, "Chăm chỉ"),
+            (4, 500, 1000, "Tiến bộ"),
+            (5, 1000, 2000, "Cao thủ"),
+            (6, 2000, 3500, "Chuyên gia"),
+            (7, 3500, 6000, "Bậc thầy"),
+            (8, 6000, 10000, "Huyền thoại"),
+            (9, 10000, 999999, "Thần đồng"),
+        ]
+        xp_val = self.xp or 0
+        current_tier = LEVEL_TIERS[0]
+        for tier in LEVEL_TIERS:
+            if xp_val >= tier[1]:
+                current_tier = tier
+            else:
+                break
+        
+        lvl, min_xp, max_xp, title = current_tier
+        if max_xp == 999999:
+            pct = 100
+            needed = 0
+        else:
+            pct = min(100, max(0, int(((xp_val - min_xp) / (max_xp - min_xp)) * 100)))
+            needed = max(0, max_xp - xp_val)
+            
+        return {
+            "level": lvl,
+            "title": title,
+            "current_xp": xp_val,
+            "min_xp": min_xp,
+            "max_xp": max_xp,
+            "progress_pct": pct,
+            "needed_xp": needed
+        }
+
+    def add_xp(self, amount, reason=None):
+        if amount <= 0:
+            return 0
+        self.xp = (self.xp or 0) + amount
+        self.get_level()
+        try:
+            db.session.commit()
+        except Exception:
+            pass
+        return amount
 
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
@@ -214,6 +296,14 @@ def record_daily_activity(user, lessons_count=1):
         user.last_activity_date = today
         if user.current_streak > (user.longest_streak or 0):
             user.longest_streak = user.current_streak
+
+    user.add_xp(lessons_count * 20, reason="Hoàn thành bài học / Luyện tập")
+    try:
+        from ..learning.routes import update_challenge_progress
+        update_challenge_progress(user, "lesson", lessons_count)
+        update_challenge_progress(user, "streak", user.current_streak or 1)
+    except Exception:
+        pass
 
     db.session.commit()
     return activity

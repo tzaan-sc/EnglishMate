@@ -394,13 +394,13 @@ Dựa trên hệ thống học tiếng Anh hiện tại - Phiên bản nâng c�
 
 5.2. Gamification Features (Tính năng trò chơi hóa)
 [x] - Daily streak system - Hệ thống chuỗi ngày học
-[ ] - Experience points (XP) system - Hệ thống điểm kinh nghiệm
-[ ] - Level & progression - Cấp độ và thăng tiến
-[ ] - Achievement badges - Huy hiệu thành tích
-[ ] - Leaderboards - Bảng xếp hạng
-[ ] - Learning challenges - Thử thách học tập
-[ ] - Reward system - Hệ thống phần thưởng
-[ ] - Daily goals & rewards - Mục tiêu hàng ngày và phần thưởng
+[x] - Experience points (XP) system - Hệ thống điểm kinh nghiệm
+[x] - Level & progression - Cấp độ và thăng tiến
+[x] - Achievement badges - Huy hiệu thành tích
+[x] - Leaderboards - Bảng xếp hạng
+[x] - Learning challenges - Thử thách học tập
+[x] - Reward system - Hệ thống phần thưởng
+[x] - Daily goals & rewards - Mục tiêu hàng ngày và phần thưởng
 
 5.3. Learning Games (Trò chơi học tập)
 [x] - Vocabulary matching game - Trò chơi ghép từ vựng

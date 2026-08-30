@@ -95,6 +95,15 @@ def toeic_submit(attempt_id):
     attempt.time_spent = time_spent
     attempt.completed_at = func.now()
     attempt.is_submitted = True
+    
+    current_user.add_xp(50, reason="Hoàn thành đề thi TOEIC")
+    try:
+        from app.modules.learning.routes import update_challenge_progress, check_user_badges
+        update_challenge_progress(current_user, "exam", 1)
+        check_user_badges(current_user)
+    except Exception:
+        pass
+        
     db.session.commit()
     
     flash("Bài thi của bạn đã được nộp thành công!", "success")
@@ -289,6 +298,14 @@ def submit_exam(submission_id):
     submission.completed_at = func.now()
     submission.status = 'PENDING' if needs_grading else 'COMPLETED'
     
+    current_user.add_xp(50, reason="Hoàn thành bài thi")
+    try:
+        from app.modules.learning.routes import update_challenge_progress, check_user_badges
+        update_challenge_progress(current_user, "exam", 1)
+        check_user_badges(current_user)
+    except Exception:
+        pass
+        
     db.session.commit()
     
     if needs_grading:

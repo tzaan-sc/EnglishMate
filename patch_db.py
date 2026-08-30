@@ -40,6 +40,10 @@ if db_path.exists():
         ("exam_show_realtime_score", "BOOLEAN NOT NULL DEFAULT 0"),
         ("exam_auto_submit", "BOOLEAN NOT NULL DEFAULT 1"),
         ("exam_sound_effects", "BOOLEAN NOT NULL DEFAULT 1"),
+        ("xp", "INTEGER NOT NULL DEFAULT 0"),
+        ("level", "INTEGER NOT NULL DEFAULT 1"),
+        ("daily_goal_xp", "INTEGER NOT NULL DEFAULT 50"),
+        ("daily_reward_claimed_date", "DATE"),
     ]
 
     for col_name, col_type in new_cols:
@@ -424,7 +428,102 @@ if db_path.exists():
 
     conn.commit()
 
+    # Create Gamification Tables
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS badge (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            code VARCHAR(50) NOT NULL UNIQUE,
+            name VARCHAR(100) NOT NULL,
+            description VARCHAR(255) NOT NULL,
+            icon VARCHAR(50) NOT NULL,
+            category VARCHAR(50) NOT NULL DEFAULT 'GENERAL',
+            xp_reward INTEGER NOT NULL DEFAULT 50,
+            req_type VARCHAR(50) NOT NULL,
+            req_value INTEGER NOT NULL DEFAULT 1,
+            created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+        )
+    """)
+
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS user_badge (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id INTEGER NOT NULL,
+            badge_id INTEGER NOT NULL,
+            unlocked_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (user_id) REFERENCES user (id),
+            FOREIGN KEY (badge_id) REFERENCES badge (id),
+            UNIQUE (user_id, badge_id)
+        )
+    """)
+
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS challenge (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            code VARCHAR(50) NOT NULL UNIQUE,
+            title VARCHAR(150) NOT NULL,
+            description VARCHAR(255) NOT NULL,
+            icon VARCHAR(50) NOT NULL DEFAULT '🎯',
+            action_type VARCHAR(50) NOT NULL,
+            target INTEGER NOT NULL DEFAULT 1,
+            xp_reward INTEGER NOT NULL DEFAULT 30,
+            period VARCHAR(20) NOT NULL DEFAULT 'DAILY',
+            created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+        )
+    """)
+
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS user_challenge (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id INTEGER NOT NULL,
+            challenge_id INTEGER NOT NULL,
+            current_progress INTEGER NOT NULL DEFAULT 0,
+            is_completed BOOLEAN NOT NULL DEFAULT 0,
+            is_claimed BOOLEAN NOT NULL DEFAULT 0,
+            period_date DATE NOT NULL,
+            completed_at DATETIME,
+            FOREIGN KEY (user_id) REFERENCES user (id),
+            FOREIGN KEY (challenge_id) REFERENCES challenge (id),
+            UNIQUE (user_id, challenge_id, period_date)
+        )
+    """)
+    conn.commit()
+
+    # Seed default badges if empty
+    cursor.execute("SELECT COUNT(*) FROM badge")
+    if cursor.fetchone()[0] == 0:
+        default_badges = [
+            ("FIRST_STEP", "Bước đầu tiên", "Hoàn thành bài học đầu tiên", "🎯", "LESSONS", 50, "lessons_count", 1),
+            ("LESSON_5", "Chăm học", "Hoàn thành 5 bài học", "📖", "LESSONS", 100, "lessons_count", 5),
+            ("LESSON_10", "Học bá", "Hoàn thành 10 bài học", "🎓", "LESSONS", 200, "lessons_count", 10),
+            ("VOCAB_STARTER", "Khởi đầu từ vựng", "Đã học 10 từ vựng", "📚", "VOCABULARY", 50, "vocab_count", 10),
+            ("VOCAB_MASTER", "Bậc thầy từ vựng", "Đã học 50 từ vựng", "👑", "VOCABULARY", 250, "vocab_count", 50),
+            ("QUIZ_CHAMPION", "Vua trắc nghiệm", "Hoàn thành 5 bài kiểm tra Quiz", "🏆", "QUIZ", 100, "quiz_count", 5),
+            ("PERFECT_SCORE", "Điểm tuyệt đối", "Đạt điểm 100% trong bài kiểm tra", "💯", "QUIZ", 150, "perfect_score", 1),
+            ("STREAK_3", "Chăm chỉ 3 ngày", "Đạt chuỗi 3 ngày học liên tiếp", "🔥", "STREAK", 50, "streak_days", 3),
+            ("STREAK_7", "Chiến binh 1 tuần", "Đạt chuỗi 7 ngày học liên tiếp", "⚡", "STREAK", 150, "streak_days", 7),
+            ("STREAK_30", "Kiên trì 1 tháng", "Đạt chuỗi 30 ngày học liên tiếp", "🌟", "STREAK", 500, "streak_days", 30),
+            ("FLASHCARD_FAN", "Tín đồ Flashcard", "Tạo hoặc ôn tập bộ thẻ flashcard", "🎴", "FLASHCARD", 50, "flashcard_count", 1),
+            ("LEVEL_5", "Cao thủ Level 5", "Đạt cấp độ 5 trong hệ thống", "⭐", "LEVEL", 200, "level_reach", 5),
+        ]
+        cursor.executemany("INSERT INTO badge (code, name, description, icon, category, xp_reward, req_type, req_value) VALUES (?, ?, ?, ?, ?, ?, ?, ?)", default_badges)
+        conn.commit()
+
+    # Seed default challenges if empty
+    cursor.execute("SELECT COUNT(*) FROM challenge")
+    if cursor.fetchone()[0] == 0:
+        default_challenges = [
+            ("DAILY_LESSON_1", "Bài học trong ngày", "Hoàn thành 1 bài học bất kỳ hôm nay", "📖", "lesson", 1, 30, "DAILY"),
+            ("DAILY_VOCAB_10", "Luyện từ vựng", "Học hoặc ôn tập 10 từ vựng", "📚", "vocab", 10, 30, "DAILY"),
+            ("DAILY_QUIZ_1", "Thử tài kiến thức", "Hoàn thành 1 bài Quiz hoặc bài tập", "🎯", "quiz", 1, 30, "DAILY"),
+            ("DAILY_GAME_1", "Phản xạ nhanh", "Chơi 1 ván trò chơi từ vựng", "🎮", "game", 1, 20, "DAILY"),
+            ("WEEKLY_STREAK_5", "Chiến binh kiên trì", "Duy trì chuỗi học 5 ngày trong tuần", "🔥", "streak", 5, 100, "WEEKLY"),
+            ("WEEKLY_LESSONS_5", "Chinh phục bài học", "Hoàn thành 5 bài học trong tuần", "🎓", "lesson", 5, 120, "WEEKLY"),
+            ("WEEKLY_EXAMS_2", "Luyện đề xuất sắc", "Hoàn thành 2 đề thi TOEIC / Kiểm tra", "🏆", "exam", 2, 150, "WEEKLY"),
+        ]
+        cursor.executemany("INSERT INTO challenge (code, title, description, icon, action_type, target, xp_reward, period) VALUES (?, ?, ?, ?, ?, ?, ?, ?)", default_challenges)
+        conn.commit()
+
     conn.close()
-    print("Database patched successfully with Exam Management enhancements!")
+    print("Database patched successfully with Gamification enhancements!")
 else:
     print("Database file not found at", db_path)
