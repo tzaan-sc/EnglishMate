@@ -28,6 +28,7 @@
                         <option value="all">Tất cả thẻ</option>
                         <option value="learning">Chưa thuộc</option>
                         <option value="known">Đã thuộc</option>
+                        <option value="srs_due">Đến hạn ôn tập (SRS)</option>
                     </select>
                 </div>
             </div>
@@ -126,7 +127,7 @@
             <form method="post" action="{{ url_for('learning.game_start') }}" class="m-0">
                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                 <input type="hidden" name="set_id" value="all">
-                <input type="hidden" name="status" value="known">
+                <input type="hidden" name="status" value="srs_due">
                 <input type="hidden" name="sort_by" value="oldest">
                 <input type="hidden" name="quantity" value="all">
                 <input type="hidden" name="game_type" value="ARCADE">

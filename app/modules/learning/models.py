@@ -155,7 +155,9 @@ class FlashcardProgress(db.Model):
     item_id = db.Column(db.Integer, db.ForeignKey("flashcard_item.id"), nullable=False, index=True)
     is_known = db.Column(db.Boolean, default=False, nullable=False)
     review_count = db.Column(db.Integer, default=0, nullable=False)
+    srs_level = db.Column(db.Integer, default=1, nullable=False)
     last_reviewed_at = db.Column(db.DateTime(timezone=True), default=now, nullable=False)
+    next_review_at = db.Column(db.DateTime(timezone=True), default=now, nullable=True)
 
     user = db.relationship("User", backref="flashcard_progress")
     item = db.relationship("FlashcardItem", backref=db.backref("progress_records", cascade="all, delete-orphan"))

@@ -137,6 +137,9 @@
                 <button class="btn btn-light rounded-circle shadow-sm d-flex justify-content-center align-items-center transition-hover" data-bs-toggle="modal" data-bs-target="#settingsModal" title="Cấu hình phiên học" style="width: 45px; height: 45px; color: #31644d; background-color: #f2f7f4; border: 1px solid rgba(49,100,77,0.1);">
                     <i class="bi bi-gear-fill fs-5"></i>
                 </button>
+                <button class="btn btn-light rounded-circle shadow-sm d-flex justify-content-center align-items-center transition-hover" onclick="copySetLink()" title="Chia sẻ học phần" style="width: 45px; height: 45px; color: #31644d; background-color: #f2f7f4; border: 1px solid rgba(49,100,77,0.1);">
+                    <i class="bi bi-share-fill fs-5"></i>
+                </button>
                 <button class="btn fw-bold px-4 rounded-pill d-flex align-items-center gap-2 shadow-sm transition-hover ms-2" onclick="toggleFocusMode()" style="background-color: #31644d; color: white; border: none; height: 45px;">
                     <i class="bi bi-arrows-fullscreen"></i> Luyện tập toàn màn hình
                 </button>
@@ -618,6 +621,11 @@
         icon.classList.toggle('bi-star');
         icon.classList.toggle('bi-star-fill');
         // TODO: Lưu cờ star vào DB
+    }
+
+    function copySetLink() {
+        navigator.clipboard.writeText(window.location.href);
+        alert("Đã sao chép liên kết chia sẻ học phần này!");
     }
 </script>
 {% endblock %}

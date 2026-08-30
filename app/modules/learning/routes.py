@@ -788,11 +788,26 @@ def flashcard_set_sync(set_id):
     def update_progress(item_id, is_known):
         p = progress_map.get(item_id)
         if not p:
-            p = FlashcardProgress(user_id=current_user.id, item_id=item_id)
+            p = FlashcardProgress(user_id=current_user.id, item_id=item_id, review_count=0, srs_level=1)
             db.session.add(p)
+        if p.review_count is None:
+            p.review_count = 0
+        if p.srs_level is None:
+            p.srs_level = 1
         p.is_known = is_known
         p.review_count += 1
         p.last_reviewed_at = func.now()
+        
+        # SRS calculation
+        curr_level = p.srs_level
+        if is_known:
+            p.srs_level = min(5, curr_level + 1)
+        else:
+            p.srs_level = 1
+            
+        intervals = {1: 1, 2: 3, 3: 7, 4: 14, 5: 30}
+        days = intervals.get(p.srs_level, 1)
+        p.next_review_at = datetime.utcnow() + timedelta(days=days)
 
     for item_id in know_ids:
         update_progress(item_id, True)
@@ -836,7 +851,7 @@ def game_lobby():
     now_time = datetime.utcnow()
     srs_count = FlashcardProgress.query.filter(
         FlashcardProgress.user_id == current_user.id,
-        FlashcardProgress.last_reviewed_at < now_time - timedelta(hours=24)
+        FlashcardProgress.next_review_at <= now_time
     ).count()
     
     return render_template("learning/game_lobby.html", sets=sets, history=history, srs_count=srs_count)
@@ -861,6 +876,7 @@ def game_calculate_stats():
     
     learned_count = 0
     available_items = []
+    now_dt = datetime.utcnow()
     
     for item in items:
         p = progress_records.get(item.id)
@@ -872,6 +888,10 @@ def game_calculate_stats():
             continue
         if status == "known" and not is_known:
             continue
+        if status == "srs_due":
+            is_due = (not p) or (p.next_review_at and p.next_review_at <= now_dt)
+            if not is_due:
+                continue
         # (Chưa implement Đánh dấu sao)
         
         available_items.append(item)
@@ -901,11 +921,15 @@ def game_start():
     progress_records = {p.item_id: p for p in FlashcardProgress.query.filter_by(user_id=current_user.id).all()}
     
     filtered = []
+    now_dt = datetime.utcnow()
     for item in items:
         p = progress_records.get(item.id)
         is_known = p.is_known if p else False
         if status == "learning" and is_known: continue
         if status == "known" and not is_known: continue
+        if status == "srs_due":
+            is_due = (not p) or (p.next_review_at and p.next_review_at <= now_dt)
+            if not is_due: continue
         filtered.append(item)
         
     if sort_by == "random":

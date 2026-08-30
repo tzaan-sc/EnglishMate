@@ -49,6 +49,20 @@ if db_path.exists():
 
     conn.commit()
 
+    # Patch flashcard_progress table columns
+    cursor.execute("PRAGMA table_info(flashcard_progress)")
+    fp_cols = [row[1] for row in cursor.fetchall()]
+    new_fp_cols = [
+        ("srs_level", "INTEGER NOT NULL DEFAULT 1"),
+        ("next_review_at", "DATETIME DEFAULT CURRENT_TIMESTAMP"),
+    ]
+    for col_name, col_type in new_fp_cols:
+        if col_name not in fp_cols:
+            print(f"Adding column {col_name} to flashcard_progress...")
+            cursor.execute(f"ALTER TABLE flashcard_progress ADD COLUMN {col_name} {col_type}")
+
+    conn.commit()
+
     cursor.execute("""
     CREATE TABLE IF NOT EXISTS user_session (
         id VARCHAR(64) PRIMARY KEY,
