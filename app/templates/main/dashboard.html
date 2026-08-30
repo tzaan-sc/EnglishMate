@@ -114,6 +114,205 @@
 
   
 
+  <!-- DAILY MOTIVATION QUOTE & QUICK ACTIONS -->
+  <div class="card border-0 rounded-4 shadow-sm bg-white p-3.5 my-4">
+    <div class="row align-items-center g-3">
+      <div class="col-lg-7 d-flex align-items-center gap-3">
+        <div class="rounded-circle bg-purple-subtle text-purple d-flex align-items-center justify-content-center flex-shrink-0" style="width: 48px; height: 48px; font-size: 1.5rem;">
+          💡
+        </div>
+        <div>
+          <div class="fw-bold text-dark small mb-0.5">"{{ daily_quote.en }}"</div>
+          <div class="text-muted small" style="font-size: 0.76rem;">{{ daily_quote.vi }} — <em>{{ daily_quote.author }}</em></div>
+        </div>
+      </div>
+      <div class="col-lg-5 d-flex justify-content-lg-end gap-2 flex-wrap">
+        {% if next_lesson %}
+        <a href="{{ url_for('learning.lesson_detail', lesson_id=next_lesson.id) }}" class="btn btn-sm btn-primary rounded-pill px-3 fw-bold shadow-xs">
+          <i class="ph ph-play me-1"></i> Học bài tiếp
+        </a>
+        {% endif %}
+        <a href="{{ url_for('learning.vocabulary') }}" class="btn btn-sm btn-outline-success rounded-pill px-3 fw-bold">
+          <i class="ph ph-book-open me-1"></i> Từ vựng
+        </a>
+        <a href="{{ url_for('learning.game_lobby') }}" class="btn btn-sm btn-outline-warning text-dark rounded-pill px-3 fw-bold">
+          <i class="ph ph-lightning me-1"></i> Luyện Game
+        </a>
+        {% if srs_due_count > 0 %}
+        <a href="{{ url_for('learning.game_lobby') }}" class="btn btn-sm btn-danger rounded-pill px-3 fw-bold shadow-xs animate-pulse">
+          ⚡ Ôn {{ srs_due_count }} thẻ đến hạn
+        </a>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <!-- SECTION 6.1: PERSONAL DASHBOARD ANALYTICS ROW -->
+  <div class="row g-3 align-items-stretch mb-4">
+    
+    <!-- LEFT: TODAY'S SCHEDULE & ACHIEVEMENTS -->
+    <div class="col-lg-6">
+      <div class="card border-0 rounded-4 shadow-sm bg-white h-100 p-4">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <h6 class="fw-bold text-dark text-uppercase small tracking-wider mb-0 d-flex align-items-center gap-2">
+            <i class="ph-fill ph-calendar-check text-primary fs-5"></i> Lịch trình & Mục tiêu hôm nay
+          </h6>
+          <span class="badge bg-primary-subtle text-primary rounded-pill px-2.5 py-1 small fw-bold">
+            +{{ today_achievements.xp_today }} XP hôm nay
+          </span>
+        </div>
+
+        <div class="d-flex flex-column gap-2.5 mb-3">
+          {% for item in today_schedule %}
+          <div class="p-2.5 rounded-3 border d-flex justify-content-between align-items-center bg-light-subtle transition-hover">
+            <div class="d-flex align-items-center gap-2.5">
+              <span class="rounded-circle d-flex align-items-center justify-content-center {% if item.is_done %}bg-success-subtle text-success{% else %}bg-secondary-subtle text-secondary{% endif %}" style="width: 32px; height: 32px;">
+                <i class="ph {{ item.icon }} fs-6"></i>
+              </span>
+              <div>
+                <div class="fw-bold text-dark small" style="font-size: 0.82rem;">{{ item.title }}</div>
+                <div class="text-muted" style="font-size: 0.7rem;">{{ item.status }}</div>
+              </div>
+            </div>
+            <a href="{{ item.url }}" class="btn btn-sm {% if item.is_done %}btn-light border text-success{% else %}btn-outline-primary{% endif %} rounded-pill px-3 py-1 fw-bold" style="font-size: 0.72rem;">
+              {% if item.is_done %}✓ Đã xong{% else %}Bắt đầu{% endif %}
+            </a>
+          </div>
+          {% endfor %}
+        </div>
+
+        <!-- Today Achievements Footer Strip -->
+        <div class="mt-auto pt-2 border-top d-flex justify-content-between align-items-center text-muted small" style="font-size: 0.75rem;">
+          <span>Chuỗi ngày: <strong class="text-warning">🔥 {{ today_achievements.streak }} ngày</strong></span>
+          <span>Mục tiêu ngày: {% if today_achievements.is_daily_goal_done %}<strong class="text-success">✓ Hoàn thành</strong>{% else %}<strong class="text-secondary">Đang học</strong>{% endif %}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT: SKILL-SPECIFIC PROGRESS & TIME SPENT -->
+    <div class="col-lg-6">
+      <div class="card border-0 rounded-4 shadow-sm bg-white h-100 p-4">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <h6 class="fw-bold text-dark text-uppercase small tracking-wider mb-0 d-flex align-items-center gap-2">
+            <i class="ph-fill ph-chart-donut text-purple fs-5"></i> Tiến độ theo kỹ năng
+          </h6>
+          <span class="badge bg-purple-subtle text-purple rounded-pill px-2.5 py-1 small fw-bold">
+            Tổng học: {{ total_time_hours }}h
+          </span>
+        </div>
+
+        <!-- Time spent badges row -->
+        <div class="row g-2 mb-3 text-center">
+          <div class="col-4">
+            <div class="bg-light p-2 rounded-3 border">
+              <div class="fw-bold text-dark" style="font-size: 1.1rem;">{{ today_time_spent_minutes }}m</div>
+              <div class="text-muted" style="font-size: 0.68rem;">HÔM NAY</div>
+            </div>
+          </div>
+          <div class="col-4">
+            <div class="bg-light p-2 rounded-3 border">
+              <div class="fw-bold text-primary" style="font-size: 1.1rem;">{{ weekly_time_spent_minutes }}m</div>
+              <div class="text-muted" style="font-size: 0.68rem;">TUẦN NÀY</div>
+            </div>
+          </div>
+          <div class="col-4">
+            <div class="bg-light p-2 rounded-3 border">
+              <div class="fw-bold text-success" style="font-size: 1.1rem;">{{ total_time_hours }}h</div>
+              <div class="text-muted" style="font-size: 0.68rem;">TẤT CẢ</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Skills Progress Bars -->
+        <div class="d-flex flex-column gap-2">
+          {% for sk in skills_progress %}
+          <div>
+            <div class="d-flex justify-content-between align-items-center small mb-1">
+              <span class="fw-bold text-dark d-flex align-items-center gap-1.5" style="font-size: 0.78rem;">
+                <i class="ph {{ sk.icon }} text-{{ sk.color }}"></i> {{ sk.name }}
+              </span>
+              <span class="text-muted" style="font-size: 0.72rem;">{{ sk.stat }} (<strong>{{ sk.pct }}%</strong>)</span>
+            </div>
+            <div class="progress rounded-pill" style="height: 6px;">
+              <div class="progress-bar bg-{{ sk.color }}" role="progressbar" style="width: {{ sk.pct }}%;"></div>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- SECTION 6.1: ACTIVITY HEATMAP & PERFORMANCE TRENDS -->
+  <div class="row g-3 align-items-stretch mb-5">
+    
+    <!-- ACTIVITY HEATMAP (60 DAYS) -->
+    <div class="col-lg-7">
+      <div class="card border-0 rounded-4 shadow-sm bg-white h-100 p-4">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <h6 class="fw-bold text-dark text-uppercase small tracking-wider mb-0 d-flex align-items-center gap-2">
+            <i class="ph-fill ph-squares-four text-success fs-5"></i> Bản đồ hoạt động (60 ngày qua)
+          </h6>
+          <div class="d-flex align-items-center gap-1 small text-muted" style="font-size: 0.7rem;">
+            <span>Ít</span>
+            <span class="heatmap-box lvl-0"></span>
+            <span class="heatmap-box lvl-1"></span>
+            <span class="heatmap-box lvl-2"></span>
+            <span class="heatmap-box lvl-3"></span>
+            <span class="heatmap-box lvl-4"></span>
+            <span>Nhiều</span>
+          </div>
+        </div>
+
+        <div class="heatmap-grid p-2 bg-light-subtle rounded-3 border">
+          {% for cell in activity_heatmap %}
+          <div class="heatmap-cell lvl-{{ cell.level }}" title="{{ cell.date }}: {{ cell.count }} bài học"></div>
+          {% endfor %}
+        </div>
+        <div class="d-flex justify-content-between text-muted mt-2" style="font-size: 0.68rem;">
+          <span>60 ngày trước</span>
+          <span>Hôm nay</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- PERFORMANCE TRENDS (LAST 7 ATTEMPTS) -->
+    <div class="col-lg-5">
+      <div class="card border-0 rounded-4 shadow-sm bg-white h-100 p-4">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <h6 class="fw-bold text-dark text-uppercase small tracking-wider mb-0 d-flex align-items-center gap-2">
+            <i class="ph-fill ph-chart-line-up text-info fs-5"></i> Xu hướng hiệu suất
+          </h6>
+          <span class="badge bg-info-subtle text-info rounded-pill px-2.5 py-1 small fw-bold">
+            TB: {{ average }}%
+          </span>
+        </div>
+
+        {% if performance_trends|length > 0 %}
+        <div class="d-flex align-items-end justify-content-between gap-2 h-100 pt-3" style="min-height: 110px;">
+          {% for pt in performance_trends %}
+          <div class="d-flex flex-column align-items-center flex-grow-1" style="height: 100%;">
+            <span class="small fw-bold text-dark mb-1" style="font-size: 0.65rem;">{{ pt.score_pct }}%</span>
+            <div class="w-100 bg-light rounded-top position-relative flex-grow-1 d-flex align-items-end" style="max-width: 28px; background-color: #f1f5f9;">
+              <div class="w-100 rounded-top {% if pt.score_pct >= 80 %}bg-success{% elif pt.score_pct >= 50 %}bg-primary{% else %}bg-warning{% endif %}"
+                   style="height: {{ [10, pt.score_pct]|max }}%; transition: height 0.3s;"></div>
+            </div>
+            <span class="text-muted mt-1" style="font-size: 0.65rem;">{{ pt.date }}</span>
+          </div>
+          {% endfor %}
+        </div>
+        {% else %}
+        <div class="d-flex flex-column align-items-center justify-content-center h-100 text-center py-4">
+          <i class="ph ph-chart-bar text-muted fs-2 mb-2"></i>
+          <p class="text-muted small mb-0">Chưa có bài quiz hoặc bài thi nào gần đây.</p>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+
+  </div>
+
   <!-- LEARNING PATHS SECTION -->
   <div class="mt-5">
     <div class="d-flex justify-content-between align-items-center mb-3">
@@ -544,4 +743,47 @@
     applyBannerMedia();
   });
 </script>
+
+<style>
+  .heatmap-grid {
+    display: grid;
+    grid-template-columns: repeat(20, 1fr);
+    gap: 4px;
+  }
+  @media (max-width: 768px) {
+    .heatmap-grid {
+      grid-template-columns: repeat(12, 1fr);
+    }
+  }
+  .heatmap-cell {
+    aspect-ratio: 1;
+    border-radius: 3px;
+    background-color: #e2e8f0;
+    transition: transform 0.15s, opacity 0.15s;
+    cursor: pointer;
+  }
+  .heatmap-cell:hover {
+    transform: scale(1.2);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+  }
+  .heatmap-box {
+    width: 10px;
+    height: 10px;
+    border-radius: 2px;
+    display: inline-block;
+  }
+  .lvl-0 { background-color: #e2e8f0 !important; }
+  .lvl-1 { background-color: #bbf7d0 !important; }
+  .lvl-2 { background-color: #4ade80 !important; }
+  .lvl-3 { background-color: #22c55e !important; }
+  .lvl-4 { background-color: #15803d !important; }
+
+  .transition-hover {
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+  .transition-hover:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.06) !important;
+  }
+</style>
 {% endblock %}

@@ -1,6 +1,6 @@
 import os
 import uuid
-from datetime import date, timedelta
+from datetime import date, datetime, timedelta
 from pathlib import Path
 
 from flask import current_app, flash, redirect, render_template, request, session, url_for
@@ -10,7 +10,8 @@ from sqlalchemy import func
 from ...extensions import db
 from ..auth.models import DailyActivity, User, UserSession
 from ..auth.routes import log_dev_otp_code
-from ..learning.models import Lesson, LessonProgress, QuizAttempt, VocabularyProgress
+from ..learning.models import (FlashcardProgress, GrammarProgress, GrammarTopic, Lesson,
+                               LessonProgress, QuizAttempt, Vocabulary, VocabularyProgress)
 from . import bp
 from .forms import ChangeEmailForm, ChangePasswordForm, DeleteAccountForm, EditProfileForm, VerifyNewEmailForm
 
@@ -49,9 +50,156 @@ def dashboard():
         day_date = start_of_week + timedelta(days=i)
         week_days.append((labels[i], day_date in completed_dates))
 
-    return render_template("main/dashboard.html", completed=completed, attempts=len(attempts), average=average,
-                           learned=learned, next_lesson=next_lesson, lessons=lessons, completed_ids=completed_ids,
-                           week_days=week_days)
+    # 1. Skill-specific progress
+    total_vocab = Vocabulary.query.count() or 1
+    vocab_pct = min(100, int((learned / total_vocab) * 100))
+    
+    total_grammar_topics = GrammarTopic.query.count() or 1
+    user_grammar_completed = GrammarProgress.query.filter_by(user_id=current_user.id, is_completed=True).count()
+    grammar_pct = min(100, int((user_grammar_completed / total_grammar_topics) * 100))
+    
+    reading_lessons_total = Lesson.query.filter_by(is_active=True, skill="Reading").count() or 1
+    reading_completed = LessonProgress.query.join(Lesson).filter(LessonProgress.user_id == current_user.id, Lesson.skill == "Reading").count()
+    reading_pct = min(100, int((reading_completed / reading_lessons_total) * 100))
+    
+    listening_lessons_total = Lesson.query.filter_by(is_active=True, skill="Listening").count() or 1
+    listening_completed = LessonProgress.query.join(Lesson).filter(LessonProgress.user_id == current_user.id, Lesson.skill == "Listening").count()
+    listening_pct = min(100, int((listening_completed / listening_lessons_total) * 100))
+    
+    skills_progress = [
+        {"name": "Từ vựng", "icon": "ph-book-open", "color": "success", "pct": vocab_pct, "stat": f"{learned}/{total_vocab} từ"},
+        {"name": "Ngữ pháp", "icon": "ph-books", "color": "purple", "pct": grammar_pct, "stat": f"{user_grammar_completed}/{total_grammar_topics} chủ đề"},
+        {"name": "Đọc hiểu", "icon": "ph-article", "color": "primary", "pct": reading_pct, "stat": f"{reading_completed}/{reading_lessons_total} bài"},
+        {"name": "Nghe hiểu", "icon": "ph-headphones", "color": "warning", "pct": listening_pct, "stat": f"{listening_completed}/{listening_lessons_total} bài"},
+    ]
+
+    # 2. Time spent learning
+    today_act = DailyActivity.query.filter_by(user_id=current_user.id, activity_date=today).first()
+    today_lessons = today_act.completed_lessons if today_act else 0
+    today_time_spent_minutes = today_lessons * 15 + (10 if today_act else 0)
+    
+    weekly_acts = DailyActivity.query.filter(
+        DailyActivity.user_id == current_user.id,
+        DailyActivity.activity_date >= start_of_week
+    ).all()
+    weekly_time_spent_minutes = sum((a.completed_lessons * 15 + 10) for a in weekly_acts)
+    
+    all_acts = DailyActivity.query.filter_by(user_id=current_user.id).all()
+    total_time_spent_minutes = sum((a.completed_lessons * 15 + 10) for a in all_acts) or (completed * 15)
+    total_time_hours = round(total_time_spent_minutes / 60, 1)
+
+    # 3. Activity Heatmap (Last 60 days)
+    heatmap_start = today - timedelta(days=59)
+    heatmap_acts = {
+        act.activity_date: act.completed_lessons
+        for act in DailyActivity.query.filter(
+            DailyActivity.user_id == current_user.id,
+            DailyActivity.activity_date >= heatmap_start
+        ).all()
+    }
+    
+    activity_heatmap = []
+    for i in range(60):
+        d = heatmap_start + timedelta(days=i)
+        cnt = heatmap_acts.get(d, 0)
+        lvl = 0
+        if cnt >= 5: lvl = 4
+        elif cnt >= 3: lvl = 3
+        elif cnt >= 2: lvl = 2
+        elif cnt >= 1: lvl = 1
+        activity_heatmap.append({
+            "date": d.strftime("%d/%m/%Y"),
+            "iso_date": d.isoformat(),
+            "count": cnt,
+            "level": lvl,
+            "day_name": d.strftime("%a")
+        })
+
+    # 4. Performance trends (Last 7 attempts)
+    recent_attempts = QuizAttempt.query.filter_by(user_id=current_user.id).order_by(QuizAttempt.created_at.desc()).limit(7).all()
+    performance_trends = []
+    for att in reversed(recent_attempts):
+        score_pct = int((att.score / att.total_questions) * 100) if att.total_questions > 0 else 0
+        performance_trends.append({
+            "topic": att.topic or "Quiz",
+            "score_pct": score_pct,
+            "date": att.created_at.strftime("%d/%m") if att.created_at else ""
+        })
+
+    # 5. Today's Schedule
+    srs_due_count = FlashcardProgress.query.filter(
+        FlashcardProgress.user_id == current_user.id,
+        FlashcardProgress.next_review_at <= func.now()
+    ).count() if hasattr(FlashcardProgress, 'next_review_at') else 0
+    
+    today_schedule = [
+        {
+            "title": f"Bài học kế tiếp: {next_lesson.title if next_lesson else 'Ôn tập tổng hợp'}",
+            "type": "lesson",
+            "icon": "ph-graduation-cap",
+            "status": "Hoàn thành" if (today_act and today_act.completed_lessons > 0) else "Cần học",
+            "is_done": bool(today_act and today_act.completed_lessons > 0),
+            "url": url_for("learning.lesson_detail", lesson_id=next_lesson.id) if next_lesson else url_for("learning.lessons")
+        },
+        {
+            "title": f"Ôn tập từ vựng ({srs_due_count} thẻ đến hạn)",
+            "type": "vocab",
+            "icon": "ph-cards",
+            "status": "Đã ôn" if srs_due_count == 0 else "Cần ôn tập",
+            "is_done": srs_due_count == 0,
+            "url": url_for("learning.game_lobby")
+        },
+        {
+            "title": "Hoàn thành 1 bài Quiz kiểm tra",
+            "type": "quiz",
+            "icon": "ph-check-square-offset",
+            "status": "Đã làm" if len(attempts) > 0 else "Chưa làm",
+            "is_done": len(attempts) > 0,
+            "url": url_for("learning.quiz")
+        }
+    ]
+
+    # 6. Today's Achievements
+    today_achievements = {
+        "xp_today": (today_act.completed_lessons * 20 if today_act else 0) + (50 if current_user.daily_reward_claimed_date == today else 0),
+        "streak": current_user.get_current_streak(),
+        "longest_streak": current_user.longest_streak or 0,
+        "is_daily_goal_done": bool(today_act and today_act.goal_completed),
+        "daily_reward_claimed": current_user.daily_reward_claimed_date == today
+    }
+
+    # 7. Daily Motivation Quote
+    MOTIVATION_QUOTES = [
+        {"en": "The secret of getting ahead is getting started.", "vi": "Bí quyết để tiến lên phía trước là hãy bắt đầu ngay hôm nay.", "author": "Mark Twain"},
+        {"en": "Live as if you were to die tomorrow. Learn as if you were to live forever.", "vi": "Hãy sống như thể ngày mai bạn sẽ chết. Hãy học như thể bạn sẽ sống mãi mãi.", "author": "Mahatma Gandhi"},
+        {"en": "Small daily improvements over time lead to stunning results.", "vi": "Những cải thiện nhỏ mỗi ngày theo thời gian sẽ mang lại kết quả đáng kinh ngạc.", "author": "Robin Sharma"},
+        {"en": "A journey of a thousand miles begins with a single step.", "vi": "Hành trình vạn dặm luôn luôn bắt đầu từ một bước chân nhỏ.", "author": "Lao Tzu"},
+        {"en": "Don't watch the clock; do what it does. Keep going.", "vi": "Đừng nhìn đồng hồ; hãy làm như nó. Cứ tiếp tục tiến bước.", "author": "Sam Levenson"},
+        {"en": "It always seems impossible until it is done.", "vi": "Mọi việc dường như luôn bất khả thi cho đến khi nó được hoàn thành.", "author": "Nelson Mandela"},
+    ]
+    daily_quote = MOTIVATION_QUOTES[today.timetuple().tm_yday % len(MOTIVATION_QUOTES)]
+
+    return render_template(
+        "main/dashboard.html",
+        completed=completed,
+        attempts=len(attempts),
+        average=average,
+        learned=learned,
+        next_lesson=next_lesson,
+        lessons=lessons,
+        completed_ids=completed_ids,
+        week_days=week_days,
+        skills_progress=skills_progress,
+        today_time_spent_minutes=today_time_spent_minutes,
+        weekly_time_spent_minutes=weekly_time_spent_minutes,
+        total_time_hours=total_time_hours,
+        activity_heatmap=activity_heatmap,
+        performance_trends=performance_trends,
+        today_schedule=today_schedule,
+        today_achievements=today_achievements,
+        daily_quote=daily_quote,
+        srs_due_count=srs_due_count
+    )
 
 
 @bp.get("/how-to-learn")

@@ -420,17 +420,17 @@ Dựa trên hệ thống học tiếng Anh hiện tại - Phiên bản nâng c�
 6.1. Personal Dashboard (Dashboard cá nhân)
 [x] - Welcome message with user name - Thông báo chào mừng với tên người dùng
 [x] - Overall progress overview - Tổng quan tiến độ
-[ ] - Skill-specific progress - Tiến độ theo kỹ năng cụ thể
-[ ] - Time spent learning - Thời gian học tập
-[ ] - Activity heatmap - Bản đồ nhiệt hoạt động
-[ ] - Learning calendar - Lịch học tập
-[ ] - Performance trends - Xu hướng hiệu suất
+[x] - Skill-specific progress - Tiến độ theo kỹ năng cụ thể
+[x] - Time spent learning - Thời gian học tập
+[x] - Activity heatmap - Bản đồ nhiệt hoạt động
+[x] - Learning calendar - Lịch học tập
+[x] - Performance trends - Xu hướng hiệu suất
 [x] - Goal completion tracking - Theo dõi hoàn thành mục tiêu
 [x] - Quick actions (learn vocabulary, practice, review) - Hành động nhanh
-[ ] - Today's schedule display - Hiển thị lịch trình hôm nay
+[x] - Today's schedule display - Hiển thị lịch trình hôm nay
 [x] - Upcoming reviews notification - Thông báo ôn tập sắp tới
-[ ] - Today's achievements - Thành tích hôm nay
-[ ] - Daily motivation quote - Câu động lực hàng ngày
+[x] - Today's achievements - Thành tích hôm nay
+[x] - Daily motivation quote - Câu động lực hàng ngày
 
 6.2. Statistics Overview (Tổng quan thống kê)
 [ ] - Total study time (all time) - Tổng thời gian học (tất cả thời gian)
