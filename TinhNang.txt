@@ -394,23 +394,23 @@ Dựa trên hệ thống học tiếng Anh hiện tại - Phiên bản nâng c�
 
 5.2. Gamification Features (Tính năng trò chơi hóa)
 [x] - Daily streak system - Hệ thống chuỗi ngày học
-[x] - Experience points (XP) system - Hệ thống điểm kinh nghiệm
-[x] - Level & progression - Cấp độ và thăng tiến
-[x] - Achievement badges - Huy hiệu thành tích
-[x] - Leaderboards - Bảng xếp hạng
-[x] - Learning challenges - Thử thách học tập
-[x] - Reward system - Hệ thống phần thưởng
-[x] - Daily goals & rewards - Mục tiêu hàng ngày và phần thưởng
+[ ] - Experience points (XP) system - Hệ thống điểm kinh nghiệm
+[ ] - Level & progression - Cấp độ và thăng tiến
+[ ] - Achievement badges - Huy hiệu thành tích
+[ ] - Leaderboards - Bảng xếp hạng
+[ ] - Learning challenges - Thử thách học tập
+[ ] - Reward system - Hệ thống phần thưởng
+[ ] - Daily goals & rewards - Mục tiêu hàng ngày và phần thưởng
 
 5.3. Learning Games (Trò chơi học tập)
 [x] - Vocabulary matching game - Trò chơi ghép từ vựng
-[x] - Speed quiz game - Trò chơi quiz tốc độ
-[x] - Word scramble game - Trò chơi sắp xếp từ
-[x] - Hangman game - Trò chơi hangman
-[x] - Crossword puzzles - Trò chơi crossword
-[x] - Memory card game - Trò chơi nhớ thẻ
-[x] - Spelling bee game - Trò chơi đánh vần
-[x] - Grammar racing game - Trò chơi đua ngữ pháp
+[ ] - Speed quiz game - Trò chơi quiz tốc độ
+[ ] - Word scramble game - Trò chơi sắp xếp từ
+[ ] - Hangman game - Trò chơi hangman
+[ ] - Crossword puzzles - Trò chơi crossword
+[ ] - Memory card game - Trò chơi nhớ thẻ
+[ ] - Spelling bee game - Trò chơi đánh vần
+[ ] - Grammar racing game - Trò chơi đua ngữ pháp
 
 ================================================================================
 
@@ -420,88 +420,88 @@ Dựa trên hệ thống học tiếng Anh hiện tại - Phiên bản nâng c�
 6.1. Personal Dashboard (Dashboard cá nhân)
 [x] - Welcome message with user name - Thông báo chào mừng với tên người dùng
 [x] - Overall progress overview - Tổng quan tiến độ
-[x] - Skill-specific progress - Tiến độ theo kỹ năng cụ thể
-[x] - Time spent learning - Thời gian học tập
-[x] - Activity heatmap - Bản đồ nhiệt hoạt động
-[x] - Learning calendar - Lịch học tập
-[x] - Performance trends - Xu hướng hiệu suất
+[ ] - Skill-specific progress - Tiến độ theo kỹ năng cụ thể
+[ ] - Time spent learning - Thời gian học tập
+[ ] - Activity heatmap - Bản đồ nhiệt hoạt động
+[ ] - Learning calendar - Lịch học tập
+[ ] - Performance trends - Xu hướng hiệu suất
 [x] - Goal completion tracking - Theo dõi hoàn thành mục tiêu
 [x] - Quick actions (learn vocabulary, practice, review) - Hành động nhanh
-[x] - Today's schedule display - Hiển thị lịch trình hôm nay
+[ ] - Today's schedule display - Hiển thị lịch trình hôm nay
 [x] - Upcoming reviews notification - Thông báo ôn tập sắp tới
-[x] - Today's achievements - Thành tích hôm nay
-[x] - Daily motivation quote - Câu động lực hàng ngày
+[ ] - Today's achievements - Thành tích hôm nay
+[ ] - Daily motivation quote - Câu động lực hàng ngày
 
 6.2. Statistics Overview (Tổng quan thống kê)
-[x] - Total study time (all time) - Tổng thời gian học (tất cả thời gian)
+[ ] - Total study time (all time) - Tổng thời gian học (tất cả thời gian)
 [x] - Total vocabulary learned - Tổng từ vựng đã học
 [x] - Total practice questions - Tổng câu luyện tập
 [x] - Total tests taken - Tổng kiểm tra đã làm
 [x] - Average accuracy rate - Tỷ lệ chính xác trung bình
 [x] - Current streak - Chuỗi hiện tại
 [x] - Longest streak - Chuỗi dài nhất
-[x] - Current level - Cấp độ hiện tại
-[x] - Level start date - Ngày bắt đầu cấp độ
-[x] - Level progress percentage - Phần trăm tiến độ cấp độ
-[x] - Estimated completion date - Ngày hoàn thành ước tính
+[ ] - Current level - Cấp độ hiện tại
+[ ] - Level start date - Ngày bắt đầu cấp độ
+[ ] - Level progress percentage - Phần trăm tiến độ cấp độ
+[ ] - Estimated completion date - Ngày hoàn thành ước tính
 [x] - Overall score progression - Tiến độ điểm tổng thể
-[x] - Skill balance (vocabulary/grammar/listening/reading) - Cân bằng kỹ năng
+[ ] - Skill balance (vocabulary/grammar/listening/reading) - Cân bằng kỹ năng
 
 6.3. Detailed Analytics (Phân tích chi tiết)
-[x] - Study time charts (daily/weekly/monthly) - Biểu đồ thời gian học
+[ ] - Study time charts (daily/weekly/monthly) - Biểu đồ thời gian học
 [x] - Vocabulary growth charts - Biểu đồ tăng trưởng từ vựng
-[x] - Accuracy trend charts - Biểu đồ xu hướng độ chính xác
-[x] - Score progression charts - Biểu đồ tiến độ điểm
+[ ] - Accuracy trend charts - Biểu đồ xu hướng độ chính xác
+[ ] - Score progression charts - Biểu đồ tiến độ điểm
 [x] - Streak visualization - Trực quan hóa chuỗi
 [x] - SRS level distribution - Phân phối mức SRS
-[x] - Skill-wise performance charts - Biểu đồ hiệu suất theo kỹ năng
+[ ] - Skill-wise performance charts - Biểu đồ hiệu suất theo kỹ năng
 [x] - Topic-wise performance charts - Biểu đồ hiệu suất theo chủ đề
-[x] - Time management analysis - Phân tích quản lý thời gian
-[x] - Weakness heat map - Bản đồ nhiệt điểm yếu
-[x] - Strength identification - Xác định điểm mạnh
-[x] - Progress velocity - Tốc độ tiến độ
+[ ] - Time management analysis - Phân tích quản lý thời gian
+[ ] - Weakness heat map - Bản đồ nhiệt điểm yếu
+[ ] - Strength identification - Xác định điểm mạnh
+[ ] - Progress velocity - Tốc độ tiến độ
 [x] - Goal achievement rate - Tỷ lệ đạt mục tiêu
-[x] - Prediction models - Mô hình dự đoán
+[ ] - Prediction models - Mô hình dự đoán
 
 6.4. Goal Tracking (Theo dõi mục tiêu)
 [x] - Set custom goals - Đặt mục tiêu tùy chỉnh
-[x] - Goal type selection (score, vocabulary, study time) - Chọn loại mục tiêu
+[ ] - Goal type selection (score, vocabulary, study time) - Chọn loại mục tiêu
 [x] - Goal target value - Giá trị mục tiêu
-[x] - Goal deadline - Hạn mục mục tiêu
+[ ] - Goal deadline - Hạn mục mục tiêu
 [x] - Goal progress display - Hiển thị tiến độ mục tiêu
 [x] - Goal completion percentage - Phần trăm hoàn thành mục tiêu
-[x] - Goal status (on track/behind/ahead) - Trạng thái mục tiêu
-[x] - Goal history - Lịch sử mục tiêu
+[ ] - Goal status (on track/behind/ahead) - Trạng thái mục tiêu
+[ ] - Goal history - Lịch sử mục tiêu
 [x] - Edit goals - Chỉnh sửa mục tiêu
-[x] - Delete goals - Xóa mục tiêu
-[x] - Goal notifications - Thông báo mục tiêu
-[x] - Goal celebration - Chúc mừng mục tiêu
+[ ] - Delete goals - Xóa mục tiêu
+[ ] - Goal notifications - Thông báo mục tiêu
+[ ] - Goal celebration - Chúc mừng mục tiêu
 
 6.5. Achievements System (Hệ thống thành tích)
-[x] - Achievement list view - Chế độ xem danh sách thành tích
-[x] - Achievement categories (learning, practice, streak, accuracy) - Danh mục thành tích
-[x] - Achievement criteria display - Hiển thị tiêu chí thành tích
-[x] - Achievement progress indicator - Chỉ số tiến độ thành tích
-[x] - Locked achievements - Thành tích bị khóa
-[x] - Unlocked achievements - Thành tích đã mở khóa
-[x] - Achievement date - Ngày thành tích
-[x] - Achievement badge display - Hiển thị huy hiệu thành tích
-[x] - Share achievement - Chia sẻ thành tích
-[x] - Achievement points - Điểm thành tích
-[x] - Leaderboard position - Vị trí bảng xếp hạng
-[x] - Achievement notifications - Thông báo thành tích
+[ ] - Achievement list view - Chế độ xem danh sách thành tích
+[ ] - Achievement categories (learning, practice, streak, accuracy) - Danh mục thành tích
+[ ] - Achievement criteria display - Hiển thị tiêu chí thành tích
+[ ] - Achievement progress indicator - Chỉ số tiến độ thành tích
+[ ] - Locked achievements - Thành tích bị khóa
+[ ] - Unlocked achievements - Thành tích đã mở khóa
+[ ] - Achievement date - Ngày thành tích
+[ ] - Achievement badge display - Hiển thị huy hiệu thành tích
+[ ] - Share achievement - Chia sẻ thành tích
+[ ] - Achievement points - Điểm thành tích
+[ ] - Leaderboard position - Vị trí bảng xếp hạng
+[ ] - Achievement notifications - Thông báo thành tích
 
 6.6. Streak System (Hệ thống chuỗi)
 [x] - Current streak display - Hiển thị chuỗi hiện tại
 [x] - Longest streak display - Hiển thị chuỗi dài nhất
-[x] - Streak calendar view - Chế độ xem lịch chuỗi
-[x] - Streak history - Lịch sử chuỗi
-[x] - Streak freeze options - Tùy chọn đóng băng chuỗi
-[x] - Streak protection - Bảo vệ chuỗi
-[x] - Streak milestones - Cột mốc chuỗi
-[x] - Streak rewards - Phần thưởng chuỗi
-[x] - Streak notifications - Thông báo chuỗi
-[x] - Streak motivation messages - Thông điệp động lực chuỗi
+[ ] - Streak calendar view - Chế độ xem lịch chuỗi
+[ ] - Streak history - Lịch sử chuỗi
+[ ] - Streak freeze options - Tùy chọn đóng băng chuỗi
+[ ] - Streak protection - Bảo vệ chuỗi
+[ ] - Streak milestones - Cột mốc chuỗi
+[ ] - Streak rewards - Phần thưởng chuỗi
+[ ] - Streak notifications - Thông báo chuỗi
+[ ] - Streak motivation messages - Thông điệp động lực chuỗi
 
 ================================================================================
 
@@ -509,59 +509,59 @@ Dựa trên hệ thống học tiếng Anh hiện tại - Phiên bản nâng c�
 ================================================================================
 
 7.1. Error Log (Nhật ký lỗi)
-[x] - View all logged errors - Xem tất cả lỗi đã ghi
-[x] - Filter by error type (grammar/vocabulary/careless/timing) - Lọc theo loại lỗi
-[x] - Filter by skill (vocabulary/grammar/listening/reading) - Lọc theo kỹ năng
-[x] - Filter by date range - Lọc theo khoảng ngày
-[x] - Filter by status (active/resolved) - Lọc theo trạng thái
-[x] - Sort by frequency - Sắp xếp theo tần suất
-[x] - Sort by date - Sắp xếp theo ngày
-[x] - Error list view - Chế độ xem danh sách lỗi
-[x] - Error detail view - Chế độ xem chi tiết lỗi
-[x] - Original question display - Hiển thị câu hỏi gốc
-[x] - User's answer display - Hiển thị đáp án người dùng
-[x] - Correct answer display - Hiển thị đáp án đúng
-[x] - Explanation display - Hiển thị giải thích
-[x] - Error type tag - Thẻ loại lỗi
-[x] - Error note field - Trường ghi chú lỗi
-[x] - Add personal note - Thêm ghi chú cá nhân
-[x] - Edit error note - Chỉnh sửa ghi chú lỗi
-[x] - Mark as resolved - Đánh dấu đã giải quyết
-[x] - Mark as unresolved - Đánh dấu chưa giải quyết
-[x] - Delete error record - Xóa bản ghi lỗi
-[x] - Error frequency counter - Bộ đếm tần suất lỗi
-[x] - Last occurrence date - Ngày xảy ra lần cuối
+[ ] - View all logged errors - Xem tất cả lỗi đã ghi
+[ ] - Filter by error type (grammar/vocabulary/careless/timing) - Lọc theo loại lỗi
+[ ] - Filter by skill (vocabulary/grammar/listening/reading) - Lọc theo kỹ năng
+[ ] - Filter by date range - Lọc theo khoảng ngày
+[ ] - Filter by status (active/resolved) - Lọc theo trạng thái
+[ ] - Sort by frequency - Sắp xếp theo tần suất
+[ ] - Sort by date - Sắp xếp theo ngày
+[ ] - Error list view - Chế độ xem danh sách lỗi
+[ ] - Error detail view - Chế độ xem chi tiết lỗi
+[ ] - Original question display - Hiển thị câu hỏi gốc
+[ ] - User's answer display - Hiển thị đáp án người dùng
+[ ] - Correct answer display - Hiển thị đáp án đúng
+[ ] - Explanation display - Hiển thị giải thích
+[ ] - Error type tag - Thẻ loại lỗi
+[ ] - Error note field - Trường ghi chú lỗi
+[ ] - Add personal note - Thêm ghi chú cá nhân
+[ ] - Edit error note - Chỉnh sửa ghi chú lỗi
+[ ] - Mark as resolved - Đánh dấu đã giải quyết
+[ ] - Mark as unresolved - Đánh dấu chưa giải quyết
+[ ] - Delete error record - Xóa bản ghi lỗi
+[ ] - Error frequency counter - Bộ đếm tần suất lỗi
+[ ] - Last occurrence date - Ngày xảy ra lần cuối
 
 7.2. Error Analysis (Phân tích lỗi)
-[x] - Error type distribution chart - Biểu đồ phân phối loại lỗi
-[x] - Error frequency chart - Biểu đồ tần suất lỗi
-[x] - Error trend over time - Xu hướng lỗi theo thời gian
-[x] - Top 10 errors list - Danh sách 10 lỗi hàng đầu
-[x] - Weakness identification by skill - Xác định điểm yếu theo kỹ năng
-[x] - Weakness identification by topic - Xác định điểm yếu theo chủ đề
-[x] - Error resolution rate - Tỷ lệ giải quyết lỗi
-[x] - Recurring error alerts - Cảnh báo lỗi lặp lại
-[x] - Error pattern detection - Phát hiện mẫu lỗi
+[ ] - Error type distribution chart - Biểu đồ phân phối loại lỗi
+[ ] - Error frequency chart - Biểu đồ tần suất lỗi
+[ ] - Error trend over time - Xu hướng lỗi theo thời gian
+[ ] - Top 10 errors list - Danh sách 10 lỗi hàng đầu
+[ ] - Weakness identification by skill - Xác định điểm yếu theo kỹ năng
+[ ] - Weakness identification by topic - Xác định điểm yếu theo chủ đề
+[ ] - Error resolution rate - Tỷ lệ giải quyết lỗi
+[ ] - Recurring error alerts - Cảnh báo lỗi lặp lại
+[ ] - Error pattern detection - Phát hiện mẫu lỗi
 
 7.3. Error Drills (Bài tập lỗi)
-[x] - Generate drill for specific error type - Tạo bài tập cho loại lỗi cụ thể
-[x] - Generate drill for top 10 errors - Tạo bài tập cho 10 lỗi hàng đầu
-[x] - Drill configuration (question count) - Cấu hình bài tập (số câu hỏi)
-[x] - Start drill button - Nút bắt đầu bài tập
-[x] - Drill timer - Đồng hồ đếm bài tập
-[x] - Drill progress - Tiến độ bài tập
-[x] - Real-time feedback - Phản hồi thời gian thực
-[x] - Drill summary - Tóm tắt bài tập
-[x] - Success rate calculation - Tính tỷ lệ thành công
-[x] - Auto-resolve threshold (3 consecutive correct) - Ngưỡng tự động giải quyết
-[x] - Manual resolve option - Tùy chọn giải quyết thủ công
-[x] - Schedule repeat drill - Lên lịch bài tập lặp lại
+[ ] - Generate drill for specific error type - Tạo bài tập cho loại lỗi cụ thể
+[ ] - Generate drill for top 10 errors - Tạo bài tập cho 10 lỗi hàng đầu
+[ ] - Drill configuration (question count) - Cấu hình bài tập (số câu hỏi)
+[ ] - Start drill button - Nút bắt đầu bài tập
+[ ] - Drill timer - Đồng hồ đếm bài tập
+[ ] - Drill progress - Tiến độ bài tập
+[ ] - Real-time feedback - Phản hồi thời gian thực
+[ ] - Drill summary - Tóm tắt bài tập
+[ ] - Success rate calculation - Tính tỷ lệ thành công
+[ ] - Auto-resolve threshold (3 consecutive correct) - Ngưỡng tự động giải quyết
+[ ] - Manual resolve option - Tùy chọn giải quyết thủ công
+[ ] - Schedule repeat drill - Lên lịch bài tập lặp lại
 
 7.4. Error Settings (Cài đặt lỗi)
-[x] - Auto-log errors toggle - Bật/tắt tự động ghi lỗi
-[x] - Error notification preference - Ưa thích thông báo lỗi
-[x] - Drill suggestion preference - Ưa thích gợi ý bài tập
-[x] - Auto-resolve threshold setting - Cài đặt ngưỡng tự động giải quyết
+[ ] - Auto-log errors toggle - Bật/tắt tự động ghi lỗi
+[ ] - Error notification preference - Ưa thích thông báo lỗi
+[ ] - Drill suggestion preference - Ưa thích gợi ý bài tập
+[ ] - Auto-resolve threshold setting - Cài đặt ngưỡng tự động giải quyết
 
 ================================================================================
 
@@ -604,22 +604,22 @@ Dựa trên hệ thống học tiếng Anh hiện tại - Phiên bản nâng c�
 [x] - Weekly active users - Người dùng hoạt động hàng tuần
 [x] - Monthly active users - Người dùng hoạt động hàng tháng
 [x] - User retention rate - Tỷ lệ giữ chân người dùng
-[x] - Churn rate - Tỷ lệ rời bỏ
-[x] - Conversion rate - Tỷ lệ chuyển đổi
-[x] - System performance - Hiệu suất hệ thống
+[ ] - Churn rate - Tỷ lệ rời bỏ
+[ ] - Conversion rate - Tỷ lệ chuyển đổi
+[ ] - System performance - Hiệu suất hệ thống
 [x] - Error logs - Nhật ký lỗi hệ thống
-[x] - Usage patterns - Mẫu sử dụng
+[ ] - Usage patterns - Mẫu sử dụng
 [x] - Content performance - Hiệu suất nội dung
 
 8.4. System Settings (Cài đặt hệ thống)
-[x] - Application configuration - Cấu hình ứng dụng
-[x] - Feature flags - Cờ tính năng
-[x] - Maintenance mode - Chế độ bảo trì
-[x] - Email settings - Cài đặt email
-[x] - Notification settings - Cài đặt thông báo
-[x] - Security settings - Cài đặt bảo mật
-[x] - Backup settings - Cài đặt sao lưu
-[x] - Integration settings - Cài đặt tích hợp
+[ ] - Application configuration - Cấu hình ứng dụng
+[ ] - Feature flags - Cờ tính năng
+[ ] - Maintenance mode - Chế độ bảo trì
+[ ] - Email settings - Cài đặt email
+[ ] - Notification settings - Cài đặt thông báo
+[ ] - Security settings - Cài đặt bảo mật
+[ ] - Backup settings - Cài đặt sao lưu
+[ ] - Integration settings - Cài đặt tích hợp
 
 ================================================================================
 
@@ -630,11 +630,11 @@ Dựa trên hệ thống học tiếng Anh hiện tại - Phiên bản nâng c�
 [x] - Profile settings - Cài đặt hồ sơ
 [x] - Email settings - Cài đặt email
 [x] - Password settings - Cài đặt mật khẩu
-[x] - Privacy settings - Cài đặt quyền riêng tư
-[x] - Data export - Xuất dữ liệu
+[ ] - Privacy settings - Cài đặt quyền riêng tư
+[ ] - Data export - Xuất dữ liệu
 [x] - Account deletion - Xóa tài khoản
-[x] - Connected accounts - Tài khoản kết nối
-[x] - Notification preferences - Ưa thích thông báo
+[ ] - Connected accounts - Tài khoản kết nối
+[ ] - Notification preferences - Ưa thích thông báo
 
 9.2. Study Settings (Cài đặt học tập)
 [x] - Daily goals configuration - Cấu hình mục tiêu hàng ngày
@@ -644,34 +644,34 @@ Dựa trên hệ thống học tiếng Anh hiện tại - Phiên bản nâng c�
 [x] - SRS settings - Cài đặt SRS
 [x] - Audio settings - Cài đặt âm thanh
 [x] - Display settings - Cài đặt hiển thị
-[x] - Timer settings - Cài đặt đồng hồ
-[x] - Auto-advance settings - Cài đặt tự động chuyển
+[ ] - Timer settings - Cài đặt đồng hồ
+[ ] - Auto-advance settings - Cài đặt tự động chuyển
 
 9.3. Appearance Settings (Cài đặt giao diện)
-[x] - Theme selection (light/dark) - Chọn chủ đề (sáng/tối)
-[x] - Font size selection - Chọn cỡ chữ
-[x] - Font family selection - Chọn font chữ
-[x] - Color scheme - Lược màu
-[x] - Background color - Màu nền
-[x] - Text color - Màu văn bản
-[x] - Accent color - Màu nhấn
-[x] - High contrast mode - Chế độ tương phản cao
-[x] - Reduce motion - Giảm chuyển động
+[ ] - Theme selection (light/dark) - Chọn chủ đề (sáng/tối)
+[ ] - Font size selection - Chọn cỡ chữ
+[ ] - Font family selection - Chọn font chữ
+[ ] - Color scheme - Lược màu
+[ ] - Background color - Màu nền
+[ ] - Text color - Màu văn bản
+[ ] - Accent color - Màu nhấn
+[ ] - High contrast mode - Chế độ tương phản cao
+[ ] - Reduce motion - Giảm chuyển động
 
 9.4. Notification Settings (Cài đặt thông báo)
-[x] - Email notifications - Thông báo email
-[x] - Push notifications - Thông báo đẩy
-[x] - In-app notifications - Thông báo trong ứng dụng
-[x] - Notification frequency - Tần suất thông báo
-[x] - Quiet hours - Giờ yên tĩnh
-[x] - Do not disturb mode - Chế độ không làm phiền
-[x] - Notification types - Loại thông báo
+[ ] - Email notifications - Thông báo email
+[ ] - Push notifications - Thông báo đẩy
+[ ] - In-app notifications - Thông báo trong ứng dụng
+[ ] - Notification frequency - Tần suất thông báo
+[ ] - Quiet hours - Giờ yên tĩnh
+[ ] - Do not disturb mode - Chế độ không làm phiền
+[ ] - Notification types - Loại thông báo
 
 9.5. Language Settings (Cài đặt ngôn ngữ)
-[x] - Interface language selection - Chọn ngôn ngữ giao diện
-[x] - Content language selection - Chọn ngôn ngữ nội dung
-[x] - Vocabulary display language - Ngôn ngữ hiển thị từ vựng
-[x] - Translation settings - Cài đặt dịch
+[ ] - Interface language selection - Chọn ngôn ngữ giao diện
+[ ] - Content language selection - Chọn ngôn ngữ nội dung
+[ ] - Vocabulary display language - Ngôn ngữ hiển thị từ vựng
+[ ] - Translation settings - Cài đặt dịch
 
 ================================================================================
 
@@ -679,39 +679,39 @@ Dựa trên hệ thống học tiếng Anh hiện tại - Phiên bản nâng c�
 ================================================================================
 
 10.1. Push Notifications (Thông báo đẩy)
-[x] - Review due reminders - Nhắc nhở ôn tập đến hạn
-[x] - Study time reminders - Nhắc nhở thời gian học
-[x] - Test reminders - Nhắc nhở kiểm tra
-[x] - Streak warnings - Cảnh báo chuỗi
-[x] - Goal progress updates - Cập nhật tiến độ mục tiêu
-[x] - Achievement unlocked - Thành tích mở khóa
-[x] - New content available - Nội dung mới có sẵn
-[x] - Weekly summary - Tóm tắt hàng tuần
-[x] - Monthly summary - Tóm tắt hàng tháng
-[x] - Challenge updates - Cập nhật thử thách
-[x] - Leaderboard changes - Thay đổi bảng xếp hạng
+[ ] - Review due reminders - Nhắc nhở ôn tập đến hạn
+[ ] - Study time reminders - Nhắc nhở thời gian học
+[ ] - Test reminders - Nhắc nhở kiểm tra
+[ ] - Streak warnings - Cảnh báo chuỗi
+[ ] - Goal progress updates - Cập nhật tiến độ mục tiêu
+[ ] - Achievement unlocked - Thành tích mở khóa
+[ ] - New content available - Nội dung mới có sẵn
+[ ] - Weekly summary - Tóm tắt hàng tuần
+[ ] - Monthly summary - Tóm tắt hàng tháng
+[ ] - Challenge updates - Cập nhật thử thách
+[ ] - Leaderboard changes - Thay đổi bảng xếp hạng
 
 10.2. Email Notifications (Thông báo email)
-[x] - Daily progress report - Báo cáo tiến độ hàng ngày
-[x] - Weekly progress report - Báo cáo tiến độ hàng tuần
-[x] - Monthly progress report - Báo cáo tiến độ hàng tháng
-[x] - Test results - Kết quả kiểm tra
-[x] - Achievement unlocked - Thành tích mở khóa
-[x] - Streak milestones - Cột mốc chuỗi
-[x] - Goal achieved - Mục tiêu đạt được
+[ ] - Daily progress report - Báo cáo tiến độ hàng ngày
+[ ] - Weekly progress report - Báo cáo tiến độ hàng tuần
+[ ] - Monthly progress report - Báo cáo tiến độ hàng tháng
+[ ] - Test results - Kết quả kiểm tra
+[ ] - Achievement unlocked - Thành tích mở khóa
+[ ] - Streak milestones - Cột mốc chuỗi
+[ ] - Goal achieved - Mục tiêu đạt được
 [x] - Password reset - Reset mật khẩu
 [x] - Email verification - Xác thực email
 
 10.3. In-App Notifications (Thông báo trong ứng dụng)
-[x] - Notification center - Trung tâm thông báo
-[x] - Notification list - Danh sách thông báo
-[x] - Mark as read - Đánh dấu đã đọc
-[x] - Mark all as read - Đánh dấu tất cả đã đọc
-[x] - Delete notification - Xóa thông báo
-[x] - Notification settings - Cài đặt thông báo
-[x] - Notification preferences - Ưa thích thông báo
-[x] - Quiet hours - Giờ yên tĩnh
-[x] - Do not disturb mode - Chế độ không làm phiền
+[ ] - Notification center - Trung tâm thông báo
+[ ] - Notification list - Danh sách thông báo
+[ ] - Mark as read - Đánh dấu đã đọc
+[ ] - Mark all as read - Đánh dấu tất cả đã đọc
+[ ] - Delete notification - Xóa thông báo
+[ ] - Notification settings - Cài đặt thông báo
+[ ] - Notification preferences - Ưa thích thông báo
+[ ] - Quiet hours - Giờ yên tĩnh
+[ ] - Do not disturb mode - Chế độ không làm phiền
 
 ================================================================================
 
@@ -721,21 +721,21 @@ Dựa trên hệ thống học tiếng Anh hiện tại - Phiên bản nâng c�
 11.1. Mobile Interface (Giao diện mobile)
 [x] - Responsive design - Thiết kế tương thích
 [x] - Touch-optimized interface - Giao diện tối ưu touch
-[x] - Mobile-specific features - Tính năng dành cho mobile
-[x] - App-like experience - Trải nghiệm giống ứng dụng
-[x] - Push notifications for mobile - Thông báo đẩy cho mobile
-[x] - Biometric authentication - Xác thực sinh trắc học
-[x] - Background sync - Đồng synchron nền
+[ ] - Mobile-specific features - Tính năng dành cho mobile
+[ ] - App-like experience - Trải nghiệm giống ứng dụng
+[ ] - Push notifications for mobile - Thông báo đẩy cho mobile
+[ ] - Biometric authentication - Xác thực sinh trắc học
+[ ] - Background sync - Đồng synchron nền
 [x] - Performance optimization - Tối ưu hiệu suất
 
 11.2. Offline Capability (Khả năng ngoại tuyến)
-[x] - Download vocabulary for offline - Tải từ vựng để dùng ngoại tuyến
-[x] - Download lessons for offline - Tải bài học để dùng ngoại tuyến
-[x] - Download tests for offline - Tải kiểm tra để dùng ngoại tuyến
-[x] - Offline practice capability - Khả năng luyện tập ngoại tuyến
-[x] - Sync when online - Đồng bộ khi online
-[x] - Offline indicator - Chỉ số ngoại tuyến
-[x] - Manage offline content - Quản lý nội dung ngoại tuyến
+[ ] - Download vocabulary for offline - Tải từ vựng để dùng ngoại tuyến
+[ ] - Download lessons for offline - Tải bài học để dùng ngoại tuyến
+[ ] - Download tests for offline - Tải kiểm tra để dùng ngoại tuyến
+[ ] - Offline practice capability - Khả năng luyện tập ngoại tuyến
+[ ] - Sync when online - Đồng bộ khi online
+[ ] - Offline indicator - Chỉ số ngoại tuyến
+[ ] - Manage offline content - Quản lý nội dung ngoại tuyến
 
 ================================================================================
 
@@ -743,25 +743,25 @@ Dựa trên hệ thống học tiếng Anh hiện tại - Phiên bản nâng c�
 ================================================================================
 
 12.1. Security Features (Tính năng bảo mật)
-[x] - Two-factor authentication - Xác thực hai yếu tố
-[x] - Login notifications - Thông báo đăng nhập
-[x] - Suspicious activity detection - Phát hiện hoạt động đáng ngờ
+[ ] - Two-factor authentication - Xác thực hai yếu tố
+[ ] - Login notifications - Thông báo đăng nhập
+[ ] - Suspicious activity detection - Phát hiện hoạt động đáng ngờ
 [x] - Session management - Quản lý phiên
-[x] - Rate limiting - Giới hạn tốc độ
-[x] - Data encryption - Mã hóa dữ liệu
-[x] - Secure headers - Tiêu đề bảo mật
+[ ] - Rate limiting - Giới hạn tốc độ
+[ ] - Data encryption - Mã hóa dữ liệu
+[ ] - Secure headers - Tiêu đề bảo mật
 [x] - CSRF protection - Bảo vệ CSRF
 [x] - XSS protection - Bảo vệ XSS
 [x] - SQL injection prevention - Phòng chống SQL injection
 
 12.2. Privacy Settings (Cài đặt quyền riêng tư)
-[x] - Profile visibility - Khả năng hiển thị hồ sơ
-[x] - Progress visibility - Khả năng hiển thị tiến độ
-[x] - Leaderboard participation - Tham gia bảng xếp hạng
-[x] - Data sharing preferences - Ưa thích chia sẻ dữ liệu
-[x] - Analytics consent - Đồng ý phân tích
-[x] - Cookie preferences - Ưa thích cookie
-[x] - Data export - Xuất dữ liệu
+[ ] - Profile visibility - Khả năng hiển thị hồ sơ
+[ ] - Progress visibility - Khả năng hiển thị tiến độ
+[ ] - Leaderboard participation - Tham gia bảng xếp hạng
+[ ] - Data sharing preferences - Ưa thích chia sẻ dữ liệu
+[ ] - Analytics consent - Đồng ý phân tích
+[ ] - Cookie preferences - Ưa thích cookie
+[ ] - Data export - Xuất dữ liệu
 [x] - Account deletion - Xóa tài khoản
 
 ================================================================================

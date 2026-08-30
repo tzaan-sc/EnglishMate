@@ -2,13 +2,20 @@
 
 {% block content %}
 <div class="row mb-3">
-  <div class="col-12 d-flex justify-content-between align-items-center">
+  <div class="col-12 d-flex justify-content-between align-items-center flex-wrap gap-2">
     <h3 class="mb-0">{{ exam.title }} <span class="badge bg-secondary fs-6">{{ 'Thi Thật' if mode == 'real' else 'Luyện Tập' }}</span></h3>
-    {% if mode == 'real' %}
-    <div class="fs-4 fw-bold text-danger" id="timer">
-      --:--
+    <div class="d-flex align-items-center gap-3">
+      {% if mode == 'real' and current_user.exam_allow_pause %}
+      <button type="button" class="btn btn-outline-warning text-dark-emphasis rounded-pill px-3 py-1.5 fw-semibold small" id="btnPause">
+        ⏸️ Tạm dừng
+      </button>
+      {% endif %}
+      {% if mode == 'real' %}
+      <div class="fs-4 fw-bold text-danger {% if not current_user.exam_show_timer %}d-none{% endif %}" id="timer">
+        --:--
+      </div>
+      {% endif %}
     </div>
-    {% endif %}
   </div>
 </div>
 
@@ -104,8 +111,69 @@
   </div>
 </form>
 
+<!-- Pause / Resume Modal -->
+<div class="modal fade" id="pauseModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content border-0 shadow-lg rounded-4 p-4 text-center">
+      <div class="fs-1 mb-2">⏸️</div>
+      <h4 class="fw-bold text-dark mb-2">Bài Thi Đang Tạm Dừng</h4>
+      <p class="text-secondary small mb-4">Đồng hồ đếm ngược đã ngưng chạy. Khi sẵn sàng, bấm nút bên dưới để tiếp tục.</p>
+      <button type="button" class="btn btn-warning text-dark btn-lg w-100 rounded-pill fw-bold" id="btnResume">
+        ▶️ Tiếp tục làm bài ngay
+      </button>
+    </div>
+  </div>
+</div>
+
+<style>
+  .blurred {
+    filter: blur(8px);
+    pointer-events: none;
+    user-select: none;
+  }
+</style>
+{% endblock %}
+
+{% block scripts %}
 <script>
 document.addEventListener("DOMContentLoaded", function() {
+  function playClickSound() {
+    {% if current_user.exam_sound_effects %}
+    try {
+      let ctx = new (window.AudioContext || window.webkitAudioContext)();
+      let osc = ctx.createOscillator();
+      let gain = ctx.createGain();
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.frequency.setValueAtTime(600, ctx.currentTime);
+      gain.gain.setValueAtTime(0.05, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.1);
+      osc.start(ctx.currentTime);
+      osc.stop(ctx.currentTime + 0.1);
+    } catch(e) {}
+    {% endif %}
+  }
+
+  {% if mode == 'real' and current_user.exam_allow_pause %}
+  let isPaused = false;
+  const pauseModal = new bootstrap.Modal(document.getElementById("pauseModal"));
+  const formContainer = document.getElementById("exam-form");
+  const btnPause = document.getElementById("btnPause");
+  const btnResume = document.getElementById("btnResume");
+
+  btnPause.addEventListener("click", function() {
+    isPaused = true;
+    formContainer.classList.add("blurred");
+    pauseModal.show();
+  });
+
+  btnResume.addEventListener("click", function() {
+    isPaused = false;
+    formContainer.classList.remove("blurred");
+    pauseModal.hide();
+  });
+  {% endif %}
+
   // Navigation active state
   const radios = document.querySelectorAll('input[type="radio"]');
   radios.forEach(r => {
@@ -116,6 +184,35 @@ document.addEventListener("DOMContentLoaded", function() {
         navBtn.classList.remove('btn-outline-secondary');
         navBtn.classList.add('btn-primary');
       }
+      playClickSound();
+
+      {% if current_user.exam_show_realtime_score %}
+      const parent = this.closest('.card-body');
+      const checkBtn = parent.querySelector('.check-answer-btn');
+      const feedback = parent.querySelector('.practice-feedback');
+      if (checkBtn && feedback) {
+        const correct = checkBtn.getAttribute('data-correct');
+        const transcript = checkBtn.getAttribute('data-transcript');
+        const explanation = checkBtn.getAttribute('data-explanation');
+        
+        feedback.querySelector('.correct-text').innerText = correct || 'Không có';
+        const transDiv = feedback.querySelector('.transcript-text');
+        if(transcript) {
+          transDiv.innerHTML = `<strong>Transcript:</strong><br>${transcript.replace(/\\n/g, '<br>')}`;
+        } else {
+          transDiv.innerHTML = '';
+        }
+        
+        const explDiv = feedback.querySelector('.explanation-text');
+        if(explanation) {
+          explDiv.innerHTML = `<strong>Giải thích:</strong><br>${explanation.replace(/\\n/g, '<br>')}`;
+        } else {
+          explDiv.innerHTML = '';
+        }
+        
+        feedback.classList.remove('d-none');
+      }
+      {% endif %}
     });
   });
 
@@ -145,11 +242,19 @@ document.addEventListener("DOMContentLoaded", function() {
   const form = document.getElementById('exam-form');
   
   const timer = setInterval(() => {
+    {% if current_user.exam_allow_pause %}
+    if (isPaused) return;
+    {% endif %}
     if (timeLeft <= 0) {
       clearInterval(timer);
+      {% if current_user.exam_auto_submit %}
       timerDisplay.innerHTML = "HẾT GIỜ";
       alert("Đã hết thời gian làm bài. Hệ thống sẽ tự động nộp bài.");
       form.submit();
+      {% else %}
+      timerDisplay.innerHTML = "HẾT GIỜ";
+      timerDisplay.classList.add("text-danger");
+      {% endif %}
     } else {
       let m = Math.floor(timeLeft / 60);
       let s = timeLeft % 60;

@@ -33,6 +33,13 @@ if db_path.exists():
         ("vocab_review_time", "VARCHAR(20) NOT NULL DEFAULT 'anytime'"),
         ("vocab_srs_algorithm", "VARCHAR(20) NOT NULL DEFAULT 'standard'"),
         ("vocab_notify_review_due", "BOOLEAN NOT NULL DEFAULT 1"),
+        ("exam_default_type", "VARCHAR(50) NOT NULL DEFAULT 'TOEIC'"),
+        ("exam_default_time_limit", "INTEGER NOT NULL DEFAULT 120"),
+        ("exam_show_timer", "BOOLEAN NOT NULL DEFAULT 1"),
+        ("exam_allow_pause", "BOOLEAN NOT NULL DEFAULT 1"),
+        ("exam_show_realtime_score", "BOOLEAN NOT NULL DEFAULT 0"),
+        ("exam_auto_submit", "BOOLEAN NOT NULL DEFAULT 1"),
+        ("exam_sound_effects", "BOOLEAN NOT NULL DEFAULT 1"),
     ]
 
     for col_name, col_type in new_cols:

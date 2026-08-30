@@ -26,7 +26,7 @@
         <div class="row g-2">
           {% for dur in [5, 10, 15, 30, 45, 60] %}
           <div class="col-4 col-md-2">
-            <input type="radio" class="btn-check" name="duration" id="dur_{{ dur }}" value="{{ dur }}" {{ 'checked' if dur==15 }}>
+            <input type="radio" class="btn-check" name="duration" id="dur_{{ dur }}" value="{{ dur }}" {% if current_user.exam_default_time_limit == dur %}checked{% elif dur == 15 and current_user.exam_default_time_limit not in [5, 10, 15, 30, 45, 60] %}checked{% endif %}>
             <label class="btn btn-outline-primary rounded-3 w-100 py-2.5 fw-bold" for="dur_{{ dur }}">{{ dur }} phút</label>
           </div>
           {% endfor %}

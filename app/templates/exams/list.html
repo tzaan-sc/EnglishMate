@@ -1,7 +1,23 @@
 {% extends "base.html" %}
 
 {% block content %}
+<div class="container-fluid max-w-7xl py-4">
 
+  <!-- Page Header Title -->
+  <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
+    <div>
+      <span class="badge bg-danger-subtle text-danger border border-danger-subtle rounded-pill px-3 py-1 mb-2 font-semibold">
+        HỆ THỐNG LUYỆN ĐỀ THI THỬ
+      </span>
+      <h2 class="fw-bold text-dark mb-1">Thư viện đề thi</h2>
+      <p class="text-secondary small mb-0">Thử sức với các đề thi chứng chỉ TOEIC, IELTS, TOEFL và theo dõi lịch sử làm bài.</p>
+    </div>
+    <div class="d-flex gap-2">
+      <a href="{{ url_for('exams.exam_settings') }}" class="btn btn-outline-secondary rounded-pill px-3 fw-semibold">
+        ⚙️ Cài đặt đề thi
+      </a>
+    </div>
+  </div>
 
 <div class="card shadow-sm mb-4">
   <div class="card-body">
@@ -135,6 +151,6 @@
             </div>
             {% endif %}
         </div>
-    </div>
+</div>
 </div>
 {% endblock %}

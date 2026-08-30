@@ -24,7 +24,12 @@
                 <p class="text-muted mb-0 small">Vui lòng không tải lại trang hoặc nhấn nút quay lại trong quá trình làm bài.</p>
               </div>
               <div class="d-flex align-items-center gap-3">
-                <div class="timer-card text-center p-2 px-3 bg-navy text-white rounded-3 shadow-sm">
+                {% if current_user.exam_allow_pause %}
+                <button type="button" class="btn btn-outline-warning text-dark-emphasis rounded-pill px-3 py-1.5 fw-semibold small" id="btnPause">
+                  ⏸️ Tạm dừng
+                </button>
+                {% endif %}
+                <div class="timer-card text-center p-2 px-3 bg-navy text-white rounded-3 shadow-sm {% if not current_user.exam_show_timer %}d-none{% endif %}">
                   <div class="small opacity-75 text-uppercase" style="font-size: 0.65rem; letter-spacing: 0.05em;">Thời gian còn lại</div>
                   <span id="timer-display" class="fs-4 fw-bold font-monospace">75:00</span>
                 </div>
@@ -283,6 +288,28 @@
     </div>
   </div>
 </div>
+
+<!-- Pause / Resume Modal -->
+<div class="modal fade" id="pauseModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content border-0 shadow-lg rounded-4 p-4 text-center">
+      <div class="fs-1 mb-2">⏸️</div>
+      <h4 class="fw-bold text-dark mb-2">Bài Thi Đang Tạm Dừng</h4>
+      <p class="text-secondary small mb-4">Đồng hồ đếm ngược đã ngưng chạy. Khi sẵn sàng, bấm nút bên dưới để tiếp tục.</p>
+      <button type="button" class="btn btn-warning text-dark btn-lg w-100 rounded-pill fw-bold" id="btnResume">
+        ▶️ Tiếp tục làm bài ngay
+      </button>
+    </div>
+  </div>
+</div>
+
+<style>
+  .blurred {
+    filter: blur(8px);
+    pointer-events: none;
+    user-select: none;
+  }
+</style>
 {% endblock %}
 
 {% block scripts %}
@@ -296,8 +323,48 @@ document.addEventListener("DOMContentLoaded", function() {
   const isTimerExpiredInput = document.getElementById("is-timer-expired");
   const testForm = document.getElementById("toeic-test-form");
   
+  function playClickSound() {
+    {% if current_user.exam_sound_effects %}
+    try {
+      let ctx = new (window.AudioContext || window.webkitAudioContext)();
+      let osc = ctx.createOscillator();
+      let gain = ctx.createGain();
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.frequency.setValueAtTime(600, ctx.currentTime);
+      gain.gain.setValueAtTime(0.05, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.1);
+      osc.start(ctx.currentTime);
+      osc.stop(ctx.currentTime + 0.1);
+    } catch(e) {}
+    {% endif %}
+  }
+
+  {% if current_user.exam_allow_pause %}
+  let isPaused = false;
+  const pauseModal = new bootstrap.Modal(document.getElementById("pauseModal"));
+  const formContainer = document.getElementById("toeic-test-form");
+  const btnPause = document.getElementById("btnPause");
+  const btnResume = document.getElementById("btnResume");
+
+  btnPause.addEventListener("click", function() {
+    isPaused = true;
+    formContainer.classList.add("blurred");
+    pauseModal.show();
+  });
+
+  btnResume.addEventListener("click", function() {
+    isPaused = false;
+    formContainer.classList.remove("blurred");
+    pauseModal.hide();
+  });
+  {% endif %}
+
   // Timer Interval
   const timerInterval = setInterval(function() {
+    {% if current_user.exam_allow_pause %}
+    if (isPaused) return;
+    {% endif %}
     timeRemaining--;
     timeSpent++;
     timeSpentInput.value = timeSpent;
@@ -317,8 +384,14 @@ document.addEventListener("DOMContentLoaded", function() {
     if (timeRemaining <= 0) {
       clearInterval(timerInterval);
       isTimerExpiredInput.value = "true";
+      {% if current_user.exam_auto_submit %}
       alert("Thời gian làm bài đã hết! Hệ thống tự động nộp bài.");
       testForm.submit();
+      {% else %}
+      timerDisplay.textContent = "HẾT GIỜ";
+      timerDisplay.classList.remove("bg-navy");
+      timerDisplay.classList.add("bg-danger");
+      {% endif %}
     }
   }, 1000);
 
@@ -350,7 +423,10 @@ document.addEventListener("DOMContentLoaded", function() {
   }
 
   radios.forEach(radio => {
-    radio.addEventListener("change", updateProgress);
+    radio.addEventListener("change", function() {
+      updateProgress();
+      playClickSound();
+    });
   });
 
   // Smooth scroll to questions when clicking map items

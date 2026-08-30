@@ -150,7 +150,9 @@ import json
 @bp.get("/exam")
 @login_required
 def exam_list():
-    category = request.args.get("category", "")
+    category = request.args.get("category")
+    if category is None:
+        category = current_user.exam_default_type or ""
     skill = request.args.get("skill", "")
     
     query = Exam.query.filter_by(is_active=True)
@@ -822,3 +824,20 @@ def test_delete_record(source, record_id):
             flash("Đã xóa bản ghi bài tập ngữ pháp thành công.", "success")
 
     return redirect(url_for("exams.test_history"))
+
+
+@bp.route("/settings", methods=["GET", "POST"])
+@login_required
+def exam_settings():
+    if request.method == "POST":
+        current_user.exam_default_type = request.form.get("exam_default_type", "TOEIC")
+        current_user.exam_default_time_limit = int(request.form.get("exam_default_time_limit", 120))
+        current_user.exam_show_timer = request.form.get("exam_show_timer") == "on"
+        current_user.exam_allow_pause = request.form.get("exam_allow_pause") == "on"
+        current_user.exam_show_realtime_score = request.form.get("exam_show_realtime_score") == "on"
+        current_user.exam_auto_submit = request.form.get("exam_auto_submit") == "on"
+        current_user.exam_sound_effects = request.form.get("exam_sound_effects") == "on"
+        db.session.commit()
+        flash("Cài đặt đề thi đã được cập nhật thành công!", "success")
+        return redirect(url_for("exams.exam_settings"))
+    return render_template("exams/settings.html")

@@ -45,6 +45,16 @@ class User(UserMixin, db.Model):
     vocab_review_time = db.Column(db.String(20), nullable=False, default="anytime")
     vocab_srs_algorithm = db.Column(db.String(20), nullable=False, default="standard")
     vocab_notify_review_due = db.Column(db.Boolean, nullable=False, default=True)
+    
+    # Exam Settings
+    exam_default_type = db.Column(db.String(50), nullable=False, default="TOEIC")
+    exam_default_time_limit = db.Column(db.Integer, nullable=False, default=120)
+    exam_show_timer = db.Column(db.Boolean, nullable=False, default=True)
+    exam_allow_pause = db.Column(db.Boolean, nullable=False, default=True)
+    exam_show_realtime_score = db.Column(db.Boolean, nullable=False, default=False)
+    exam_auto_submit = db.Column(db.Boolean, nullable=False, default=True)
+    exam_sound_effects = db.Column(db.Boolean, nullable=False, default=True)
+    
     created_at = db.Column(db.DateTime(timezone=True), default=now, nullable=False)
     updated_at = db.Column(db.DateTime(timezone=True), default=now, onupdate=now, nullable=False)
 

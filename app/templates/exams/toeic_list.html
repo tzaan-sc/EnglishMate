@@ -6,10 +6,17 @@
 <div class="page-section">
   <div class="container">
     
-    <div class="page-heading">
-      <span class="eyebrow">Practice Zone</span>
-      <h1>Luyện thi TOEIC Reading</h1>
-      <p>Thử sức với đề thi đầy đủ cấu trúc phần Đọc hiểu TOEIC (Part 5, 6, 7) trong 75 phút.</p>
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-4">
+      <div class="page-heading mb-0">
+        <span class="eyebrow">Practice Zone</span>
+        <h1>Luyện thi TOEIC Reading</h1>
+        <p class="mb-0">Thử sức với đề thi đầy đủ cấu trúc phần Đọc hiểu TOEIC (Part 5, 6, 7) trong 75 phút.</p>
+      </div>
+      <div>
+        <a href="{{ url_for('exams.exam_settings') }}" class="btn btn-outline-secondary rounded-pill px-3 fw-semibold">
+          ⚙️ Cài đặt đề thi
+        </a>
+      </div>
     </div>
 
     <div class="row g-4 mb-5">

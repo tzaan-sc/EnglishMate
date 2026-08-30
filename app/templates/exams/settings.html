@@ -1,0 +1,156 @@
+{% extends "base.html" %}
+{% block title %}Cài đặt Đề thi · EnglishMate{% endblock %}
+
+{% block content %}
+<div class="container-fluid max-w-4xl py-4">
+
+  <!-- Page Header -->
+  <div class="d-flex align-items-center justify-content-between gap-3 mb-4">
+    <div class="d-flex align-items-center gap-3">
+      <a href="{{ url_for('exams.exam_list') }}" class="btn btn-light rounded-circle p-2 shadow-xs" title="Quay lại Danh sách Đề thi">
+        <i class="ph ph-arrow-left fs-5"></i>
+      </a>
+      <div>
+        <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle rounded-pill px-3 py-1 mb-1 font-semibold">
+          TÙY CHỈNH HỆ THỐNG
+        </span>
+        <h2 class="fw-bold text-dark mb-0">Cài Đặt Đề Thi Cá Nhân</h2>
+      </div>
+    </div>
+  </div>
+
+  <form method="post" action="{{ url_for('exams.exam_settings') }}">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+    <div class="row g-4">
+      
+      <!-- Card 1: Loại đề thi & Giới hạn thời gian -->
+      <div class="col-md-6">
+        <div class="card border-0 shadow-sm rounded-4 p-4 bg-white h-100">
+          <h5 class="fw-bold text-dark mb-3 d-flex align-items-center gap-2">
+            <i class="ph ph-target text-danger fs-4"></i> Loại đề & Thời gian mặc định
+          </h5>
+
+          <!-- 1. Default test type -->
+          <div class="mb-4">
+            <label class="form-label fw-bold text-dark mb-1">Loại đề thi mặc định</label>
+            <p class="text-secondary small mb-2">Hệ thống sẽ tự động lọc danh sách đề thi theo loại này khi bạn truy cập.</p>
+            <select name="exam_default_type" class="form-select rounded-3">
+              <option value="" {% if current_user.exam_default_type == '' %}selected{% endif %}>-- Hiển thị tất cả --</option>
+              <option value="TOEIC" {% if current_user.exam_default_type == 'TOEIC' %}selected{% endif %}>🎓 Đề thi TOEIC</option>
+              <option value="IELTS" {% if current_user.exam_default_type == 'IELTS' %}selected{% endif %}>🇬🇧 Đề thi IELTS</option>
+              <option value="TOEFL" {% if current_user.exam_default_type == 'TOEFL' %}selected{% endif %}>🇺🇸 Đề thi TOEFL</option>
+              <option value="Placement" {% if current_user.exam_default_type == 'Placement' %}selected{% endif %}>🎯 Đề kiểm tra Xếp lớp (Placement)</option>
+              <option value="Progress" {% if current_user.exam_default_type == 'Progress' %}selected{% endif %}>📈 Đề Đánh giá tiến độ (Progress)</option>
+              <option value="Timed" {% if current_user.exam_default_type == 'Timed' %}selected{% endif %}>⏱️ Phiên Luyện tập thời gian</option>
+              <option value="Custom" {% if current_user.exam_default_type == 'Custom' %}selected{% endif %}>⚙️ Đề thi Tùy chỉnh (Custom)</option>
+            </select>
+          </div>
+
+          <hr class="my-3 opacity-25">
+
+          <!-- 2. Default time limit -->
+          <div>
+            <label class="form-label fw-bold text-dark mb-1">Giới hạn thời gian luyện tập mặc định</label>
+            <p class="text-secondary small mb-2">Chọn thời lượng mặc định được gợi ý khi khởi tạo Phiên luyện tập thời gian.</p>
+            <div class="d-flex align-items-center gap-2 flex-wrap">
+              {% for t in [5, 10, 15, 30, 45, 60, 120] %}
+              <input type="radio" class="btn-check" name="exam_default_time_limit" id="time_{{ t }}" value="{{ t }}" {% if current_user.exam_default_time_limit == t %}checked{% endif %}>
+              <label class="btn btn-outline-danger rounded-pill px-3 py-1.5 fw-bold" for="time_{{ t }}">{{ t }} phút</label>
+              {% endfor %}
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Card 2: Hiển thị & Kiểm soát thời gian -->
+      <div class="col-md-6">
+        <div class="card border-0 shadow-sm rounded-4 p-4 bg-white h-100">
+          <h5 class="fw-bold text-dark mb-3 d-flex align-items-center gap-2">
+            <i class="ph ph-clock text-primary fs-4"></i> Kiểm soát Thời Gian & Tự động
+          </h5>
+
+          <!-- 3. Show timer preference -->
+          <div class="form-check form-switch bg-light border rounded-4 p-3 mb-3 d-flex align-items-center justify-content-between">
+            <div>
+              <label class="form-check-label fw-bold text-dark cursor-pointer d-block" for="showTimerSwitch">⏱️ Hiển thị đồng hồ đếm ngược</label>
+              <span class="text-secondary small">Hiển thị bộ đếm thời gian thực khi đang trong phòng thi.</span>
+            </div>
+            <input class="form-check-input fs-4 ms-2 mt-0 cursor-pointer" type="checkbox" id="showTimerSwitch" name="exam_show_timer" {% if current_user.exam_show_timer %}checked{% endif %}>
+          </div>
+
+          <!-- 4. Allow pause preference -->
+          <div class="form-check form-switch bg-light border rounded-4 p-3 mb-3 d-flex align-items-center justify-content-between">
+            <div>
+              <label class="form-check-label fw-bold text-dark cursor-pointer d-block" for="allowPauseSwitch">⏸️ Cho phép tạm dừng bài thi</label>
+              <span class="text-secondary small">Cho phép tạm dừng đồng hồ và ẩn đề thi tạm thời để giải quyết việc riêng.</span>
+            </div>
+            <input class="form-check-input fs-4 ms-2 mt-0 cursor-pointer" type="checkbox" id="allowPauseSwitch" name="exam_allow_pause" {% if current_user.exam_allow_pause %}checked{% endif %}>
+          </div>
+
+          <!-- 6. Auto-submit preference -->
+          <div class="form-check form-switch bg-light border rounded-4 p-3 d-flex align-items-center justify-content-between">
+            <div>
+              <label class="form-check-label fw-bold text-dark cursor-pointer d-block" for="autoSubmitSwitch">📤 Tự động nộp bài khi hết giờ</label>
+              <span class="text-secondary small">Hệ thống tự nộp kết quả ngay khi đồng hồ điểm về 00:00.</span>
+            </div>
+            <input class="form-check-input fs-4 ms-2 mt-0 cursor-pointer" type="checkbox" id="autoSubmitSwitch" name="exam_auto_submit" {% if current_user.exam_auto_submit %}checked{% endif %}>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Card 3: Phản hồi & Âm thanh -->
+      <div class="col-md-6">
+        <div class="card border-0 shadow-sm rounded-4 p-4 bg-white h-100">
+          <h5 class="fw-bold text-dark mb-3 d-flex align-items-center gap-2">
+            <i class="ph ph-speaker-high text-warning fs-4"></i> Phản hồi & Hiệu ứng
+          </h5>
+
+          <!-- 5. Show real-time score preference -->
+          <div class="form-check form-switch bg-light border rounded-4 p-3 mb-3 d-flex align-items-center justify-content-between">
+            <div>
+              <label class="form-check-label fw-bold text-dark cursor-pointer d-block" for="realtimeScoreSwitch">📝 Phản hồi đúng/sai tức thì</label>
+              <span class="text-secondary small">Hiển thị đáp án và lời giải chi tiết ngay sau khi chọn đáp án (Chỉ khả dụng ở chế độ Luyện tập).</span>
+            </div>
+            <input class="form-check-input fs-4 ms-2 mt-0 cursor-pointer" type="checkbox" id="realtimeScoreSwitch" name="exam_show_realtime_score" {% if current_user.exam_show_realtime_score %}checked{% endif %}>
+          </div>
+
+          <!-- 7. Sound effects toggle -->
+          <div class="form-check form-switch bg-light border rounded-4 p-3 d-flex align-items-center justify-content-between">
+            <div>
+              <label class="form-check-label fw-bold text-dark cursor-pointer d-block" for="soundEffectsSwitch">🔊 Âm thanh phản hồi hiệu ứng</label>
+              <span class="text-secondary small">Phát âm thanh click nhẹ vui nhộn khi chọn đáp án và nộp bài.</span>
+            </div>
+            <input class="form-check-input fs-4 ms-2 mt-0 cursor-pointer" type="checkbox" id="soundEffectsSwitch" name="exam_sound_effects" {% if current_user.exam_sound_effects %}checked{% endif %}>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Card 4: Trợ giúp cấu hình -->
+      <div class="col-md-6">
+        <div class="card border-0 shadow-sm rounded-4 p-4 bg-white h-100">
+          <h5 class="fw-bold text-dark mb-3 d-flex align-items-center gap-2">
+            <i class="ph ph-info text-info fs-4"></i> Hướng dẫn tùy biến
+          </h5>
+          <div class="space-y-3 small text-secondary">
+            <p class="mb-2">💡 <strong>Mẹo Luyện Thi:</strong> Khi ôn thi thử mô phỏng TOEIC hoặc IELTS, bạn nên <strong>tắt tính năng tạm dừng</strong> và <strong>bật tự động nộp bài</strong> để tập quen với áp lực phòng thi thật.</p>
+            <p class="mb-0">🎧 <strong>Tai nghe & Thiết bị:</strong> Cài đặt âm thanh sử dụng thư viện âm thanh trình duyệt chuẩn. Đảm bảo âm lượng thiết bị của bạn đã bật để nghe thấy tiếng động hiệu ứng.</p>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Submit Save Settings Button Bar -->
+    <div class="mt-4 text-end">
+      <button type="submit" class="btn btn-primary rounded-pill px-5 py-2.5 fw-bold shadow-xs">
+        💾 Lưu Cấu Hình Đề Thi
+      </button>
+    </div>
+
+  </form>
+</div>
+{% endblock %}
