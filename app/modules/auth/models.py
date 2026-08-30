@@ -58,6 +58,7 @@ class User(UserMixin, db.Model):
     # Gamification
     xp = db.Column(db.Integer, nullable=False, default=0)
     level = db.Column(db.Integer, nullable=False, default=1)
+    level_start_date = db.Column(db.Date, nullable=True)
     daily_goal_xp = db.Column(db.Integer, nullable=False, default=50)
     daily_reward_claimed_date = db.Column(db.Date, nullable=True)
     
@@ -85,6 +86,8 @@ class User(UserMixin, db.Model):
                 break
         if self.level != lvl:
             self.level = lvl
+            # set level start date when level changes
+            self.level_start_date = date.today()
             try:
                 db.session.commit()
             except Exception:

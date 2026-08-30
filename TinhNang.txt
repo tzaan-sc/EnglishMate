@@ -433,19 +433,19 @@ Dựa trên hệ thống học tiếng Anh hiện tại - Phiên bản nâng c�
 [x] - Daily motivation quote - Câu động lực hàng ngày
 
 6.2. Statistics Overview (Tổng quan thống kê)
-[ ] - Total study time (all time) - Tổng thời gian học (tất cả thời gian)
+[x] - Total study time (all time) - Tổng thời gian học (tất cả thời gian)
 [x] - Total vocabulary learned - Tổng từ vựng đã học
 [x] - Total practice questions - Tổng câu luyện tập
 [x] - Total tests taken - Tổng kiểm tra đã làm
 [x] - Average accuracy rate - Tỷ lệ chính xác trung bình
 [x] - Current streak - Chuỗi hiện tại
 [x] - Longest streak - Chuỗi dài nhất
-[ ] - Current level - Cấp độ hiện tại
-[ ] - Level start date - Ngày bắt đầu cấp độ
-[ ] - Level progress percentage - Phần trăm tiến độ cấp độ
-[ ] - Estimated completion date - Ngày hoàn thành ước tính
+[x] - Current level - Cáp độ hiện tại
+[x] - Level start date - Ngày bắt đầu cấp độ
+[x] - Level progress percentage - Phần trăm tiến độ cấp độ
+[x] - Estimated completion date - Ngày hoàn thành ước tính
 [x] - Overall score progression - Tiến độ điểm tổng thể
-[ ] - Skill balance (vocabulary/grammar/listening/reading) - Cân bằng kỹ năng
+[x] - Skill balance (vocabulary/grammar/listening/reading) - Cân bằng kỹ năng
 
 6.3. Detailed Analytics (Phân tích chi tiết)
 [ ] - Study time charts (daily/weekly/monthly) - Biểu đồ thời gian học

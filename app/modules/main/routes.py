@@ -73,6 +73,34 @@ def dashboard():
         {"name": "Nghe hiểu", "icon": "ph-headphones", "color": "warning", "pct": listening_pct, "stat": f"{listening_completed}/{listening_lessons_total} bài"},
     ]
 
+    # Skill balance (percentages)
+    skill_balance = {
+        "từ vựng": vocab_pct,
+        "ngữ pháp": grammar_pct,
+        "đọc hiểu": reading_pct,
+        "nghe hiểu": listening_pct,
+    }
+
+    # Level info
+    level_info = current_user.get_level_info()
+    level_start_date = current_user.level_start_date
+    level_progress_pct = level_info.get('progress_pct', 0)
+    needed_xp = level_info.get('needed_xp', 0)
+
+    # Estimate completion date based on average daily XP
+    all_acts = DailyActivity.query.filter_by(user_id=current_user.id).all()
+    total_xp_from_acts = sum(
+        (a.completed_lessons * 20) + (50 if current_user.daily_reward_claimed_date == a.activity_date else 0)
+        for a in all_acts
+    )
+    active_days = len({a.activity_date for a in all_acts}) or 1
+    daily_xp_avg = total_xp_from_acts / active_days if active_days else 0
+    if daily_xp_avg > 0:
+        days_needed = int((needed_xp + daily_xp_avg - 1) // daily_xp_avg)  # ceil
+        estimated_completion_date = (date.today() + timedelta(days=days_needed)).strftime('%d/%m/%Y')
+    else:
+        estimated_completion_date = "-"
+
     # 2. Time spent learning
     today_act = DailyActivity.query.filter_by(user_id=current_user.id, activity_date=today).first()
     today_lessons = today_act.completed_lessons if today_act else 0
@@ -198,7 +226,11 @@ def dashboard():
         today_schedule=today_schedule,
         today_achievements=today_achievements,
         daily_quote=daily_quote,
-        srs_due_count=srs_due_count
+        srs_due_count=srs_due_count,
+        skill_balance=skill_balance,
+        level_start_date=level_start_date,
+        level_progress_pct=level_progress_pct,
+        estimated_completion_date=estimated_completion_date
     )
 
 
