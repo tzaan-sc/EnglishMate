@@ -1,183 +1,365 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="container py-4" style="max-width: 900px; height: 80vh; display: flex; flex-direction: column;">
-    <!-- Game Header -->
-    <div class="d-flex justify-content-between align-items-center mb-4">
+<div class="container py-4" style="max-width: 960px; min-height: 85vh; display: flex; flex-direction: column;">
+    <!-- Game Top Header -->
+    <div class="d-flex justify-content-between align-items-center mb-3">
         <div class="d-flex align-items-center gap-3">
-            <a href="{{ url_for('learning.game_lobby') }}" class="btn btn-light rounded-circle shadow-sm" style="width: 45px; height: 45px; display: flex; justify-content: center; align-items: center;" id="btnQuit">
-                <i class="bi bi-x-lg"></i>
+            <a href="{{ url_for('learning.game_lobby') }}" class="btn btn-light rounded-circle shadow-sm border" style="width: 44px; height: 44px; display: flex; justify-content: center; align-items: center;" id="btnQuit" title="Thoát sảnh">
+                <i class="ph ph-x fs-5"></i>
             </a>
             <div>
-                <h4 class="fw-bold mb-0" id="gameTitle">Game</h4>
-                <div class="small text-muted" id="gameProgress">Đang tải dữ liệu...</div>
+                <h4 class="fw-bold mb-0 text-dark" id="gameTitle">Trò chơi học tập</h4>
+                <div class="small text-muted" id="gameProgress">Đang chuẩn bị dữ liệu...</div>
             </div>
         </div>
         
-        <div class="d-flex gap-3 align-items-center">
-            <div class="bg-light px-3 py-2 rounded-pill fw-bold text-dark fs-5 shadow-sm d-flex gap-2 align-items-center">
-                <i class="bi bi-stopwatch text-danger"></i> <span id="gameTimer">00:00</span>
+        <div class="d-flex gap-2.5 align-items-center">
+            <div class="bg-white border px-3 py-1.5 rounded-pill fw-bold text-dark shadow-xs d-flex gap-2 align-items-center" style="font-size: 0.95rem;">
+                <i class="ph-fill ph-timer text-danger"></i> <span id="gameTimer">00:00</span>
             </div>
-            <div class="bg-light px-3 py-2 rounded-pill fw-bold text-dark fs-5 shadow-sm d-flex gap-2 align-items-center">
-                <i class="bi bi-star-fill text-warning"></i> <span id="gameScore">0</span>
+            <div class="bg-white border px-3 py-1.5 rounded-pill fw-bold text-dark shadow-xs d-flex gap-2 align-items-center" style="font-size: 0.95rem;">
+                <i class="ph-fill ph-star text-warning"></i> <span id="gameScore">0</span>
             </div>
         </div>
     </div>
     
-    <div class="progress mb-4 bg-light" style="height: 8px; border-radius: 4px;">
-        <div id="progressBar" class="progress-bar" role="progressbar" style="width: 0%; background-color: #6366f1; transition: width 0.3s ease;"></div>
+    <!-- Top Progress Bar -->
+    <div class="progress mb-4 bg-light-subtle border" style="height: 8px; border-radius: 4px;">
+        <div id="progressBar" class="progress-bar bg-primary progress-bar-striped progress-bar-animated" role="progressbar" style="width: 0%; transition: width 0.3s ease;"></div>
     </div>
 
-    <!-- Game Boards Container -->
-    <div id="gameBoard" class="flex-grow-1 position-relative d-flex flex-column align-items-center justify-content-center" style="background: #f8fafc; border-radius: 1.5rem; padding: 2rem;">
+    <!-- Main Game Board Container -->
+    <div id="gameBoard" class="flex-grow-1 position-relative d-flex flex-column align-items-center justify-content-center shadow-sm bg-white border" style="border-radius: 1.5rem; padding: 2rem; min-height: 480px;">
         
-        <!-- Loading -->
-        <div id="viewLoading" class="text-center w-100">
-            <div class="spinner-border text-primary" role="status"></div>
-            <p class="mt-3 text-muted fw-bold">Đang chuẩn bị thẻ...</p>
+        <!-- View 0: LOADING -->
+        <div id="viewLoading" class="text-center w-100 py-5">
+            <div class="spinner-border text-primary" role="status" style="width: 3rem; height: 3rem;"></div>
+            <h5 class="mt-3 text-dark fw-bold">Đang tải thẻ học...</h5>
+            <p class="text-muted small">Sẵn sàng để bắt đầu thử thách!</p>
         </div>
         
-        <!-- View: QUIZ -->
-        <div id="viewQuiz" class="w-100 d-none flex-column align-items-center">
-            <div class="card shadow-sm border-0 rounded-4 w-100 mb-4" style="max-width: 600px;">
-                <div class="card-body text-center p-5">
-                    <button class="btn btn-light rounded-circle position-absolute top-0 end-0 m-3" onclick="playCurrentAudio()"><i class="bi bi-volume-up-fill text-primary"></i></button>
-                    <h1 class="fw-bold display-4 mb-0" id="quizTerm">Term</h1>
-                    <img id="quizImg" src="" style="display: none; max-height: 150px; margin-top: 20px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+        <!-- View 1: MATCHING (Ghép từ vựng) -->
+        <div id="viewMatching" class="w-100 d-none h-100">
+            <div class="text-center mb-3">
+                <span class="badge bg-info-subtle text-info rounded-pill px-3 py-1.5 fw-bold">Nhấn 1 từ tiếng Anh và 1 nghĩa tiếng Việt tương ứng để nối</span>
+            </div>
+            <div id="matchingGrid" class="matching-grid"></div>
+        </div>
+
+        <!-- View 2: SPEED QUIZ (Quiz tốc độ 10s) -->
+        <div id="viewSpeedQuiz" class="w-100 d-none flex-column align-items-center">
+            <!-- Speed Countdown Bar -->
+            <div class="w-100 mb-3" style="max-width: 600px;">
+                <div class="d-flex justify-content-between small fw-bold mb-1">
+                    <span class="text-warning d-flex align-items-center gap-1"><i class="ph-fill ph-lightning"></i> <span id="comboBadge">Combo x1</span></span>
+                    <span id="speedTimerText" class="text-danger">10s</span>
+                </div>
+                <div class="progress" style="height: 6px; border-radius: 3px;">
+                    <div id="speedCountBar" class="progress-bar bg-warning" style="width: 100%; transition: width 0.1s linear;"></div>
                 </div>
             </div>
-            <div class="row g-3 w-100" style="max-width: 600px;" id="quizOptions">
-                <!-- Buttons injected via JS -->
+
+            <div class="card shadow-xs border rounded-4 w-100 mb-4 bg-light-subtle" style="max-width: 600px;">
+                <div class="card-body text-center p-4 p-md-5 position-relative">
+                    <button class="btn btn-sm btn-light border rounded-circle position-absolute top-0 end-0 m-3" onclick="playCurrentAudio()" title="Nghe phát âm">
+                        <i class="ph-fill ph-speaker-high text-primary"></i>
+                    </button>
+                    <h2 class="fw-800 display-5 mb-1 text-dark" id="speedTerm">Term</h2>
+                    <img id="speedImg" src="" style="display: none; max-height: 120px; margin: 15px auto 0; border-radius: 8px;">
+                </div>
+            </div>
+            <div class="row g-3 w-100" style="max-width: 600px;" id="speedOptions"></div>
+        </div>
+
+        <!-- View 3: SCRAMBLE (Sắp xếp chữ cái) -->
+        <div id="viewScramble" class="w-100 d-none flex-column align-items-center text-center">
+            <div class="card shadow-xs border rounded-4 w-100 mb-4 bg-light-subtle" style="max-width: 650px;">
+                <div class="card-body p-4 text-center">
+                    <span class="badge bg-success-subtle text-success rounded-pill px-3 py-1 fw-bold mb-2">Gợi ý nghĩa</span>
+                    <h3 class="fw-800 text-dark mb-0" id="scrambleDef">Definition</h3>
+                </div>
+            </div>
+
+            <!-- Answer Slots -->
+            <div class="d-flex flex-wrap justify-content-center gap-2 mb-4 p-3 bg-light rounded-4 border w-100" style="max-width: 650px; min-height: 70px;" id="scrambleAnswerSlots"></div>
+
+            <!-- Scrambled Letter Tiles -->
+            <div class="d-flex flex-wrap justify-content-center gap-2 mb-4 w-100" style="max-width: 650px;" id="scrambleLetterPool"></div>
+
+            <div class="d-flex gap-2">
+                <button class="btn btn-outline-secondary rounded-pill px-4 fw-bold" onclick="undoScrambleLetter()"><i class="ph ph-arrow-u-up-left me-1"></i> Hoàn tác</button>
+                <button class="btn btn-outline-danger rounded-pill px-4 fw-bold" onclick="clearScramble()"><i class="ph ph-trash me-1"></i> Xóa hết</button>
+                <button class="btn btn-success rounded-pill px-4 fw-bold shadow-xs" onclick="checkScramble()"><i class="ph ph-check-circle me-1"></i> Kiểm tra</button>
             </div>
         </div>
 
-        <!-- View: TYPING / LISTENING -->
-        <div id="viewTyping" class="w-100 d-none flex-column align-items-center">
-            <div class="card shadow-sm border-0 rounded-4 w-100 mb-4" style="max-width: 600px;">
-                <div class="card-body text-center p-5 position-relative">
-                    
-                    <div id="typingListenArea" class="d-none flex-column align-items-center justify-content-center mb-3">
-                        <button class="btn btn-primary rounded-circle shadow d-flex align-items-center justify-content-center mb-3" onclick="playCurrentAudio()" style="width: 80px; height: 80px;">
-                            <i class="bi bi-volume-up-fill fs-1"></i>
-                        </button>
-                        <button class="btn btn-outline-secondary btn-sm rounded-pill fw-bold" onclick="playCurrentAudio(0.75)">
-                            <i class="bi bi-turtle me-1"></i> Nghe chậm
-                        </button>
+        <!-- View 4: HANGMAN (Đoán chữ cái) -->
+        <div id="viewHangman" class="w-100 d-none flex-column align-items-center">
+            <div class="row g-4 align-items-center w-100" style="max-width: 760px;">
+                <!-- Hangman Gallows Drawing -->
+                <div class="col-md-5 text-center">
+                    <div class="bg-light-subtle border rounded-4 p-3 d-flex flex-column align-items-center justify-content-center shadow-xs" style="height: 230px;">
+                        <svg width="180" height="190" viewBox="0 0 180 190">
+                            <!-- Gallows Base -->
+                            <line x1="20" y1="180" x2="160" y2="180" stroke="#475569" stroke-width="4" stroke-linecap="round"/>
+                            <line x1="50" y1="180" x2="50" y2="20" stroke="#475569" stroke-width="4" stroke-linecap="round"/>
+                            <line x1="50" y1="20" x2="120" y2="20" stroke="#475569" stroke-width="4" stroke-linecap="round"/>
+                            <line x1="120" y1="20" x2="120" y2="45" stroke="#ef4444" stroke-width="3"/>
+                            
+                            <!-- Hangman Parts -->
+                            <circle id="hmHead" cx="120" cy="60" r="15" stroke="#1e293b" stroke-width="3" fill="#fed7aa" class="d-none"/>
+                            <line id="hmBody" x1="120" y1="75" x2="120" y2="125" stroke="#1e293b" stroke-width="3" stroke-linecap="round" class="d-none"/>
+                            <line id="hmArmL" x1="120" y1="90" x2="95" y2="105" stroke="#1e293b" stroke-width="3" stroke-linecap="round" class="d-none"/>
+                            <line id="hmArmR" x1="120" y1="90" x2="145" y2="105" stroke="#1e293b" stroke-width="3" stroke-linecap="round" class="d-none"/>
+                            <line id="hmLegL" x1="120" y1="125" x2="100" y2="155" stroke="#1e293b" stroke-width="3" stroke-linecap="round" class="d-none"/>
+                            <line id="hmLegR" x1="120" y1="125" x2="140" y2="155" stroke="#1e293b" stroke-width="3" stroke-linecap="round" class="d-none"/>
+                        </svg>
+                        <span class="badge bg-danger-subtle text-danger rounded-pill px-3 py-1 mt-1 small fw-bold" id="hmMistakesText">Lỗi: 0/6</span>
                     </div>
-                    
-                    <div id="typingReadArea">
-                        <button class="btn btn-light rounded-circle position-absolute top-0 end-0 m-3" onclick="playCurrentAudio()"><i class="bi bi-volume-up-fill text-primary"></i></button>
-                        <h3 class="fw-bold text-dark mb-0" id="typingDef">Definition</h3>
-                        <img id="typingImg" src="" style="display: none; max-height: 150px; margin-top: 20px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                </div>
+
+                <!-- Word Mask & Definition -->
+                <div class="col-md-7">
+                    <div class="mb-3">
+                        <span class="text-muted small fw-bold text-uppercase">Gợi ý nghĩa:</span>
+                        <h5 class="fw-bold text-dark mt-1 mb-0" id="hmDef">Definition text</h5>
+                    </div>
+
+                    <!-- Masked Slots -->
+                    <div class="d-flex flex-wrap gap-2 mb-4" id="hmWordSlots"></div>
+
+                    <!-- Keyboard -->
+                    <div class="d-flex flex-wrap gap-1.5 justify-content-center" id="hmKeyboard"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- View 5: CROSSWORD (Ô chữ từ vựng) -->
+        <div id="viewCrossword" class="w-100 d-none flex-column align-items-center">
+            <div class="row g-4 w-100" style="max-width: 850px;">
+                <!-- Crossword Grid -->
+                <div class="col-md-7 d-flex justify-content-center">
+                    <div class="p-3 bg-light rounded-4 border shadow-xs d-inline-block">
+                        <div id="crosswordGrid" class="crossword-grid"></div>
+                    </div>
+                </div>
+                <!-- Clues List -->
+                <div class="col-md-5">
+                    <div class="card border rounded-4 p-3 shadow-xs h-100 bg-white">
+                        <h6 class="fw-bold text-dark border-bottom pb-2 mb-2 d-flex align-items-center gap-2">
+                            <i class="ph-fill ph-lightbulb text-warning"></i> Gợi ý ô chữ
+                        </h6>
+                        <div class="overflow-auto" style="max-height: 280px;" id="crosswordClues"></div>
+                        <button class="btn btn-purple text-white rounded-pill w-100 fw-bold mt-3" onclick="checkCrosswordCompletion()">
+                            <i class="ph ph-check-circle me-1"></i> Nộp ô chữ
+                        </button>
                     </div>
                 </div>
             </div>
-            
-            <div class="w-100" style="max-width: 600px;">
-                <form id="typingForm" onsubmit="submitTyping(event)">
-                    <div class="input-group input-group-lg shadow-sm rounded-4 overflow-hidden">
-                        <input type="text" id="typingInput" class="form-control border-0 bg-white px-4 py-3 fw-bold text-center fs-4" placeholder="Gõ thuật ngữ tiếng Anh vào đây..." autocomplete="off">
-                        <button class="btn btn-primary px-4 fw-bold" type="submit"><i class="bi bi-arrow-return-left"></i></button>
+        </div>
+
+        <!-- View 6: MEMORY CARD (Lật thẻ nhớ 3D) -->
+        <div id="viewMemory" class="w-100 d-none flex-column align-items-center">
+            <div class="text-center mb-3">
+                <span class="badge bg-primary-subtle text-primary rounded-pill px-3 py-1.5 fw-bold">Lật 2 thẻ trùng khớp (Từ vựng tiếng Anh & Nghĩa tiếng Việt)</span>
+            </div>
+            <div id="memoryGrid" class="memory-grid"></div>
+        </div>
+
+        <!-- View 7: SPELLING BEE (Đánh vần âm thanh) -->
+        <div id="viewSpellingBee" class="w-100 d-none flex-column align-items-center text-center">
+            <div class="card shadow-xs border rounded-4 w-100 mb-4 bg-light-subtle" style="max-width: 600px;">
+                <div class="card-body p-4 p-md-5">
+                    <button class="btn btn-success rounded-circle shadow d-inline-flex align-items-center justify-content-center mb-3" onclick="playCurrentAudio(1.0)" style="width: 76px; height: 76px;" title="Nghe phát âm">
+                        <i class="ph-fill ph-speaker-high fs-1"></i>
+                    </button>
+                    <div>
+                        <button class="btn btn-sm btn-outline-secondary rounded-pill px-3 fw-bold mb-3" onclick="playCurrentAudio(0.7)">
+                            <i class="ph ph-turtle me-1"></i> Nghe tốc độ chậm
+                        </button>
                     </div>
-                    <div class="text-center mt-3 d-none" id="typingFeedback">
-                        <h4 class="fw-bold mb-0 text-success" id="typingFeedbackText">Chính xác!</h4>
-                        <div class="small text-muted mt-1" id="typingFeedbackCorrect"></div>
+                    <p class="text-muted mb-0 small" id="spellingDef">Nghĩa tiếng Việt</p>
+                </div>
+            </div>
+
+            <div class="w-100" style="max-width: 600px;">
+                <form id="spellingForm" onsubmit="submitSpelling(event)">
+                    <div class="input-group input-group-lg shadow-xs rounded-pill overflow-hidden border">
+                        <input type="text" id="spellingInput" class="form-control border-0 bg-white px-4 py-3 fw-800 text-center fs-4" placeholder="Gõ từ bạn vừa nghe..." autocomplete="off">
+                        <button class="btn btn-success px-4 fw-bold" type="submit"><i class="ph ph-arrow-right fs-5"></i></button>
                     </div>
                 </form>
+                <div class="text-center mt-3 d-none" id="spellingFeedback">
+                    <h5 class="fw-800 mb-1" id="spellingFeedbackText">Chính xác!</h5>
+                    <div class="small text-muted" id="spellingFeedbackCorrect"></div>
+                </div>
             </div>
         </div>
 
-        <!-- View: MATCHING -->
-        <div id="viewMatching" class="w-100 d-none h-100">
-            <div id="matchingGrid" class="matching-grid">
-                <!-- Cards injected via JS -->
+        <!-- View 8: GRAMMAR RACE (Đua ngữ pháp) -->
+        <div id="viewGrammarRace" class="w-100 d-none flex-column align-items-center">
+            <!-- Race Track Visual -->
+            <div class="w-100 bg-dark rounded-4 p-3 mb-4 text-white border shadow-sm position-relative overflow-hidden" style="max-width: 720px; background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);">
+                <!-- Finish Line Flag -->
+                <div class="position-absolute end-0 top-0 bottom-0 px-2 d-flex align-items-center justify-content-center border-start border-2 border-white" style="background: rgba(255,255,255,0.1); width: 40px;">
+                    🏁
+                </div>
+
+                <!-- Player Lane -->
+                <div class="d-flex align-items-center mb-2 position-relative" style="height: 38px;">
+                    <span class="badge bg-success rounded-pill px-2 py-0.5 small me-2" style="font-size: 0.68rem;">Bạn</span>
+                    <div class="flex-grow-1 border-bottom border-secondary border-dashed position-relative" style="height: 1px;">
+                        <div id="raceCarPlayer" class="position-absolute fs-4" style="left: 0%; top: -16px; transition: left 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);">🏎️</div>
+                    </div>
+                </div>
+
+                <!-- Bot Lane -->
+                <div class="d-flex align-items-center position-relative" style="height: 38px;">
+                    <span class="badge bg-secondary rounded-pill px-2 py-0.5 small me-2" style="font-size: 0.68rem;">Bot</span>
+                    <div class="flex-grow-1 border-bottom border-secondary border-dashed position-relative" style="height: 1px;">
+                        <div id="raceCarBot" class="position-absolute fs-4" style="left: 0%; top: -16px; transition: left 0.5s linear;">🚗</div>
+                    </div>
+                </div>
             </div>
+
+            <!-- Grammar Challenge Card -->
+            <div class="card shadow-xs border rounded-4 w-100 mb-4 bg-light-subtle" style="max-width: 720px;">
+                <div class="card-body p-4 text-center">
+                    <span class="badge bg-danger-subtle text-danger rounded-pill px-3 py-1 fw-bold mb-2">Thử thách Ngữ pháp</span>
+                    <h5 class="fw-bold text-dark mb-0" id="racePrompt">Grammar prompt question</h5>
+                </div>
+            </div>
+            <div class="row g-3 w-100" style="max-width: 720px;" id="raceOptions"></div>
         </div>
 
-        <!-- View: RESULT -->
-        <div id="viewResult" class="w-100 d-none flex-column align-items-center text-center">
+        <!-- View 9: RESULT & REWARDS -->
+        <div id="viewResult" class="w-100 d-none flex-column align-items-center text-center py-4">
             <input type="hidden" id="csrfToken" value="{{ csrf_token() }}">
-            <div class="mb-4">
-                <i class="bi bi-trophy-fill text-warning" style="font-size: 5rem;"></i>
-            </div>
-            <h1 class="fw-bold mb-2">Hoàn thành xuất sắc!</h1>
-            <p class="text-muted fs-5 mb-5">Bạn đã vượt qua bài kiểm tra phản xạ.</p>
-            
-            <div class="d-flex gap-4 justify-content-center mb-5 w-100" style="max-width: 500px;">
-                <div class="card border-0 shadow-sm rounded-4 flex-grow-1 bg-white">
-                    <div class="card-body p-4">
-                        <h2 class="fw-bold text-primary mb-0" id="resAccuracy">100%</h2>
-                        <div class="small text-muted fw-bold">ĐỘ CHÍNH XÁC</div>
-                    </div>
-                </div>
-                <div class="card border-0 shadow-sm rounded-4 flex-grow-1 bg-white">
-                    <div class="card-body p-4">
-                        <h2 class="fw-bold text-dark mb-0" id="resTime">00:00</h2>
-                        <div class="small text-muted fw-bold">THỜI GIAN</div>
-                    </div>
+            <div class="mb-3">
+                <div class="rounded-circle bg-warning-subtle text-warning d-inline-flex align-items-center justify-content-center shadow-xs" style="width: 90px; height: 90px; font-size: 3rem;">
+                    🏆
                 </div>
             </div>
+            <h2 class="fw-800 text-dark mb-1">Hoàn thành trò chơi!</h2>
+            <p class="text-muted small mb-4">Bạn đã xuất sắc hoàn thành thử thách và nhận thưởng XP!</p>
             
-            <button class="btn btn-primary btn-lg rounded-pill fw-bold px-5 shadow" onclick="saveAndReturn()">
-                Lưu kết quả & Trở về Sảnh
-            </button>
+            <div class="row g-3 justify-content-center mb-4 w-100" style="max-width: 520px;">
+                <div class="col-4">
+                    <div class="card border rounded-4 p-3 bg-white shadow-xs">
+                        <h3 class="fw-800 text-primary mb-0" id="resAccuracy">100%</h3>
+                        <small class="text-muted fw-bold" style="font-size: 0.7rem;">CHÍNH XÁC</small>
+                    </div>
+                </div>
+                <div class="col-4">
+                    <div class="card border rounded-4 p-3 bg-white shadow-xs">
+                        <h3 class="fw-800 text-warning mb-0" id="resScore">0</h3>
+                        <small class="text-muted fw-bold" style="font-size: 0.7rem;">ĐIỂM SỐ</small>
+                    </div>
+                </div>
+                <div class="col-4">
+                    <div class="card border rounded-4 p-3 bg-white shadow-xs">
+                        <h3 class="fw-800 text-success mb-0">+25 XP</h3>
+                        <small class="text-muted fw-bold" style="font-size: 0.7rem;">THƯỞNG XP</small>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="d-flex gap-3">
+                <button class="btn btn-primary rounded-pill fw-bold px-5 py-2.5 shadow-sm" onclick="saveAndReturn()">
+                    Lưu kết quả & Về Sảnh
+                </button>
+            </div>
         </div>
 
     </div>
 </div>
 
 <style>
-    /* Game Engine Animations & Styles */
+    /* Matching Grid */
     .matching-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-        gap: 15px;
+        grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+        gap: 12px;
         width: 100%;
-        height: 100%;
-        align-content: center;
     }
-    
     .match-card {
-        background: white;
-        border: 2px solid #e2e8f0;
+        background: white; border: 2px solid #e2e8f0; border-radius: 1rem;
+        padding: 1.25rem 1rem; text-align: center; cursor: pointer; transition: all 0.2s;
+        display: flex; align-items: center; justify-content: center; font-weight: 700; min-height: 80px;
+    }
+    .match-card:hover { transform: translateY(-2px); border-color: #cbd5e1; }
+    .match-card.selected { border-color: #3b82f6 !important; background-color: #eff6ff !important; color: #1d4ed8 !important; }
+    .match-card.matched { opacity: 0; pointer-events: none; transform: scale(0.8); }
+
+    /* Memory 3D Card Grid */
+    .memory-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 12px;
+        width: 100%;
+        max-width: 680px;
+    }
+    .memory-card {
+        aspect-ratio: 1;
+        background: #f1f5f9;
+        border: 2px solid #cbd5e1;
         border-radius: 1rem;
-        padding: 1.5rem;
-        text-align: center;
         cursor: pointer;
-        transition: all 0.2s;
         display: flex;
         align-items: center;
         justify-content: center;
-        font-weight: 600;
-        font-size: 1.1rem;
+        font-weight: 800;
+        font-size: 0.95rem;
+        padding: 0.5rem;
+        text-align: center;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         user-select: none;
-        min-height: 100px;
     }
-    
-    .match-card:hover { transform: translateY(-3px); box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); }
-    .match-card.selected { border-color: #6366f1; background-color: #eef2ff; color: #4338ca; }
-    .match-card.matched { opacity: 0; pointer-events: none; transform: scale(0.8); }
-    
-    @keyframes shake {
-        0%, 100% { transform: translateX(0); }
-        25% { transform: translateX(-5px); }
-        50% { transform: translateX(5px); }
-        75% { transform: translateX(-5px); }
+    .memory-card.flipped {
+        background: #ffffff;
+        border-color: #6366f1;
+        color: #4338ca;
+        transform: rotateY(180deg);
     }
-    .shake-error {
-        animation: shake 0.4s cubic-bezier(.36,.07,.19,.97) both;
-        border-color: #ef4444 !important;
-        background-color: #fef2f2 !important;
-        color: #b91c1c !important;
+    .memory-card.matched {
+        background: #dcfce7 !important;
+        border-color: #22c55e !important;
+        color: #15803d !important;
+        pointer-events: none;
     }
-    
-    .quiz-option {
-        background: white; border: 2px solid #e2e8f0; border-radius: 1rem; padding: 1.25rem;
-        text-align: left; cursor: pointer; transition: all 0.2s; font-weight: 600; font-size: 1.1rem;
+
+    /* Crossword Grid */
+    .crossword-grid {
+        display: grid;
+        grid-template-columns: repeat(6, 44px);
+        grid-template-rows: repeat(6, 44px);
+        gap: 4px;
     }
-    .quiz-option:hover { background: #f8fafc; border-color: #cbd5e1; }
-    .quiz-option.correct { background: #dcfce7; border-color: #22c55e; color: #15803d; }
-    .quiz-option.incorrect { background: #fee2e2; border-color: #ef4444; color: #b91c1c; }
+    .cw-cell {
+        width: 44px; height: 44px; text-align: center; font-weight: 800; font-size: 1.2rem;
+        text-transform: uppercase; border: 2px solid #94a3b8; border-radius: 6px; background: white;
+    }
+    .cw-cell.empty { background: #1e293b; border-color: #1e293b; pointer-events: none; }
+    .cw-cell:focus { border-color: #8b5cf6; outline: none; background: #f5f3ff; }
+
+    /* Letter Chips */
+    .letter-chip {
+        width: 44px; height: 48px; display: inline-flex; align-items: center; justify-content: center;
+        background: white; border: 2px solid #cbd5e1; border-radius: 10px; font-weight: 800;
+        font-size: 1.3rem; text-transform: uppercase; cursor: pointer; transition: all 0.15s;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.04);
+    }
+    .letter-chip:hover { transform: translateY(-2px); border-color: #22c55e; background: #f0fdf4; }
+    .letter-chip.disabled { opacity: 0.3; pointer-events: none; background: #e2e8f0; }
+
+    .quiz-opt-btn {
+        background: white; border: 2px solid #e2e8f0; border-radius: 1rem; padding: 1.2rem;
+        text-align: left; cursor: pointer; transition: all 0.2s; font-weight: 700; font-size: 1rem; width: 100%;
+    }
+    .quiz-opt-btn:hover { background: #f8fafc; border-color: #94a3b8; }
+    .quiz-opt-btn.correct { background: #dcfce7 !important; border-color: #22c55e !important; color: #15803d !important; }
+    .quiz-opt-btn.incorrect { background: #fee2e2 !important; border-color: #ef4444 !important; color: #b91c1c !important; }
 </style>
 
 <script>
@@ -186,43 +368,63 @@
     
     let gameState = {
         items: [],
+        grammarItems: [],
         currentIndex: 0,
         gameType: base_game_type,
         timerSeconds: 0,
         timerInterval: null,
+        score: 0,
         correctCount: 0,
         isProcessing: false,
-        // Matching specific
-        matchingPairs: [],
-        matchingSelectedId: null,
-        matchingSelectedEl: null
+        combo: 1,
+        // Speed quiz timer
+        speedTimer: null,
+        speedSecondsLeft: 10,
+        // Hangman
+        hmWord: "",
+        hmGuessed: new Set(),
+        hmMistakes: 0,
+        // Scramble
+        scrambleSelected: [],
+        // Memory
+        memoryCards: [],
+        memoryFlipped: [],
+        memoryMatchedPairs: 0,
+        // Race
+        racePlayerPos: 0,
+        raceBotPos: 0,
+        raceBotInterval: null
     };
 
-    // Initialize Game
     document.addEventListener("DOMContentLoaded", () => {
-        // Fetch data
         fetch(`/games/api/data/${session_id}`)
             .then(res => res.json())
             .then(data => {
-                if (data.status !== "ok") {
-                    alert("Lỗi tải dữ liệu. Vui lòng quay lại sảnh.");
+                if (data.status !== "ok" || (!data.items?.length && !data.grammar_items?.length)) {
+                    alert("Không có dữ liệu thẻ học. Quay lại sảnh...");
                     window.location.href = "{{ url_for('learning.game_lobby') }}";
                     return;
                 }
-                gameState.items = data.items;
+                gameState.items = data.items || [];
+                gameState.grammarItems = data.grammar_items || [];
                 document.getElementById('viewLoading').classList.add('d-none');
                 
-                // Titles
                 const typeNames = {
+                    "MATCHING": "Ghép từ vựng",
+                    "SPEED_QUIZ": "Quiz tốc độ",
+                    "SCRAMBLE": "Sắp xếp từ",
+                    "HANGMAN": "Hangman",
+                    "CROSSWORD": "Ô chữ Crossword",
+                    "MEMORY": "Nhớ thẻ bài",
+                    "SPELLING_BEE": "Đánh vần",
+                    "GRAMMAR_RACE": "Đua ngữ pháp",
                     "QUIZ": "Trắc nghiệm",
-                    "MATCHING": "Nối từ",
                     "TYPING": "Gõ từ",
-                    "LISTENING": "Nghe viết",
-                    "ARCADE": "Chế độ Sinh tồn"
+                    "LISTENING": "Nghe viết"
                 };
-                document.getElementById('gameTitle').textContent = typeNames[base_game_type];
+                document.getElementById('gameTitle').textContent = typeNames[base_game_type] || "Trò chơi học tập";
                 
-                // Start Clock
+                // Clock
                 gameState.timerInterval = setInterval(() => {
                     gameState.timerSeconds++;
                     const m = Math.floor(gameState.timerSeconds / 60).toString().padStart(2, '0');
@@ -230,26 +432,23 @@
                     document.getElementById('gameTimer').textContent = `${m}:${s}`;
                 }, 1000);
 
-                // Start first question
-                if (base_game_type === "MATCHING") {
-                    startMatchingRound();
-                } else {
-                    renderQuestion();
-                }
+                // Init mode
+                if (base_game_type === "MATCHING") initMatching();
+                else if (base_game_type === "MEMORY") initMemory();
+                else if (base_game_type === "CROSSWORD") initCrossword();
+                else if (base_game_type === "GRAMMAR_RACE") initGrammarRace();
+                else renderQuestion();
             })
             .catch(err => {
                 console.error(err);
-                alert("Lỗi tải dữ liệu.");
+                alert("Lỗi tải dữ liệu trò chơi.");
             });
             
-        // Setup Quit Button confirmation
         document.getElementById('btnQuit').addEventListener('click', (e) => {
-            if (!confirm("Bạn có chắc chắn muốn thoát? Kết quả sẽ không được lưu.")) {
-                e.preventDefault();
-            }
+            if (!confirm("Bạn có chắc chắn muốn thoát game?")) e.preventDefault();
         });
     });
-    
+
     function playCurrentAudio(rate = 1.0) {
         if (!gameState.items[gameState.currentIndex]) return;
         const term = gameState.items[gameState.currentIndex].term;
@@ -258,321 +457,664 @@
         msg.rate = rate;
         window.speechSynthesis.speak(msg);
     }
-    
-    function getArcadeMode() {
-        const modes = ["QUIZ", "TYPING", "LISTENING"];
-        return modes[Math.floor(Math.random() * modes.length)];
+
+    function addScore(pts) {
+        gameState.score += pts;
+        document.getElementById('gameScore').textContent = gameState.score;
     }
 
+    function updateProgress() {
+        const total = (base_game_type === "GRAMMAR_RACE") ? (gameState.grammarItems.length || gameState.items.length) : gameState.items.length;
+        document.getElementById('gameProgress').textContent = `Câu ${gameState.currentIndex + 1}/${total}`;
+        const pct = ((gameState.currentIndex) / total) * 100;
+        document.getElementById('progressBar').style.width = `${pct}%`;
+    }
+
+    function hideAllViews() {
+        ['viewLoading', 'viewMatching', 'viewSpeedQuiz', 'viewScramble', 'viewHangman', 'viewCrossword', 'viewMemory', 'viewSpellingBee', 'viewGrammarRace', 'viewResult'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) {
+                el.classList.add('d-none');
+                el.classList.remove('d-flex');
+            }
+        });
+    }
+
+    // =========================================================================
+    // 1. MATCHING GAME
+    // =========================================================================
+    let matchingSelected = null;
+    function initMatching() {
+        hideAllViews();
+        document.getElementById('viewMatching').classList.remove('d-none');
+        
+        const subset = gameState.items.slice(0, 6);
+        let cards = [];
+        subset.forEach(item => {
+            cards.push({ id: item.id, type: 'term', text: item.term });
+            cards.push({ id: item.id, type: 'def', text: item.definition });
+        });
+        cards.sort(() => Math.random() - 0.5);
+        
+        const grid = document.getElementById('matchingGrid');
+        grid.innerHTML = '';
+        cards.forEach((c, idx) => {
+            const btn = document.createElement('div');
+            btn.className = 'match-card shadow-xs';
+            btn.textContent = c.text;
+            btn.dataset.id = c.id;
+            btn.dataset.type = c.type;
+            btn.onclick = () => onMatchingClick(btn);
+            grid.appendChild(btn);
+        });
+    }
+
+    function onMatchingClick(el) {
+        if (el.classList.contains('matched')) return;
+        if (!matchingSelected) {
+            matchingSelected = el;
+            el.classList.add('selected');
+        } else if (matchingSelected === el) {
+            matchingSelected.classList.remove('selected');
+            matchingSelected = null;
+        } else {
+            const id1 = matchingSelected.dataset.id;
+            const type1 = matchingSelected.dataset.type;
+            const id2 = el.dataset.id;
+            const type2 = el.dataset.type;
+            
+            if (id1 === id2 && type1 !== type2) {
+                matchingSelected.classList.add('matched');
+                el.classList.add('matched');
+                matchingSelected.classList.remove('selected');
+                matchingSelected = null;
+                addScore(20);
+                gameState.correctCount++;
+                
+                // Check if all matched
+                const remaining = document.querySelectorAll('.match-card:not(.matched)');
+                if (remaining.length === 0) {
+                    setTimeout(endGame, 500);
+                }
+            } else {
+                el.classList.add('selected');
+                setTimeout(() => {
+                    if (matchingSelected) matchingSelected.classList.remove('selected');
+                    el.classList.remove('selected');
+                    matchingSelected = null;
+                }, 400);
+            }
+        }
+    }
+
+    // =========================================================================
+    // 2. SPEED QUIZ
+    // =========================================================================
+    function startSpeedQuizQuestion(item) {
+        hideAllViews();
+        const v = document.getElementById('viewSpeedQuiz');
+        v.classList.remove('d-none');
+        v.classList.add('d-flex');
+        
+        document.getElementById('speedTerm').textContent = item.term;
+        const img = document.getElementById('speedImg');
+        if (item.image_url) { img.src = item.image_url; img.style.display = 'block'; } else { img.style.display = 'none'; }
+        
+        const optsDiv = document.getElementById('speedOptions');
+        optsDiv.innerHTML = '';
+        
+        let allOpts = [item.definition, ...(item.distractors || [])].slice(0, 4);
+        allOpts.sort(() => Math.random() - 0.5);
+        
+        allOpts.forEach(opt => {
+            const col = document.createElement('div');
+            col.className = 'col-md-6';
+            const btn = document.createElement('button');
+            btn.className = 'quiz-opt-btn shadow-xs';
+            btn.textContent = opt;
+            btn.onclick = () => chooseSpeedOption(btn, opt === item.definition);
+            col.appendChild(btn);
+            optsDiv.appendChild(col);
+        });
+
+        // 10s Timer
+        clearInterval(gameState.speedTimer);
+        gameState.speedSecondsLeft = 10;
+        const bar = document.getElementById('speedCountBar');
+        bar.style.width = '100%';
+        document.getElementById('speedTimerText').textContent = '10s';
+        
+        gameState.speedTimer = setInterval(() => {
+            gameState.speedSecondsLeft -= 0.1;
+            const pct = Math.max(0, (gameState.speedSecondsLeft / 10) * 100);
+            bar.style.width = `${pct}%`;
+            document.getElementById('speedTimerText').textContent = `${Math.ceil(gameState.speedSecondsLeft)}s`;
+            
+            if (gameState.speedSecondsLeft <= 0) {
+                clearInterval(gameState.speedTimer);
+                gameState.combo = 1;
+                document.getElementById('comboBadge').textContent = 'Combo x1';
+                nextQuestion();
+            }
+        }, 100);
+    }
+
+    function chooseSpeedOption(btn, isCorrect) {
+        clearInterval(gameState.speedTimer);
+        if (gameState.isProcessing) return;
+        gameState.isProcessing = true;
+        
+        if (isCorrect) {
+            btn.classList.add('correct');
+            addScore(10 * gameState.combo);
+            gameState.combo = Math.min(4, gameState.combo + 1);
+            document.getElementById('comboBadge').textContent = `Combo x${gameState.combo}`;
+            gameState.correctCount++;
+        } else {
+            btn.classList.add('incorrect');
+            gameState.combo = 1;
+            document.getElementById('comboBadge').textContent = 'Combo x1';
+        }
+        setTimeout(nextQuestion, 600);
+    }
+
+    // =========================================================================
+    // 3. WORD SCRAMBLE
+    // =========================================================================
+    function startScramble(item) {
+        hideAllViews();
+        const v = document.getElementById('viewScramble');
+        v.classList.remove('d-none');
+        v.classList.add('d-flex');
+        
+        document.getElementById('scrambleDef').textContent = item.definition;
+        gameState.scrambleSelected = [];
+        
+        const letters = item.term.toUpperCase().split('');
+        const scrambled = [...letters].sort(() => Math.random() - 0.5);
+        
+        const pool = document.getElementById('scrambleLetterPool');
+        pool.innerHTML = '';
+        scrambled.forEach((ltr, idx) => {
+            const chip = document.createElement('div');
+            chip.className = 'letter-chip';
+            chip.textContent = ltr;
+            chip.dataset.idx = idx;
+            chip.onclick = () => selectScrambleLetter(chip, ltr);
+            pool.appendChild(chip);
+        });
+        
+        renderScrambleSlots();
+    }
+
+    function selectScrambleLetter(chip, ltr) {
+        if (chip.classList.contains('disabled')) return;
+        chip.classList.add('disabled');
+        gameState.scrambleSelected.push({ chip, ltr });
+        renderScrambleSlots();
+    }
+
+    function renderScrambleSlots() {
+        const slots = document.getElementById('scrambleAnswerSlots');
+        slots.innerHTML = '';
+        const curItem = gameState.items[gameState.currentIndex];
+        const targetLen = curItem.term.length;
+        
+        for (let i = 0; i < targetLen; i++) {
+            const slot = document.createElement('div');
+            slot.className = 'letter-chip';
+            if (gameState.scrambleSelected[i]) {
+                slot.textContent = gameState.scrambleSelected[i].ltr;
+                slot.style.borderColor = '#22c55e';
+            } else {
+                slot.textContent = '_';
+                slot.style.color = '#94a3b8';
+            }
+            slots.appendChild(slot);
+        }
+    }
+
+    function undoScrambleLetter() {
+        if (!gameState.scrambleSelected.length) return;
+        const last = gameState.scrambleSelected.pop();
+        last.chip.classList.remove('disabled');
+        renderScrambleSlots();
+    }
+
+    function clearScramble() {
+        gameState.scrambleSelected.forEach(s => s.chip.classList.remove('disabled'));
+        gameState.scrambleSelected = [];
+        renderScrambleSlots();
+    }
+
+    function checkScramble() {
+        const curItem = gameState.items[gameState.currentIndex];
+        const typed = gameState.scrambleSelected.map(s => s.ltr).join('');
+        if (typed.toUpperCase() === curItem.term.toUpperCase()) {
+            addScore(25);
+            gameState.correctCount++;
+            playCurrentAudio();
+            setTimeout(nextQuestion, 500);
+        } else {
+            alert("Chưa chính xác! Thử lại nhé.");
+        }
+    }
+
+    // =========================================================================
+    // 4. HANGMAN
+    // =========================================================================
+    function startHangman(item) {
+        hideAllViews();
+        const v = document.getElementById('viewHangman');
+        v.classList.remove('d-none');
+        v.classList.add('d-flex');
+        
+        gameState.hmWord = item.term.toUpperCase();
+        gameState.hmGuessed = new Set();
+        gameState.hmMistakes = 0;
+        
+        document.getElementById('hmDef').textContent = item.definition;
+        ['hmHead', 'hmBody', 'hmArmL', 'hmArmR', 'hmLegL', 'hmLegR'].forEach(id => {
+            document.getElementById(id).classList.add('d-none');
+        });
+        document.getElementById('hmMistakesText').textContent = `Lỗi: 0/6`;
+        
+        renderHangmanSlots();
+        renderHangmanKeyboard();
+    }
+
+    function renderHangmanSlots() {
+        const slots = document.getElementById('hmWordSlots');
+        slots.innerHTML = '';
+        let allRevealed = true;
+        
+        for (let char of gameState.hmWord) {
+            const slot = document.createElement('div');
+            slot.className = 'letter-chip';
+            if (char === ' ' || char === '-') {
+                slot.textContent = char;
+                slot.style.border = 'none';
+            } else if (gameState.hmGuessed.has(char)) {
+                slot.textContent = char;
+                slot.style.borderColor = '#22c55e';
+            } else {
+                slot.textContent = '_';
+                slot.style.color = '#94a3b8';
+                allRevealed = false;
+            }
+            slots.appendChild(slot);
+        }
+        
+        if (allRevealed) {
+            addScore(30);
+            gameState.correctCount++;
+            playCurrentAudio();
+            setTimeout(nextQuestion, 800);
+        }
+    }
+
+    function renderHangmanKeyboard() {
+        const kb = document.getElementById('hmKeyboard');
+        kb.innerHTML = '';
+        const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split('');
+        alphabet.forEach(ltr => {
+            const btn = document.createElement('button');
+            btn.className = 'btn btn-sm btn-light border fw-bold';
+            btn.style.width = '36px';
+            btn.style.height = '36px';
+            btn.textContent = ltr;
+            btn.onclick = () => guessHangmanLetter(btn, ltr);
+            kb.appendChild(btn);
+        });
+    }
+
+    function guessHangmanLetter(btn, ltr) {
+        if (btn.disabled) return;
+        btn.disabled = true;
+        gameState.hmGuessed.add(ltr);
+        
+        if (gameState.hmWord.includes(ltr)) {
+            btn.className = 'btn btn-sm btn-success fw-bold';
+            renderHangmanSlots();
+        } else {
+            btn.className = 'btn btn-sm btn-danger fw-bold';
+            gameState.hmMistakes++;
+            document.getElementById('hmMistakesText').textContent = `Lỗi: ${gameState.hmMistakes}/6`;
+            
+            const parts = ['hmHead', 'hmBody', 'hmArmL', 'hmArmR', 'hmLegL', 'hmLegR'];
+            if (parts[gameState.hmMistakes - 1]) {
+                document.getElementById(parts[gameState.hmMistakes - 1]).classList.remove('d-none');
+            }
+            
+            if (gameState.hmMistakes >= 6) {
+                alert(`Hết lượt! Từ chính xác là: ${gameState.hmWord}`);
+                setTimeout(nextQuestion, 600);
+            }
+        }
+    }
+
+    // =========================================================================
+    // 5. MEMORY CARD GAME (3D Flip)
+    // =========================================================================
+    function initMemory() {
+        hideAllViews();
+        document.getElementById('viewMemory').classList.remove('d-none');
+        document.getElementById('viewMemory').classList.add('d-flex');
+        
+        const subset = gameState.items.slice(0, 6);
+        let cards = [];
+        subset.forEach(item => {
+            cards.push({ id: item.id, text: item.term, pair: item.id });
+            cards.push({ id: item.id, text: item.definition, pair: item.id });
+        });
+        cards.sort(() => Math.random() - 0.5);
+        
+        const grid = document.getElementById('memoryGrid');
+        grid.innerHTML = '';
+        gameState.memoryFlipped = [];
+        gameState.memoryMatchedPairs = 0;
+        
+        cards.forEach((c, idx) => {
+            const card = document.createElement('div');
+            card.className = 'memory-card shadow-xs';
+            card.dataset.text = c.text;
+            card.dataset.pair = c.pair;
+            card.textContent = '?';
+            card.onclick = () => onMemoryCardClick(card);
+            grid.appendChild(card);
+        });
+    }
+
+    function onMemoryCardClick(card) {
+        if (card.classList.contains('flipped') || card.classList.contains('matched')) return;
+        if (gameState.memoryFlipped.length >= 2) return;
+        
+        card.classList.add('flipped');
+        card.textContent = card.dataset.text;
+        gameState.memoryFlipped.push(card);
+        
+        if (gameState.memoryFlipped.length === 2) {
+            const [c1, c2] = gameState.memoryFlipped;
+            if (c1.dataset.pair === c2.dataset.pair) {
+                c1.classList.add('matched');
+                c2.classList.add('matched');
+                gameState.memoryFlipped = [];
+                gameState.memoryMatchedPairs++;
+                addScore(25);
+                gameState.correctCount++;
+                
+                if (gameState.memoryMatchedPairs >= 6) {
+                    setTimeout(endGame, 800);
+                }
+            } else {
+                setTimeout(() => {
+                    c1.classList.remove('flipped');
+                    c2.classList.remove('flipped');
+                    c1.textContent = '?';
+                    c2.textContent = '?';
+                    gameState.memoryFlipped = [];
+                }, 900);
+            }
+        }
+    }
+
+    // =========================================================================
+    // 6. CROSSWORD PUZZLE
+    // =========================================================================
+    function initCrossword() {
+        hideAllViews();
+        document.getElementById('viewCrossword').classList.remove('d-none');
+        document.getElementById('viewCrossword').classList.add('d-flex');
+        
+        const grid = document.getElementById('crosswordGrid');
+        grid.innerHTML = '';
+        
+        // Generate a 6x6 crossword board with 3 horizontal vocabulary words
+        const words = gameState.items.slice(0, 3);
+        const cluesDiv = document.getElementById('crosswordClues');
+        cluesDiv.innerHTML = '';
+        
+        // Layout 3 words at rows 1, 3, 5
+        const activeCells = {};
+        words.forEach((w, wIdx) => {
+            const row = wIdx * 2 + 1;
+            const term = w.term.toUpperCase();
+            for (let c = 0; c < Math.min(6, term.length); c++) {
+                activeCells[`${row}_${c}`] = { char: term[c], clueIdx: wIdx + 1 };
+            }
+            const clueItem = document.createElement('div');
+            clueItem.className = 'mb-2 small';
+            clueItem.innerHTML = `<strong>${wIdx + 1}. Ngang:</strong> ${w.definition} (${Math.min(6, term.length)} chữ cái)`;
+            cluesDiv.appendChild(clueItem);
+        });
+
+        for (let r = 0; r < 6; r++) {
+            for (let c = 0; c < 6; c++) {
+                const key = `${r}_${c}`;
+                if (activeCells[key]) {
+                    const input = document.createElement('input');
+                    input.className = 'cw-cell shadow-xs';
+                    input.maxLength = 1;
+                    input.dataset.target = activeCells[key].char;
+                    input.id = `cw_${key}`;
+                    input.oninput = (e) => {
+                        if (e.target.value) {
+                            const next = document.getElementById(`cw_${r}_${c + 1}`);
+                            if (next) next.focus();
+                        }
+                    };
+                    grid.appendChild(input);
+                } else {
+                    const empty = document.createElement('div');
+                    empty.className = 'cw-cell empty';
+                    grid.appendChild(empty);
+                }
+            }
+        }
+    }
+
+    function checkCrosswordCompletion() {
+        const cells = document.querySelectorAll('.cw-cell:not(.empty)');
+        let allCorrect = true;
+        cells.forEach(cell => {
+            if (cell.value.toUpperCase() === cell.dataset.target) {
+                cell.style.borderColor = '#22c55e';
+                cell.style.background = '#dcfce7';
+            } else {
+                cell.style.borderColor = '#ef4444';
+                allCorrect = false;
+            }
+        });
+        if (allCorrect) {
+            addScore(50);
+            gameState.correctCount = gameState.items.length;
+            setTimeout(endGame, 800);
+        } else {
+            alert("Còn một số chữ chưa đúng. Hãy kiểm tra lại nhé!");
+        }
+    }
+
+    // =========================================================================
+    // 7. SPELLING BEE
+    // =========================================================================
+    function startSpellingBee(item) {
+        hideAllViews();
+        const v = document.getElementById('viewSpellingBee');
+        v.classList.remove('d-none');
+        v.classList.add('d-flex');
+        
+        document.getElementById('spellingDef').textContent = `Gợi ý nghĩa: ${item.definition}`;
+        const input = document.getElementById('spellingInput');
+        input.value = '';
+        input.focus();
+        document.getElementById('spellingFeedback').classList.add('d-none');
+        playCurrentAudio();
+    }
+
+    function submitSpelling(e) {
+        e.preventDefault();
+        const curItem = gameState.items[gameState.currentIndex];
+        const val = document.getElementById('spellingInput').value.trim();
+        const fb = document.getElementById('spellingFeedback');
+        fb.classList.remove('d-none');
+        
+        if (val.toLowerCase() === curItem.term.toLowerCase()) {
+            document.getElementById('spellingFeedbackText').textContent = 'Tuyệt vời! Đánh vần chính xác!';
+            document.getElementById('spellingFeedbackText').className = 'fw-800 text-success mb-1';
+            addScore(25);
+            gameState.correctCount++;
+            setTimeout(nextQuestion, 700);
+        } else {
+            document.getElementById('spellingFeedbackText').textContent = 'Chưa đúng!';
+            document.getElementById('spellingFeedbackText').className = 'fw-800 text-danger mb-1';
+            document.getElementById('spellingFeedbackCorrect').textContent = `Từ đúng: ${curItem.term}`;
+            setTimeout(nextQuestion, 1200);
+        }
+    }
+
+    // =========================================================================
+    // 8. GRAMMAR RACING GAME
+    // =========================================================================
+    function initGrammarRace() {
+        hideAllViews();
+        const v = document.getElementById('viewGrammarRace');
+        v.classList.remove('d-none');
+        v.classList.add('d-flex');
+        
+        gameState.racePlayerPos = 0;
+        gameState.raceBotPos = 0;
+        document.getElementById('raceCarPlayer').style.left = '0%';
+        document.getElementById('raceCarBot').style.left = '0%';
+        
+        // Slow bot pace
+        clearInterval(gameState.raceBotInterval);
+        gameState.raceBotInterval = setInterval(() => {
+            gameState.raceBotPos = Math.min(90, gameState.raceBotPos + 1.2);
+            document.getElementById('raceCarBot').style.left = `${gameState.raceBotPos}%`;
+        }, 1000);
+        
+        renderGrammarRaceQuestion();
+    }
+
+    function renderGrammarRaceQuestion() {
+        const qList = gameState.grammarItems.length ? gameState.grammarItems : gameState.items;
+        if (gameState.currentIndex >= qList.length) {
+            endGame();
+            return;
+        }
+        updateProgress();
+        const q = qList[gameState.currentIndex];
+        
+        document.getElementById('racePrompt').textContent = q.prompt || `Chọn nghĩa đúng cho: "${q.term}"`;
+        const optsDiv = document.getElementById('raceOptions');
+        optsDiv.innerHTML = '';
+        
+        let opts = [];
+        if (q.options) {
+            opts = q.options.map(o => ({ text: o, isCorrect: o === q.correct }));
+        } else {
+            opts = [
+                { text: q.definition, isCorrect: true },
+                ...(q.distractors || []).map(d => ({ text: d, isCorrect: false }))
+            ];
+            opts.sort(() => Math.random() - 0.5);
+        }
+        
+        opts.forEach(opt => {
+            const col = document.createElement('div');
+            col.className = 'col-md-6';
+            const btn = document.createElement('button');
+            btn.className = 'quiz-opt-btn shadow-xs';
+            btn.textContent = opt.text;
+            btn.onclick = () => onGrammarRaceAnswer(btn, opt.isCorrect);
+            col.appendChild(btn);
+            optsDiv.appendChild(col);
+        });
+    }
+
+    function onGrammarRaceAnswer(btn, isCorrect) {
+        if (gameState.isProcessing) return;
+        gameState.isProcessing = true;
+        
+        if (isCorrect) {
+            btn.classList.add('correct');
+            addScore(30);
+            gameState.correctCount++;
+            // Boost player car
+            gameState.racePlayerPos = Math.min(92, gameState.racePlayerPos + 22);
+            document.getElementById('raceCarPlayer').style.left = `${gameState.racePlayerPos}%`;
+        } else {
+            btn.classList.add('incorrect');
+        }
+        
+        setTimeout(() => {
+            gameState.isProcessing = false;
+            gameState.currentIndex++;
+            renderGrammarRaceQuestion();
+        }, 500);
+    }
+
+    // =========================================================================
+    // GENERAL GAME CONTROLLER
+    // =========================================================================
     function renderQuestion() {
         if (gameState.currentIndex >= gameState.items.length) {
             endGame();
             return;
         }
+        updateProgress();
+        const item = gameState.items[gameState.currentIndex];
         
+        if (base_game_type === "SPEED_QUIZ" || base_game_type === "QUIZ") {
+            startSpeedQuizQuestion(item);
+        } else if (base_game_type === "SCRAMBLE") {
+            startScramble(item);
+        } else if (base_game_type === "HANGMAN") {
+            startHangman(item);
+        } else if (base_game_type === "SPELLING_BEE") {
+            startSpellingBee(item);
+        }
+    }
+
+    function nextQuestion() {
         gameState.isProcessing = false;
-        const currentItem = gameState.items[gameState.currentIndex];
-        
-        // Cập nhật progress bar
-        document.getElementById('progressText').textContent = `${gameState.currentIndex + 1}/${gameState.items.length}`;
-        const pct = ((gameState.currentIndex) / gameState.items.length) * 100;
-        document.getElementById('progressBar').style.width = `${pct}%`;
-        
-        // Quyết định mode hiện tại (nếu là ARCADE thì mix)
-        let mode = base_game_type;
-        if (mode === "ARCADE") {
-            mode = getArcadeMode();
-        }
-        
-        // Hide all views
-        document.getElementById('viewQuiz').classList.add('d-none');
-        document.getElementById('viewTyping').classList.add('d-none');
-        document.getElementById('viewMatching').classList.add('d-none');
-        document.getElementById('typingFeedback').classList.add('d-none');
-        
-        if (mode === "QUIZ") {
-            document.getElementById('viewQuiz').classList.remove('d-none');
-            document.getElementById('viewQuiz').classList.add('d-flex');
-            
-            document.getElementById('quizTerm').textContent = currentItem.term;
-            if (currentItem.image_url) {
-                document.getElementById('quizImg').src = currentItem.image_url;
-                document.getElementById('quizImg').style.display = 'block';
-            } else {
-                document.getElementById('quizImg').style.display = 'none';
-            }
-            
-            // Build options
-            const optsContainer = document.getElementById('quizOptions');
-            optsContainer.innerHTML = '';
-            
-            let options = [currentItem.definition];
-            if (currentItem.distractors) {
-                options = options.concat(currentItem.distractors);
-            }
-            // Shuffle options
-            options.sort(() => Math.random() - 0.5);
-            
-            options.forEach(opt => {
-                const btnHTML = `
-                <div class="col-md-6">
-                    <button class="w-100 quiz-option" onclick="submitQuiz(this, \`${opt.replace(/`/g, "'")}\`, \`${currentItem.definition.replace(/`/g, "'")}\`)">${opt}</button>
-                </div>
-                `;
-                optsContainer.insertAdjacentHTML('beforeend', btnHTML);
-            });
-            
-            // Auto play audio if quiz
-            playCurrentAudio();
-            
-        } else if (mode === "TYPING" || mode === "LISTENING") {
-            document.getElementById('viewTyping').classList.remove('d-none');
-            document.getElementById('viewTyping').classList.add('d-flex');
-            const input = document.getElementById('typingInput');
-            input.value = '';
-            input.disabled = false;
-            input.focus();
-            
-            if (mode === "TYPING") {
-                document.getElementById('typingReadArea').classList.remove('d-none');
-                document.getElementById('typingListenArea').classList.add('d-none');
-                document.getElementById('typingListenArea').classList.remove('d-flex');
-                
-                document.getElementById('typingDef').textContent = currentItem.definition;
-                if (currentItem.image_url) {
-                    document.getElementById('typingImg').src = currentItem.image_url;
-                    document.getElementById('typingImg').style.display = 'block';
-                } else {
-                    document.getElementById('typingImg').style.display = 'none';
-                }
-            } else {
-                // LISTENING
-                document.getElementById('typingReadArea').classList.add('d-none');
-                document.getElementById('typingListenArea').classList.remove('d-none');
-                document.getElementById('typingListenArea').classList.add('d-flex');
-                playCurrentAudio();
-            }
-        }
+        gameState.currentIndex++;
+        renderQuestion();
     }
-    
-    // -- QUIZ LOGIC --
-    window.submitQuiz = function(btnEl, selected, correct) {
-        if (gameState.isProcessing) return;
-        gameState.isProcessing = true;
-        
-        const isCorrect = (selected === correct);
-        
-        if (isCorrect) {
-            btnEl.classList.add('correct');
-            gameState.correctCount++;
-            document.getElementById('gameScore').textContent = gameState.correctCount;
-        } else {
-            btnEl.classList.add('incorrect');
-            // Tìm nút đúng và bôi xanh
-            const btns = document.querySelectorAll('.quiz-option');
-            btns.forEach(b => {
-                if (b.textContent === correct) b.classList.add('correct');
-            });
-        }
-        
-        setTimeout(() => {
-            gameState.currentIndex++;
-            renderQuestion();
-        }, 1500);
-    };
-    
-    // -- TYPING / LISTENING LOGIC --
-    window.submitTyping = function(e) {
-        e.preventDefault();
-        if (gameState.isProcessing) return;
-        
-        const inputEl = document.getElementById('typingInput');
-        const userText = inputEl.value.trim().toLowerCase();
-        if (!userText) return;
-        
-        gameState.isProcessing = true;
-        inputEl.disabled = true;
-        
-        const currentItem = gameState.items[gameState.currentIndex];
-        const correctText = currentItem.term.trim().toLowerCase();
-        const isCorrect = (userText === correctText);
-        
-        const fbArea = document.getElementById('typingFeedback');
-        const fbTitle = document.getElementById('typingFeedbackText');
-        const fbCorrect = document.getElementById('typingFeedbackCorrect');
-        
-        fbArea.classList.remove('d-none');
-        
-        if (isCorrect) {
-            inputEl.classList.add('is-valid');
-            fbTitle.textContent = "Chính xác!";
-            fbTitle.className = "fw-bold mb-0 text-success";
-            fbCorrect.textContent = "";
-            gameState.correctCount++;
-            document.getElementById('gameScore').textContent = gameState.correctCount;
-        } else {
-            inputEl.classList.add('is-invalid');
-            fbTitle.textContent = "Chưa chính xác!";
-            fbTitle.className = "fw-bold mb-0 text-danger";
-            fbCorrect.innerHTML = `Đáp án đúng: <strong class="text-dark fs-5">${currentItem.term}</strong>`;
-        }
-        
-        setTimeout(() => {
-            inputEl.classList.remove('is-valid', 'is-invalid');
-            fbArea.classList.add('d-none');
-            gameState.currentIndex++;
-            renderQuestion();
-        }, 2000);
-    };
-    
-    // -- MATCHING LOGIC --
-    function startMatchingRound() {
-        document.getElementById('viewQuiz').classList.add('d-none');
-        document.getElementById('viewTyping').classList.add('d-none');
-        document.getElementById('viewMatching').classList.remove('d-none');
-        document.getElementById('progressText').textContent = `0/${gameState.items.length}`;
-        
-        const grid = document.getElementById('matchingGrid');
-        grid.innerHTML = '';
-        
-        let cards = [];
-        gameState.items.forEach(item => {
-            cards.push({ id: item.id, type: 'term', text: item.term });
-            cards.push({ id: item.id, type: 'def', text: item.definition });
-        });
-        
-        // Shuffle
-        cards.sort(() => Math.random() - 0.5);
-        
-        cards.forEach((card, idx) => {
-            const div = document.createElement('div');
-            div.className = 'match-card';
-            div.textContent = card.text;
-            div.dataset.id = card.id;
-            div.dataset.type = card.type;
-            div.dataset.idx = idx;
-            div.onclick = () => onMatchCardClick(div, card.id);
-            grid.appendChild(div);
-        });
-        
-        gameState.matchingPairs = gameState.items.length;
-    }
-    
-    window.onMatchCardClick = function(el, id) {
-        if (el.classList.contains('matched') || gameState.isProcessing) return;
-        
-        if (!gameState.matchingSelectedEl) {
-            // Chọn thẻ đầu tiên
-            el.classList.add('selected');
-            gameState.matchingSelectedEl = el;
-            gameState.matchingSelectedId = id;
-            if (el.dataset.type === 'term') {
-                const msg = new SpeechSynthesisUtterance(el.textContent);
-                msg.lang = 'en-US';
-                window.speechSynthesis.speak(msg);
-            }
-        } else {
-            // Nếu click lại chính nó thì bỏ chọn
-            if (gameState.matchingSelectedEl === el) {
-                el.classList.remove('selected');
-                gameState.matchingSelectedEl = null;
-                gameState.matchingSelectedId = null;
-                return;
-            }
-            
-            // Chọn thẻ thứ 2
-            const el1 = gameState.matchingSelectedEl;
-            const el2 = el;
-            
-            if (gameState.matchingSelectedId === id) {
-                // ĐÚNG
-                el1.classList.remove('selected');
-                el1.classList.add('matched');
-                el2.classList.add('matched');
-                gameState.correctCount++; // Bonus point maybe?
-                document.getElementById('gameScore').textContent = gameState.correctCount;
-                
-                gameState.matchingPairs--;
-                const matchedCount = gameState.items.length - gameState.matchingPairs;
-                document.getElementById('progressText').textContent = `${matchedCount}/${gameState.items.length}`;
-                document.getElementById('progressBar').style.width = `${(matchedCount / gameState.items.length) * 100}%`;
-                
-                if (gameState.matchingPairs === 0) {
-                    setTimeout(() => endGame(), 500);
-                }
-            } else {
-                // SAI
-                gameState.isProcessing = true;
-                el2.classList.add('shake-error');
-                el1.classList.add('shake-error');
-                
-                setTimeout(() => {
-                    el1.classList.remove('selected', 'shake-error');
-                    el2.classList.remove('shake-error');
-                    gameState.isProcessing = false;
-                }, 500);
-            }
-            
-            gameState.matchingSelectedEl = null;
-            gameState.matchingSelectedId = null;
-        }
-    };
-    
-    // -- GAME END LOGIC --
+
     function endGame() {
         clearInterval(gameState.timerInterval);
+        clearInterval(gameState.speedTimer);
+        clearInterval(gameState.raceBotInterval);
         
-        document.getElementById('viewQuiz').classList.add('d-none');
-        document.getElementById('viewTyping').classList.add('d-none');
-        document.getElementById('viewMatching').classList.add('d-none');
+        hideAllViews();
+        const v = document.getElementById('viewResult');
+        v.classList.remove('d-none');
+        v.classList.add('d-flex');
         
-        const resView = document.getElementById('viewResult');
-        resView.classList.remove('d-none');
-        resView.classList.add('d-flex');
-        
-        let total = gameState.items.length;
-        if (base_game_type === "MATCHING") total = gameState.items.length; // correctCount can be weird for matching, let's just say 100% if they finish
-        
-        let acc = 0;
-        if (base_game_type === "MATCHING") {
-            acc = 100; // if they finish, it's 100%
-        } else {
-            acc = Math.round((gameState.correctCount / total) * 100) || 0;
-        }
-        
-        document.getElementById('resAccuracy').textContent = acc + "%";
-        
-        const m = Math.floor(gameState.timerSeconds / 60).toString().padStart(2, '0');
-        const s = (gameState.timerSeconds % 60).toString().padStart(2, '0');
-        document.getElementById('resTime').textContent = `${m}:${s}`;
-        
-        // Hide top bar
-        document.querySelector('.progress').style.display = 'none';
-        
-        // Save to global state for submission
-        gameState.finalAcc = acc;
-        gameState.finalTotal = total;
+        const total = gameState.items.length || 1;
+        const acc = Math.round((gameState.correctCount / Math.max(1, total)) * 100);
+        document.getElementById('resAccuracy').textContent = `${Math.min(100, acc)}%`;
+        document.getElementById('resScore').textContent = gameState.score;
+        document.getElementById('progressBar').style.width = '100%';
     }
-    
-    window.saveAndReturn = function() {
-        const btn = document.querySelector('#viewResult button');
-        btn.disabled = true;
-        btn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Đang lưu...';
+
+    function saveAndReturn() {
+        const total = gameState.items.length || 1;
+        const acc = Math.round((gameState.correctCount / Math.max(1, total)) * 100);
         
-        const csrfToken = document.getElementById('csrfToken').value;
-        
-        fetch('{{ url_for("learning.game_submit") }}', {
-            method: 'POST',
+        fetch("/games/submit", {
+            method: "POST",
             headers: {
-                'Content-Type': 'application/json',
-                'X-CSRFToken': csrfToken
+                "Content-Type": "application/json",
+                "X-CSRFToken": document.getElementById('csrfToken').value
             },
             body: JSON.stringify({
                 session_id: session_id,
                 game_type: base_game_type,
-                total_questions: gameState.finalTotal,
-                correct_answers: (base_game_type === "MATCHING") ? gameState.finalTotal : gameState.correctCount,
-                accuracy_rate: gameState.finalAcc,
+                total_questions: total,
+                correct_answers: gameState.correctCount,
+                accuracy_rate: acc,
                 duration_seconds: gameState.timerSeconds
             })
         })
@@ -580,7 +1122,6 @@
             window.location.href = "{{ url_for('learning.game_lobby') }}";
         })
         .catch(() => {
-            alert("Đã xảy ra lỗi khi lưu kết quả.");
             window.location.href = "{{ url_for('learning.game_lobby') }}";
         });
     }

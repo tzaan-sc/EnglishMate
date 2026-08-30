@@ -404,13 +404,13 @@ Dựa trên hệ thống học tiếng Anh hiện tại - Phiên bản nâng c�
 
 5.3. Learning Games (Trò chơi học tập)
 [x] - Vocabulary matching game - Trò chơi ghép từ vựng
-[ ] - Speed quiz game - Trò chơi quiz tốc độ
-[ ] - Word scramble game - Trò chơi sắp xếp từ
-[ ] - Hangman game - Trò chơi hangman
-[ ] - Crossword puzzles - Trò chơi crossword
-[ ] - Memory card game - Trò chơi nhớ thẻ
-[ ] - Spelling bee game - Trò chơi đánh vần
-[ ] - Grammar racing game - Trò chơi đua ngữ pháp
+[x] - Speed quiz game - Trò chơi quiz tốc độ
+[x] - Word scramble game - Trò chơi sắp xếp từ
+[x] - Hangman game - Trò chơi hangman
+[x] - Crossword puzzles - Trò chơi crossword
+[x] - Memory card game - Trò chơi nhớ thẻ
+[x] - Spelling bee game - Trò chơi đánh vần
+[x] - Grammar racing game - Trò chơi đua ngữ pháp
 
 ================================================================================
 

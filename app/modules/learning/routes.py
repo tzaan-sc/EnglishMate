@@ -847,6 +847,7 @@ import uuid
 import json
 from datetime import datetime, timedelta
 
+@bp.get("/games")
 @bp.get("/games/lobby")
 @login_required
 def game_lobby():
@@ -1007,8 +1008,24 @@ def game_api_data(session_id):
             "image_url": item.image_url,
             "distractors": distractors
         })
-        
-    return {"status": "ok", "game_type": game_data["game_type"], "items": data}
+
+    grammar_items = []
+    if game_data.get("game_type") == "GRAMMAR_RACE":
+        from .models import Question
+        q_pool = Question.query.all()
+        if q_pool:
+            sampled_q = random.sample(q_pool, min(len(q_pool), len(sorted_items) if sorted_items else 10))
+            for q in sampled_q:
+                correct_text = getattr(q, f"option_{q.correct_option.lower()}", q.option_a)
+                grammar_items.append({
+                    "id": q.id,
+                    "prompt": q.question_text,
+                    "options": [q.option_a, q.option_b, q.option_c, q.option_d],
+                    "correct": correct_text,
+                    "explanation": q.explanation or ""
+                })
+
+    return {"status": "ok", "game_type": game_data["game_type"], "items": data, "grammar_items": grammar_items}
 
 @bp.post("/games/submit")
 @login_required

@@ -71,46 +71,78 @@
 
         <!-- Game Modes Grid -->
         <div class="game-grid mb-5">
-            <!-- Game Modes -->
-            <button type="button" onclick="submitGame('QUIZ')" class="mode-btn btn bg-white w-100 rounded-4 text-warning d-flex flex-column align-items-center justify-content-center p-3 position-relative overflow-hidden" style="border: 2px solid var(--warning);">
-                <div class="icon-circle mb-3 bg-warning-subtle text-warning" style="width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
-                    <i class="ph ph-squares-four fs-5"></i>
+            <!-- 1. Matching Game -->
+            <button type="button" onclick="submitGame('MATCHING')" class="mode-btn btn bg-white w-100 rounded-4 text-info d-flex flex-column align-items-center justify-content-center p-3 position-relative overflow-hidden shadow-xs" style="border: 2px solid var(--info);">
+                <div class="icon-circle mb-3 bg-info-subtle text-info" style="width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                    <i class="ph-fill ph-puzzle-piece fs-4"></i>
                 </div>
-                <div class="fw-bold mb-1 text-center" style="font-size: 16px; line-height: 1.2;">Trắc nghiệm</div>
-                <div class="text-muted text-center mt-1" style="font-size: 0.75rem; line-height: 1.2;">Chọn đáp án đúng</div>
+                <div class="fw-bold mb-1 text-center" style="font-size: 16px; line-height: 1.2;">Ghép từ vựng</div>
+                <div class="text-muted text-center mt-1" style="font-size: 0.75rem; line-height: 1.2;">Nối từ và nghĩa</div>
             </button>
             
-            <button type="button" onclick="submitGame('MATCHING')" class="mode-btn btn bg-white w-100 rounded-4 text-info d-flex flex-column align-items-center justify-content-center p-3 position-relative overflow-hidden" style="border: 2px solid var(--info);">
-                <div class="icon-circle mb-3 bg-info-subtle text-info" style="width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
-                    <i class="ph ph-puzzle-piece fs-5"></i>
+            <!-- 2. Speed Quiz Game -->
+            <button type="button" onclick="submitGame('SPEED_QUIZ')" class="mode-btn btn bg-white w-100 rounded-4 text-warning d-flex flex-column align-items-center justify-content-center p-3 position-relative overflow-hidden shadow-xs" style="border: 2px solid var(--warning);">
+                <span class="position-absolute top-0 end-0 badge bg-warning text-dark m-2 rounded-pill shadow-xs fw-bold" style="font-size: 0.6rem;">HOT</span>
+                <div class="icon-circle mb-3 bg-warning-subtle text-warning" style="width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                    <i class="ph-fill ph-lightning fs-4"></i>
                 </div>
-                <div class="fw-bold mb-1 text-center" style="font-size: 16px; line-height: 1.2;">Nối từ</div>
-                <div class="text-muted text-center mt-1" style="font-size: 0.75rem; line-height: 1.2;">Ghép đôi từ và nghĩa</div>
+                <div class="fw-bold mb-1 text-center" style="font-size: 16px; line-height: 1.2;">Quiz tốc độ</div>
+                <div class="text-muted text-center mt-1" style="font-size: 0.75rem; line-height: 1.2;">Đếm ngược 10s & Combo</div>
             </button>
             
-            <button type="button" onclick="submitGame('TYPING')" class="mode-btn btn bg-white w-100 rounded-4 text-success d-flex flex-column align-items-center justify-content-center p-3 position-relative overflow-hidden" style="border: 2px solid var(--success);">
-                <div class="icon-circle mb-3 bg-success-subtle text-success" style="width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
-                    <i class="ph ph-keyboard fs-5"></i>
+            <!-- 3. Word Scramble Game -->
+            <button type="button" onclick="submitGame('SCRAMBLE')" class="mode-btn btn bg-white w-100 rounded-4 text-success d-flex flex-column align-items-center justify-content-center p-3 position-relative overflow-hidden shadow-xs" style="border: 2px solid var(--success);">
+                <div class="icon-circle mb-3 bg-success-subtle text-success" style="width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                    <i class="ph-fill ph-arrows-left-right fs-4"></i>
                 </div>
-                <div class="fw-bold mb-1 text-center" style="font-size: 16px; line-height: 1.2;">Gõ từ</div>
-                <div class="text-muted text-center mt-1" style="font-size: 0.75rem; line-height: 1.2;">Nhìn nghĩa, tự gõ lại</div>
+                <div class="fw-bold mb-1 text-center" style="font-size: 16px; line-height: 1.2;">Sắp xếp từ</div>
+                <div class="text-muted text-center mt-1" style="font-size: 0.75rem; line-height: 1.2;">Xếp chữ cái xáo trộn</div>
             </button>
             
-            <button type="button" onclick="submitGame('LISTENING')" class="mode-btn btn bg-white w-100 rounded-4 text-primary d-flex flex-column align-items-center justify-content-center p-3 position-relative overflow-hidden" style="border: 2px solid var(--primary);">
-                <div class="icon-circle mb-3 bg-primary-subtle text-primary" style="width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
-                    <i class="ph ph-headphones fs-5"></i>
+            <!-- 4. Hangman Game -->
+            <button type="button" onclick="submitGame('HANGMAN')" class="mode-btn btn bg-white w-100 rounded-4 text-danger d-flex flex-column align-items-center justify-content-center p-3 position-relative overflow-hidden shadow-xs" style="border: 2px solid var(--danger);">
+                <div class="icon-circle mb-3 bg-danger-subtle text-danger" style="width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                    <i class="ph-fill ph-user fs-4"></i>
                 </div>
-                <div class="fw-bold mb-1 text-center" style="font-size: 16px; line-height: 1.2;">Nghe viết</div>
-                <div class="text-muted text-center mt-1" style="font-size: 0.75rem; line-height: 1.2;">Nghe âm và gõ lại</div>
+                <div class="fw-bold mb-1 text-center" style="font-size: 16px; line-height: 1.2;">Hangman</div>
+                <div class="text-muted text-center mt-1" style="font-size: 0.75rem; line-height: 1.2;">Đoán chữ cái bí ẩn</div>
             </button>
             
-            <button type="button" onclick="submitGame('ARCADE')" class="mode-btn btn bg-white w-100 rounded-4 text-danger d-flex flex-column align-items-center justify-content-center p-3 position-relative overflow-hidden" style="border: 2px solid var(--danger);">
-                <span class="position-absolute top-0 end-0 badge bg-danger text-white m-2 rounded-pill shadow-sm" style="font-size: 0.6rem;">HOT</span>
-                <div class="icon-circle mb-3 bg-danger-subtle text-danger" style="width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
-                    <i class="ph-fill ph-lightning fs-5"></i>
+            <!-- 5. Crossword Game -->
+            <button type="button" onclick="submitGame('CROSSWORD')" class="mode-btn btn bg-white w-100 rounded-4 text-purple d-flex flex-column align-items-center justify-content-center p-3 position-relative overflow-hidden shadow-xs" style="border: 2px solid var(--purple);">
+                <div class="icon-circle mb-3 bg-purple-subtle text-purple" style="width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                    <i class="ph-fill ph-grid-four fs-4"></i>
                 </div>
-                <div class="fw-bold mb-1 text-center text-nowrap" style="font-size: 16px; line-height: 1.2;">Sinh tồn</div>
-                <div class="text-muted text-center mt-1" style="font-size: 0.75rem; line-height: 1.2;">Câu hỏi liên tục</div>
+                <div class="fw-bold mb-1 text-center" style="font-size: 16px; line-height: 1.2;">Ô chữ Crossword</div>
+                <div class="text-muted text-center mt-1" style="font-size: 0.75rem; line-height: 1.2;">Giải ô chữ từ vựng</div>
+            </button>
+
+            <!-- 6. Memory Card Game -->
+            <button type="button" onclick="submitGame('MEMORY')" class="mode-btn btn bg-white w-100 rounded-4 text-primary d-flex flex-column align-items-center justify-content-center p-3 position-relative overflow-hidden shadow-xs" style="border: 2px solid var(--primary);">
+                <div class="icon-circle mb-3 bg-primary-subtle text-primary" style="width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                    <i class="ph-fill ph-cards fs-4"></i>
+                </div>
+                <div class="fw-bold mb-1 text-center" style="font-size: 16px; line-height: 1.2;">Nhớ thẻ bài</div>
+                <div class="text-muted text-center mt-1" style="font-size: 0.75rem; line-height: 1.2;">Lật thẻ tìm cặp đôi</div>
+            </button>
+
+            <!-- 7. Spelling Bee Game -->
+            <button type="button" onclick="submitGame('SPELLING_BEE')" class="mode-btn btn bg-white w-100 rounded-4 text-success d-flex flex-column align-items-center justify-content-center p-3 position-relative overflow-hidden shadow-xs" style="border: 2px solid #059669;">
+                <div class="icon-circle mb-3 bg-success-subtle text-success" style="width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                    <i class="ph-fill ph-headphones fs-4"></i>
+                </div>
+                <div class="fw-bold mb-1 text-center" style="font-size: 16px; line-height: 1.2;">Đánh vần</div>
+                <div class="text-muted text-center mt-1" style="font-size: 0.75rem; line-height: 1.2;">Nghe phát âm chuẩn</div>
+            </button>
+
+            <!-- 8. Grammar Racing Game -->
+            <button type="button" onclick="submitGame('GRAMMAR_RACE')" class="mode-btn btn bg-white w-100 rounded-4 text-danger d-flex flex-column align-items-center justify-content-center p-3 position-relative overflow-hidden shadow-xs" style="border: 2px solid #dc2626;">
+                <span class="position-absolute top-0 end-0 badge bg-danger text-white m-2 rounded-pill shadow-xs fw-bold" style="font-size: 0.6rem;">NEW</span>
+                <div class="icon-circle mb-3 bg-danger-subtle text-danger" style="width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                    <i class="ph-fill ph-rocket-launch fs-4"></i>
+                </div>
+                <div class="fw-bold mb-1 text-center" style="font-size: 16px; line-height: 1.2;">Đua ngữ pháp</div>
+                <div class="text-muted text-center mt-1" style="font-size: 0.75rem; line-height: 1.2;">Tăng tốc về đích</div>
             </button>
         </div>
     </form>
