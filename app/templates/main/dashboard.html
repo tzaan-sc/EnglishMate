@@ -9,62 +9,76 @@
   <div class="row g-4 align-items-stretch mb-4">
     <!-- LEFT: HERO GREETING & NEXT ACTIONS (COL-LG-8) -->
     <div class="col-lg-8">
-      <div id="welcomeBanner" class="hero-welcome-card p-4 p-lg-5 h-100 d-flex flex-column justify-content-between position-relative overflow-hidden">
+      <div id="welcomeBanner" class="hero-welcome-card p-4 p-lg-5 h-100 d-flex flex-column justify-content-between position-relative overflow-hidden" style="min-height: 250px;">
         <!-- Media Container Background for Custom Banner -->
         <div id="bannerMediaContainer" class="position-absolute w-100 h-100 top-0 start-0" style="z-index: 1; pointer-events: none;"></div>
-        <!-- Dark Overlay (Only active when media is filled) -->
+        
+        <!-- Permanent Smart Gradient Scrim (Protects text readability against any image) -->
+        <div class="position-absolute w-100 h-100 top-0 start-0" style="z-index: 1; background: linear-gradient(90deg, rgba(15, 23, 42, 0.92) 0%, rgba(15, 23, 42, 0.68) 55%, rgba(15, 23, 42, 0.3) 100%); pointer-events: none;"></div>
         <div id="bannerOverlay" class="position-absolute w-100 h-100 top-0 start-0 d-none" style="z-index: 1; background: rgba(15, 23, 42, 0.45); pointer-events: none;"></div>
         <div id="bannerPlaceholder" class="d-none" style="z-index: 2; pointer-events: none;"></div>
 
         <!-- Custom Banner Controls (Top Right) -->
-        <div class="position-absolute d-flex align-items-center gap-1.5" style="top: 16px; right: 16px; z-index: 10;">
+        <div class="position-absolute d-flex align-items-center gap-2" style="top: 16px; right: 16px; z-index: 10;">
           <button id="btnResetBanner"
-            class="btn btn-sm btn-danger border-0 d-none d-flex align-items-center justify-content-center"
-            style="border-radius: 50%; width: 32px; height: 32px; background: rgba(239, 68, 68, 0.7); color: white;"
+            class="btn btn-sm btn-light border-0 d-none d-flex align-items-center justify-content-center shadow-sm"
+            style="border-radius: 50%; width: 32px; height: 32px; background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(8px); color: #dc2626;"
             title="Khôi phục nền mặc định">
-            <i class="ph ph-x" style="font-size: 14px;"></i>
+            <i class="ph-bold ph-x fs-6"></i>
           </button>
           <button id="btnChangeBanner"
             class="btn btn-sm btn-light border-0 d-flex align-items-center justify-content-center shadow-sm"
             style="border-radius: 50%; width: 32px; height: 32px; background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(8px); color: #334155;"
             title="Tùy chỉnh ảnh/video nền">
-            <i class="ph ph-image" style="font-size: 15px;"></i>
+            <i class="ph-bold ph-image fs-6"></i>
           </button>
         </div>
         <input type="file" id="bannerFileInput" accept="image/*,video/*" class="d-none">
 
         <!-- Hero Content (Greeting & Subtitle) -->
-        <div class="position-relative" style="z-index: 2;">
-          <div class="d-inline-flex align-items-center gap-2 px-3 py-1 rounded-pill mb-3" style="background: rgba(255, 255, 255, 0.2); backdrop-filter: blur(6px); font-size: 0.78rem; font-weight: 700;">
-            <span>🎯 Mục tiêu hôm nay</span>
+        <div class="position-relative" style="z-index: 2; max-width: 540px;">
+          <div class="d-inline-flex align-items-center gap-2 px-3 py-1 rounded-pill mb-3" style="background: rgba(255, 255, 255, 0.18); backdrop-filter: blur(8px); font-size: 0.76rem; font-weight: 700; color: #a7f3d0;">
+            <i class="ph-bold ph-target"></i>
+            <span>Mục tiêu hôm nay</span>
             <span style="opacity: 0.6;">•</span>
             <span>1 bài học & 10 từ vựng</span>
           </div>
           <h2 class="fw-bold mb-2 text-white" style="font-size: 1.85rem; letter-spacing: -0.02em;">
             Chào mừng trở lại, {{ current_user.full_name or current_user.username }}! 👋
           </h2>
-          <p class="text-white-50 mb-0" style="font-size: 0.95rem; max-width: 540px;">
+          <p class="text-white-50 mb-0" style="font-size: 0.92rem; line-height: 1.55;">
             Mỗi ngày một chút kiến thức để làm chủ tiếng Anh tự tin và tự nhiên hơn.
           </p>
         </div>
 
         <!-- Hero Actions / CTAs -->
-        <div class="d-flex flex-wrap align-items-center gap-2.5 pt-4 mt-3 position-relative" style="z-index: 2;">
+        <div class="d-flex flex-wrap align-items-center gap-2.5 pt-4 mt-2 position-relative" style="z-index: 2;">
           {% if next_lesson %}
           <a href="{{ url_for('learning.lesson_detail', lesson_id=next_lesson.id) }}" class="btn btn-light fw-bold px-3.5 py-2 text-primary d-inline-flex align-items-center gap-2 shadow-sm rounded-3">
-            <i class="ph ph-play-fill"></i> Tiếp tục: {{ next_lesson.title|truncate(26) }}
+            <i class="ph-bold ph-play-circle fs-5"></i>
+            <span>Tiếp tục: {{ next_lesson.title|truncate(24) }}</span>
+          </a>
+          {% else %}
+          <a href="{{ url_for('learning.lessons') }}" class="btn btn-primary fw-bold px-3.5 py-2 d-inline-flex align-items-center gap-2 shadow-sm rounded-3">
+            <i class="ph-bold ph-play-circle fs-5"></i>
+            <span>Khám phá bài học</span>
           </a>
           {% endif %}
+          
           {% if srs_due_count > 0 %}
           <a href="{{ url_for('learning.game_lobby') }}" class="btn btn-warning text-dark fw-bold px-3.5 py-2 d-inline-flex align-items-center gap-2 shadow-sm rounded-3">
-            <i class="ph ph-lightning-fill"></i> Ôn {{ srs_due_count }} từ đến hạn
+            <i class="ph-bold ph-lightning fs-5"></i>
+            <span>Ôn {{ srs_due_count }} từ đến hạn</span>
           </a>
           {% endif %}
-          <a href="{{ url_for('learning.vocabulary') }}" class="btn btn-outline-light fw-semibold px-3 py-2 d-inline-flex align-items-center gap-1.5 rounded-3" style="border-color: rgba(255, 255, 255, 0.4);">
-            <i class="ph ph-book-open"></i> Từ vựng
+          
+          <a href="{{ url_for('learning.vocabulary') }}" class="btn btn-light text-dark fw-bold px-3 py-2 d-inline-flex align-items-center gap-2 rounded-3 shadow-sm">
+            <i class="ph-bold ph-book-bookmark fs-5 text-primary"></i>
+            <span>Từ vựng</span>
           </a>
-          <a href="{{ url_for('learning.game_lobby') }}" class="btn btn-outline-light fw-semibold px-3 py-2 d-inline-flex align-items-center gap-1.5 rounded-3" style="border-color: rgba(255, 255, 255, 0.4);">
-            <i class="ph ph-game-controller"></i> Luyện Game
+          <a href="{{ url_for('learning.game_lobby') }}" class="btn btn-outline-light fw-semibold px-3 py-2 d-inline-flex align-items-center gap-2 rounded-3" style="border-color: rgba(255, 255, 255, 0.45); backdrop-filter: blur(4px);">
+            <i class="ph-bold ph-game-controller fs-5"></i>
+            <span>Luyện Game</span>
           </a>
         </div>
       </div>
@@ -147,10 +161,10 @@
   </div>
 
   <!-- DAILY MOTIVATION QUOTE -->
-  <div class="card-modern p-3.5 mb-4">
+  <div class="card-modern p-3.5 mb-4" style="background-color: #ffffff;">
     <div class="d-flex align-items-center gap-3">
       <div class="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0"
-           style="width: 44px; height: 44px; background-color: var(--primary-subtle); color: var(--primary); font-size: 1.35rem;">
+           style="width: 42px; height: 42px; background-color: var(--primary-subtle); color: var(--primary); font-size: 1.3rem;">
         💡
       </div>
       <div class="flex-grow-1">
@@ -162,192 +176,254 @@
     </div>
   </div>
 
-  <!-- SECTION 6.1: PERSONAL DASHBOARD ANALYTICS ROW -->
-  <div class="row g-3 align-items-stretch mb-4">
-    
-    <!-- LEFT: TODAY'S SCHEDULE & ACHIEVEMENTS -->
+  <!-- SECTION: TODAY'S SCHEDULE & SKILLS PROGRESS -->
+  <div class="row g-4 align-items-stretch mb-4">
+    <!-- LEFT: TODAY'S SCHEDULE & TARGETS -->
     <div class="col-lg-6">
-      <div class="card border-0 rounded-4 shadow-sm bg-white h-100 p-4">
-        <div class="d-flex justify-content-between align-items-center mb-3">
-          <h6 class="fw-bold text-dark text-uppercase small tracking-wider mb-0 d-flex align-items-center gap-2">
-            <i class="ph-fill ph-calendar-check text-primary fs-5"></i> Lịch trình & Mục tiêu hôm nay
-          </h6>
-          <span class="badge bg-primary-subtle text-primary rounded-pill px-2.5 py-1 small fw-bold">
-            +{{ today_achievements.xp_today }} XP hôm nay
-          </span>
-        </div>
-
-        <div class="d-flex flex-column gap-2.5 mb-3">
-          {% for item in today_schedule %}
-          <div class="p-2.5 rounded-3 border d-flex justify-content-between align-items-center bg-light-subtle transition-hover">
-            <div class="d-flex align-items-center gap-2.5">
-              <span class="rounded-circle d-flex align-items-center justify-content-center {% if item.is_done %}bg-success-subtle text-success{% else %}bg-secondary-subtle text-secondary{% endif %}" style="width: 32px; height: 32px;">
-                <i class="ph {{ item.icon }} fs-6"></i>
+      <div class="card-modern p-4 h-100 d-flex flex-column justify-content-between">
+        <div>
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <div class="d-flex align-items-center gap-2">
+              <span class="rounded-circle d-flex align-items-center justify-content-center" style="width: 32px; height: 32px; background-color: var(--primary-subtle); color: var(--primary);">
+                <i class="ph-bold ph-calendar-check fs-5"></i>
               </span>
-              <div>
-                <div class="fw-bold text-dark small" style="font-size: 0.82rem;">{{ item.title }}</div>
-                <div class="text-muted" style="font-size: 0.7rem;">{{ item.status }}</div>
-              </div>
+              <h6 class="fw-bold text-dark text-uppercase small mb-0" style="letter-spacing: 0.05em;">Lịch trình & Mục tiêu hôm nay</h6>
             </div>
-            <a href="{{ item.url }}" class="btn btn-sm {% if item.is_done %}btn-light border text-success{% else %}btn-outline-primary{% endif %} rounded-pill px-3 py-1 fw-bold" style="font-size: 0.72rem;">
-              {% if item.is_done %}✓ Đã xong{% else %}Bắt đầu{% endif %}
-            </a>
+            <span class="badge bg-primary-subtle text-primary rounded-pill px-3 py-1.5 small fw-bold">
+              +{{ today_achievements.xp_today }} XP hôm nay
+            </span>
           </div>
-          {% endfor %}
+
+          <!-- Schedule Items List -->
+          <div class="d-flex flex-column gap-2 mb-3">
+            {% for item in today_schedule %}
+            <div class="p-3 rounded-3 border d-flex justify-content-between align-items-center transition-hover" style="background-color: var(--bg-surface); border-color: var(--border-light) !important;">
+              <div class="d-flex align-items-center gap-3">
+                <span class="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0 {% if item.is_done %}bg-success-subtle text-success{% else %}bg-light text-muted border{% endif %}" style="width: 36px; height: 36px;">
+                  <i class="ph-bold {{ item.icon }} fs-6"></i>
+                </span>
+                <div>
+                  <div class="fw-bold text-dark small">{{ item.title }}</div>
+                  <div class="text-muted" style="font-size: 0.76rem;">{{ item.status }}</div>
+                </div>
+              </div>
+              <a href="{{ item.url }}" class="btn btn-sm {% if item.is_done %}btn-light border text-success{% else %}btn-primary{% endif %} rounded-pill px-3 py-1 fw-bold" style="font-size: 0.75rem;">
+                {% if item.is_done %}✓ Đã xong{% else %}Bắt đầu{% endif %}
+              </a>
+            </div>
+            {% endfor %}
+          </div>
         </div>
 
         <!-- Today Achievements Footer Strip -->
-        <div class="mt-auto pt-2 border-top d-flex justify-content-between align-items-center text-muted small" style="font-size: 0.75rem;">
+        <div class="pt-3 border-top border-light d-flex justify-content-between align-items-center text-muted small" style="font-size: 0.78rem;">
           <span>Chuỗi ngày: <strong class="text-warning">🔥 {{ today_achievements.streak }} ngày</strong></span>
-          <span>Mục tiêu ngày: {% if today_achievements.is_daily_goal_done %}<strong class="text-success">✓ Hoàn thành</strong>{% else %}<strong class="text-secondary">Đang học</strong>{% endif %}</span>
+          <span>Mục tiêu ngày: {% if today_achievements.is_daily_goal_done %}<strong class="text-success">✓ Hoàn thành xuất sắc</strong>{% else %}<strong class="text-secondary">Đang học</strong>{% endif %}</span>
         </div>
       </div>
     </div>
 
     <!-- RIGHT: SKILL-SPECIFIC PROGRESS & TIME SPENT -->
     <div class="col-lg-6">
-      <div class="card border-0 rounded-4 shadow-sm bg-white h-100 p-4">
-        <div class="d-flex justify-content-between align-items-center mb-3">
-          <h6 class="fw-bold text-dark text-uppercase small tracking-wider mb-0 d-flex align-items-center gap-2">
-            <i class="ph-fill ph-chart-donut text-purple fs-5"></i> Tiến độ theo kỹ năng
-          </h6>
-          <span class="badge bg-purple-subtle text-purple rounded-pill px-2.5 py-1 small fw-bold">
-            Tổng học: {{ total_time_hours }}h
-          </span>
-        </div>
-
-        <!-- Time spent badges row -->
-        <div class="row g-2 mb-3 text-center">
-          <div class="col-4">
-            <div class="bg-light p-2 rounded-3 border">
-              <div class="fw-bold text-dark" style="font-size: 1.1rem;">{{ today_time_spent_minutes }}m</div>
-              <div class="text-muted" style="font-size: 0.68rem;">HÔM NAY</div>
-            </div>
-          </div>
-          <div class="col-4">
-            <div class="bg-light p-2 rounded-3 border">
-              <div class="fw-bold text-primary" style="font-size: 1.1rem;">{{ weekly_time_spent_minutes }}m</div>
-              <div class="text-muted" style="font-size: 0.68rem;">TUẦN NÀY</div>
-            </div>
-          </div>
-          <div class="col-4">
-            <div class="bg-light p-2 rounded-3 border">
-              <div class="fw-bold text-success" style="font-size: 1.1rem;">{{ total_time_hours }}h</div>
-              <div class="text-muted" style="font-size: 0.68rem;">TẤT CẢ</div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Skills Progress Bars -->
-        <div class="d-flex flex-column gap-2">
-          {% for sk in skills_progress %}
-          <div>
-            <div class="d-flex justify-content-between align-items-center small mb-1">
-              <span class="fw-bold text-dark d-flex align-items-center gap-1.5" style="font-size: 0.78rem;">
-                <i class="ph {{ sk.icon }} text-{{ sk.color }}"></i> {{ sk.name }}
+      <div class="card-modern p-4 h-100 d-flex flex-column justify-content-between">
+        <div>
+          <!-- Card Header -->
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <div class="d-flex align-items-center gap-2">
+              <span class="rounded-circle d-flex align-items-center justify-content-center" style="width: 32px; height: 32px; background-color: var(--purple-subtle); color: var(--purple);">
+                <i class="ph-bold ph-chart-donut fs-5"></i>
               </span>
-              <span class="text-muted" style="font-size: 0.72rem;">{{ sk.stat }} (<strong>{{ sk.pct }}%</strong>)</span>
+              <h6 class="fw-bold text-dark text-uppercase small mb-0" style="letter-spacing: 0.05em;">Tiến độ theo kỹ năng</h6>
             </div>
-            <div class="progress rounded-pill" style="height: 6px;">
-              <div class="progress-bar bg-{{ sk.color }}" role="progressbar" style="width: {{ sk.pct }}%;"></div>
+            <span class="badge bg-purple-subtle text-purple rounded-pill px-3 py-1.5 small fw-bold">
+              Tổng học: {{ total_time_hours }}h
+            </span>
+          </div>
+
+          <!-- Time Spent Metrics (3 Chips) -->
+          <div class="row g-2 mb-3 text-center">
+            <div class="col-4">
+              <div class="p-2.5 rounded-3 border" style="background-color: var(--bg-surface-subtle); border-color: var(--border-light) !important;">
+                <div class="fw-bold text-dark" style="font-size: 1.15rem;">{{ today_time_spent_minutes }}m</div>
+                <div class="text-muted fw-bold" style="font-size: 0.68rem; letter-spacing: 0.04em;">HÔM NAY</div>
+              </div>
+            </div>
+            <div class="col-4">
+              <div class="p-2.5 rounded-3 border" style="background-color: var(--bg-surface-subtle); border-color: var(--border-light) !important;">
+                <div class="fw-bold text-primary" style="font-size: 1.15rem;">{{ weekly_time_spent_minutes }}m</div>
+                <div class="text-muted fw-bold" style="font-size: 0.68rem; letter-spacing: 0.04em;">TUẦN NÀY</div>
+              </div>
+            </div>
+            <div class="col-4">
+              <div class="p-2.5 rounded-3 border" style="background-color: var(--bg-surface-subtle); border-color: var(--border-light) !important;">
+                <div class="fw-bold text-success" style="font-size: 1.15rem;">{{ total_time_hours }}h</div>
+                <div class="text-muted fw-bold" style="font-size: 0.68rem; letter-spacing: 0.04em;">TẤT CẢ</div>
+              </div>
             </div>
           </div>
-          {% endfor %}
+
+          <!-- Skills Progress 2x2 Grid (Fills height gracefully) -->
+          <div class="row g-2.5">
+            {% for sk in skills_progress %}
+            <div class="col-6">
+              <div class="p-3 rounded-3 border h-100 d-flex flex-column justify-content-between transition-hover" 
+                   style="background-color: var(--bg-surface); border-color: var(--border-light) !important;">
+                <div>
+                  <div class="d-flex justify-content-between align-items-center mb-2">
+                    <span class="rounded-circle d-flex align-items-center justify-content-center" 
+                          style="width: 32px; height: 32px; background-color: {% if sk.color == 'primary' %}var(--primary-subtle){% elif sk.color == 'purple' %}var(--purple-subtle){% elif sk.color == 'warning' %}var(--warning-subtle){% else %}var(--success-subtle){% endif %}; color: {% if sk.color == 'primary' %}var(--primary){% elif sk.color == 'purple' %}var(--purple){% elif sk.color == 'warning' %}var(--warning){% else %}var(--success){% endif %};">
+                      <i class="ph-bold {{ sk.icon }} fs-6"></i>
+                    </span>
+                    <span class="badge bg-light text-dark border rounded-pill px-2 py-0.5" style="font-size: 0.72rem; font-weight: 700;">
+                      {{ sk.pct }}%
+                    </span>
+                  </div>
+                  <div class="fw-bold text-dark mb-0.5" style="font-size: 0.88rem;">{{ sk.name }}</div>
+                  <div class="text-muted" style="font-size: 0.74rem;">{{ sk.stat }}</div>
+                </div>
+                <div class="progress rounded-pill mt-2.5" style="height: 6px; background-color: #e2e8f0;">
+                  <div class="progress-bar bg-{{ sk.color }}" role="progressbar" style="width: {{ sk.pct }}%; border-radius: 9999px;"></div>
+                </div>
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+
+        <!-- Balanced Footer Strip (Matches Left Schedule Card) -->
+        <div class="pt-3 mt-3 border-top border-light d-flex justify-content-between align-items-center text-muted small" style="font-size: 0.78rem;">
+          <span>Cấp độ: <strong class="text-primary">{{ current_user.level or 'Beginner' }}</strong></span>
+          <span>Tiến độ cấp: <strong class="text-dark">{{ level_progress_pct }}%</strong></span>
         </div>
       </div>
     </div>
-
   </div>
 
-  <!-- SECTION 6.1: ACTIVITY HEATMAP & PERFORMANCE TRENDS -->
-  <div class="row g-3 align-items-stretch mb-5">
-    
-    <!-- ACTIVITY HEATMAP (60 DAYS) -->
-    <div class="col-lg-7">
-      <div class="card border-0 rounded-4 shadow-sm bg-white h-100 p-4">
-        <div class="d-flex justify-content-between align-items-center mb-3">
-          <h6 class="fw-bold text-dark text-uppercase small tracking-wider mb-0 d-flex align-items-center gap-2">
-            <i class="ph-fill ph-squares-four text-success fs-5"></i> Bản đồ hoạt động (60 ngày qua)
-          </h6>
-          <div class="d-flex align-items-center gap-1 small text-muted" style="font-size: 0.7rem;">
+  <!-- SECTION: ACTIVITY HEATMAP & PERFORMANCE TRENDS -->
+  <div class="row g-4 align-items-stretch mb-5">
+    <!-- ACTIVITY HEATMAP (GITHUB 1-YEAR STYLE) -->
+    <div class="col-lg-8">
+      <div class="card-modern p-4 h-100 d-flex flex-column justify-content-between">
+        <div>
+          <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+            <div class="d-flex align-items-center gap-2">
+              <span class="rounded-circle d-flex align-items-center justify-content-center" style="width: 32px; height: 32px; background-color: var(--primary-subtle); color: var(--primary);">
+                <i class="ph-bold ph-squares-four fs-5"></i>
+              </span>
+              <h6 class="fw-bold text-dark text-uppercase small mb-0" style="letter-spacing: 0.05em;">Bản đồ hoạt động (365 ngày qua)</h6>
+            </div>
+            
+            <!-- GitHub Style Year Filter Selector -->
+            <div class="d-flex align-items-center gap-1.5">
+              {% for yr in available_years %}
+              <a href="{{ url_for('main.dashboard', year=yr) }}" 
+                 class="btn btn-sm rounded-pill px-2.5 py-0.5 fw-bold {% if yr == selected_year %}btn-primary shadow-sm{% else %}btn-light border text-secondary{% endif %}" 
+                 style="font-size: 0.74rem;">
+                {{ yr }}
+              </a>
+              {% endfor %}
+            </div>
+          </div>
+
+          <!-- GitHub Heatmap Matrix Layout (52 Weeks / 1 Year) -->
+          <div class="github-heatmap-container">
+            <div class="github-heatmap-body">
+              <!-- Day of week labels on the left (GitHub style) -->
+              <div class="github-heatmap-days" style="padding-top: 20px;">
+                <span>T2</span>
+                <span>T4</span>
+                <span>T6</span>
+              </div>
+              
+              <!-- Matrix Area with Months Row + 7-Day Grid -->
+              <div class="d-flex flex-column gap-1 flex-grow-1">
+                <!-- Month Labels Row -->
+                <div class="position-relative text-muted" style="height: 16px; font-size: 0.65rem; font-weight: 700; user-select: none;">
+                  {% for m in month_labels %}
+                  <span class="position-absolute" style="left: calc({{ m.col }} * 17px);">{{ m.name }}</span>
+                  {% endfor %}
+                </div>
+                <!-- 52-Column Grid -->
+                <div class="heatmap-grid">
+                  {% for cell in activity_heatmap %}
+                  <div class="heatmap-cell lvl-{{ cell.level }}" data-bs-toggle="tooltip" data-bs-placement="top" title="{{ cell.date }}: {{ cell.count }} bài học"></div>
+                  {% endfor %}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Heatmap Footer with Calendar Year Range & GitHub Legend -->
+        <div class="d-flex justify-content-between align-items-center text-muted mt-3" style="font-size: 0.74rem;">
+          <span class="fw-bold text-dark">Năm {{ selected_year }} (01/01/{{ selected_year }} &rarr; 31/12/{{ selected_year }})</span>
+          <div class="d-flex align-items-center gap-1.5">
             <span>Ít</span>
-            <span class="heatmap-box lvl-0"></span>
-            <span class="heatmap-box lvl-1"></span>
-            <span class="heatmap-box lvl-2"></span>
-            <span class="heatmap-box lvl-3"></span>
-            <span class="heatmap-box lvl-4"></span>
+            <span class="heatmap-legend-box lvl-0"></span>
+            <span class="heatmap-legend-box lvl-1"></span>
+            <span class="heatmap-legend-box lvl-2"></span>
+            <span class="heatmap-legend-box lvl-3"></span>
+            <span class="heatmap-legend-box lvl-4"></span>
             <span>Nhiều</span>
           </div>
         </div>
-
-        <div class="heatmap-grid p-2 bg-light-subtle rounded-3 border">
-          {% for cell in activity_heatmap %}
-          <div class="heatmap-cell lvl-{{ cell.level }}" title="{{ cell.date }}: {{ cell.count }} bài học"></div>
-          {% endfor %}
-        </div>
-        <div class="d-flex justify-content-between text-muted mt-2" style="font-size: 0.68rem;">
-          <span>60 ngày trước</span>
-          <span>Hôm nay</span>
-        </div>
       </div>
     </div>
 
-    <!-- PERFORMANCE TRENDS (LAST 7 ATTEMPTS) -->
-    <div class="col-lg-5">
-      <div class="card border-0 rounded-4 shadow-sm bg-white h-100 p-4">
-        <div class="d-flex justify-content-between align-items-center mb-3">
-          <h6 class="fw-bold text-dark text-uppercase small tracking-wider mb-0 d-flex align-items-center gap-2">
-            <i class="ph-fill ph-chart-line-up text-info fs-5"></i> Xu hướng hiệu suất
-          </h6>
-          <span class="badge bg-info-subtle text-info rounded-pill px-2.5 py-1 small fw-bold">
-            TB: {{ average }}%
-          </span>
-        </div>
-
-        {% if performance_trends|length > 0 %}
-        <div class="d-flex align-items-end justify-content-between gap-2 h-100 pt-3" style="min-height: 110px;">
-          {% for pt in performance_trends %}
-          <div class="d-flex flex-column align-items-center flex-grow-1" style="height: 100%;">
-            <span class="small fw-bold text-dark mb-1" style="font-size: 0.65rem;">{{ pt.score_pct }}%</span>
-            <div class="w-100 bg-light rounded-top position-relative flex-grow-1 d-flex align-items-end" style="max-width: 28px; background-color: #f1f5f9;">
-              <div class="w-100 rounded-top {% if pt.score_pct >= 80 %}bg-success{% elif pt.score_pct >= 50 %}bg-primary{% else %}bg-warning{% endif %}"
-                   style="height: {{ [10, pt.score_pct]|max }}%; transition: height 0.3s;"></div>
+    <!-- PERFORMANCE TRENDS (COL-LG-4) -->
+    <div class="col-lg-4">
+      <div class="card-modern p-4 h-100 d-flex flex-column justify-content-between">
+        <div>
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <div class="d-flex align-items-center gap-2">
+              <span class="rounded-circle d-flex align-items-center justify-content-center" style="width: 32px; height: 32px; background-color: var(--info-subtle); color: var(--info);">
+                <i class="ph-bold ph-chart-line-up fs-5"></i>
+              </span>
+              <h6 class="fw-bold text-dark text-uppercase small mb-0" style="letter-spacing: 0.05em;">Xu hướng hiệu suất</h6>
             </div>
-            <span class="text-muted mt-1" style="font-size: 0.65rem;">{{ pt.date }}</span>
+            <span class="badge bg-info-subtle text-info rounded-pill px-2.5 py-1 small fw-bold">
+              TB: {{ average }}%
+            </span>
           </div>
-          {% endfor %}
+
+          {% if performance_trends|length > 0 %}
+          <div class="d-flex align-items-end justify-content-between gap-2 h-100 pt-3" style="min-height: 120px;">
+            {% for pt in performance_trends %}
+            <div class="d-flex flex-column align-items-center flex-grow-1" style="height: 100%;">
+              <span class="small fw-bold text-dark mb-1" style="font-size: 0.7rem;">{{ pt.score_pct }}%</span>
+              <div class="w-100 rounded-top position-relative flex-grow-1 d-flex align-items-end" style="max-width: 28px; background-color: var(--bg-surface-subtle);">
+                <div class="w-100 rounded-top {% if pt.score_pct >= 80 %}bg-success{% elif pt.score_pct >= 50 %}bg-primary{% else %}bg-warning{% endif %}"
+                     style="height: {{ [10, pt.score_pct]|max }}%; transition: height 0.3s; border-radius: 4px 4px 0 0;"></div>
+              </div>
+              <span class="text-muted mt-1.5" style="font-size: 0.68rem;">{{ pt.date }}</span>
+            </div>
+            {% endfor %}
+          </div>
+          {% else %}
+          <div class="d-flex flex-column align-items-center justify-content-center h-100 text-center py-4">
+            <i class="ph-bold ph-chart-bar text-muted fs-1 mb-2"></i>
+            <p class="text-muted small mb-0">Chưa có bài quiz hoặc bài thi nào gần đây.</p>
+          </div>
+          {% endif %}
         </div>
-        {% else %}
-        <div class="d-flex flex-column align-items-center justify-content-center h-100 text-center py-4">
-          <i class="ph ph-chart-bar text-muted fs-2 mb-2"></i>
-          <p class="text-muted small mb-0">Chưa có bài quiz hoặc bài thi nào gần đây.</p>
-        </div>
-        {% endif %}
       </div>
     </div>
-
   </div>
 
-  <!-- LEARNING PATHS SECTION -->
-  <div class="mt-5">
+  <!-- SECTION: LEARNING PATHS -->
+  <div class="mt-4">
     <div class="d-flex justify-content-between align-items-center mb-3">
-      <h5 class="fw-800 text-muted text-uppercase small tracking-wider mb-0">Lộ trình học tập</h5>
-      <span class="badge bg-green-subtle text-green rounded-pill px-3 py-1.5 small fw-bold">Tổng số: {{ lessons|length
-        }} lộ trình</span>
+      <div>
+        <h5 class="fw-bold text-dark mb-0">Lộ trình bài học đề xuất</h5>
+        <small class="text-muted">Các bài học được sắp xếp theo từng cấp độ từ cơ bản đến nâng cao</small>
+      </div>
+      <span class="badge bg-primary-subtle text-primary rounded-pill px-3 py-1.5 small fw-bold">
+        Tổng số: {{ lessons|length }} bài học
+      </span>
     </div>
 
-    <!-- Level Pills Filter -->
-    <div class="d-flex flex-wrap gap-2 mb-4">
-      <button class="btn btn-sm btn-primary rounded-pill px-3 py-1.5 fw-bold" type="button">Tất cả</button>
-      <button class="btn btn-sm btn-light border rounded-pill px-3 py-1.5 fw-bold text-secondary" type="button">Cơ bản
-        (A1)</button>
-      <button class="btn btn-sm btn-light border rounded-pill px-3 py-1.5 fw-bold text-secondary" type="button">Sơ cấp
-        (A2)</button>
-      <button class="btn btn-sm btn-light border rounded-pill px-3 py-1.5 fw-bold text-secondary" type="button">Trung
-        cấp (B1)</button>
-    </div>
-
-    <!-- Path Cards Grid -->
+    <!-- Path Cards Grid / Full-Width Empty State -->
+    {% if lessons|length > 0 %}
     <div class="row g-3 row-cols-1 row-cols-md-2 row-cols-lg-4">
       {% for lesson in lessons %}
       {% set is_completed = lesson.id in completed_ids %}
@@ -357,67 +433,70 @@
       {% elif lesson.level == 'B2' %}{% set difficulty = 4 %}
       {% endif %}
       <div class="col">
-        <div
-          class="card border rounded-4 bg-white p-3 shadow-xs h-100 d-flex flex-column justify-content-between position-relative transition-hover">
+        <div class="card-modern p-3.5 h-100 d-flex flex-column justify-content-between position-relative transition-hover">
           <div>
-            <div class="d-flex justify-content-between align-items-center mb-3">
-              <span class="badge bg-light text-muted border rounded-pill px-2.5 py-1 small fw-bold"
-                style="font-size: 0.68rem;">{{ lesson.skill }}</span>
+            <div class="d-flex justify-content-between align-items-center mb-2.5">
+              <span class="badge bg-light text-secondary border rounded-pill px-2.5 py-1 small fw-semibold" style="font-size: 0.72rem;">
+                {{ lesson.skill }} • {{ lesson.level }}
+              </span>
               {% if is_completed %}
-              <span
-                class="badge bg-success-subtle text-success rounded-pill px-2.5 py-1 small fw-bold d-flex align-items-center gap-1"
-                style="font-size: 0.68rem;">
-                ✓ Hoàn thành
+              <span class="badge bg-success-subtle text-success rounded-pill px-2.5 py-1 small fw-bold d-flex align-items-center gap-1" style="font-size: 0.7rem;">
+                <i class="ph-fill ph-check-circle"></i> Hoàn thành
               </span>
               {% else %}
-              <span class="badge bg-warning-subtle text-warning rounded-pill px-2.5 py-1 small fw-bold"
-                style="font-size: 0.68rem;">Đang học</span>
+              <span class="badge bg-warning-subtle text-warning rounded-pill px-2.5 py-1 small fw-bold" style="font-size: 0.7rem;">
+                Đang học
+              </span>
               {% endif %}
             </div>
-            <h5 class="fw-800 text-dark mb-2" style="font-size: 1.05rem; line-height: 1.35;">{{ lesson.title }}</h5>
-            <p class="text-secondary small mb-4 line-clamp-3">{{ lesson.short_description }}</p>
+            <h6 class="fw-bold text-dark mb-1.5" style="font-size: 1rem; line-height: 1.4;">{{ lesson.title }}</h6>
+            <p class="text-secondary small mb-3 line-clamp-3" style="font-size: 0.82rem; line-height: 1.5;">{{ lesson.short_description }}</p>
           </div>
 
-          <div>
+          <div class="pt-2 border-top border-light">
             <!-- Difficulty Progress Indicator -->
             <div class="mb-3">
               <div class="d-flex justify-content-between align-items-center mb-1">
-                <span class="text-muted" style="font-size: 0.68rem; font-weight: bold; text-transform: uppercase;">Độ
-                  khó</span>
+                <span class="text-muted fw-bold" style="font-size: 0.68rem; text-transform: uppercase;">Độ khó</span>
                 <span class="fw-bold text-dark" style="font-size: 0.72rem;">{{ difficulty }}/5</span>
               </div>
-              <div class="progress" style="height: 6px; border-radius: 3px;">
-                <div class="progress-bar {% if is_completed %}bg-success{% else %}bg-green{% endif %}"
-                  role="progressbar" style="width: {{ difficulty * 20 }}%;" aria-valuenow="{{ difficulty * 20 }}"
-                  aria-valuemin="0" aria-valuemax="100"></div>
+              <div class="progress rounded-pill" style="height: 5px; background-color: var(--border-light);">
+                <div class="progress-bar {% if is_completed %}bg-success{% else %}bg-primary{% endif %}"
+                  role="progressbar" style="width: {{ difficulty * 20 }}%; border-radius: 9999px;"></div>
               </div>
             </div>
 
             <a href="{{ url_for('learning.lesson_detail', lesson_id=lesson.id) }}"
-              class="btn btn-outline-primary btn-sm w-100 fw-bold rounded-3 stretched-link mt-1">
-              {% if is_completed %}Ôn tập lại{% else %}Học bài này{% endif %}
+              class="btn btn-sm {% if is_completed %}btn-outline-secondary{% else %}btn-primary{% endif %} w-100 fw-bold rounded-3 stretched-link">
+              {% if is_completed %}Ôn tập lại{% else %}Bắt đầu học{% endif %}
             </a>
-          </div>
-        </div>
-      </div>
-      {% else %}
-      <div class="col-12">
-        <div class="card border rounded-4 bg-white p-5 text-center shadow-xs">
-          <div class="d-flex flex-column align-items-center py-4">
-            <div class="bg-light p-3 rounded-circle mb-3 d-flex align-items-center justify-content-center" style="width: 60px; height: 60px; background-color: #f8fafc !important;">
-              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="#64748b" class="bi bi-journal-bookmark" viewBox="0 0 16 16">
-                <path fill-rule="evenodd" d="M6 8V1h1v7L6.5 7.5 6 8z"/>
-                <path d="M3 0h10a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2v-1h1v1a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H3a1 1 0 0 0-1 1v1H1V2a2 2 0 0 1 2-2z"/>
-                <path d="M1 9h4v1H1V9z"/>
-              </svg>
-            </div>
-            <h5 class="fw-800 text-dark mb-1">Chưa có lộ trình học tập</h5>
-            <p class="text-secondary small mb-0" style="max-width: 360px;">Các lộ trình và bài học do Admin thêm từ cơ sở dữ liệu sẽ tự động xuất hiện tại đây.</p>
           </div>
         </div>
       </div>
       {% endfor %}
     </div>
+    {% else %}
+    <!-- Full-Width Empty State -->
+    <div class="card-modern p-5 text-center">
+      <div class="d-flex flex-column align-items-center justify-content-center py-3">
+        <div class="rounded-circle mb-3 d-flex align-items-center justify-content-center" style="width: 58px; height: 58px; background-color: var(--primary-subtle); color: var(--primary);">
+          <i class="ph-bold ph-books fs-2"></i>
+        </div>
+        <h5 class="fw-bold text-dark mb-1.5">Sẵn sàng bắt đầu hành trình học tập</h5>
+        <p class="text-muted small mb-3" style="max-width: 440px; line-height: 1.55;">
+          Hệ thống đang chuẩn bị các bài học phù hợp với trình độ của bạn. Bạn có thể luyện tập nhanh với bộ từ vựng hoặc thử sức với bài kiểm tra.
+        </p>
+        <div class="d-flex flex-wrap gap-2 justify-content-center">
+          <a href="{{ url_for('learning.vocabulary') }}" class="btn btn-primary fw-bold px-4 py-2 rounded-3">
+            <i class="ph-bold ph-book-bookmark me-1.5"></i> Khám phá Từ vựng
+          </a>
+          <a href="{{ url_for('learning.game_lobby') }}" class="btn btn-light border fw-bold px-4 py-2 rounded-3 text-secondary">
+            <i class="ph-bold ph-game-controller me-1.5"></i> Chơi Game phản xạ
+          </a>
+        </div>
+      </div>
+    </div>
+    {% endif %}
   </div>
 
 </div>
@@ -574,19 +653,12 @@
           btnResetBanner.classList.remove('d-none');
 
           // Apply filled layout state
-          welcomeBanner.style.backgroundColor = 'transparent';
-          welcomeBanner.style.borderStyle = 'solid';
-          welcomeBanner.style.borderColor = 'transparent';
+          // Apply custom media state
+          welcomeBanner.style.background = '#0f172a';
+          bannerOverlay.classList.remove('d-none');
+          bannerOverlay.style.background = 'linear-gradient(90deg, rgba(15, 23, 42, 0.92) 0%, rgba(15, 23, 42, 0.70) 55%, rgba(15, 23, 42, 0.3) 100%)';
 
-          btnChangeBanner.className = 'btn btn-sm btn-light border-0 d-flex align-items-center justify-content-center';
-          btnChangeBanner.style.background = 'rgba(255, 255, 255, 0.25)';
-          const changeSvg = btnChangeBanner.querySelector('svg');
-          if (changeSvg) changeSvg.setAttribute('fill', '#ffffff');
-
-          btnResetBanner.className = 'btn btn-sm btn-danger border-0 me-1 d-flex align-items-center justify-content-center';
           btnResetBanner.classList.remove('d-none');
-          const resetSvg = btnResetBanner.querySelector('svg');
-          if (resetSvg) resetSvg.setAttribute('fill', '#ffffff');
 
           if (metadata.type === 'image') {
             const img = document.createElement('img');
@@ -630,19 +702,13 @@
           }
         } else {
           bannerOverlay.classList.add('d-none');
-          bannerPlaceholder.classList.add('d-none'); // Completely hidden empty state placeholder
+          bannerPlaceholder.classList.add('d-none');
+          btnResetBanner.classList.add('d-none');
 
-          btnResetBanner.className = 'btn btn-sm btn-danger border-0 d-none me-1 d-flex align-items-center justify-content-center';
-
-          // Apply default empty layout state
-          welcomeBanner.style.backgroundColor = '#f1f3f5';
-          welcomeBanner.style.borderStyle = 'dashed';
-          welcomeBanner.style.borderColor = '#cbd5e1';
-
-          btnChangeBanner.className = 'btn btn-sm btn-light border d-flex align-items-center justify-content-center';
-          btnChangeBanner.style.background = '#ffffff';
-          const changeSvg = btnChangeBanner.querySelector('svg');
-          if (changeSvg) changeSvg.setAttribute('fill', '#475569');
+          // Keep modern Hero gradient default
+          welcomeBanner.style.background = '';
+          welcomeBanner.style.borderStyle = '';
+          welcomeBanner.style.borderColor = '';
         }
       } catch (err) {
         console.error('Failed to load banner media:', err);

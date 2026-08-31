@@ -43,8 +43,8 @@ def test_dashboard_renders_all_section_6_1_features(client, dashboard_setup):
     assert "TUẦN NÀY" in html
     assert "TẤT CẢ" in html
     
-    # 3. Activity heatmap & Learning calendar
-    assert "Bản đồ hoạt động (60 ngày qua)" in html
+    # 3. Activity Heatmap & Learning calendar
+    assert "Bản đồ hoạt động (365 ngày qua)" in html
     assert "heatmap-grid" in html
     
     # 4. Performance trends

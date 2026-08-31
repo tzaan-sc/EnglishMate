@@ -116,31 +116,59 @@ def dashboard():
     total_time_spent_minutes = sum((a.completed_lessons * 15 + 10) for a in all_acts) or (completed * 15)
     total_time_hours = round(total_time_spent_minutes / 60, 1)
 
-    # 3. Activity Heatmap (Last 60 days)
-    heatmap_start = today - timedelta(days=59)
+    # 3. Activity Heatmap (Calendar Year like GitHub, e.g. 2026)
+    selected_year = request.args.get("year", type=int) or today.year
+    available_years = [today.year, today.year - 1, today.year - 2]
+
+    # Calendar Year Start and End (Jan 1 to Dec 31)
+    year_start = date(selected_year, 1, 1)
+    year_end = date(selected_year, 12, 31)
+
+    # Align start to Monday of that week and end to Sunday
+    cal_start = year_start - timedelta(days=year_start.weekday())
+    cal_end = year_end + timedelta(days=(6 - year_end.weekday()))
+    total_days = (cal_end - cal_start).days + 1
+
     heatmap_acts = {
         act.activity_date: act.completed_lessons
         for act in DailyActivity.query.filter(
             DailyActivity.user_id == current_user.id,
-            DailyActivity.activity_date >= heatmap_start
+            DailyActivity.activity_date >= cal_start,
+            DailyActivity.activity_date <= cal_end
         ).all()
     }
-    
+    total_yearly_lessons = sum(heatmap_acts.values())
+
     activity_heatmap = []
-    for i in range(60):
-        d = heatmap_start + timedelta(days=i)
+    month_labels = []
+    last_month = None
+
+    for i in range(total_days):
+        d = cal_start + timedelta(days=i)
+        is_in_year = (d.year == selected_year)
         cnt = heatmap_acts.get(d, 0)
         lvl = 0
         if cnt >= 5: lvl = 4
         elif cnt >= 3: lvl = 3
         elif cnt >= 2: lvl = 2
         elif cnt >= 1: lvl = 1
+
+        col_index = i // 7
+        if is_in_year and d.day <= 7 and d.month != last_month:
+            last_month = d.month
+            month_names = ["", "Thg 1", "Thg 2", "Thg 3", "Thg 4", "Thg 5", "Thg 6", "Thg 7", "Thg 8", "Thg 9", "Thg 10", "Thg 11", "Thg 12"]
+            month_labels.append({
+                "name": month_names[d.month],
+                "col": col_index
+            })
+
         activity_heatmap.append({
             "date": d.strftime("%d/%m/%Y"),
             "iso_date": d.isoformat(),
             "count": cnt,
             "level": lvl,
-            "day_name": d.strftime("%a")
+            "day_name": d.strftime("%a"),
+            "in_year": is_in_year
         })
 
     # 4. Performance trends (Last 7 attempts)
@@ -222,6 +250,8 @@ def dashboard():
         weekly_time_spent_minutes=weekly_time_spent_minutes,
         total_time_hours=total_time_hours,
         activity_heatmap=activity_heatmap,
+        month_labels=month_labels,
+        total_yearly_lessons=total_yearly_lessons,
         performance_trends=performance_trends,
         today_schedule=today_schedule,
         today_achievements=today_achievements,
@@ -230,7 +260,9 @@ def dashboard():
         skill_balance=skill_balance,
         level_start_date=level_start_date,
         level_progress_pct=level_progress_pct,
-        estimated_completion_date=estimated_completion_date
+        estimated_completion_date=estimated_completion_date,
+        selected_year=selected_year,
+        available_years=available_years
     )
 
 
