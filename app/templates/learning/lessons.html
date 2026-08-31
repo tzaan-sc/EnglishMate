@@ -1,344 +1,454 @@
 {% extends "base.html" %}
-{% block title %}Thư viện & Bảng điều khiển Bài học · EnglishMate{% endblock %}
+{% block title %}Thư viện Bài học · EnglishMate{% endblock %}
 
 {% block content %}
-<div class="container-fluid max-w-6xl py-4">
+<div class="container-fluid py-2">
 
-  <!-- Page Header -->
-  <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
-    <div>
-      <span class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill px-3 py-1 mb-2 font-semibold">
-        HỆ THỐNG BÀI HỌC CHUẨN KHUNG CEFR
-      </span>
-      <h2 class="fw-bold text-dark mb-1">Bảng điều khiển & Thư viện bài học</h2>
-      <p class="text-secondary small mb-0">Duyệt bài học theo cấp độ, kỹ năng, trạng thái và lộ trình học tập cá nhân hóa.</p>
-    </div>
-    <div class="d-flex gap-2">
-      {% if recommended_lesson %}
-      <a href="{{ url_for('learning.lesson_detail', lesson_id=recommended_lesson.id) }}" class="btn btn-primary rounded-pill px-4 fw-bold shadow-xs">
-        🚀 Học bài tiếp theo
-      </a>
-      {% endif %}
-    </div>
-  </div>
+  <!-- PAGE HEADER & HERO CONTINUE SECTION -->
+  <div class="row g-4 align-items-stretch mb-4">
+    <!-- Left: Welcome & Next Action Banner -->
+    <div class="col-lg-8">
+      <div class="hero-welcome-card p-4 p-lg-4 h-100 d-flex flex-column justify-content-between position-relative overflow-hidden" style="min-height: 200px;">
+        <div class="position-relative" style="z-index: 2; max-width: 560px;">
+          <div class="d-inline-flex align-items-center gap-2 px-3 py-1 rounded-pill mb-2.5" style="background: rgba(255, 255, 255, 0.18); backdrop-filter: blur(8px); font-size: 0.75rem; font-weight: 700; color: #a7f3d0;">
+            <i class="ph-bold ph-graduation-cap"></i>
+            <span>HỆ THỐNG BÀI HỌC CHUẨN KHUNG CEFR</span>
+          </div>
+          <h2 class="fw-bold text-white mb-2" style="font-size: 1.75rem; letter-spacing: -0.02em;">
+            Bảng điều khiển & Thư viện bài học
+          </h2>
+          <p class="text-white-50 mb-0 small" style="font-size: 0.9rem; line-height: 1.55;">
+            Duyệt bài học theo cấp độ, kỹ năng, trạng thái và lộ trình học tập cá nhân hóa.
+          </p>
+        </div>
 
-  <!-- Section 1: Key Metric Cards Grid -->
-  <div class="row g-3 mb-4">
-    <!-- Total Lessons Count -->
-    <div class="col-6 col-lg-3">
-      <div class="card border-0 shadow-sm rounded-4 p-3 bg-white h-100">
-        <div class="d-flex align-items-center gap-3">
-          <div class="bg-primary-subtle text-primary rounded-circle p-3 d-flex align-items-center justify-content-center" style="width: 48px; height: 48px;">
-            <i class="ph ph-book-open fs-4"></i>
-          </div>
-          <div>
-            <span class="text-muted small d-block">Tổng số bài học</span>
-            <h3 class="fw-bold text-dark mb-0">{{ total_lessons }}</h3>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Completed Lessons Count -->
-    <div class="col-6 col-lg-3">
-      <div class="card border-0 shadow-sm rounded-4 p-3 bg-white h-100">
-        <div class="d-flex align-items-center gap-3">
-          <div class="bg-success-subtle text-success rounded-circle p-3 d-flex align-items-center justify-content-center" style="width: 48px; height: 48px;">
-            <i class="ph ph-check-circle fs-4"></i>
-          </div>
-          <div>
-            <span class="text-muted small d-block">Đã hoàn thành</span>
-            <h3 class="fw-bold text-success mb-0">{{ completed_count }}</h3>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- In-Progress Lessons Count -->
-    <div class="col-6 col-lg-3">
-      <div class="card border-0 shadow-sm rounded-4 p-3 bg-white h-100">
-        <div class="d-flex align-items-center gap-3">
-          <div class="bg-warning-subtle text-warning-emphasis rounded-circle p-3 d-flex align-items-center justify-content-center" style="width: 48px; height: 48px;">
-            <i class="ph ph-hourglass-high fs-4"></i>
-          </div>
-          <div>
-            <span class="text-muted small d-block">Đang học dở</span>
-            <h3 class="fw-bold text-warning-emphasis mb-0">{{ in_progress_count }}</h3>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Daily Lesson Goal Card -->
-    <div class="col-6 col-lg-3">
-      <div class="card border-0 shadow-sm rounded-4 p-3 bg-white h-100">
-        <div class="d-flex align-items-center gap-3">
-          <div class="bg-danger-subtle text-danger rounded-circle p-3 d-flex align-items-center justify-content-center" style="width: 48px; height: 48px;">
-            <i class="ph ph-target fs-4"></i>
-          </div>
-          <div>
-            <span class="text-muted small d-block">Mục tiêu hôm nay</span>
-            <h3 class="fw-bold text-danger mb-0">{{ today_completed_lessons }}/{{ daily_lesson_goal }} <small class="fs-6 fw-normal text-muted">bài</small></h3>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Section 2: Current & Recommended Lesson Banner Cards -->
-  <div class="row g-4 mb-4">
-    <!-- Current Lesson Card -->
-    <div class="col-lg-6">
-      <div class="card border-0 shadow-sm rounded-4 p-4 bg-white h-100">
-        <div class="d-flex align-items-center justify-content-between mb-3">
-          <span class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill px-3 py-1 fw-bold">
-            📌 BÀI HỌC HIỆN TẠI
-          </span>
-          {% if current_lesson and current_lesson.id in done %}
-          <span class="badge bg-success-subtle text-success rounded-pill px-2.5 py-1 small fw-bold">✓ Đã hoàn thành</span>
-          {% endif %}
-        </div>
-        {% if current_lesson %}
-        <h4 class="fw-bold text-dark mb-2">{{ current_lesson.title }}</h4>
-        <p class="text-secondary small mb-3">{{ current_lesson.short_description }}</p>
-        <div class="d-flex align-items-center justify-content-between mt-auto">
-          <div class="d-flex gap-2">
-            <span class="badge bg-light text-dark border rounded-pill px-2.5 py-1">{{ current_lesson.level }}</span>
-            <span class="badge bg-light text-dark border rounded-pill px-2.5 py-1">{{ current_lesson.skill }}</span>
-          </div>
-          <a href="{{ url_for('learning.lesson_detail', lesson_id=current_lesson.id) }}" class="btn btn-outline-primary rounded-pill px-4 fw-bold shadow-xs">
-            {{ 'Xem lại bài học' if current_lesson.id in done else 'Tiếp tục học' }} →
-          </a>
-        </div>
-        {% else %}
-        <p class="text-muted mb-0">Bạn chưa bắt đầu bài học nào.</p>
-        {% endif %}
-      </div>
-    </div>
-
-    <!-- Recommended Next Lesson Card -->
-    <div class="col-lg-6">
-      <div class="card border-0 shadow-sm rounded-4 p-4 bg-white h-100 border-start border-4 border-primary">
-        <div class="d-flex align-items-center justify-content-between mb-3">
-          <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle rounded-pill px-3 py-1 fw-bold">
-            ⭐ BÀI HỌC ĐỀ XUẤT TIẾP THEO
-          </span>
-          <span class="text-muted small">Phù hợp lộ trình</span>
-        </div>
-        {% if recommended_lesson %}
-        <h4 class="fw-bold text-dark mb-2">{{ recommended_lesson.title }}</h4>
-        <p class="text-secondary small mb-3">{{ recommended_lesson.short_description }}</p>
-        <div class="d-flex align-items-center justify-content-between mt-auto">
-          <div class="d-flex gap-2">
-            <span class="badge bg-primary text-white rounded-pill px-2.5 py-1 fw-bold">{{ recommended_lesson.level }}</span>
-            <span class="badge bg-light text-dark border rounded-pill px-2.5 py-1">{{ recommended_lesson.skill }}</span>
-          </div>
-          <a href="{{ url_for('learning.lesson_detail', lesson_id=recommended_lesson.id) }}" class="btn btn-primary rounded-pill px-4 fw-bold shadow-xs">
-            Bắt đầu học bài này →
-          </a>
-        </div>
-        {% else %}
-        <p class="text-muted mb-0">Bạn đã hoàn thành tất cả các bài học có trong hệ thống! 🎉</p>
-        {% endif %}
-      </div>
-    </div>
-  </div>
-
-  <!-- Section 3: Progress Breakdown (Level & Skill Progress) -->
-  <div class="row g-4 mb-4">
-    <!-- Lesson Progress by Level (A1-C2) -->
-    <div class="col-lg-6">
-      <div class="card border-0 shadow-sm rounded-4 p-4 bg-white h-100">
-        <h5 class="fw-bold text-dark mb-3 d-flex align-items-center gap-2">
-          <i class="ph ph-steps text-success fs-4"></i> Tiến độ Bài học theo Cấp độ (CEFR)
-        </h5>
-        <div class="row g-3">
-          {% for st in level_stats %}
-          <div class="col-6 col-md-4">
-            <a href="{{ url_for('learning.lessons', level=st.level) }}" class="text-decoration-none">
-              <div class="border rounded-4 p-3 bg-light-subtle text-center hover-shadow transition">
-                <span class="badge bg-success-subtle text-success border border-success-subtle rounded-circle p-2 mb-2 d-inline-block fw-bold" style="width: 38px; height: 38px; line-height: 20px;">
-                  {{ st.level }}
-                </span>
-                <h6 class="fw-bold text-dark mb-1">{{ st.pct }}%</h6>
-                <div class="progress rounded-pill mb-2" style="height: 6px;">
-                  <div class="progress-bar bg-success rounded-pill" role="progressbar" style="width: {{ st.pct }}%;"></div>
-                </div>
-                <small class="text-muted" style="font-size: 0.75rem;">{{ st.done }}/{{ st.total }} bài xong</small>
-              </div>
+        <!-- Next Lesson Direct Action Strip -->
+        <div class="d-flex flex-wrap align-items-center gap-2.5 pt-3 mt-2 position-relative" style="z-index: 2;">
+          {% if recommended_lesson %}
+          <div class="d-inline-flex flex-column gap-1">
+            <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle rounded-pill px-2.5 py-0.5 fw-bold d-inline-flex align-items-center gap-1" style="font-size: 0.7rem; width: fit-content;">
+              ⭐ BÀI HỌC ĐỀ XUẤT TIẾP THEO
+            </span>
+            <a href="{{ url_for('learning.lesson_detail', lesson_id=recommended_lesson.id) }}" class="btn btn-light fw-bold px-3.5 py-2 text-primary d-inline-flex align-items-center gap-2 shadow-sm rounded-3">
+              <i class="ph-bold ph-play-circle fs-5"></i>
+              <span>Bắt đầu học: {{ recommended_lesson.title|truncate(28) }}</span>
             </a>
           </div>
-          {% endfor %}
-        </div>
-      </div>
-    </div>
-
-    <!-- Lesson Progress by Skill -->
-    <div class="col-lg-6">
-      <div class="card border-0 shadow-sm rounded-4 p-4 bg-white h-100">
-        <h5 class="fw-bold text-dark mb-3 d-flex align-items-center gap-2">
-          <i class="ph ph-brain text-primary fs-4"></i> Tiến độ Bài học theo Kỹ năng
-        </h5>
-        <div class="d-flex flex-column gap-3">
-          {% for sk in skill_stats %}
-          <a href="{{ url_for('learning.lessons', skill=sk.skill) }}" class="text-decoration-none text-dark">
-            <div>
-              <div class="d-flex justify-content-between align-items-center mb-1">
-                <span class="fw-bold">{{ sk.skill }}</span>
-                <span class="small text-muted">{{ sk.done }}/{{ sk.total }} bài xong (<strong>{{ sk.pct }}%</strong>)</span>
-              </div>
-              <div class="progress rounded-pill" style="height: 8px;">
-                <div class="progress-bar bg-primary rounded-pill" role="progressbar" style="width: {{ sk.pct }}%;"></div>
-              </div>
-            </div>
-          </a>
-          {% endfor %}
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Section 4: Advanced Search & Filter Bar for Lesson Library -->
-  <div class="card border-0 shadow-sm rounded-4 p-4 bg-white mb-4">
-    <form method="get" action="{{ url_for('learning.lessons') }}" class="row g-3 align-items-center">
-      <!-- Search Title / Content -->
-      <div class="col-md-4">
-        <label class="form-label small fw-bold text-muted mb-1">Tìm theo Tiêu đề / Nội dung</label>
-        <div class="input-group">
-          <span class="input-group-text bg-transparent border-end-0"><i class="ph ph-magnifying-glass text-muted"></i></span>
-          <input class="form-control border-start-0 ps-0" name="q" value="{{ q }}" placeholder="Từ khóa tìm kiếm...">
-        </div>
-      </div>
-
-      <!-- Level Filter -->
-      <div class="col-6 col-md-2">
-        <label class="form-label small fw-bold text-muted mb-1">Cấp độ (CEFR)</label>
-        <select class="form-select" name="level">
-          <option value="">Tất cả level</option>
-          {% for x in ['A1','A2','B1','B2','C1','C2'] %}
-          <option value="{{ x }}" {{ 'selected' if level==x }}>{{ x }}</option>
-          {% endfor %}
-        </select>
-      </div>
-
-      <!-- Skill Filter -->
-      <div class="col-6 col-md-2">
-        <label class="form-label small fw-bold text-muted mb-1">Kỹ năng</label>
-        <select class="form-select" name="skill">
-          <option value="">Tất cả kỹ năng</option>
-          {% for x in ['Vocabulary','Grammar','Reading','Listening','Speaking'] %}
-          <option value="{{ x }}" {{ 'selected' if skill==x }}>{{ x }}</option>
-          {% endfor %}
-        </select>
-      </div>
-
-      <!-- Status Filter -->
-      <div class="col-6 col-md-2">
-        <label class="form-label small fw-bold text-muted mb-1">Trạng thái bài</label>
-        <select class="form-select" name="status">
-          <option value="">Tất cả trạng thái</option>
-          <option value="new" {{ 'selected' if status=='new' }}>🆕 Bài mới chưa học</option>
-          <option value="completed" {{ 'selected' if status=='completed' }}>✓ Bài đã hoàn thành</option>
-          <option value="favorite" {{ 'selected' if status=='favorite' }}>❤️ Đã thả tim yêu thích</option>
-        </select>
-      </div>
-
-      <!-- Sort Option -->
-      <div class="col-6 col-md-2">
-        <label class="form-label small fw-bold text-muted mb-1">Sắp xếp theo</label>
-        <select class="form-select" name="sort">
-          <option value="recent" {{ 'selected' if sort=='recent' }}>🕒 Mới nhất</option>
-          <option value="popularity" {{ 'selected' if sort=='popularity' }}>🔥 Phổ biến nhất</option>
-          <option value="difficulty_asc" {{ 'selected' if sort=='difficulty_asc' }}>📈 Độ khó (A1 ➔ C2)</option>
-          <option value="difficulty_desc" {{ 'selected' if sort=='difficulty_desc' }}>📉 Độ khó (C2 ➔ A1)</option>
-        </select>
-      </div>
-
-      <!-- Action Buttons -->
-      <div class="col-12 d-flex justify-content-end gap-2 pt-2 border-top mt-3">
-        <a href="{{ url_for('learning.lessons') }}" class="btn btn-outline-secondary rounded-pill px-3 fw-semibold">
-          Đặt lại bộ lọc
-        </a>
-        <button type="submit" class="btn btn-dark rounded-pill px-4 fw-bold">
-          🔍 Tìm bài học
-        </button>
-      </div>
-    </form>
-  </div>
-
-  <!-- Section 5: Lesson Library Grid Cards with Thumbnails -->
-  <div class="row g-4 mb-5">
-    {% for lesson in lessons %}
-    <div class="col-md-6 col-lg-4">
-      <article class="card border-0 shadow-xs rounded-4 h-100 bg-white d-flex flex-column justify-content-between overflow-hidden">
-        
-        <!-- Thumbnail Image Header -->
-        <div class="position-relative bg-dark-subtle" style="height: 140px;">
-          {% if lesson.thumbnail_url %}
-          <img src="{{ lesson.thumbnail_url }}" class="w-100 h-100 object-fit-cover" alt="{{ lesson.title }}">
-          {% else %}
-          <div class="w-100 h-100 d-flex align-items-center justify-content-center bg-gradient-primary text-white">
-            <i class="ph ph-book-bookmark fs-1 opacity-75"></i>
+          {% elif current_lesson %}
+          <div class="d-inline-flex flex-column gap-1">
+            <span class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill px-2.5 py-0.5 fw-bold d-inline-flex align-items-center gap-1" style="font-size: 0.7rem; width: fit-content;">
+              📌 BÀI HỌC HIỆN TẠI
+            </span>
+            <a href="{{ url_for('learning.lesson_detail', lesson_id=current_lesson.id) }}" class="btn btn-light fw-bold px-3.5 py-2 text-primary d-inline-flex align-items-center gap-2 shadow-sm rounded-3">
+              <i class="ph-bold ph-arrow-counter-clockwise fs-5"></i>
+              <span>Tiếp tục: {{ current_lesson.title|truncate(28) }}</span>
+            </a>
           </div>
           {% endif %}
+          <a href="#lessonCatalog" class="btn btn-outline-light fw-semibold px-3 py-2 d-inline-flex align-items-center gap-2 rounded-3 align-self-end" style="border-color: rgba(255, 255, 255, 0.4); backdrop-filter: blur(4px);">
+            <i class="ph-bold ph-magnifying-glass fs-5"></i>
+            <span>Khám phá danh mục</span>
+          </a>
+        </div>
+      </div>
+    </div>
 
-          <!-- Favorite Toggle Button -->
-          <button type="button" 
-                  class="btn btn-light rounded-circle p-2 shadow-xs position-absolute top-0 end-0 m-3 border-0 btn-fav-toggle" 
-                  data-lesson-id="{{ lesson.id }}"
-                  title="Đánh dấu yêu thích">
-            <i class="ph-fill ph-heart fs-5 {{ 'text-danger' if lesson.id in favorite_ids else 'text-muted opacity-50' }}"></i>
-          </button>
+    <!-- Right: Quick Progress & Target Stats (2x2 Grid) -->
+    <div class="col-lg-4">
+      <div class="card-modern p-4 h-100 d-flex flex-column justify-content-between">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <span class="text-muted small fw-bold text-uppercase" style="letter-spacing: 0.05em;">Tổng quan tiến độ</span>
+          <span class="badge bg-primary-subtle text-primary rounded-pill px-2.5 py-1 small fw-bold">
+            {{ completed_count }}/{{ total_lessons }} bài
+          </span>
+        </div>
 
-          <!-- Status Badge -->
-          <div class="position-absolute bottom-0 start-0 m-3">
-            {% if lesson.id in done %}
-            <span class="badge bg-success text-white rounded-pill px-3 py-1 font-semibold shadow-xs">
-              ✓ Đã học
-            </span>
-            {% else %}
-            <span class="badge bg-primary text-white rounded-pill px-3 py-1 font-semibold shadow-xs">
-              Bài mới
-            </span>
+        <div class="row g-2.5">
+          <div class="col-6">
+            <div class="p-3 rounded-3 border text-center" style="background-color: var(--bg-surface-subtle); border-color: var(--border-light) !important;">
+              <div class="fw-800 text-primary mb-0" style="font-size: 1.35rem;">{{ total_lessons }}</div>
+              <small class="text-muted" style="font-size: 0.72rem; font-weight: 600;">Tổng số bài học</small>
+            </div>
+          </div>
+          <div class="col-6">
+            <div class="p-3 rounded-3 border text-center" style="background-color: var(--bg-surface-subtle); border-color: var(--border-light) !important;">
+              <div class="fw-800 text-success mb-0" style="font-size: 1.35rem;">{{ completed_count }}</div>
+              <small class="text-muted" style="font-size: 0.72rem; font-weight: 600;">Đã hoàn thành</small>
+            </div>
+          </div>
+          <div class="col-6">
+            <div class="p-3 rounded-3 border text-center" style="background-color: var(--bg-surface-subtle); border-color: var(--border-light) !important;">
+              <div class="fw-800 text-warning mb-0" style="font-size: 1.35rem;">{{ in_progress_count }}</div>
+              <small class="text-muted" style="font-size: 0.72rem; font-weight: 600;">Đang học dở</small>
+            </div>
+          </div>
+          <div class="col-6">
+            <div class="p-3 rounded-3 border text-center" style="background-color: var(--bg-surface-subtle); border-color: var(--border-light) !important;">
+              <div class="fw-800 text-info mb-0" style="font-size: 1.35rem;">{{ today_completed_lessons }}/{{ daily_lesson_goal }}</div>
+              <small class="text-muted" style="font-size: 0.72rem; font-weight: 600;">Mục tiêu hôm nay</small>
+            </div>
+          </div>
+        </div>
+
+        <!-- Overall Progress Bar Strip -->
+        {% set overall_pct = ((completed_count / total_lessons * 100)|round|int) if total_lessons > 0 else 0 %}
+        <div class="pt-3 mt-3 border-top border-light">
+          <div class="d-flex justify-content-between align-items-center small mb-1.5">
+            <span class="text-muted small fw-semibold" style="font-size: 0.75rem;">Tiến độ toàn hệ thống</span>
+            <span class="fw-bold text-dark small">{{ overall_pct }}%</span>
+          </div>
+          <div class="progress rounded-pill" style="height: 6px; background-color: var(--border-light);">
+            <div class="progress-bar bg-primary" role="progressbar" style="width: {{ overall_pct }}%; border-radius: 9999px;"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECTION: LEVEL & SKILL BREAKDOWN SUMMARY CARDS -->
+  <div class="row g-4 align-items-stretch mb-4">
+    <!-- Level CEFR Progress Rows (Single Column List) -->
+    <div class="col-lg-6">
+      <div class="card-modern p-4 h-100 d-flex flex-column justify-content-between">
+        <div>
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <div class="d-flex align-items-center gap-2">
+              <span class="rounded-circle d-flex align-items-center justify-content-center" style="width: 32px; height: 32px; background-color: var(--primary-subtle); color: var(--primary);">
+                <i class="ph-bold ph-stairs fs-5"></i>
+              </span>
+              <h6 class="fw-bold text-dark text-uppercase small mb-0" style="letter-spacing: 0.05em;">Tiến độ Bài học theo Cấp độ (CEFR)</h6>
+            </div>
+            <span class="text-muted small fw-semibold">Bấm để lọc theo cấp</span>
+          </div>
+
+          <div class="d-flex flex-column gap-2.5">
+            {% for st in level_stats %}
+            <a href="{{ url_for('learning.lessons', level=st.level) }}" class="text-decoration-none text-dark">
+              <div class="p-2 rounded-3 transition-hover {% if level == st.level %}bg-primary-subtle border border-primary{% endif %}">
+                <div class="d-flex justify-content-between align-items-center small mb-1">
+                  <span class="fw-bold d-flex align-items-center gap-2" style="font-size: 0.82rem;">
+                    <span class="badge {% if level == st.level %}bg-primary text-white{% else %}bg-primary-subtle text-primary border border-primary-subtle{% endif %} rounded-pill px-2.5 py-0.5 fw-bold" style="font-size: 0.72rem;">
+                      {{ st.level }}
+                    </span>
+                    <span class="text-dark fw-semibold" style="font-size: 0.8rem;">
+                      {% if st.level == 'A1' %}Sơ cấp (Beginner)
+                      {% elif st.level == 'A2' %}Cơ bản (Elementary)
+                      {% elif st.level == 'B1' %}Trung cấp (Intermediate)
+                      {% elif st.level == 'B2' %}Trung cao (Upper-Intermediate)
+                      {% elif st.level == 'C1' %}Cao cấp (Advanced)
+                      {% else %}Thành thạo (Mastery){% endif %}
+                    </span>
+                  </span>
+                  <span class="text-muted small">{{ st.done }}/{{ st.total }} bài (<strong>{{ st.pct }}%</strong>)</span>
+                </div>
+                <div class="progress rounded-pill" style="height: 6px; background-color: var(--border-light);">
+                  <div class="progress-bar bg-primary" role="progressbar" style="width: {{ st.pct }}%; border-radius: 9999px;"></div>
+                </div>
+              </div>
+            </a>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Skill Progress Bars -->
+    <div class="col-lg-6">
+      <div class="card-modern p-4 h-100 d-flex flex-column justify-content-between">
+        <div>
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <div class="d-flex align-items-center gap-2">
+              <span class="rounded-circle d-flex align-items-center justify-content-center" style="width: 32px; height: 32px; background-color: var(--purple-subtle); color: var(--purple);">
+                <i class="ph-bold ph-brain fs-5"></i>
+              </span>
+              <h6 class="fw-bold text-dark text-uppercase small mb-0" style="letter-spacing: 0.05em;">Tiến độ Bài học theo Kỹ năng</h6>
+            </div>
+            <span class="text-muted small fw-semibold">Bấm để lọc theo kỹ năng</span>
+          </div>
+
+          <div class="d-flex flex-column gap-2.5">
+            {% for sk in skill_stats %}
+            <a href="{{ url_for('learning.lessons', skill=sk.skill) }}" class="text-decoration-none text-dark">
+              <div class="p-2 rounded-3 transition-hover {% if skill == sk.skill %}bg-purple-subtle border border-purple{% endif %}">
+                <div class="d-flex justify-content-between align-items-center small mb-1">
+                  <span class="fw-bold d-flex align-items-center gap-2" style="font-size: 0.82rem;">
+                    {% if sk.skill == 'Vocabulary' %}<i class="ph-bold ph-book-open text-primary"></i>
+                    {% elif sk.skill == 'Grammar' %}<i class="ph-bold ph-textbox text-purple"></i>
+                    {% elif sk.skill == 'Reading' %}<i class="ph-bold ph-article text-info"></i>
+                    {% elif sk.skill == 'Listening' %}<i class="ph-bold ph-headphones text-warning"></i>
+                    {% else %}<i class="ph-bold ph-chats-circle text-success"></i>{% endif %}
+                    <span>{{ sk.skill }}</span>
+                  </span>
+                  <span class="text-muted small">{{ sk.done }}/{{ sk.total }} bài (<strong>{{ sk.pct }}%</strong>)</span>
+                </div>
+                <div class="progress rounded-pill" style="height: 6px; background-color: var(--border-light);">
+                  <div class="progress-bar {% if sk.skill == 'Grammar' %}bg-purple{% elif sk.skill == 'Reading' %}bg-info{% elif sk.skill == 'Listening' %}bg-warning{% else %}bg-primary{% endif %}" 
+                       role="progressbar" style="width: {{ sk.pct }}%; border-radius: 9999px;"></div>
+                </div>
+              </div>
+            </a>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECTION: SEARCH, QUICK FILTERS & CATALOG -->
+  <div id="lessonCatalog" class="mb-4">
+    <!-- Search & Filter Card -->
+    <div class="card-modern p-4 mb-4">
+      <form method="get" action="{{ url_for('learning.lessons') }}">
+        
+        <!-- Search Input Bar & Fast Action -->
+        <div class="row g-3 align-items-center mb-3">
+          <div class="col-lg-5">
+            <label class="form-label small fw-bold text-muted mb-1">Tìm theo Tiêu đề / Nội dung</label>
+            <div class="input-group">
+              <span class="input-group-text bg-white border-end-0 text-muted" style="border-color: var(--border-light);">
+                <i class="ph-bold ph-magnifying-glass fs-5"></i>
+              </span>
+              <input class="form-control border-start-0 ps-0 shadow-none" 
+                     name="q" value="{{ q }}" 
+                     placeholder="Từ khóa tìm kiếm..."
+                     style="border-color: var(--border-light);">
+              {% if q %}
+              <a href="{{ url_for('learning.lessons', level=level, skill=skill, status=status, sort=sort) }}" 
+                 class="btn btn-light border border-start-0 text-muted" title="Xóa tìm kiếm">
+                <i class="ph-bold ph-x"></i>
+              </a>
+              {% endif %}
+            </div>
+          </div>
+
+          <div class="col-6 col-md-3 col-lg-2">
+            <label class="form-label small fw-bold text-muted mb-1">Cấp độ (CEFR)</label>
+            <select class="form-select border shadow-none" name="level" style="border-color: var(--border-light); font-size: 0.85rem;">
+              <option value="">Tất cả level</option>
+              {% for x in ['A1','A2','B1','B2','C1','C2'] %}
+              <option value="{{ x }}" {{ 'selected' if level==x }}>{{ x }}</option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div class="col-6 col-md-3 col-lg-2">
+            <label class="form-label small fw-bold text-muted mb-1">Kỹ năng</label>
+            <select class="form-select border shadow-none" name="skill" style="border-color: var(--border-light); font-size: 0.85rem;">
+              <option value="">Tất cả kỹ năng</option>
+              {% for x in ['Vocabulary','Grammar','Reading','Listening','Speaking'] %}
+              <option value="{{ x }}" {{ 'selected' if skill==x }}>{{ x }}</option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div class="col-6 col-md-3 col-lg-2">
+            <label class="form-label small fw-bold text-muted mb-1">Trạng thái bài</label>
+            <select class="form-select border shadow-none" name="status" style="border-color: var(--border-light); font-size: 0.85rem;">
+              <option value="">Tất cả trạng thái</option>
+              <option value="new" {{ 'selected' if status=='new' }}>🆕 Chưa học</option>
+              <option value="completed" {{ 'selected' if status=='completed' }}>✓ Đã hoàn thành</option>
+              <option value="favorite" {{ 'selected' if status=='favorite' }}>❤️ Yêu thích</option>
+            </select>
+          </div>
+
+          <div class="col-6 col-md-3 col-lg-1 d-flex gap-1.5 align-self-end">
+            <button type="submit" class="btn btn-primary fw-bold w-100 rounded-3 shadow-sm py-2" title="Tìm kiếm">
+              <i class="ph-bold ph-magnifying-glass"></i>
+            </button>
+            {% if q or level or skill or status or sort %}
+            <a href="{{ url_for('learning.lessons') }}" class="btn btn-light border text-secondary rounded-3 py-2" title="Đặt lại bộ lọc">
+              <i class="ph-bold ph-arrow-counter-clockwise"></i>
+            </a>
             {% endif %}
           </div>
         </div>
 
-        <!-- Card Body -->
-        <div class="p-4 d-flex flex-column flex-grow-1 justify-content-between">
-          <div>
-            <div class="mb-2 d-flex align-items-center gap-2">
-              <span class="badge bg-primary-subtle text-primary rounded-pill px-2.5 py-1 fw-bold">{{ lesson.level }}</span>
-              <span class="badge bg-light text-secondary border rounded-pill px-2.5 py-1">{{ lesson.skill }}</span>
-              <small class="text-muted ms-auto" title="Lượt truy cập"><i class="ph ph-eye"></i> {{ lesson.view_count or 0 }}</small>
-            </div>
-            <h4 class="fw-bold text-dark mb-2 line-clamp-2">{{ lesson.title }}</h4>
-            <p class="text-secondary small mb-3 line-clamp-3">{{ lesson.short_description }}</p>
+        <!-- Quick Filter Pill Chips Row -->
+        <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 pt-2.5 border-top border-light">
+          <div class="d-flex flex-wrap align-items-center gap-1.5 small">
+            <span class="text-muted fw-bold me-1" style="font-size: 0.76rem;">Lọc nhanh:</span>
+            <a href="{{ url_for('learning.lessons') }}" 
+               class="btn btn-sm rounded-pill px-2.5 py-1 fw-semibold {% if not level and not skill and not status %}btn-primary shadow-sm{% else %}btn-light border text-secondary{% endif %}" 
+               style="font-size: 0.74rem;">
+              Tất cả
+            </a>
+            <a href="{{ url_for('learning.lessons', level='A1') }}" 
+               class="btn btn-sm rounded-pill px-2.5 py-1 fw-semibold {% if level == 'A1' %}btn-primary shadow-sm{% else %}btn-light border text-secondary{% endif %}" 
+               style="font-size: 0.74rem;">
+              A1 Cơ bản
+            </a>
+            <a href="{{ url_for('learning.lessons', level='B1') }}" 
+               class="btn btn-sm rounded-pill px-2.5 py-1 fw-semibold {% if level == 'B1' %}btn-primary shadow-sm{% else %}btn-light border text-secondary{% endif %}" 
+               style="font-size: 0.74rem;">
+              B1 Trung cấp
+            </a>
+            <a href="{{ url_for('learning.lessons', skill='Reading') }}" 
+               class="btn btn-sm rounded-pill px-2.5 py-1 fw-semibold {% if skill == 'Reading' %}btn-primary shadow-sm{% else %}btn-light border text-secondary{% endif %}" 
+               style="font-size: 0.74rem;">
+              Đọc hiểu
+            </a>
+            <a href="{{ url_for('learning.lessons', skill='Listening') }}" 
+               class="btn btn-sm rounded-pill px-2.5 py-1 fw-semibold {% if skill == 'Listening' %}btn-primary shadow-sm{% else %}btn-light border text-secondary{% endif %}" 
+               style="font-size: 0.74rem;">
+              Nghe hiểu
+            </a>
+            <a href="{{ url_for('learning.lessons', status='completed') }}" 
+               class="btn btn-sm rounded-pill px-2.5 py-1 fw-semibold {% if status == 'completed' %}btn-success text-white shadow-sm{% else %}btn-light border text-secondary{% endif %}" 
+               style="font-size: 0.74rem;">
+              ✓ Đã học
+            </a>
           </div>
 
-          <!-- Card Footer Actions -->
-          <div class="pt-3 border-top d-flex align-items-center justify-content-between">
-            <button type="button" class="btn btn-light rounded-circle p-2 btn-preview" data-lesson-id="{{ lesson.id }}" title="Xem trước bài học">
-              <i class="ph ph-eye fs-5 text-secondary"></i>
-            </button>
-
-            <a href="{{ url_for('learning.lesson_detail', lesson_id=lesson.id) }}" class="btn btn-sm {{ 'btn-outline-secondary' if lesson.id in done else 'btn-primary' }} rounded-pill px-4 py-2 fw-bold shadow-xs">
-              {{ 'Xem lại bài học' if lesson.id in done else 'Bắt đầu học' }} →
-            </a>
+          <!-- Sort Select Right Aligned -->
+          <div class="d-flex align-items-center gap-2 small">
+            <span class="text-muted fw-bold text-nowrap" style="font-size: 0.76rem;">Sắp xếp:</span>
+            <select class="form-select form-select-sm border shadow-none" name="sort" onchange="this.form.submit()" style="border-color: var(--border-light); width: auto; font-size: 0.78rem;">
+              <option value="recent" {{ 'selected' if sort=='recent' }}>Mới nhất</option>
+              <option value="popularity" {{ 'selected' if sort=='popularity' }}>Phổ biến nhất</option>
+              <option value="difficulty_asc" {{ 'selected' if sort=='difficulty_asc' }}>Độ khó (A1 ➔ C2)</option>
+              <option value="difficulty_desc" {{ 'selected' if sort=='difficulty_desc' }}>Độ khó (C2 ➔ A1)</option>
+            </select>
           </div>
         </div>
 
-      </article>
+      </form>
+    </div>
+
+    <!-- CATALOG HEADER WITH TOTAL COUNT -->
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <div>
+        <h5 class="fw-bold text-dark mb-0">Danh mục Bài học</h5>
+        <small class="text-muted">Hiển thị các bài học theo bộ lọc đã chọn</small>
+      </div>
+      <span class="badge bg-primary-subtle text-primary rounded-pill px-3 py-1.5 small fw-bold">
+        Tìm thấy {{ lessons|length }} bài học
+      </span>
+    </div>
+
+    <!-- LESSON CARDS GRID -->
+    {% if lessons|length > 0 %}
+    <div class="row g-4">
+      {% for lesson in lessons %}
+      {% set is_done = lesson.id in done %}
+      {% set difficulty = 1 %}
+      {% if lesson.level == 'A2' %}{% set difficulty = 2 %}
+      {% elif lesson.level == 'B1' %}{% set difficulty = 3 %}
+      {% elif lesson.level == 'B2' %}{% set difficulty = 4 %}
+      {% elif lesson.level in ['C1','C2'] %}{% set difficulty = 5 %}
+      {% endif %}
+      
+      <div class="col-md-6 col-lg-4">
+        <article class="card-modern h-100 d-flex flex-column justify-content-between overflow-hidden transition-hover position-relative">
+          
+          <!-- Thumbnail Header Area -->
+          <div class="position-relative" style="height: 150px; background-color: var(--bg-surface-subtle);">
+            {% if lesson.thumbnail_url %}
+            <img src="{{ lesson.thumbnail_url }}" class="w-100 h-100 object-fit-cover" alt="{{ lesson.title }}">
+            {% else %}
+            <div class="w-100 h-100 d-flex align-items-center justify-content-center" style="background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%);">
+              <i class="ph-bold ph-book-open fs-1 text-primary opacity-60"></i>
+            </div>
+            {% endif %}
+
+            <!-- Favorite Heart Button (Top Right) -->
+            <button type="button" 
+                    class="btn btn-sm btn-light rounded-circle shadow-sm position-absolute top-0 end-0 m-3 border-0 d-flex align-items-center justify-content-center btn-fav-toggle" 
+                    style="width: 34px; height: 34px; background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(6px); z-index: 5;"
+                    data-lesson-id="{{ lesson.id }}"
+                    title="Đánh dấu yêu thích">
+              <i class="ph-fill ph-heart fs-5 {{ 'text-danger' if lesson.id in favorite_ids else 'text-muted opacity-50' }}"></i>
+            </button>
+
+            <!-- Status Pill (Bottom Left) -->
+            <div class="position-absolute bottom-0 start-0 m-3" style="z-index: 5;">
+              {% if is_done %}
+              <span class="badge bg-success text-white rounded-pill px-3 py-1 fw-bold shadow-sm d-inline-flex align-items-center gap-1" style="font-size: 0.72rem;">
+                <i class="ph-fill ph-check-circle"></i> Đã hoàn thành
+              </span>
+              {% else %}
+              <span class="badge bg-primary text-white rounded-pill px-3 py-1 fw-bold shadow-sm" style="font-size: 0.72rem;">
+                Bài mới
+              </span>
+              {% endif %}
+            </div>
+          </div>
+
+          <!-- Card Body -->
+          <div class="p-4 d-flex flex-column flex-grow-1 justify-content-between">
+            <div>
+              <!-- Level & Skill Badges -->
+              <div class="mb-2.5 d-flex align-items-center gap-2">
+                <span class="badge bg-light text-secondary border rounded-pill px-2.5 py-1 small fw-semibold" style="font-size: 0.74rem;">
+                  {{ lesson.skill }} • {{ lesson.level }}
+                </span>
+                <small class="text-muted ms-auto d-flex align-items-center gap-1" style="font-size: 0.72rem;">
+                  <i class="ph-bold ph-eye"></i> {{ lesson.view_count or 0 }}
+                </small>
+              </div>
+
+              <!-- Title & Description -->
+              <h5 class="fw-bold text-dark mb-1.5 line-clamp-2" style="font-size: 1.05rem; line-height: 1.4;">
+                <a href="{{ url_for('learning.lesson_detail', lesson_id=lesson.id) }}" class="text-dark text-decoration-none">
+                  {{ lesson.title }}
+                </a>
+              </h5>
+              <p class="text-secondary small mb-3 line-clamp-2" style="font-size: 0.84rem; line-height: 1.5;">
+                {{ lesson.short_description }}
+              </p>
+            </div>
+
+            <!-- Footer Action & Preview -->
+            <div class="pt-3 border-top border-light">
+              <!-- Difficulty Bar -->
+              <div class="mb-3">
+                <div class="d-flex justify-content-between align-items-center mb-1">
+                  <span class="text-muted fw-bold" style="font-size: 0.68rem; text-transform: uppercase;">Độ khó</span>
+                  <span class="fw-bold text-dark" style="font-size: 0.72rem;">{{ difficulty }}/5</span>
+                </div>
+                <div class="progress rounded-pill" style="height: 5px; background-color: var(--border-light);">
+                  <div class="progress-bar {% if is_done %}bg-success{% else %}bg-primary{% endif %}"
+                       role="progressbar" style="width: {{ difficulty * 20 }}%; border-radius: 9999px;"></div>
+                </div>
+              </div>
+
+              <div class="d-flex align-items-center justify-content-between gap-2">
+                <button type="button" class="btn btn-light border rounded-3 px-3 py-2 btn-preview text-secondary fw-semibold d-inline-flex align-items-center gap-1.5" 
+                        data-lesson-id="{{ lesson.id }}" title="Xem trước nội dung" style="font-size: 0.8rem;">
+                  <i class="ph-bold ph-eye fs-6"></i>
+                  <span>Xem trước</span>
+                </button>
+
+                <a href="{{ url_for('learning.lesson_detail', lesson_id=lesson.id) }}" 
+                   class="btn {% if is_done %}btn-outline-secondary{% else %}btn-primary{% endif %} rounded-3 px-3.5 py-2 fw-bold shadow-sm d-inline-flex align-items-center gap-1.5 flex-grow-1 justify-content-center"
+                   style="font-size: 0.82rem;">
+                  <span>{{ 'Ôn tập lại' if is_done else 'Bắt đầu học' }}</span>
+                  <i class="ph-bold ph-arrow-right"></i>
+                </a>
+              </div>
+            </div>
+
+          </div>
+        </article>
+      </div>
+      {% endfor %}
     </div>
     {% else %}
-    <div class="col-12">
-      <div class="card border-0 shadow-sm rounded-4 p-5 text-center bg-white">
-        <i class="ph ph-folder-open fs-1 text-muted mb-2"></i>
-        <h5 class="fw-bold text-muted mb-1">Chưa tìm thấy bài học phù hợp</h5>
-        <p class="text-secondary small mb-0">Hãy thử thay đổi từ khóa hoặc bộ lọc nhé.</p>
+    <!-- Full-Width Empty State -->
+    <div class="card-modern p-5 text-center">
+      <div class="d-flex flex-column align-items-center justify-content-center py-4">
+        <div class="rounded-circle mb-3 d-flex align-items-center justify-content-center" style="width: 60px; height: 60px; background-color: var(--primary-subtle); color: var(--primary);">
+          <i class="ph-bold ph-folder-open fs-2"></i>
+        </div>
+        <h5 class="fw-bold text-dark mb-1.5">Không tìm thấy bài học phù hợp</h5>
+        <p class="text-muted small mb-3" style="max-width: 420px; line-height: 1.55;">
+          Không có bài học nào khớp với tiêu chí tìm kiếm hoặc bộ lọc hiện tại của bạn. Hãy thử thay đổi từ khóa hoặc đặt lại bộ lọc.
+        </p>
+        <a href="{{ url_for('learning.lessons') }}" class="btn btn-primary fw-bold px-4 py-2 rounded-3">
+          <i class="ph-bold ph-arrow-counter-clockwise me-1.5"></i> Đặt lại tất cả bộ lọc
+        </a>
       </div>
     </div>
-    {% endfor %}
+    {% endif %}
   </div>
 
 </div>
@@ -346,31 +456,34 @@
 <!-- Modal Xem trước Chi tiết Bài học (Lesson Preview Modal) -->
 <div class="modal fade" id="lessonPreviewModal" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered modal-lg">
-    <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
-      <div class="modal-header border-0 pb-0">
+    <div class="modal-content rounded-4 border-0 shadow-lg overflow-hidden">
+      <div class="modal-header border-bottom px-4 py-3 bg-light-subtle">
         <div>
-          <span class="badge bg-primary-subtle text-primary rounded-pill px-3 py-1 mb-1 font-semibold" id="prevLevelSkill">A1 · Grammar</span>
-          <h4 class="modal-title fw-bold text-dark" id="prevTitle">Tiêu đề bài học</h4>
+          <span class="badge bg-primary-subtle text-primary rounded-pill px-2.5 py-1 mb-1 font-semibold" id="prevLevelSkill">A1 · Grammar</span>
+          <h5 class="modal-title fw-bold text-dark mb-0" id="prevTitle">Tiêu đề bài học</h5>
         </div>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body p-4">
-        <div class="mb-3">
-          <h6 class="fw-bold text-dark mb-1">Mô tả bài học:</h6>
-          <p class="text-secondary small" id="prevDesc">Mô tả chi tiết...</p>
+        <div class="mb-3.5">
+          <h6 class="fw-bold text-dark small text-uppercase mb-1.5" style="letter-spacing: 0.04em;">Mô tả bài học</h6>
+          <p class="text-secondary small" id="prevDesc" style="line-height: 1.6;">Mô tả chi tiết...</p>
         </div>
-        <div class="mb-3">
-          <h6 class="fw-bold text-dark mb-1">Ví dụ thực tế:</h6>
-          <div class="p-3 bg-light rounded-3 text-secondary small font-monospace" id="prevExamples">Examples...</div>
+        <div class="mb-3.5">
+          <h6 class="fw-bold text-dark small text-uppercase mb-1.5" style="letter-spacing: 0.04em;">Ví dụ mẫu trong bài</h6>
+          <div class="p-3 rounded-3 text-dark small" style="background-color: var(--bg-surface-subtle); border: 1px solid var(--border-light); font-family: monospace;" id="prevExamples">Examples...</div>
         </div>
         <div>
-          <h6 class="fw-bold text-dark mb-1">Nội dung xem trước:</h6>
-          <p class="text-secondary small" id="prevContent">Nội dung...</p>
+          <h6 class="fw-bold text-dark small text-uppercase mb-1.5" style="letter-spacing: 0.04em;">Tóm tắt nội dung</h6>
+          <p class="text-secondary small mb-0" id="prevContent" style="line-height: 1.6;">Nội dung...</p>
         </div>
       </div>
-      <div class="modal-footer border-0 bg-light p-3">
-        <button type="button" class="btn btn-secondary rounded-pill px-4" data-bs-dismiss="modal">Đóng</button>
-        <a id="prevStartBtn" href="#" class="btn btn-primary rounded-pill px-4 fw-bold">Bắt đầu học ngay →</a>
+      <div class="modal-footer border-top px-4 py-3 bg-light-subtle d-flex justify-content-between">
+        <button type="button" class="btn btn-light border rounded-3 px-4 fw-semibold text-secondary" data-bs-dismiss="modal">Đóng</button>
+        <a id="prevStartBtn" href="#" class="btn btn-primary rounded-3 px-4 py-2 fw-bold shadow-sm d-inline-flex align-items-center gap-1.5">
+          <span>Bắt đầu học bài này</span>
+          <i class="ph-bold ph-arrow-right"></i>
+        </a>
       </div>
     </div>
   </div>
@@ -384,6 +497,7 @@ document.addEventListener("DOMContentLoaded", function() {
   document.querySelectorAll(".btn-fav-toggle").forEach(btn => {
     btn.addEventListener("click", function(e) {
       e.preventDefault();
+      e.stopPropagation();
       const lessonId = this.dataset.lessonId;
       const heartIcon = this.querySelector("i");
 
@@ -416,6 +530,7 @@ document.addEventListener("DOMContentLoaded", function() {
   document.querySelectorAll(".btn-preview").forEach(btn => {
     btn.addEventListener("click", function(e) {
       e.preventDefault();
+      e.stopPropagation();
       const lessonId = this.dataset.lessonId;
 
       fetch(`/learning/lessons/${lessonId}/preview`)
@@ -427,7 +542,7 @@ document.addEventListener("DOMContentLoaded", function() {
         document.getElementById("prevExamples").innerText = data.examples || "Không có ví dụ";
         document.getElementById("prevContent").innerText = data.content_preview;
         document.getElementById("prevStartBtn").href = `/learning/lessons/${data.id}`;
-        document.getElementById("prevStartBtn").innerText = data.is_done ? "Xem lại bài học →" : "Bắt đầu học ngay →";
+        document.getElementById("prevStartBtn").innerHTML = `<span>${data.is_done ? "Xem lại bài học" : "Bắt đầu học ngay"}</span> <i class="ph-bold ph-arrow-right"></i>`;
         previewModal.show();
       })
       .catch(err => console.error(err));
