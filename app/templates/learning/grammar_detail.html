@@ -4,103 +4,118 @@
 {% block content %}
 <div class="container-fluid max-w-4xl py-4">
 
-  <!-- Top Back Link & Action Bar -->
+  <!-- TOP BACK LINK & ACTION BAR -->
   <div class="d-flex align-items-center justify-content-between mb-4">
-    <a class="btn btn-light rounded-pill px-3 py-1.5 fw-semibold text-secondary shadow-xs" href="{{ url_for('learning.grammar_overview') }}">
-      <i class="ph ph-arrow-left me-1"></i> Thư viện Ngữ pháp
+    <a class="btn btn-light border rounded-3 px-3 py-1.5 fw-bold text-secondary shadow-xs d-inline-flex align-items-center gap-1.5" href="{{ url_for('learning.grammar_overview') }}" style="font-size: 0.88rem;">
+      <i class="ph-bold ph-arrow-left"></i>
+      <span>Thư viện Ngữ pháp</span>
     </a>
     <div class="d-flex gap-2">
       <!-- Favorite Button -->
-      <form method="post" action="{{ url_for('learning.favorite_grammar_topic', topic_id=topic.id) }}" class="d-inline">
+      <form method="post" action="{{ url_for('learning.favorite_grammar_topic', topic_id=topic.id) }}" class="d-inline m-0">
         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-        <button type="submit" class="btn btn-light rounded-circle p-2 shadow-xs" title="Thả tim yêu thích">
-          <i class="ph-fill ph-heart fs-5 {{ 'text-danger' if is_favorite else 'text-muted opacity-50' }}"></i>
+        <button type="submit" class="btn btn-light border rounded-circle p-2 shadow-xs d-flex align-items-center justify-content-center" title="Thả tim yêu thích" style="width: 38px; height: 38px;">
+          <i class="ph-bold ph-heart fs-5 {{ 'text-danger' if is_favorite else 'text-muted opacity-50' }}"></i>
         </button>
       </form>
     </div>
   </div>
 
-  <!-- Header Banner Card -->
-  <div class="card border-0 shadow-sm rounded-4 p-4 bg-white mb-4">
-    <div class="d-flex align-items-center gap-2 mb-2">
-      <span class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill px-3 py-1 fw-bold">
+  <!-- HEADER BANNER CARD -->
+  <div class="card-modern p-4 p-md-4 mb-4">
+    <div class="d-flex align-items-center gap-2 mb-2.5 flex-wrap">
+      <span class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill px-3 py-1 fw-bold" style="font-size: 0.76rem;">
         {{ topic.level }}
       </span>
-      <span class="badge bg-light text-dark border rounded-pill px-3 py-1 fw-semibold">
+      <span class="badge bg-light text-secondary border rounded-pill px-3 py-1 fw-semibold small">
         {{ topic.category }}
       </span>
       {% if is_completed %}
-      <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-3 py-1 fw-bold ms-auto">
+      <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-3 py-1 fw-bold ms-auto" style="font-size: 0.76rem;">
         ✓ Đã hoàn thành
       </span>
       {% endif %}
     </div>
 
-    <h2 class="fw-bold text-dark mb-2">{{ topic.title }}</h2>
-    <p class="text-secondary mb-0 fs-6">{{ topic.summary }}</p>
+    <h2 class="fw-bold text-dark mb-2" style="font-size: 1.75rem; letter-spacing: -0.02em;">{{ topic.title }}</h2>
+    <p class="text-secondary mb-0" style="font-size: 0.95rem; line-height: 1.6; color: #475569;">{{ topic.summary }}</p>
   </div>
 
-  <!-- Main Section 1: Grammar Rule & Formula Explanation -->
-  <div class="card border-0 shadow-sm rounded-4 p-4 bg-white mb-4">
-    <h5 class="fw-bold text-dark mb-3 border-bottom pb-2 d-flex align-items-center gap-2">
-      <i class="ph ph-book-open text-primary fs-4"></i> 1. Quy tắc & Công thức Ngữ pháp
-    </h5>
-    <div class="prose text-dark lh-lg" style="font-size: 1.05rem; white-space: pre-line;">{{ topic.rule_explanation }}</div>
+  <!-- SECTION 1: GRAMMAR RULE & FORMULA EXPLANATION -->
+  <div class="card-modern p-4 p-md-4 mb-4">
+    <div class="d-flex align-items-center gap-2.5 mb-3.5 pb-2 border-bottom border-light">
+      <span class="rounded-circle d-flex align-items-center justify-content-center" style="width: 32px; height: 32px; background-color: var(--primary-subtle); color: var(--primary);">
+        <i class="ph-bold ph-book-open fs-5"></i>
+      </span>
+      <h5 class="fw-bold text-dark mb-0" style="font-size: 1.15rem;">1. Quy tắc & Công thức Ngữ pháp</h5>
+    </div>
+    <div class="prose text-dark lh-lg" style="font-size: 1rem; line-height: 1.8; color: #334155; white-space: pre-line;">{{ topic.rule_explanation }}</div>
   </div>
 
-  <!-- Main Section 2: Grammar Examples with Explanations -->
-  <div class="card border-0 shadow-sm rounded-4 p-4 bg-white mb-4">
-    <h5 class="fw-bold text-dark mb-3 border-bottom pb-2 d-flex align-items-center gap-2">
-      <i class="ph ph-chat-circle-text text-success fs-4"></i> 2. Ví dụ minh họa & Giải thích chi tiết
-    </h5>
+  <!-- SECTION 2: GRAMMAR EXAMPLES WITH EXPLANATIONS -->
+  <div class="card-modern p-4 p-md-4 mb-4">
+    <div class="d-flex align-items-center gap-2.5 mb-3.5 pb-2 border-bottom border-light">
+      <span class="rounded-circle d-flex align-items-center justify-content-center" style="width: 32px; height: 32px; background-color: var(--success-subtle); color: var(--success);">
+        <i class="ph-bold ph-chat-circle-text fs-5"></i>
+      </span>
+      <h5 class="fw-bold text-dark mb-0" style="font-size: 1.15rem;">2. Ví dụ minh họa & Giải thích chi tiết</h5>
+    </div>
     <div class="d-flex flex-column gap-3">
       {% for line in topic.examples_json.splitlines() if line.strip() %}
       {% set parts = line.split('|') %}
-      <div class="p-3 bg-light border-start border-4 border-success rounded-3">
-        <div class="fw-bold text-dark fs-6 mb-1">🇬🇧 {{ parts[0] }}</div>
+      <div class="p-3.5 bg-light-subtle border-start border-4 border-success rounded-3 shadow-2xs">
+        <div class="fw-bold text-dark mb-1" style="font-size: 0.95rem;">🇬🇧 {{ parts[0] }}</div>
         {% if parts|length > 1 %}
-        <div class="text-secondary small">🇻🇳 {{ parts[1] }}</div>
+        <div class="text-secondary small" style="font-size: 0.88rem; line-height: 1.5;">🇻🇳 {{ parts[1] }}</div>
         {% endif %}
       </div>
       {% endfor %}
     </div>
   </div>
 
-  <!-- Main Section 3: Common Mistakes Alert Box -->
+  <!-- SECTION 3: COMMON MISTAKES ALERT BOX -->
   {% if topic.common_mistakes %}
-  <div class="card border-0 shadow-sm rounded-4 p-4 bg-white mb-4 border-start border-4 border-danger">
-    <h5 class="fw-bold text-danger mb-3 d-flex align-items-center gap-2">
-      <i class="ph ph-warning-circle text-danger fs-4"></i> 3. Các Lỗi thường gặp (Common Mistakes)
-    </h5>
-    <div class="p-3 bg-danger-subtle text-danger-emphasis rounded-3 lh-lg" style="white-space: pre-line;">
+  <div class="card-modern p-4 p-md-4 mb-4 border-start border-4 border-danger">
+    <div class="d-flex align-items-center gap-2.5 mb-3">
+      <span class="rounded-circle d-flex align-items-center justify-content-center" style="width: 32px; height: 32px; background-color: #fee2e2; color: #ef4444;">
+        <i class="ph-bold ph-warning-circle fs-5"></i>
+      </span>
+      <h5 class="fw-bold text-danger mb-0" style="font-size: 1.15rem;">3. Các Lỗi thường gặp</h5>
+    </div>
+    <div class="p-3.5 bg-danger-subtle text-danger-emphasis rounded-3" style="line-height: 1.7; font-size: 0.92rem; white-space: pre-line;">
       {{ topic.common_mistakes }}
     </div>
   </div>
   {% endif %}
 
-  <!-- Main Section 4: Tips and Tricks Callout Box -->
+  <!-- SECTION 4: TIPS AND TRICKS CALLOUT BOX -->
   {% if topic.tips_tricks %}
-  <div class="card border-0 shadow-sm rounded-4 p-4 bg-white mb-4 border-start border-4 border-warning">
-    <h5 class="fw-bold text-warning-emphasis mb-3 d-flex align-items-center gap-2">
-      <i class="ph ph-lightbulb text-warning fs-4"></i> 4. Mẹo ghi nhớ & Thủ thuật (Tips & Tricks)
-    </h5>
-    <div class="p-3 bg-warning-subtle text-warning-emphasis rounded-3 lh-lg" style="white-space: pre-line;">
+  <div class="card-modern p-4 p-md-4 mb-4 border-start border-4 border-warning">
+    <div class="d-flex align-items-center gap-2.5 mb-3">
+      <span class="rounded-circle d-flex align-items-center justify-content-center" style="width: 32px; height: 32px; background-color: #fef3c7; color: #d97706;">
+        <i class="ph-bold ph-lightbulb fs-5"></i>
+      </span>
+      <h5 class="fw-bold text-warning-emphasis mb-0" style="font-size: 1.15rem;">4. Mẹo ghi nhớ & Thủ thuật</h5>
+    </div>
+    <div class="p-3.5 bg-warning-subtle text-warning-emphasis rounded-3" style="line-height: 1.7; font-size: 0.92rem; white-space: pre-line;">
       {{ topic.tips_tricks }}
     </div>
   </div>
   {% endif %}
 
-  <!-- Mark Complete Button Bar -->
-  <div class="card border-0 shadow-sm rounded-4 p-4 bg-white mb-4 text-center">
-    <form method="post" action="{{ url_for('learning.complete_grammar_topic', topic_id=topic.id) }}">
+  <!-- MARK COMPLETE MILESTONE BAR -->
+  <div class="card-modern p-4 text-center mb-5">
+    <form method="post" action="{{ url_for('learning.complete_grammar_topic', topic_id=topic.id) }}" class="m-0">
       <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
       {% if is_completed %}
       <div class="mb-3">
-        <span class="badge bg-success text-white rounded-circle p-2 fs-5 mb-2">✓</span>
+        <div class="rounded-circle bg-success text-white d-inline-flex align-items-center justify-content-center mb-2 shadow-xs" style="width: 44px; height: 44px;">
+          <i class="ph-bold ph-check fs-4"></i>
+        </div>
         <h5 class="fw-bold text-success mb-1">Bạn đã hoàn thành chủ đề ngữ pháp này!</h5>
-        <p class="text-secondary small">Bạn có thể hủy đánh dấu bất cứ lúc nào.</p>
+        <p class="text-secondary small mb-0">Tiến độ đã được ghi nhận. Bạn có thể bỏ đánh dấu bất cứ lúc nào.</p>
       </div>
-      <button type="submit" class="btn btn-outline-secondary rounded-pill px-4 fw-bold">
+      <button type="submit" class="btn btn-light border rounded-3 px-4 py-2 fw-semibold text-secondary" style="font-size: 0.88rem;">
         Bỏ đánh dấu hoàn thành
       </button>
       {% else %}
@@ -108,27 +123,29 @@
         <h5 class="fw-bold text-dark mb-1">Đã hiểu rõ các quy tắc ngữ pháp trên?</h5>
         <p class="text-secondary small mb-0">Đánh dấu hoàn thành để ghi nhận vào tiến độ học tập cá nhân của bạn.</p>
       </div>
-      <button type="submit" class="btn btn-success btn-lg rounded-pill px-5 py-2.5 fw-bold shadow-xs">
-        ✓ Đánh dấu hoàn thành chủ đề
+      <button type="submit" class="btn btn-primary rounded-3 px-5 py-2.5 fw-bold shadow-sm d-inline-flex align-items-center gap-2" style="font-size: 0.95rem;">
+        <i class="ph-bold ph-check-circle fs-5"></i>
+        <span>Đánh dấu hoàn thành chủ đề</span>
       </button>
       {% endif %}
     </form>
   </div>
 
-  <!-- Related Topics Section -->
+  <!-- RELATED TOPICS SECTION -->
   {% if related_topics %}
-  <div class="mb-4">
-    <h5 class="fw-bold text-dark mb-3 d-flex align-items-center gap-2">
-      <i class="ph ph-link text-primary fs-4"></i> Các Chủ đề Ngữ pháp Liên quan
+  <div class="mb-5">
+    <h5 class="fw-bold text-dark mb-3.5 d-flex align-items-center gap-2">
+      <i class="ph-bold ph-link text-primary fs-5"></i>
+      <span>Các Chủ đề Ngữ pháp Liên quan</span>
     </h5>
     <div class="row g-3">
       {% for rel in related_topics %}
       <div class="col-md-4">
         <a href="{{ url_for('learning.grammar_detail', topic_id=rel.id) }}" class="text-decoration-none">
-          <div class="card border-0 shadow-xs rounded-4 p-3 bg-white h-100 hover-shadow transition">
-            <span class="badge bg-primary-subtle text-primary rounded-pill px-2.5 py-1 fw-bold align-self-start mb-2">{{ rel.level }}</span>
-            <h6 class="fw-bold text-dark mb-1 line-clamp-2">{{ rel.title }}</h6>
-            <p class="text-secondary small mb-0 line-clamp-2">{{ rel.summary }}</p>
+          <div class="card-modern p-3.5 h-100 transition-hover">
+            <span class="badge bg-primary-subtle text-primary rounded-pill px-2.5 py-1 fw-bold align-self-start mb-2" style="font-size: 0.74rem;">{{ rel.level }}</span>
+            <h6 class="fw-bold text-dark mb-1" style="font-size: 0.95rem; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">{{ rel.title }}</h6>
+            <p class="text-secondary small mb-0" style="font-size: 0.82rem; line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">{{ rel.summary }}</p>
           </div>
         </a>
       </div>
