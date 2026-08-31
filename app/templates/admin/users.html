@@ -2,45 +2,51 @@
 {% block title %}Quản lý Người dùng · EnglishMate Admin{% endblock %}
 
 {% block content %}
-<div class="container py-4">
-  {% include "admin/_nav.html" %}
+<div class="container-fluid max-w-6xl py-4">
 
-  <div class="card border rounded-4 bg-white p-4 shadow-xs">
+  <div class="card-modern p-4">
+    <!-- Header with Search -->
     <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
       <div>
-        <h4 class="fw-800 text-dark mb-1">Danh sách Người dùng</h4>
-        <p class="text-secondary small mb-0">Quản lý quyền truy cập và trạng thái tài khoản hệ thống</p>
+        <h4 class="fw-bold text-dark mb-1" style="font-size: 1.35rem; letter-spacing: -0.01em;">Danh sách Người dùng</h4>
+        <p class="text-secondary small mb-0">Quản lý quyền truy cập, vai trò và trạng thái tài khoản học viên</p>
       </div>
 
-      <form method="get" class="d-flex gap-2" style="max-width: 320px;">
-        <input type="text" name="q" value="{{ search }}" class="form-control rounded-pill px-3" placeholder="Tìm tên hoặc email...">
-        <button type="submit" class="btn btn-dark rounded-pill px-3">Tìm</button>
+      <form method="get" class="d-flex gap-1.5" style="min-width: 280px;">
+        <div class="input-group input-group-sm">
+          <span class="input-group-text bg-white border-end-0 text-muted ps-2.5">
+            <i class="ph-bold ph-magnifying-glass"></i>
+          </span>
+          <input type="text" name="q" value="{{ search }}" class="form-control border-start-0 ps-1" placeholder="Tìm tên hoặc email...">
+          <button type="submit" class="btn btn-dark fw-semibold px-3">Tìm</button>
+        </div>
       </form>
     </div>
 
-    <div class="table-responsive">
-      <table class="table table-hover align-middle border-top">
-        <thead class="bg-light small text-uppercase text-muted">
+    <!-- Table -->
+    <div class="table-responsive border rounded-3 overflow-hidden">
+      <table class="table table-hover align-middle mb-0" style="font-size: 0.88rem;">
+        <thead class="table-light">
           <tr>
-            <th class="py-3 ps-3">ID & Tài khoản</th>
-            <th class="py-3">Email</th>
-            <th class="py-3 text-center">Vai trò</th>
-            <th class="py-3 text-center">Chuỗi Streak</th>
-            <th class="py-3 text-center">Trạng thái</th>
-            <th class="py-3 text-end pe-3">Hành động</th>
+            <th class="py-3 ps-3" style="min-width: 200px;">Tài khoản</th>
+            <th class="py-3" style="min-width: 200px;">Email</th>
+            <th class="py-3 text-center" style="width: 150px;">Vai trò</th>
+            <th class="py-3 text-center" style="width: 120px;">Chuỗi Streak</th>
+            <th class="py-3 text-center" style="width: 130px;">Trạng thái</th>
+            <th class="py-3 text-end pe-3" style="min-width: 160px;">Hành động</th>
           </tr>
         </thead>
         <tbody>
           {% for u in users %}
           <tr>
             <td class="ps-3">
-              <div class="d-flex align-items-center gap-2">
-                <div class="profile-avatar-circle" style="width: 34px; height: 34px; font-size: 0.85rem;">
+              <div class="d-flex align-items-center gap-2.5">
+                <div class="rounded-circle bg-primary-subtle text-primary fw-bold d-inline-flex align-items-center justify-content-center flex-shrink-0" style="width: 34px; height: 34px; font-size: 0.88rem;">
                   {{ u.username[0].upper() }}
                 </div>
                 <div>
                   <span class="fw-bold text-dark d-block leading-tight">{{ u.username }}</span>
-                  <small class="text-muted">ID: #{{ u.id }}</small>
+                  <small class="text-muted font-monospace" style="font-size: 0.75rem;">ID: #{{ u.id }}</small>
                 </div>
               </div>
             </td>
@@ -49,7 +55,7 @@
               {% set u_roles = u.user_assigned_roles.all() %}
               {% if u_roles %}
                 {% for ur in u_roles %}
-                  <span class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill px-2.5 py-1 mb-1 d-inline-block">
+                  <span class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill px-2.5 py-1 mb-1 d-inline-block font-semibold">
                     {{ ur.role.name }}
                     {% if ur.expires_at %}
                     <br><small style="font-size: 0.65rem;">(Hạn: {{ ur.expires_at.strftime('%d/%m/%Y') }})</small>
@@ -58,39 +64,50 @@
                 {% endfor %}
               {% else %}
                 {% if u.is_admin %}
-                <span class="badge bg-danger-subtle text-danger border border-danger-subtle rounded-pill px-2.5 py-1">ADMIN</span>
+                <span class="badge bg-danger-subtle text-danger border border-danger-subtle rounded-pill px-2.5 py-1 font-semibold">ADMIN</span>
                 {% else %}
-                <span class="badge bg-secondary-subtle text-secondary border rounded-pill px-2.5 py-1">USER</span>
+                <span class="badge bg-secondary-subtle text-secondary border rounded-pill px-2.5 py-1 font-semibold">USER</span>
                 {% endif %}
               {% endif %}
             </td>
             <td class="text-center">
-              <span class="fw-bold text-warning">🔥 {{ u.current_streak or 0 }}</span>
+              <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle rounded-pill px-2.5 py-1 fw-bold d-inline-flex align-items-center gap-1">
+                <i class="ph-bold ph-flame text-danger"></i>
+                <span>{{ u.current_streak or 0 }} ngày</span>
+              </span>
             </td>
             <td class="text-center">
               {% if u.is_active %}
-              <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-2.5 py-1">Hoạt động</span>
+              <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-2.5 py-1 font-semibold d-inline-flex align-items-center gap-1">
+                <span class="rounded-circle bg-success" style="width: 5px; height: 5px;"></span>
+                <span>Hoạt động</span>
+              </span>
               {% else %}
-              <span class="badge bg-danger-subtle text-danger border border-danger-subtle rounded-pill px-2.5 py-1">Đã khóa</span>
+              <span class="badge bg-danger-subtle text-danger border border-danger-subtle rounded-pill px-2.5 py-1 font-semibold d-inline-flex align-items-center gap-1">
+                <span class="rounded-circle bg-danger" style="width: 5px; height: 5px;"></span>
+                <span>Đã khóa</span>
+              </span>
               {% endif %}
             </td>
             <td class="text-end pe-3">
-              <div class="d-inline-flex gap-1">
+              <div class="d-inline-flex gap-1.5">
                 {% if u.id != current_user.id %}
                 <!-- Assign Role Modal Trigger Button -->
-                <button type="button" class="btn btn-sm btn-outline-primary rounded-pill px-2.5" data-bs-toggle="modal" data-bs-target="#assignRoleModal{{ u.id }}">
-                  Phân vai trò
+                <button type="button" class="btn btn-sm btn-light border fw-semibold text-primary shadow-2xs d-inline-flex align-items-center gap-1 px-2.5 py-1" data-bs-toggle="modal" data-bs-target="#assignRoleModal{{ u.id }}">
+                  <i class="ph-bold ph-user-gear"></i>
+                  <span>Vai trò</span>
                 </button>
 
                 <!-- Toggle Active Form -->
-                <form method="post" action="{{ url_for('admin.user_toggle', user_id=u.id) }}" class="m-0">
+                <form method="post" action="{{ url_for('admin.user_toggle', user_id=u.id) }}" class="m-0 d-inline">
                   {{ form.csrf_token }}
-                  <button type="submit" class="btn btn-sm {% if u.is_active %}btn-outline-danger{% else %}btn-outline-success{% endif %} rounded-pill px-2.5">
-                    {% if u.is_active %}Khóa{% else %}Mở khóa{% endif %}
+                  <button type="submit" class="btn btn-sm btn-light border fw-semibold {% if u.is_active %}text-danger{% else %}text-success{% endif %} shadow-2xs d-inline-flex align-items-center gap-1 px-2.5 py-1">
+                    <i class="ph-bold {% if u.is_active %}ph-lock-key{% else %}ph-lock-key-open{% endif %}"></i>
+                    <span>{% if u.is_active %}Khóa{% else %}Mở{% endif %}</span>
                   </button>
                 </form>
                 {% else %}
-                <span class="badge bg-light text-muted border">Tài khoản hiện tại</span>
+                <span class="badge bg-light text-muted border font-semibold">Tài khoản hiện tại</span>
                 {% endif %}
               </div>
             </td>
@@ -101,15 +118,15 @@
             <div class="modal-dialog modal-dialog-centered">
               <div class="modal-content border-0 rounded-4 shadow-lg">
                 <div class="modal-header border-0 pb-0">
-                  <h5 class="modal-title fw-bold">Phân Vai Trò Cho: {{ u.username }}</h5>
+                  <h5 class="modal-title fw-bold">Phân vai trò: {{ u.username }}</h5>
                   <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <form method="post" action="{{ url_for('admin.user_assign_role', user_id=u.id) }}">
                   <div class="modal-body p-4">
                     {{ form.csrf_token }}
                     <div class="mb-3">
-                      <label class="form-label fw-semibold">Chọn Vai Trò</label>
-                      <select name="role_id" class="form-select rounded-3" required>
+                      <label class="form-label fw-semibold small text-dark">Chọn vai trò hệ thống</label>
+                      <select name="role_id" class="form-select rounded-3 py-2" required>
                         {% for r in roles %}
                         <option value="{{ r.id }}" {% if u.role == r.name %}selected{% endif %}>
                           {{ r.name }} - {{ r.description }}
@@ -118,14 +135,14 @@
                       </select>
                     </div>
                     <div class="mb-3">
-                      <label class="form-label fw-semibold">Ngày Hết Hạn Vai Trò (Phân vai trò tạm thời)</label>
-                      <input type="date" name="expires_at" class="form-control rounded-3">
-                      <div class="form-text small text-muted">Bỏ trống nếu muốn gán vai trò vĩnh viễn không hết hạn.</div>
+                      <label class="form-label fw-semibold small text-dark">Ngày hết hạn vai trò (Tùy chọn)</label>
+                      <input type="date" name="expires_at" class="form-control rounded-3 py-2">
+                      <div class="form-text small text-muted">Bỏ trống nếu muốn cấp vai trò vĩnh viễn không giới hạn thời gian.</div>
                     </div>
                   </div>
                   <div class="modal-footer border-0 justify-content-end pt-0 pb-4 pe-4">
-                    <button type="button" class="btn btn-light rounded-pill" data-bs-dismiss="modal">Hủy</button>
-                    <button type="submit" class="btn btn-primary rounded-pill px-4 fw-bold">Lưu Vai Trò</button>
+                    <button type="button" class="btn btn-light border rounded-3 fw-semibold px-3 py-2" data-bs-dismiss="modal">Hủy</button>
+                    <button type="submit" class="btn btn-primary rounded-3 px-4 py-2 fw-bold">Lưu thay đổi</button>
                   </div>
                 </form>
               </div>
@@ -133,7 +150,10 @@
           </div>
           {% else %}
           <tr>
-            <td colspan="6" class="text-center py-4 text-muted">Không tìm thấy người dùng phù hợp.</td>
+            <td colspan="6" class="text-center py-5 text-muted">
+              <i class="ph-bold ph-users fs-2 d-block mb-2 text-secondary opacity-50"></i>
+              <span>Không tìm thấy người dùng phù hợp.</span>
+            </td>
           </tr>
           {% endfor %}
         </tbody>

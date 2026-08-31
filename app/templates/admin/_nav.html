@@ -1,42 +1,52 @@
-<div class="card border rounded-4 bg-white p-3 mb-4 shadow-xs">
-  <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3">
+<div class="card-modern p-3 mb-4.5">
+  <div class="d-flex flex-column flex-lg-row align-items-lg-center justify-content-between gap-3">
+    <!-- Admin Brand Header -->
     <div class="d-flex align-items-center gap-3">
-      <div class="menu-icon-box bg-danger-subtle text-danger" style="width: 44px; height: 44px; font-size: 1.2rem; display: inline-flex; align-items: center; justify-content: center;">
-        🛡️
+      <div class="rounded-3 bg-primary-subtle text-primary d-inline-flex align-items-center justify-content-center flex-shrink-0" style="width: 44px; height: 44px; font-size: 1.25rem;">
+        <i class="ph-bold ph-shield-check"></i>
       </div>
       <div>
         <div class="d-flex align-items-center gap-2">
-          <h5 class="fw-800 text-dark mb-0">Hệ thống Quản trị Admin</h5>
-          <span class="badge bg-danger-subtle text-danger border border-danger-subtle rounded-pill" style="font-size: 0.68rem;">Chế độ Admin</span>
+          <h5 class="fw-bold text-dark mb-0" style="letter-spacing: -0.01em;">Hệ thống Quản trị Admin</h5>
+          <span class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill font-semibold" style="font-size: 0.7rem;">ADMIN CONSOLE</span>
         </div>
-        <span class="text-muted small">Quản lý bài học, từ vựng và phân quyền tài khoản</span>
+        <span class="text-secondary small" style="font-size: 0.82rem;">Quản lý nội dung học tập, người dùng, phân quyền và dữ liệu hệ thống</span>
       </div>
     </div>
 
-    <nav class="nav nav-pills gap-1 bg-light p-1.5 rounded-3">
-      <a class="nav-link px-3 py-1.5 fw-bold small text-secondary {% if request.endpoint=='admin.dashboard' %}bg-white shadow-xs text-danger active{% endif %}" href="{{ url_for('admin.dashboard') }}">
-        📊 Tổng quan
+    <!-- Navigation Pills -->
+    <nav class="nav nav-pills gap-1 bg-light p-1.5 rounded-3 flex-wrap">
+      <a class="nav-link px-3 py-1.5 fw-semibold small text-secondary rounded-2 transition-hover {% if request.endpoint=='admin.dashboard' %}bg-white shadow-xs text-primary active{% endif %}" href="{{ url_for('admin.dashboard') }}">
+        <i class="ph-bold ph-gauge me-1"></i>
+        <span>Tổng quan</span>
       </a>
-      <a class="nav-link px-3 py-1.5 fw-bold small text-secondary {% if request.endpoint and 'lesson' in request.endpoint %}bg-white shadow-xs text-danger active{% endif %}" href="{{ url_for('admin.lessons') }}">
-        📚 Bài học
+      <a class="nav-link px-3 py-1.5 fw-semibold small text-secondary rounded-2 transition-hover {% if request.endpoint and 'lesson' in request.endpoint %}bg-white shadow-xs text-primary active{% endif %}" href="{{ url_for('admin.lessons') }}">
+        <i class="ph-bold ph-book-open me-1"></i>
+        <span>Bài học</span>
       </a>
-      <a class="nav-link px-3 py-1.5 fw-bold small text-secondary {% if request.endpoint and 'vocabulary' in request.endpoint %}bg-white shadow-xs text-danger active{% endif %}" href="{{ url_for('admin.vocabulary') }}">
-        📖 Từ vựng
+      <a class="nav-link px-3 py-1.5 fw-semibold small text-secondary rounded-2 transition-hover {% if request.endpoint and 'vocabulary' in request.endpoint %}bg-white shadow-xs text-primary active{% endif %}" href="{{ url_for('admin.vocabulary') }}">
+        <i class="ph-bold ph-translate me-1"></i>
+        <span>Từ vựng</span>
       </a>
-      <a class="nav-link px-3 py-1.5 fw-bold small text-secondary {% if request.endpoint=='admin.users' %}bg-white shadow-xs text-danger active{% endif %}" href="{{ url_for('admin.users') }}">
-        👥 Người dùng
+      <a class="nav-link px-3 py-1.5 fw-semibold small text-secondary rounded-2 transition-hover {% if request.endpoint=='admin.users' %}bg-white shadow-xs text-primary active{% endif %}" href="{{ url_for('admin.users') }}">
+        <i class="ph-bold ph-users me-1"></i>
+        <span>Người dùng</span>
       </a>
-      <a class="nav-link px-3 py-1.5 fw-bold small text-secondary {% if request.endpoint=='admin.roles' %}bg-white shadow-xs text-danger active{% endif %}" href="{{ url_for('admin.roles') }}">
-        🛡️ Vai trò & Quyền
+      <a class="nav-link px-3 py-1.5 fw-semibold small text-secondary rounded-2 transition-hover {% if request.endpoint=='admin.roles' %}bg-white shadow-xs text-primary active{% endif %}" href="{{ url_for('admin.roles') }}">
+        <i class="ph-bold ph-user-gear me-1"></i>
+        <span>Vai trò & Quyền</span>
       </a>
-      <a class="nav-link px-3 py-1.5 fw-bold small text-secondary {% if request.endpoint=='admin.audit_logs' %}bg-white shadow-xs text-danger active{% endif %}" href="{{ url_for('admin.audit_logs') }}">
-        📜 Audit Logs
+      <a class="nav-link px-3 py-1.5 fw-semibold small text-secondary rounded-2 transition-hover {% if request.endpoint=='admin.audit_logs' %}bg-white shadow-xs text-primary active{% endif %}" href="{{ url_for('admin.audit_logs') }}">
+        <i class="ph-bold ph-clock-counter-clockwise me-1"></i>
+        <span>Audit Logs</span>
       </a>
-      <a class="nav-link px-3 py-1.5 fw-bold small text-secondary {% if request.endpoint and 'import' in request.endpoint %}bg-white shadow-xs text-danger active{% endif %}" href="{{ url_for('admin.import_hub') }}">
-        📥 Import Excel
+      <a class="nav-link px-3 py-1.5 fw-semibold small text-secondary rounded-2 transition-hover {% if request.endpoint and 'import' in request.endpoint %}bg-white shadow-xs text-primary active{% endif %}" href="{{ url_for('admin.import_hub') }}">
+        <i class="ph-bold ph-file-arrow-down me-1 text-success"></i>
+        <span>Import Dữ liệu</span>
       </a>
-      <a class="nav-link px-3 py-1.5 fw-bold small text-secondary {% if request.endpoint and 'exam_upload' in request.endpoint %}bg-white shadow-xs text-danger active{% endif %}" href="{{ url_for('admin.exam_upload') }}">
-        📤 Upload Đề thi
+      <a class="nav-link px-3 py-1.5 fw-semibold small text-secondary rounded-2 transition-hover {% if request.endpoint and 'exam_upload' in request.endpoint %}bg-white shadow-xs text-primary active{% endif %}" href="{{ url_for('admin.exam_upload') }}">
+        <i class="ph-bold ph-file-arrow-up me-1 text-primary"></i>
+        <span>Upload Đề thi</span>
       </a>
     </nav>
   </div>

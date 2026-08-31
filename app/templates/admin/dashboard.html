@@ -1,145 +1,192 @@
 {% extends "base.html" %}
-{% block title %}Tổng quan Quản trị · EnglishMate{% endblock %}
+{% block title %}Tổng quan Quản trị · EnglishMate Admin{% endblock %}
 
 {% block content %}
-<div class="container py-4">
-  {% include "admin/_nav.html" %}
+<div class="container-fluid max-w-6xl py-4">
 
   <div class="d-flex justify-content-between align-items-center mb-4">
     <div>
-      <h4 class="fw-800 text-dark mb-1">Thống kê hệ thống</h4>
-      <p class="text-secondary small mb-0">Dữ liệu thời gian thực của nền tảng EnglishMate</p>
+      <h4 class="fw-bold text-dark mb-1" style="font-size: 1.35rem; letter-spacing: -0.01em;">Thống kê hệ thống</h4>
+      <p class="text-secondary small mb-0">Dữ liệu thời gian thực được đồng bộ trực tiếp từ Database</p>
     </div>
-    <span class="badge bg-light text-muted border px-3 py-2 rounded-pill small fw-bold">Cập nhật tự động</span>
+    <span class="badge bg-light text-secondary border px-3 py-1.5 rounded-pill small fw-semibold d-inline-flex align-items-center gap-1.5">
+      <span class="rounded-circle bg-success" style="width: 6px; height: 6px;"></span>
+      <span>Đang hoạt động</span>
+    </span>
   </div>
 
   <!-- Stat Cards Grid -->
-  <div class="row g-3 mb-4">
-    <div class="col-6 col-md">
-      <div class="card border rounded-4 p-3 bg-white shadow-xs h-100">
+  <div class="row g-3 mb-5">
+    <!-- Users Stat -->
+    <div class="col-6 col-md-4 col-lg">
+      <div class="card-modern p-3.5 h-100">
         <div class="d-flex align-items-center gap-3">
-          <div class="menu-icon-box bg-primary-subtle text-primary" style="width: 42px; height: 42px; font-size: 1.1rem; display: inline-flex; align-items: center; justify-content: center;">
-            👥
+          <div class="rounded-3 bg-primary-subtle text-primary d-inline-flex align-items-center justify-content-center flex-shrink-0" style="width: 44px; height: 44px; font-size: 1.25rem;">
+            <i class="ph-bold ph-users"></i>
           </div>
           <div>
-            <h3 class="fw-800 text-dark mb-0" style="font-size: 1.5rem;">{{ stats.users }}</h3>
-            <span class="text-muted small" style="font-size: 0.78rem;">Người dùng</span>
+            <h3 class="fw-800 text-dark mb-0" style="font-size: 1.5rem; letter-spacing: -0.02em;">{{ stats.users }}</h3>
+            <span class="text-secondary small" style="font-size: 0.8rem;">Người dùng</span>
           </div>
         </div>
       </div>
     </div>
 
-    <div class="col-6 col-md">
-      <div class="card border rounded-4 p-3 bg-white shadow-xs h-100">
+    <!-- Lessons Stat -->
+    <div class="col-6 col-md-4 col-lg">
+      <div class="card-modern p-3.5 h-100">
         <div class="d-flex align-items-center gap-3">
-          <div class="menu-icon-box bg-purple-subtle text-purple" style="width: 42px; height: 42px; font-size: 1.1rem; display: inline-flex; align-items: center; justify-content: center;">
-            📚
+          <div class="rounded-3 bg-info-subtle text-info d-inline-flex align-items-center justify-content-center flex-shrink-0" style="width: 44px; height: 44px; font-size: 1.25rem;">
+            <i class="ph-bold ph-book-open"></i>
           </div>
           <div>
-            <h3 class="fw-800 text-dark mb-0" style="font-size: 1.5rem;">{{ stats.lessons }}</h3>
-            <span class="text-muted small" style="font-size: 0.78rem;">Bài học</span>
+            <h3 class="fw-800 text-dark mb-0" style="font-size: 1.5rem; letter-spacing: -0.02em;">{{ stats.lessons }}</h3>
+            <span class="text-secondary small" style="font-size: 0.8rem;">Bài học</span>
           </div>
         </div>
       </div>
     </div>
 
-    <div class="col-6 col-md">
-      <div class="card border rounded-4 p-3 bg-white shadow-xs h-100">
+    <!-- Words Stat -->
+    <div class="col-6 col-md-4 col-lg">
+      <div class="card-modern p-3.5 h-100">
         <div class="d-flex align-items-center gap-3">
-          <div class="menu-icon-box bg-success-subtle text-success" style="width: 42px; height: 42px; font-size: 1.1rem; display: inline-flex; align-items: center; justify-content: center;">
-            📖
+          <div class="rounded-3 bg-success-subtle text-success d-inline-flex align-items-center justify-content-center flex-shrink-0" style="width: 44px; height: 44px; font-size: 1.25rem;">
+            <i class="ph-bold ph-translate"></i>
           </div>
           <div>
-            <h3 class="fw-800 text-dark mb-0" style="font-size: 1.5rem;">{{ stats.words }}</h3>
-            <span class="text-muted small" style="font-size: 0.78rem;">Từ vựng</span>
+            <h3 class="fw-800 text-dark mb-0" style="font-size: 1.5rem; letter-spacing: -0.02em;">{{ stats.words }}</h3>
+            <span class="text-secondary small" style="font-size: 0.8rem;">Từ vựng</span>
           </div>
         </div>
       </div>
     </div>
 
-    <div class="col-6 col-md">
-      <div class="card border rounded-4 p-3 bg-white shadow-xs h-100">
+    <!-- Questions Stat -->
+    <div class="col-6 col-md-4 col-lg">
+      <div class="card-modern p-3.5 h-100">
         <div class="d-flex align-items-center gap-3">
-          <div class="menu-icon-box bg-warning-subtle text-warning" style="width: 42px; height: 42px; font-size: 1.1rem; display: inline-flex; align-items: center; justify-content: center;">
-            ❓
+          <div class="rounded-3 bg-warning-subtle text-warning d-inline-flex align-items-center justify-content-center flex-shrink-0" style="width: 44px; height: 44px; font-size: 1.25rem;">
+            <i class="ph-bold ph-question"></i>
           </div>
           <div>
-            <h3 class="fw-800 text-dark mb-0" style="font-size: 1.5rem;">{{ stats.questions }}</h3>
-            <span class="text-muted small" style="font-size: 0.78rem;">Câu hỏi Quiz</span>
+            <h3 class="fw-800 text-dark mb-0" style="font-size: 1.5rem; letter-spacing: -0.02em;">{{ stats.questions }}</h3>
+            <span class="text-secondary small" style="font-size: 0.8rem;">Câu hỏi Quiz</span>
           </div>
         </div>
       </div>
     </div>
 
-    <div class="col-6 col-md">
-      <div class="card border rounded-4 p-3 bg-white shadow-xs h-100">
+    <!-- Attempts Stat -->
+    <div class="col-6 col-md-4 col-lg">
+      <div class="card-modern p-3.5 h-100">
         <div class="d-flex align-items-center gap-3">
-          <div class="menu-icon-box bg-info-subtle text-info" style="width: 42px; height: 42px; font-size: 1.1rem; display: inline-flex; align-items: center; justify-content: center;">
-            📝
+          <div class="rounded-3 bg-purple-subtle text-purple d-inline-flex align-items-center justify-content-center flex-shrink-0" style="width: 44px; height: 44px; font-size: 1.25rem;">
+            <i class="ph-bold ph-clipboard-text"></i>
           </div>
           <div>
-            <h3 class="fw-800 text-dark mb-0" style="font-size: 1.5rem;">{{ stats.attempts }}</h3>
-            <span class="text-muted small" style="font-size: 0.78rem;">Lượt nộp bài</span>
+            <h3 class="fw-800 text-dark mb-0" style="font-size: 1.5rem; letter-spacing: -0.02em;">{{ stats.attempts }}</h3>
+            <span class="text-secondary small" style="font-size: 0.8rem;">Lượt nộp bài</span>
           </div>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- Quick Action Cards -->
-  <h5 class="fw-800 text-dark mb-3">Thao tác nhanh</h5>
+  <!-- Quick Action Cards Grid -->
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h5 class="fw-bold text-dark mb-0" style="font-size: 1.15rem;">Thao tác nhanh Quản trị</h5>
+  </div>
+
   <div class="row g-3">
-    <div class="col-md-4">
-      <a class="card border rounded-4 bg-white p-4 shadow-xs text-decoration-none transition-hover h-100" href="{{ url_for('admin.lesson_create') }}">
-        <div class="d-flex align-items-center gap-3">
-          <div class="rounded-3 bg-primary text-white d-flex align-items-center justify-content-center" style="width: 40px; height: 40px; font-size: 1.2rem; font-weight: bold;">
-            +
+    <!-- Action 1: Import Hub -->
+    <div class="col-md-6 col-lg-4">
+      <a class="card-modern p-4 text-decoration-none transition-hover h-100 d-block border-primary-subtle" href="{{ url_for('admin.import_hub') }}">
+        <div class="d-flex align-items-start gap-3">
+          <div class="rounded-3 bg-primary text-white d-inline-flex align-items-center justify-content-center flex-shrink-0" style="width: 42px; height: 42px; font-size: 1.25rem;">
+            <i class="ph-bold ph-file-arrow-down"></i>
           </div>
           <div>
-            <h6 class="fw-800 text-dark mb-0">Thêm bài học mới</h6>
-            <span class="text-muted small">Soạn nội dung ngữ pháp & bài đọc</span>
+            <div class="d-flex align-items-center gap-1.5 mb-1">
+              <h6 class="fw-bold text-dark mb-0" style="font-size: 0.98rem;">Import Dữ liệu Học tập</h6>
+              <span class="badge bg-success-subtle text-success rounded-pill font-semibold" style="font-size: 0.68rem;">Excel / JSON</span>
+            </div>
+            <span class="text-secondary small d-block" style="font-size: 0.84rem; line-height: 1.45;">Nạp hàng loạt từ vựng, ngữ pháp, bài học và câu hỏi từ file vào Database.</span>
           </div>
         </div>
       </a>
     </div>
 
-    <div class="col-md-4">
-      <a class="card border rounded-4 bg-white p-4 shadow-xs text-decoration-none transition-hover h-100" href="{{ url_for('admin.vocabulary_create') }}">
-        <div class="d-flex align-items-center gap-3">
-          <div class="rounded-3 bg-success text-white d-flex align-items-center justify-content-center" style="width: 40px; height: 40px; font-size: 1.2rem; font-weight: bold;">
-            +
+    <!-- Action 2: Add Lesson -->
+    <div class="col-md-6 col-lg-4">
+      <a class="card-modern p-4 text-decoration-none transition-hover h-100 d-block" href="{{ url_for('admin.lesson_create') }}">
+        <div class="d-flex align-items-start gap-3">
+          <div class="rounded-3 bg-info text-white d-inline-flex align-items-center justify-content-center flex-shrink-0" style="width: 42px; height: 42px; font-size: 1.25rem;">
+            <i class="ph-bold ph-plus-circle"></i>
           </div>
           <div>
-            <h6 class="fw-800 text-dark mb-0">Thêm từ vựng mới</h6>
-            <span class="text-muted small">Nạp từ mới, phát âm & ví dụ</span>
+            <h6 class="fw-bold text-dark mb-1" style="font-size: 0.98rem;">Thêm bài học mới</h6>
+            <span class="text-secondary small d-block" style="font-size: 0.84rem; line-height: 1.45;">Soạn nội dung bài học, ngữ pháp và phân loại kỹ năng trực tiếp.</span>
           </div>
         </div>
       </a>
     </div>
 
-    <div class="col-md-4">
-      <a class="card border rounded-4 bg-white p-4 shadow-xs text-decoration-none transition-hover h-100" href="{{ url_for('admin.users') }}">
-        <div class="d-flex align-items-center gap-3">
-          <div class="rounded-3 bg-danger text-white d-flex align-items-center justify-content-center" style="width: 40px; height: 40px; font-size: 1.2rem; font-weight: bold;">
-            👥
+    <!-- Action 3: Add Vocabulary -->
+    <div class="col-md-6 col-lg-4">
+      <a class="card-modern p-4 text-decoration-none transition-hover h-100 d-block" href="{{ url_for('admin.vocabulary_create') }}">
+        <div class="d-flex align-items-start gap-3">
+          <div class="rounded-3 bg-success text-white d-inline-flex align-items-center justify-content-center flex-shrink-0" style="width: 42px; height: 42px; font-size: 1.25rem;">
+            <i class="ph-bold ph-plus-circle"></i>
           </div>
           <div>
-            <h6 class="fw-800 text-dark mb-0">Quản lý người dùng</h6>
-            <span class="text-muted small">Phân quyền, khóa/mở tài khoản</span>
+            <h6 class="fw-bold text-dark mb-1" style="font-size: 0.98rem;">Thêm từ vựng mới</h6>
+            <span class="text-secondary small d-block" style="font-size: 0.84rem; line-height: 1.45;">Thêm thủ công từ vựng, phiên âm IPA, nghĩa tiếng Việt và câu ví dụ.</span>
           </div>
         </div>
       </a>
     </div>
 
-    <div class="col-md-4">
-      <a class="card border rounded-4 bg-white p-4 shadow-xs text-decoration-none transition-hover h-100" href="{{ url_for('admin.exam_upload') }}">
-        <div class="d-flex align-items-center gap-3">
-          <div class="rounded-3 bg-info text-white d-flex align-items-center justify-content-center" style="width: 40px; height: 40px; font-size: 1.2rem; font-weight: bold;">
-            📤
+    <!-- Action 4: User Management -->
+    <div class="col-md-6 col-lg-4">
+      <a class="card-modern p-4 text-decoration-none transition-hover h-100 d-block" href="{{ url_for('admin.users') }}">
+        <div class="d-flex align-items-start gap-3">
+          <div class="rounded-3 bg-primary-subtle text-primary d-inline-flex align-items-center justify-content-center flex-shrink-0" style="width: 42px; height: 42px; font-size: 1.25rem;">
+            <i class="ph-bold ph-users-three"></i>
           </div>
           <div>
-            <h6 class="fw-800 text-dark mb-0">Upload Đề thi mới</h6>
-            <span class="text-muted small">Nhập hàng loạt qua Excel/JSON</span>
+            <h6 class="fw-bold text-dark mb-1" style="font-size: 0.98rem;">Quản lý người dùng</h6>
+            <span class="text-secondary small d-block" style="font-size: 0.84rem; line-height: 1.45;">Xem danh sách học viên, phân quyền vai trò và trạng thái tài khoản.</span>
+          </div>
+        </div>
+      </a>
+    </div>
+
+    <!-- Action 5: Roles & Permissions -->
+    <div class="col-md-6 col-lg-4">
+      <a class="card-modern p-4 text-decoration-none transition-hover h-100 d-block" href="{{ url_for('admin.roles') }}">
+        <div class="d-flex align-items-start gap-3">
+          <div class="rounded-3 bg-purple-subtle text-purple d-inline-flex align-items-center justify-content-center flex-shrink-0" style="width: 42px; height: 42px; font-size: 1.25rem;">
+            <i class="ph-bold ph-shield-check"></i>
+          </div>
+          <div>
+            <h6 class="fw-bold text-dark mb-1" style="font-size: 0.98rem;">Vai trò & Phân quyền</h6>
+            <span class="text-secondary small d-block" style="font-size: 0.84rem; line-height: 1.45;">Cấu hình các quyền hạn Admin, Teacher, VIP Member theo chuẩn RBAC.</span>
+          </div>
+        </div>
+      </a>
+    </div>
+
+    <!-- Action 6: Upload Exams -->
+    <div class="col-md-6 col-lg-4">
+      <a class="card-modern p-4 text-decoration-none transition-hover h-100 d-block" href="{{ url_for('admin.exam_upload') }}">
+        <div class="d-flex align-items-start gap-3">
+          <div class="rounded-3 bg-danger-subtle text-danger d-inline-flex align-items-center justify-content-center flex-shrink-0" style="width: 42px; height: 42px; font-size: 1.25rem;">
+            <i class="ph-bold ph-file-arrow-up"></i>
+          </div>
+          <div>
+            <h6 class="fw-bold text-dark mb-1" style="font-size: 0.98rem;">Quản lý Đề thi TOEIC</h6>
+            <span class="text-secondary small d-block" style="font-size: 0.84rem; line-height: 1.45;">Upload đề thi trọn gói TOEIC Full/Mini Test và kiểm soát đề thi thử.</span>
           </div>
         </div>
       </a>

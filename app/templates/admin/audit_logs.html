@@ -2,82 +2,93 @@
 {% block title %}Nhật ký Kiểm tra Audit Logs · EnglishMate Admin{% endblock %}
 
 {% block content %}
-<div class="container py-4">
-  {% include "admin/_nav.html" %}
+<div class="container-fluid max-w-6xl py-4">
 
-  <div class="card border rounded-4 bg-white p-4 shadow-xs">
-    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
+  <div class="card-modern p-4">
+    <!-- Header with Filters -->
+    <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3 mb-4">
       <div>
-        <h4 class="fw-800 text-dark mb-1">Nhật ký Kiểm tra Admin Audit Logs</h4>
-        <p class="text-secondary small mb-0">Theo dõi toàn bộ các thao tác quản trị, thay đổi quyền hạn và trạng thái hệ thống.</p>
+        <h4 class="fw-bold text-dark mb-1" style="font-size: 1.35rem; letter-spacing: -0.01em;">Nhật ký Kiểm tra Hệ thống (Audit Logs)</h4>
+        <p class="text-secondary small mb-0">Theo dõi chi tiết các thao tác quản trị, nạp dữ liệu, thay đổi vai trò và phân quyền</p>
       </div>
 
-      <form method="get" class="d-flex flex-wrap gap-2" style="max-width: 450px;">
-        <select name="action" class="form-select rounded-pill px-3" style="max-width: 170px;">
+      <form method="get" class="d-flex flex-wrap gap-2" style="max-width: 480px;">
+        <select name="action" class="form-select form-select-sm border shadow-none" style="max-width: 180px; font-size: 0.85rem;">
           <option value="">-- Tất cả hành động --</option>
           {% for a in actions %}
           <option value="{{ a }}" {% if action_filter == a %}selected{% endif %}>{{ a }}</option>
           {% endfor %}
         </select>
-        <input type="text" name="q" value="{{ search }}" class="form-control rounded-pill px-3" placeholder="Tìm người thực hiện, IP...">
-        <button type="submit" class="btn btn-dark rounded-pill px-3">Lọc</button>
+        <div class="input-group input-group-sm flex-grow-1">
+          <span class="input-group-text bg-white border-end-0 text-muted ps-2.5">
+            <i class="ph-bold ph-magnifying-glass"></i>
+          </span>
+          <input type="text" name="q" value="{{ search }}" class="form-control border-start-0 ps-1" placeholder="Tìm người thực hiện, IP...">
+          <button type="submit" class="btn btn-dark fw-semibold px-3">Lọc</button>
+        </div>
       </form>
     </div>
 
-    <div class="table-responsive">
-      <table class="table table-hover align-middle border-top">
-        <thead class="bg-light small text-uppercase text-muted">
+    <!-- Table -->
+    <div class="table-responsive border rounded-3 overflow-hidden">
+      <table class="table table-hover align-middle mb-0" style="font-size: 0.88rem;">
+        <thead class="table-light">
           <tr>
-            <th class="py-3 ps-3">ID & Thời gian</th>
-            <th class="py-3">Người thực hiện</th>
-            <th class="py-3 text-center">Hành động (Action)</th>
-            <th class="py-3">Chi tiết & Đối tượng</th>
-            <th class="py-3 text-end pe-3">Địa chỉ IP</th>
+            <th class="py-3 ps-3" style="width: 180px;">Thời gian</th>
+            <th class="py-3" style="min-width: 160px;">Người thực hiện</th>
+            <th class="py-3 text-center" style="width: 170px;">Hành động (Action)</th>
+            <th class="py-3" style="min-width: 280px;">Chi tiết & Đối tượng</th>
+            <th class="py-3 text-end pe-3" style="width: 140px;">Địa chỉ IP</th>
           </tr>
         </thead>
         <tbody>
           {% for log in logs %}
           <tr>
             <td class="ps-3">
-              <span class="fw-bold text-dark d-block">#{{ log.id }}</span>
-              <small class="text-muted">{{ log.created_at.strftime('%H:%M:%S %d/%m/%Y') if log.created_at else '---' }}</small>
+              <span class="fw-bold text-dark d-block font-monospace small">#{{ log.id }}</span>
+              <small class="text-muted" style="font-size: 0.78rem;">
+                <i class="ph-bold ph-clock me-1"></i>{{ log.created_at.strftime('%H:%M:%S %d/%m/%Y') if log.created_at else '---' }}
+              </small>
             </td>
             <td>
               {% if log.user %}
               <div class="d-flex align-items-center gap-2">
-                <div class="profile-avatar-circle" style="width: 28px; height: 28px; font-size: 0.75rem;">
+                <div class="rounded-circle bg-primary-subtle text-primary fw-bold d-inline-flex align-items-center justify-content-center" style="width: 28px; height: 28px; font-size: 0.75rem;">
                   {{ log.user.username[0].upper() }}
                 </div>
                 <span class="fw-semibold text-dark small">{{ log.user.username }}</span>
               </div>
               {% else %}
-              <span class="text-muted small">Hệ thống</span>
+              <span class="badge bg-light text-muted border font-semibold">Hệ thống</span>
               {% endif %}
             </td>
             <td class="text-center">
-              {% if 'CREATE' in log.action %}
-              <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-2.5 py-1">{{ log.action }}</span>
-              {% elif 'DELETE' in log.action %}
-              <span class="badge bg-danger-subtle text-danger border border-danger-subtle rounded-pill px-2.5 py-1">{{ log.action }}</span>
+              {% if 'CREATE' in log.action or 'IMPORT' in log.action %}
+              <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-2.5 py-1 font-semibold">{{ log.action }}</span>
+              {% elif 'DELETE' in log.action or 'LOCK' in log.action %}
+              <span class="badge bg-danger-subtle text-danger border border-danger-subtle rounded-pill px-2.5 py-1 font-semibold">{{ log.action }}</span>
               {% elif 'ASSIGN' in log.action or 'ROLE' in log.action %}
-              <span class="badge bg-warning-subtle text-warning border border-warning-subtle rounded-pill px-2.5 py-1 text-dark">{{ log.action }}</span>
+              <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle rounded-pill px-2.5 py-1 font-semibold">{{ log.action }}</span>
               {% else %}
-              <span class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill px-2.5 py-1">{{ log.action }}</span>
+              <span class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill px-2.5 py-1 font-semibold">{{ log.action }}</span>
               {% endif %}
             </td>
             <td>
               <span class="text-dark small d-block">{{ log.details or '---' }}</span>
               {% if log.target_type %}
-              <small class="text-muted">Đối tượng: {{ log.target_type }} #{{ log.target_id or '' }}</small>
+              <small class="text-muted font-monospace" style="font-size: 0.75rem;">Target: {{ log.target_type }} #{{ log.target_id or '' }}</small>
               {% endif %}
             </td>
             <td class="text-end pe-3">
-              <span class="badge bg-light text-secondary border font-monospace">{{ log.ip_address or '127.0.0.1' }}</span>
+              <span class="badge bg-light text-secondary border font-monospace" style="font-size: 0.76rem;">{{ log.ip_address or '127.0.0.1' }}</span>
             </td>
           </tr>
           {% else %}
           <tr>
-            <td colspan="5" class="text-center py-4 text-muted">Chưa có nhật ký kiểm tra nào.</td>
+            <td colspan="5" class="text-center py-5 text-muted">
+              <i class="ph-bold ph-clock-counter-clockwise fs-2 d-block mb-2 text-secondary opacity-50"></i>
+              <span>Chưa có nhật ký kiểm tra nào.</span>
+            </td>
           </tr>
           {% endfor %}
         </tbody>

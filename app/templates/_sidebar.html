@@ -4,43 +4,55 @@
             {% if current_user.is_authenticated and current_user.is_admin %}
             <!-- ADMIN MANAGEMENT SECTION (FOR ADMINS) -->
             <li class="nav-item mb-1">
-                <span class="sidebar-heading text-danger d-flex align-items-center gap-1.5">
+                <span class="sidebar-heading text-primary d-flex align-items-center gap-1.5 font-semibold" style="font-size: 0.76rem; letter-spacing: 0.05em;">
                     <i class="ph ph-shield-check"></i> Quản trị hệ thống
                 </span>
             </li>
             <li class="nav-item">
                 <a class="nav-link-modern {% if request.path == url_for('admin.dashboard') %}active{% endif %}" href="{{ url_for('admin.dashboard') }}">
-                    <i class="ph ph-chart-pie-slice"></i>
+                    <i class="ph ph-gauge"></i>
                     <span>Tổng quan Admin</span>
                 </a>
             </li>
             <li class="nav-item">
                 <a class="nav-link-modern {% if request.path.startswith('/admin/lessons') %}active{% endif %}" href="{{ url_for('admin.lessons') }}">
-                    <i class="ph ph-books"></i>
-                    <span>Quản lý bài học</span>
+                    <i class="ph ph-book-open"></i>
+                    <span>Quản lý Bài học</span>
                 </a>
             </li>
             <li class="nav-item">
                 <a class="nav-link-modern {% if request.path.startswith('/admin/vocabulary') %}active{% endif %}" href="{{ url_for('admin.vocabulary') }}">
-                    <i class="ph ph-book-open-text"></i>
-                    <span>Quản lý từ vựng</span>
+                    <i class="ph ph-translate"></i>
+                    <span>Quản lý Từ vựng</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link-modern {% if request.path.startswith('/admin/exams') or request.path.startswith('/admin/exam-upload') %}active{% endif %}" href="{{ url_for('admin.exams_list') }}">
+                    <i class="ph ph-certificate"></i>
+                    <span>Quản lý Đề thi</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link-modern {% if request.path.startswith('/admin/import') %}active{% endif %}" href="{{ url_for('admin.import_hub') }}">
+                    <i class="ph ph-file-arrow-down text-success"></i>
+                    <span>Import Dữ liệu</span>
                 </a>
             </li>
             <li class="nav-item">
                 <a class="nav-link-modern {% if request.path == url_for('admin.users') %}active{% endif %}" href="{{ url_for('admin.users') }}">
                     <i class="ph ph-users"></i>
-                    <span>Quản lý người dùng</span>
+                    <span>Người dùng</span>
                 </a>
             </li>
             <li class="nav-item">
                 <a class="nav-link-modern {% if request.path == url_for('admin.roles') %}active{% endif %}" href="{{ url_for('admin.roles') }}">
-                    <i class="ph ph-shield-chevron"></i>
-                    <span>Vai trò & Phân quyền</span>
+                    <i class="ph ph-user-gear"></i>
+                    <span>Vai trò & Quyền</span>
                 </a>
             </li>
             <li class="nav-item mb-2">
                 <a class="nav-link-modern {% if request.path == url_for('admin.audit_logs') %}active{% endif %}" href="{{ url_for('admin.audit_logs') }}">
-                    <i class="ph ph-receipt"></i>
+                    <i class="ph ph-clock-counter-clockwise"></i>
                     <span>Nhật ký Audit</span>
                 </a>
             </li>

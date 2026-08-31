@@ -2,69 +2,84 @@
 {% block title %}Quản lý Từ vựng · EnglishMate Admin{% endblock %}
 
 {% block content %}
-<div class="container py-4">
-  {% include "admin/_nav.html" %}
+<div class="container-fluid max-w-6xl py-4">
 
-  <div class="card border rounded-4 bg-white p-4 shadow-xs">
+  <div class="card-modern p-4">
+    <!-- Header with Search & Actions -->
     <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
       <div>
-        <h4 class="fw-800 text-dark mb-1">Kho Từ vựng System</h4>
-        <p class="text-secondary small mb-0">Tất cả {{ words|length }} từ vựng sẵn sàng cho học viên luyện tập</p>
+        <h4 class="fw-bold text-dark mb-1" style="font-size: 1.35rem; letter-spacing: -0.01em;">Kho Từ vựng Hệ thống</h4>
+        <p class="text-secondary small mb-0">Tất cả {{ words|length }} từ vựng đang phục vụ học viên ôn luyện</p>
       </div>
 
-      <div class="d-flex gap-2">
-        <form method="get" class="d-flex gap-2" style="max-width: 280px;">
-          <input type="text" name="q" value="{{ search }}" class="form-control rounded-pill px-3" placeholder="Tìm từ vựng...">
-          <button type="submit" class="btn btn-dark rounded-pill px-3">Tìm</button>
+      <div class="d-flex gap-2 flex-wrap">
+        <form method="get" class="d-flex gap-1.5" style="min-width: 260px;">
+          <div class="input-group input-group-sm">
+            <span class="input-group-text bg-white border-end-0 text-muted ps-2.5">
+              <i class="ph-bold ph-magnifying-glass"></i>
+            </span>
+            <input type="text" name="q" value="{{ search }}" class="form-control border-start-0 ps-1" placeholder="Tìm từ vựng...">
+            <button type="submit" class="btn btn-dark fw-semibold px-3">Tìm</button>
+          </div>
         </form>
-        <a class="btn btn-success rounded-pill px-4 fw-bold shadow-sm" href="{{ url_for('admin.vocabulary_create') }}">
-          + Thêm từ mới
+
+        <a class="btn btn-success fw-bold px-3 py-1.5 rounded-3 shadow-xs d-inline-flex align-items-center gap-1.5" href="{{ url_for('admin.vocabulary_create') }}" style="font-size: 0.88rem;">
+          <i class="ph-bold ph-plus-circle fs-5"></i>
+          <span>Thêm từ mới</span>
         </a>
       </div>
     </div>
 
-    <div class="table-responsive">
-      <table class="table table-hover align-middle border-top">
-        <thead class="bg-light small text-uppercase text-muted">
+    <!-- Table -->
+    <div class="table-responsive border rounded-3 overflow-hidden">
+      <table class="table table-hover align-middle mb-0" style="font-size: 0.88rem;">
+        <thead class="table-light">
           <tr>
-            <th class="py-3 ps-3">Từ vựng & Phiên âm</th>
-            <th class="py-3">Nghĩa tiếng Việt</th>
-            <th class="py-3 text-center">Chủ đề</th>
-            <th class="py-3 text-center">Cấp độ</th>
-            <th class="py-3 text-end pe-3">Hành động</th>
+            <th class="py-3 ps-3" style="min-width: 220px;">Từ vựng & Phiên âm</th>
+            <th class="py-3" style="min-width: 260px;">Nghĩa tiếng Việt & Ví dụ</th>
+            <th class="py-3 text-center" style="width: 130px;">Chủ đề</th>
+            <th class="py-3 text-center" style="width: 100px;">Cấp độ</th>
+            <th class="py-3 text-end pe-3" style="min-width: 140px;">Hành động</th>
           </tr>
         </thead>
         <tbody>
           {% for w in words %}
           <tr>
             <td class="ps-3">
-              <div>
-                <span class="fw-bold text-dark d-block leading-tight font-monospace" style="font-size: 1.05rem;">{{ w.word }}</span>
-                <small class="text-primary font-monospace">{{ w.pronunciation }}</small>
-                <span class="badge bg-light text-muted border ms-1 font-monospace" style="font-size: 0.65rem;">{{ w.part_of_speech }}</span>
+              <div class="d-flex align-items-start gap-2.5">
+                <div class="rounded-3 bg-success-subtle text-success d-inline-flex align-items-center justify-content-center flex-shrink-0 mt-0.5" style="width: 32px; height: 32px; font-size: 1rem;">
+                  <i class="ph-bold ph-translate"></i>
+                </div>
+                <div>
+                  <span class="fw-bold text-dark d-block leading-tight font-monospace" style="font-size: 1rem;">{{ w.word }}</span>
+                  <small class="text-primary font-monospace">{{ w.pronunciation }}</small>
+                  <span class="badge bg-light text-muted border ms-1 font-monospace" style="font-size: 0.68rem;">{{ w.part_of_speech }}</span>
+                </div>
               </div>
             </td>
             <td>
               <div>
-                <span class="fw-bold text-dark d-block small">{{ w.meaning_vi }}</span>
+                <span class="fw-semibold text-dark d-block small">{{ w.meaning_vi }}</span>
                 <small class="text-muted text-truncate d-block" style="max-width: 320px;">{{ w.example_en }}</small>
               </div>
             </td>
             <td class="text-center">
-              <span class="badge bg-purple-subtle text-purple border border-purple-subtle rounded-pill px-2.5 py-1">{{ w.topic }}</span>
+              <span class="badge bg-purple-subtle text-purple border border-purple-subtle rounded-pill px-2.5 py-1 font-semibold">{{ w.topic }}</span>
             </td>
             <td class="text-center">
-              <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-2.5 py-1">{{ w.level }}</span>
+              <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-2.5 py-1 font-semibold">{{ w.level }}</span>
             </td>
             <td class="text-end pe-3">
-              <div class="d-inline-flex gap-2">
-                <a class="btn btn-sm btn-outline-primary rounded-pill px-3" href="{{ url_for('admin.vocabulary_edit', word_id=w.id) }}">
-                  ✏️ Sửa
+              <div class="d-inline-flex gap-1.5">
+                <a class="btn btn-sm btn-light border fw-semibold text-primary shadow-2xs d-inline-flex align-items-center gap-1 px-2.5 py-1" href="{{ url_for('admin.vocabulary_edit', word_id=w.id) }}">
+                  <i class="ph-bold ph-pencil-simple"></i>
+                  <span>Sửa</span>
                 </a>
-                <form method="post" action="{{ url_for('admin.vocabulary_delete', word_id=w.id) }}" onsubmit="return confirm('Xóa từ vựng này khỏi kho hệ thống?')" class="m-0">
+                <form method="post" action="{{ url_for('admin.vocabulary_delete', word_id=w.id) }}" onsubmit="return confirm('Xóa từ vựng này khỏi kho hệ thống?')" class="m-0 d-inline">
                   {{ form.csrf_token }}
-                  <button type="submit" class="btn btn-sm btn-outline-danger rounded-pill px-3">
-                    🗑️ Xóa
+                  <button type="submit" class="btn btn-sm btn-light border fw-semibold text-danger shadow-2xs d-inline-flex align-items-center gap-1 px-2.5 py-1">
+                    <i class="ph-bold ph-trash"></i>
+                    <span>Xóa</span>
                   </button>
                 </form>
               </div>
@@ -72,7 +87,10 @@
           </tr>
           {% else %}
           <tr>
-            <td colspan="5" class="text-center py-4 text-muted">Chưa tìm thấy từ vựng nào trong kho.</td>
+            <td colspan="5" class="text-center py-5 text-muted">
+              <i class="ph-bold ph-folder-notch-open fs-2 d-block mb-2 text-secondary opacity-50"></i>
+              <span>Chưa tìm thấy từ vựng nào trong kho.</span>
+            </td>
           </tr>
           {% endfor %}
         </tbody>

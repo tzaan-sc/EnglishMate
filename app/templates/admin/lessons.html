@@ -2,64 +2,73 @@
 {% block title %}Quản lý Bài học · EnglishMate Admin{% endblock %}
 
 {% block content %}
-<div class="container py-4">
-  {% include "admin/_nav.html" %}
+<div class="container-fluid max-w-6xl py-4">
 
-  <div class="card border rounded-4 bg-white p-4 shadow-xs">
+  <div class="card-modern p-4">
+    <!-- Header with Action -->
     <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
       <div>
-        <h4 class="fw-800 text-dark mb-1">Danh sách Bài học</h4>
-        <p class="text-secondary small mb-0">Tất cả {{ lessons|length }} bài học trên hệ thống EnglishMate</p>
+        <h4 class="fw-bold text-dark mb-1" style="font-size: 1.35rem; letter-spacing: -0.01em;">Danh sách Bài học</h4>
+        <p class="text-secondary small mb-0">Tất cả {{ lessons|length }} bài học đang có trên hệ thống EnglishMate</p>
       </div>
 
-      <a class="btn btn-primary rounded-pill px-4 fw-bold shadow-sm" href="{{ url_for('admin.lesson_create') }}">
-        + Thêm bài học mới
+      <a class="btn btn-primary fw-bold px-3.5 py-2 rounded-3 shadow-xs d-inline-flex align-items-center gap-1.5" href="{{ url_for('admin.lesson_create') }}" style="font-size: 0.88rem;">
+        <i class="ph-bold ph-plus-circle fs-5"></i>
+        <span>Thêm bài học mới</span>
       </a>
     </div>
 
-    <div class="table-responsive">
-      <table class="table table-hover align-middle border-top">
-        <thead class="bg-light small text-uppercase text-muted">
+    <!-- Table -->
+    <div class="table-responsive border rounded-3 overflow-hidden">
+      <table class="table table-hover align-middle mb-0" style="font-size: 0.88rem;">
+        <thead class="table-light">
           <tr>
-            <th class="py-3 ps-3">Tên bài học & Mô tả</th>
-            <th class="py-3 text-center">Cấp độ</th>
-            <th class="py-3 text-center">Kỹ năng</th>
-            <th class="py-3 text-center">Trạng thái</th>
-            <th class="py-3 text-end pe-3">Hành động</th>
+            <th class="py-3 ps-3" style="min-width: 280px;">Tên bài học & Mô tả</th>
+            <th class="py-3 text-center" style="width: 100px;">Cấp độ</th>
+            <th class="py-3 text-center" style="width: 120px;">Kỹ năng</th>
+            <th class="py-3 text-center" style="width: 120px;">Trạng thái</th>
+            <th class="py-3 text-end pe-3" style="min-width: 140px;">Hành động</th>
           </tr>
         </thead>
         <tbody>
           {% for lesson in lessons %}
           <tr>
             <td class="ps-3">
-              <div>
-                <span class="fw-bold text-dark d-block lead-tight">{{ lesson.title }}</span>
-                <small class="text-muted text-truncate d-block" style="max-width: 380px;">{{ lesson.short_description }}</small>
+              <div class="d-flex align-items-start gap-2.5">
+                <div class="rounded-3 bg-info-subtle text-info d-inline-flex align-items-center justify-content-center flex-shrink-0 mt-0.5" style="width: 32px; height: 32px; font-size: 1rem;">
+                  <i class="ph-bold ph-book-open"></i>
+                </div>
+                <div>
+                  <span class="fw-bold text-dark d-block lead-tight">{{ lesson.title }}</span>
+                  <small class="text-muted text-truncate d-block" style="max-width: 380px;">{{ lesson.short_description }}</small>
+                </div>
               </div>
             </td>
             <td class="text-center">
-              <span class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill px-2.5 py-1">{{ lesson.level }}</span>
+              <span class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill px-2.5 py-1 font-semibold">{{ lesson.level }}</span>
             </td>
             <td class="text-center">
-              <span class="badge bg-purple-subtle text-purple border border-purple-subtle rounded-pill px-2.5 py-1">{{ lesson.skill }}</span>
+              <span class="badge bg-purple-subtle text-purple border border-purple-subtle rounded-pill px-2.5 py-1 font-semibold">{{ lesson.skill }}</span>
             </td>
             <td class="text-center">
               {% if lesson.is_active %}
-              <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-2.5 py-1">Đang mở</span>
+              <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-2.5 py-1 font-semibold">Đang mở</span>
               {% else %}
-              <span class="badge bg-secondary-subtle text-secondary border rounded-pill px-2.5 py-1">Đã ẩn</span>
+              <span class="badge bg-secondary-subtle text-secondary border rounded-pill px-2.5 py-1 font-semibold">Đã ẩn</span>
               {% endif %}
             </td>
             <td class="text-end pe-3">
-              <div class="d-inline-flex gap-2">
-                <a class="btn btn-sm btn-outline-primary rounded-pill px-3" href="{{ url_for('admin.lesson_edit', lesson_id=lesson.id) }}">
-                  ✏️ Sửa
+              <div class="d-inline-flex gap-1.5">
+                <a class="btn btn-sm btn-light border fw-semibold text-primary shadow-2xs d-inline-flex align-items-center gap-1 px-2.5 py-1" href="{{ url_for('admin.lesson_edit', lesson_id=lesson.id) }}">
+                  <i class="ph-bold ph-pencil-simple"></i>
+                  <span>Sửa</span>
                 </a>
                 {% if lesson.is_active %}
-                <form method="post" action="{{ url_for('admin.lesson_delete', lesson_id=lesson.id) }}" onsubmit="return confirm('Bạn có chắc chắn muốn ẩn bài học này không?')" class="m-0">
+                <form method="post" action="{{ url_for('admin.lesson_delete', lesson_id=lesson.id) }}" onsubmit="return confirm('Bạn có chắc chắn muốn ẩn bài học này không?')" class="m-0 d-inline">
                   {{ form.csrf_token }}
-                  <button type="submit" class="btn btn-sm btn-outline-danger rounded-pill px-3">
-                    🗑️ Ẩn
+                  <button type="submit" class="btn btn-sm btn-light border fw-semibold text-danger shadow-2xs d-inline-flex align-items-center gap-1 px-2.5 py-1">
+                    <i class="ph-bold ph-eye-slash"></i>
+                    <span>Ẩn</span>
                   </button>
                 </form>
                 {% endif %}
@@ -68,7 +77,10 @@
           </tr>
           {% else %}
           <tr>
-            <td colspan="5" class="text-center py-4 text-muted">Chưa có bài học nào trong hệ thống.</td>
+            <td colspan="5" class="text-center py-5 text-muted">
+              <i class="ph-bold ph-folder-notch-open fs-2 d-block mb-2 text-secondary opacity-50"></i>
+              <span>Chưa có bài học nào trong hệ thống.</span>
+            </td>
           </tr>
           {% endfor %}
         </tbody>

@@ -1,195 +1,195 @@
-{% extends "admin/base.html" %}
+{% extends "base.html" %}
+{% block title %}Upload Đề Thi · EnglishMate Admin{% endblock %}
 
 {% block content %}
-<div class="container-fluid py-4">
-    <div class="row mb-4">
-        <div class="col-12 d-flex justify-content-between align-items-center">
-            <h1 class="h3 mb-0 text-gray-800">Upload Đề Thi (Excel / JSON)</h1>
-            <a href="{{ url_for('admin.dashboard') }}" class="btn btn-outline-secondary">Quay lại Dashboard</a>
-        </div>
-    </div>
+<div class="container-fluid max-w-6xl py-4">
 
-    <div class="row">
-        <div class="col-lg-5">
-            <div class="card shadow mb-4">
-                <div class="card-header py-3">
-                    <h6 class="m-0 font-weight-bold text-primary">Cấu hình Đề thi</h6>
-                </div>
-                <div class="card-body">
-                    <form action="{{ url_for('admin.exam_upload') }}" method="post" enctype="multipart/form-data" id="uploadForm">
-                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                        
-                        <div class="mb-3">
-                            <label class="form-label fw-bold">Chứng chỉ / Loại đề</label>
-                            <input type="text" class="form-control" name="category" placeholder="Ví dụ: TOEIC, IELTS, THPT" required>
-                        </div>
-                        
-                        <div class="mb-3">
-                            <label class="form-label fw-bold">Tên bài thi</label>
-                            <input type="text" class="form-control" name="title" placeholder="Ví dụ: ETS 2024 Test 1" required>
-                        </div>
-                        
-                        <div class="mb-4">
-                            <label class="form-label fw-bold">Thời gian làm bài (Phút)</label>
-                            <input type="number" class="form-control" name="duration" value="120" min="1" required>
-                        </div>
-                        
-                        <div class="mb-3">
-                            <label class="form-label fw-bold">File dữ liệu (Excel hoặc JSON)</label>
-                            <div class="border border-2 border-primary border-dashed rounded p-4 text-center bg-light" id="dropZone" style="cursor: pointer;">
-                                <i class="bi bi-cloud-arrow-up fs-1 text-primary mb-2"></i>
-                                <p class="mb-0">Kéo thả file vào đây hoặc click để chọn file</p>
-                                <small class="text-muted">Hỗ trợ định dạng .xlsx, .xls, .json</small>
-                                <input type="file" name="file" id="fileInput" class="d-none" accept=".xlsx,.xls,.json" required>
-                            </div>
-                            <div id="fileInfo" class="mt-2 text-success fw-bold d-none"></div>
-                        </div>
-
-                        <button type="submit" class="btn btn-primary w-100 py-2 mt-2" id="submitBtn" disabled>
-                            Xác nhận Lưu vào Hệ thống
-                        </button>
-                    </form>
-                </div>
-            </div>
-        </div>
-        
-        <div class="col-lg-7">
-            <div class="card shadow mb-4 h-100">
-                <div class="card-header py-3 d-flex justify-content-between align-items-center">
-                    <h6 class="m-0 font-weight-bold text-info">Xem trước dữ liệu (Preview)</h6>
-                    <span class="badge bg-secondary" id="totalRows">Chưa có dữ liệu</span>
-                </div>
-                <div class="card-body p-0">
-                    <div id="previewArea" class="p-4 text-center text-muted h-100 d-flex flex-column justify-content-center align-items-center">
-                        <i class="bi bi-table fs-1 mb-3 text-secondary opacity-50"></i>
-                        <p>Dữ liệu mẫu của 10 câu hỏi đầu tiên sẽ hiển thị tại đây sau khi bạn chọn file.</p>
-                    </div>
-                    
-                    <div id="tableWrapper" class="table-responsive d-none h-100 p-2" style="max-height: 500px; overflow-y: auto;">
-                        <table class="table table-bordered table-sm table-striped" style="font-size: 0.85rem;">
-                            <thead class="table-dark" id="tableHead">
-                                <!-- Headers go here -->
-                            </thead>
-                            <tbody id="tableBody">
-                                <!-- Data goes here -->
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-        </div>
+  <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
+    <div>
+      <h4 class="fw-bold text-dark mb-1" style="font-size: 1.35rem; letter-spacing: -0.01em;">Upload Đề Thi Trọn Gói (Excel / JSON)</h4>
+      <p class="text-secondary small mb-0">Nạp đề thi hoàn chỉnh kèm danh sách câu hỏi, đáp án và giải thích chi tiết</p>
     </div>
+    <a href="{{ url_for('admin.exams_list') }}" class="btn btn-light border fw-semibold text-secondary px-3 py-2 rounded-3 shadow-2xs d-inline-flex align-items-center gap-1.5" style="font-size: 0.88rem;">
+      <i class="ph-bold ph-arrow-left"></i>
+      <span>Danh sách đề thi</span>
+    </a>
+  </div>
+
+  <div class="row g-4">
+    <!-- Form Upload -->
+    <div class="col-lg-5">
+      <div class="card-modern p-4 h-100">
+        <h6 class="fw-bold text-dark mb-3 d-flex align-items-center gap-2">
+          <i class="ph-bold ph-sliders-horizontal text-primary fs-5"></i>
+          <span>Cấu hình thông tin Đề thi</span>
+        </h6>
+
+        <form action="{{ url_for('admin.exam_upload') }}" method="post" enctype="multipart/form-data" id="uploadForm">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          
+          <div class="mb-3">
+            <label class="form-label fw-semibold small text-dark mb-1">Chứng chỉ / Loại đề <span class="text-danger">*</span></label>
+            <input type="text" class="form-control rounded-3 py-2" name="category" placeholder="Ví dụ: TOEIC, IELTS, THPT" required>
+          </div>
+          
+          <div class="mb-3">
+            <label class="form-label fw-semibold small text-dark mb-1">Tên bài thi <span class="text-danger">*</span></label>
+            <input type="text" class="form-control rounded-3 py-2" name="title" placeholder="Ví dụ: ETS 2024 Test 1" required>
+          </div>
+          
+          <div class="mb-3">
+            <label class="form-label fw-semibold small text-dark mb-1">Thời gian làm bài (Phút) <span class="text-danger">*</span></label>
+            <input type="number" class="form-control rounded-3 py-2" name="duration" value="120" min="1" required>
+          </div>
+          
+          <div class="mb-4">
+            <label class="form-label fw-semibold small text-dark mb-1">File dữ liệu (.xlsx hoặc .json) <span class="text-danger">*</span></label>
+            <div class="border rounded-3 p-4 text-center bg-light transition-hover" id="dropZone" style="cursor: pointer; border-style: dashed !important; border-color: var(--border-light) !important;">
+              <i class="ph-bold ph-cloud-arrow-up fs-1 text-primary mb-2 d-block"></i>
+              <p class="mb-1 fw-semibold small text-dark">Kéo thả file vào đây hoặc click để chọn</p>
+              <small class="text-muted" style="font-size: 0.76rem;">Hỗ trợ định dạng .xlsx, .xls, .json</small>
+              <input type="file" name="file" id="fileInput" class="d-none" accept=".xlsx,.xls,.json" required>
+            </div>
+            <div id="fileInfo" class="mt-2 text-success small fw-bold d-none"></div>
+          </div>
+
+          <button type="submit" class="btn btn-primary w-100 py-2.5 rounded-3 fw-bold shadow-xs d-inline-flex align-items-center justify-content-center gap-2" id="submitBtn" disabled>
+            <i class="ph-bold ph-check-circle fs-5"></i>
+            <span>Xác nhận Lưu vào Hệ thống</span>
+          </button>
+        </form>
+      </div>
+    </div>
+    
+    <!-- Preview Table -->
+    <div class="col-lg-7">
+      <div class="card-modern p-4 h-100 d-flex flex-column">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <h6 class="fw-bold text-dark mb-0 d-flex align-items-center gap-2">
+            <i class="ph-bold ph-eye text-info fs-5"></i>
+            <span>Xem trước dữ liệu (Preview)</span>
+          </h6>
+          <span class="badge bg-light text-muted border rounded-pill px-2.5 py-1" id="totalRows">Chưa có dữ liệu</span>
+        </div>
+
+        <div class="table-responsive border rounded-3 flex-grow-1" style="max-height: 480px; overflow-y: auto;">
+          <table class="table table-hover table-striped align-middle small mb-0" id="previewTable">
+            <thead class="table-light sticky-top">
+              <tr>
+                <th style="width: 45px;">#</th>
+                <th>Part / Skill</th>
+                <th>Nội dung câu hỏi</th>
+                <th>Đáp án</th>
+              </tr>
+            </thead>
+            <tbody id="previewBody">
+              <tr>
+                <td colspan="4" class="text-center py-5 text-muted">
+                  <i class="ph-bold ph-file-text fs-2 d-block mb-2 text-secondary opacity-50"></i>
+                  <span>Vui lòng chọn file để xem trước nội dung.</span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script>
 document.addEventListener("DOMContentLoaded", function() {
-    const dropZone = document.getElementById('dropZone');
-    const fileInput = document.getElementById('fileInput');
-    const fileInfo = document.getElementById('fileInfo');
-    const submitBtn = document.getElementById('submitBtn');
-    
-    // Drag & drop logic
-    dropZone.addEventListener('click', () => fileInput.click());
-    
-    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
-        dropZone.addEventListener(eventName, preventDefaults, false);
-    });
-    
-    function preventDefaults(e) {
+    const dropZone = document.getElementById("dropZone");
+    const fileInput = document.getElementById("fileInput");
+    const fileInfo = document.getElementById("fileInfo");
+    const submitBtn = document.getElementById("submitBtn");
+    const previewBody = document.getElementById("previewBody");
+    const totalRows = document.getElementById("totalRows");
+
+    dropZone.addEventListener("click", () => fileInput.click());
+
+    dropZone.addEventListener("dragover", (e) => {
         e.preventDefault();
-        e.stopPropagation();
-    }
-    
-    ['dragenter', 'dragover'].forEach(eventName => {
-        dropZone.addEventListener(eventName, () => {
-            dropZone.classList.add('bg-primary-subtle');
-        }, false);
+        dropZone.classList.add("bg-primary-subtle");
     });
-    
-    ['dragleave', 'drop'].forEach(eventName => {
-        dropZone.addEventListener(eventName, () => {
-            dropZone.classList.remove('bg-primary-subtle');
-        }, false);
+
+    dropZone.addEventListener("dragleave", () => {
+        dropZone.classList.remove("bg-primary-subtle");
     });
-    
-    dropZone.addEventListener('drop', (e) => {
-        let dt = e.dataTransfer;
-        let files = dt.files;
-        if(files.length) {
-            fileInput.files = files;
-            handleFileSelect();
+
+    dropZone.addEventListener("drop", (e) => {
+        e.preventDefault();
+        dropZone.classList.remove("bg-primary-subtle");
+        if (e.dataTransfer.files.length > 0) {
+            fileInput.files = e.dataTransfer.files;
+            handleFile(fileInput.files[0]);
         }
     });
-    
-    fileInput.addEventListener('change', handleFileSelect);
-    
-    function handleFileSelect() {
-        if(fileInput.files.length === 0) return;
-        
-        const file = fileInput.files[0];
-        fileInfo.textContent = "Đã chọn file: " + file.name;
-        fileInfo.classList.remove('d-none');
-        
-        // Disable submit button during preview loading
-        submitBtn.disabled = true;
-        
-        // Prepare FormData for Preview
-        const formData = new FormData();
-        formData.append('file', file);
-        formData.append('csrf_token', document.querySelector('input[name="csrf_token"]').value);
-        
-        document.getElementById('previewArea').innerHTML = '<div class="spinner-border text-primary" role="status"></div><p class="mt-2">Đang xử lý file...</p>';
-        document.getElementById('tableWrapper').classList.add('d-none');
-        document.getElementById('previewArea').classList.remove('d-none');
-        
-        fetch('{{ url_for("admin.exam_preview") }}', {
-            method: 'POST',
-            body: formData
-        })
-        .then(response => response.json())
-        .then(data => {
-            if(data.success) {
-                renderTable(data.columns, data.preview);
-                document.getElementById('totalRows').textContent = `Tổng cộng: ${data.total_rows} câu hỏi`;
-                submitBtn.disabled = false;
-            } else {
-                alert("Lỗi parse file: " + data.error);
-                document.getElementById('previewArea').innerHTML = '<i class="bi bi-exclamation-triangle fs-1 text-danger"></i><p class="mt-2 text-danger">Lỗi định dạng file.</p>';
-            }
-        })
-        .catch(err => {
-            alert("Đã xảy ra lỗi mạng.");
-            console.error(err);
-        });
-    }
-    
-    function renderTable(columns, rows) {
-        document.getElementById('previewArea').classList.add('d-none');
-        const wrapper = document.getElementById('tableWrapper');
-        wrapper.classList.remove('d-none');
-        
-        let thead = '<tr>';
-        columns.forEach(col => {
-            thead += `<th>${col}</th>`;
-        });
-        thead += '</tr>';
-        document.getElementById('tableHead').innerHTML = thead;
-        
-        let tbody = '';
-        rows.forEach(row => {
-            tbody += '<tr>';
-            columns.forEach(col => {
-                let cellVal = row[col];
-                if(cellVal === null || cellVal === undefined) cellVal = '';
-                // limit text length
-                if(typeof cellVal === 'string' && cellVal.length > 50) {
-                    cellVal = cellVal.substring(0, 50) + '...';
+
+    fileInput.addEventListener("change", (e) => {
+        if (e.target.files.length > 0) {
+            handleFile(e.target.files[0]);
+        }
+    });
+
+    function handleFile(file) {
+        fileInfo.textContent = "Đã chọn: " + file.name + " (" + (file.size / 1024).toFixed(1) + " KB)";
+        fileInfo.classList.remove("d-none");
+        submitBtn.disabled = false;
+
+        const reader = new FileReader();
+        const ext = file.name.split('.').pop().toLowerCase();
+
+        if (ext === 'json') {
+            reader.onload = function(e) {
+                try {
+                    const data = JSON.parse(e.target.result);
+                    renderPreview(data);
+                } catch (err) {
+                    alert("File JSON không hợp lệ!");
                 }
-                tbody += `<td>${cellVal}</td>`;
-            });
-            tbody += '</tr>';
+            };
+            reader.readAsText(file);
+        } else if (ext === 'xlsx' || ext === 'xls') {
+            reader.onload = function(e) {
+                try {
+                    const data = new Uint8Array(e.target.result);
+                    const workbook = XLSX.read(data, { type: 'array' });
+                    const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+                    const jsonData = XLSX.utils.sheet_to_json(firstSheet);
+                    renderPreview(jsonData);
+                } catch (err) {
+                    alert("Không thể đọc file Excel!");
+                }
+            };
+            reader.readAsArrayBuffer(file);
+        }
+    }
+
+    function renderPreview(data) {
+        previewBody.innerHTML = "";
+        totalRows.textContent = data.length + " câu hỏi";
+
+        if (data.length === 0) {
+            previewBody.innerHTML = '<tr><td colspan="4" class="text-center text-muted">File không có dữ liệu</td></tr>';
+            return;
+        }
+
+        data.slice(0, 10).forEach((row, idx) => {
+            const tr = document.createElement("tr");
+            const part = row.part || row.Part || row.skill || "Part 5";
+            const text = row.question_text || row.question || row["Nội dung"] || "";
+            const ans = row.correct_answer || row.correct_option || row.answer || row["Đáp án"] || "";
+            
+            tr.innerHTML = `
+                <td class="font-monospace text-muted">${idx + 1}</td>
+                <td><span class="badge bg-light text-dark border">${part}</span></td>
+                <td><div class="text-truncate" style="max-width: 250px;">${text}</div></td>
+                <td><span class="badge bg-success">${ans}</span></td>
+            `;
+            previewBody.appendChild(tr);
         });
-        document.getElementById('tableBody').innerHTML = tbody;
     }
 });
 </script>
