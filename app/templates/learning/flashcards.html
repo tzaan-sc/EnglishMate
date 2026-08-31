@@ -1,8 +1,273 @@
-{% extends "base.html" %}{% block title %}Flashcard · EnglishMate{% endblock %}
-{% block content %}<section class="page-section"><div class="container flashcard-page">
-  <div class="page-heading text-center mx-auto"><span class="eyebrow">QUICK REVIEW</span><h1>Lật thẻ. Nhớ từ. Lặp lại.</h1><p>Chạm vào thẻ để xem nghĩa, rồi tự đánh giá trí nhớ của bạn.</p></div>
-  <form class="filter-bar justify-content-center" method="get"><select name="topic" class="form-select"><option value="">Mọi chủ đề</option>{% for x in topics %}<option {{ 'selected' if topic==x }}>{{ x }}</option>{% endfor %}</select><select name="level" class="form-select"><option value="">Mọi cấp độ</option>{% for x in ['A1','A2','B1','B2'] %}<option {{ 'selected' if level==x }}>{{ x }}</option>{% endfor %}</select><button class="btn btn-dark">Áp dụng</button></form>
-  {% if words %}<div class="deck-status"><span>Thẻ <b id="card-index">1</b>/{{ words|length }}</span><div class="mini-progress"><i id="deck-progress" style="width: {{ 100 / words|length }}%"></i></div></div>
-  <div class="card-deck" data-total="{{ words|length }}">{% for word in words %}<div class="flashcard-wrap {{ '' if loop.first else 'd-none' }}" data-card data-index="{{ loop.index }}"><button class="flashcard" type="button" aria-label="Lật thẻ"><div class="flashcard-inner"><div class="flashcard-face front"><span class="badge-soft">{{ word.level }} · {{ word.topic }}</span><div><h2>{{ word.word }}</h2><p>{{ word.pronunciation }}</p></div><small>Chạm để xem nghĩa ↻</small></div><div class="flashcard-face back"><span class="badge-soft">{{ word.part_of_speech }}</span><div><h2>{{ word.meaning_vi }}</h2><p>{{ word.example_en }}</p><small>{{ word.example_vi }}</small></div><small>Chạm để quay lại ↻</small></div></div></button><div class="review-actions"><form data-review-form method="post" action="{{ url_for('learning.review_flashcard', word_id=word.id, action='review') }}">{{ form.hidden_tag() }}<button class="btn btn-light border" data-card-action>↻ Chưa nhớ</button></form><form data-review-form method="post" action="{{ url_for('learning.review_flashcard', word_id=word.id, action='known') }}">{{ form.hidden_tag() }}<button class="btn btn-primary" data-card-action>✓ Biết rồi</button></form></div></div>{% endfor %}</div><div id="deck-done" class="empty-state d-none"><div class="done-illustration">✓</div><h3>Hoàn thành lượt ôn!</h3><p>Bạn vừa đi qua {{ words|length }} từ. Một bước nhỏ rất đáng giá.</p><button class="btn btn-primary" onclick="location.reload()">Ôn lại từ đầu</button></div>{% else %}<div class="empty-state"><b>Chưa có flashcard cho bộ lọc này.</b></div>{% endif %}
-</div></section>{% endblock %}
+{% extends "base.html" %}
+{% block title %}Bộ thẻ Flashcards · EnglishMate{% endblock %}
+
+{% block content %}
+<div class="container-fluid max-w-4xl py-4">
+
+  <!-- ZONE 1: PAGE HEADING & FILTER BAR (CLEAN & SPACIOUS) -->
+  <div class="text-center mb-4 pb-2">
+    <span class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill px-3 py-1 mb-2 font-semibold" style="font-size: 0.76rem;">
+      LUYỆN TRÍ NHỚ NGẮT QUÃNG (SRS)
+    </span>
+    <h2 class="fw-bold text-dark mb-1.5" style="font-size: 1.85rem; letter-spacing: -0.02em;">
+      Lật thẻ. Ghi nhớ. Phản xạ.
+    </h2>
+    <p class="text-secondary small mb-3" style="font-size: 0.92rem; max-width: 520px; margin: 0 auto;">
+      Chạm vào thẻ để lật xem nghĩa và ví dụ, sau đó tự đánh giá mức độ ghi nhớ của bạn.
+    </p>
+
+    <!-- Filter Bar -->
+    <form class="d-flex flex-wrap justify-content-center align-items-center gap-2 mb-2" method="get">
+      <select name="topic" class="form-select form-select-sm rounded-3 shadow-none border" style="width: auto; min-width: 150px; border-color: var(--border-light); font-size: 0.85rem;">
+        <option value="">Tất cả chủ đề</option>
+        {% for x in topics %}
+        <option value="{{ x }}" {{ 'selected' if topic==x }}>{{ x }}</option>
+        {% endfor %}
+      </select>
+
+      <select name="level" class="form-select form-select-sm rounded-3 shadow-none border" style="width: auto; min-width: 140px; border-color: var(--border-light); font-size: 0.85rem;">
+        <option value="">Tất cả cấp độ</option>
+        {% for x in ['A1','A2','B1','B2','C1','C2'] %}
+        <option value="{{ x }}" {{ 'selected' if level==x }}>Cấp độ {{ x }}</option>
+        {% endfor %}
+      </select>
+
+      <button type="submit" class="btn btn-primary btn-sm rounded-3 fw-bold px-3 py-1.5 shadow-xs d-inline-flex align-items-center gap-1.5">
+        <i class="ph-bold ph-funnel"></i>
+        <span>Lọc bộ thẻ</span>
+      </button>
+
+      {% if topic or level %}
+      <a href="{{ url_for('learning.flashcards') }}" class="btn btn-light btn-sm rounded-3 text-muted border px-2.5" title="Xóa bộ lọc">
+        <i class="ph-bold ph-x"></i>
+      </a>
+      {% endif %}
+    </form>
+  </div>
+
+  {% if words %}
+  <!-- ZONE 2: DECK PROGRESS & STAGE -->
+  <div class="deck-stage-container mx-auto" style="max-width: 600px;">
+    
+    <!-- Progress Indicator Bar -->
+    <div class="deck-status d-flex align-items-center justify-content-between mb-3 px-1">
+      <span class="small fw-bold text-secondary" style="font-size: 0.84rem;">
+        Tiến độ: <span class="text-primary font-monospace" style="font-size: 0.95rem;">Thẻ <b id="card-index">1</b> / {{ words|length }}</span>
+      </span>
+      <div class="mini-progress flex-grow-1 mx-3" style="height: 7px; background-color: var(--border-light); border-radius: 9999px; overflow: hidden;">
+        <i id="deck-progress" class="bg-primary d-block" style="height: 100%; width: {{ (100 / words|length)|round(1) }}%; border-radius: 9999px; transition: width 0.35s ease;"></i>
+      </div>
+      <span class="badge bg-light text-secondary border rounded-pill px-2.5 py-1 small" style="font-size: 0.72rem;">
+        <i class="ph-bold ph-keyboard me-1"></i> Space: Lật
+      </span>
+    </div>
+
+    <!-- FLASHCARD DECK -->
+    <div class="card-deck" data-total="{{ words|length }}">
+      {% for word in words %}
+      <div class="flashcard-wrap {{ '' if loop.first else 'd-none' }}" data-card data-index="{{ loop.index }}">
+        
+        <!-- 3D Flip Card -->
+        <button class="flashcard card-modern p-0 w-100 position-relative" type="button" aria-label="Lật thẻ flashcard" style="height: 380px; border: 0; background: transparent; cursor: pointer; perspective: 1200px;">
+          <div class="flashcard-inner position-relative w-100 h-100 rounded-4 shadow-sm" style="transition: transform 0.55s cubic-bezier(0.4, 0, 0.2, 1); transform-style: preserve-3d;">
+            
+            <!-- FRONT FACE -->
+            <div class="flashcard-face front position-absolute inset-0 w-100 h-100 p-4 p-md-5 rounded-4 d-flex flex-column justify-content-between bg-white border" style="border-color: var(--border-light) !important; backface-visibility: hidden;">
+              
+              <!-- Top Card Info -->
+              <div class="d-flex justify-content-between align-items-center w-100">
+                <span class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill px-3 py-1 fw-bold" style="font-size: 0.76rem;">
+                  {{ word.level }} • {{ word.topic }}
+                </span>
+                <!-- Audio TTS Button on Card -->
+                <button type="button" class="btn btn-light rounded-circle p-2 d-flex align-items-center justify-content-center text-primary shadow-xs transition-hover" 
+                        onclick="event.stopPropagation(); speakFlashcard('{{ word.word }}')" 
+                        title="Nghe phát âm" style="width: 38px; height: 38px; background-color: var(--primary-subtle);">
+                  <i class="ph-bold ph-speaker-high fs-5"></i>
+                </button>
+              </div>
+
+              <!-- Main Word & Pronunciation -->
+              <div class="text-center my-auto py-2">
+                <h2 class="fw-bold text-dark mb-2" style="font-size: 2.5rem; letter-spacing: -0.02em;">
+                  {{ word.word }}
+                </h2>
+                <p class="text-muted fs-5 mb-0 font-monospace" style="color: #64748b !important;">
+                  {{ word.pronunciation }}
+                </p>
+                <span class="badge bg-light text-secondary border rounded-pill px-3 py-1 mt-2.5 small fst-italic">
+                  {{ word.part_of_speech }}
+                </span>
+              </div>
+
+              <!-- Bottom Flip Hint -->
+              <div class="text-center w-100 pt-2 border-top border-light">
+                <small class="text-muted d-inline-flex align-items-center gap-1.5" style="font-size: 0.78rem;">
+                  <i class="ph-bold ph-arrows-clockwise text-primary"></i> Chạm thẻ hoặc nhấn Space để xem nghĩa
+                </small>
+              </div>
+            </div>
+
+            <!-- BACK FACE -->
+            <div class="flashcard-face back position-absolute inset-0 w-100 h-100 p-4 p-md-5 rounded-4 d-flex flex-column justify-content-between bg-white border" style="border-color: #a7f3d0 !important; background: linear-gradient(145deg, #ffffff 0%, #f0fdf4 100%); transform: rotateY(180deg); backface-visibility: hidden;">
+              
+              <!-- Top Back Info -->
+              <div class="d-flex justify-content-between align-items-center w-100">
+                <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-3 py-1 fw-bold" style="font-size: 0.76rem;">
+                  Ý NGHĨA & VÍ DỤ
+                </span>
+                <span class="badge bg-light text-secondary border rounded-pill px-2.5 py-1 small fst-italic">
+                  {{ word.part_of_speech }}
+                </span>
+              </div>
+
+              <!-- Meaning & Example Sentence -->
+              <div class="text-center my-auto py-2" style="max-width: 480px; margin: 0 auto;">
+                <h3 class="fw-bold text-success mb-3" style="font-size: 1.85rem; letter-spacing: -0.01em;">
+                  {{ word.meaning_vi }}
+                </h3>
+                <div class="p-3 rounded-3 bg-white border text-start shadow-xs mb-1" style="border-color: #d1fae5 !important;">
+                  <p class="fw-bold text-dark small mb-1" style="line-height: 1.55; font-size: 0.92rem;">
+                    {{ word.example_en }}
+                  </p>
+                  <small class="text-muted d-block" style="line-height: 1.5; font-size: 0.82rem;">
+                    {{ word.example_vi }}
+                  </small>
+                </div>
+              </div>
+
+              <!-- Bottom Flip Hint -->
+              <div class="text-center w-100 pt-2 border-top border-light">
+                <small class="text-muted d-inline-flex align-items-center gap-1.5" style="font-size: 0.78rem;">
+                  <i class="ph-bold ph-arrow-u-down-left text-success"></i> Chạm để quay lại mặt trước
+                </small>
+              </div>
+            </div>
+
+          </div>
+        </button>
+
+        <!-- ZONE 3: REVIEW ACTION BUTTONS (SPACIOUS 8PX GRID) -->
+        <div class="review-actions row g-3 mt-3">
+          <div class="col-6">
+            <form data-review-form method="post" action="{{ url_for('learning.review_flashcard', word_id=word.id, action='review') }}" class="m-0">
+              {{ form.hidden_tag() }}
+              <button class="btn btn-light border w-100 rounded-3 py-3 fw-bold text-secondary shadow-xs d-flex flex-column align-items-center justify-content-center gap-1 transition-hover" 
+                      data-card-action style="font-size: 0.92rem; border-color: var(--border-light) !important;">
+                <div class="d-flex align-items-center gap-2">
+                  <i class="ph-bold ph-arrow-counter-clockwise text-warning fs-5"></i>
+                  <span>Chưa nhớ</span>
+                </div>
+                <small class="text-muted fw-normal" style="font-size: 0.72rem;">(Phím ← hoặc 1)</small>
+              </button>
+            </form>
+          </div>
+
+          <div class="col-6">
+            <form data-review-form method="post" action="{{ url_for('learning.review_flashcard', word_id=word.id, action='known') }}" class="m-0">
+              {{ form.hidden_tag() }}
+              <button class="btn btn-primary w-100 rounded-3 py-3 fw-bold shadow-sm d-flex flex-column align-items-center justify-content-center gap-1 transition-hover" 
+                      data-card-action style="font-size: 0.92rem;">
+                <div class="d-flex align-items-center gap-2">
+                  <i class="ph-bold ph-check-circle fs-5"></i>
+                  <span>Đã nhớ rõ</span>
+                </div>
+                <small class="text-white-50 fw-normal" style="font-size: 0.72rem;">(Phím → hoặc 2)</small>
+              </button>
+            </form>
+          </div>
+        </div>
+
+      </div>
+      {% endfor %}
+    </div>
+
+    <!-- COMPLETION CELEBRATION CARD -->
+    <div id="deck-done" class="card-modern p-5 text-center d-none mt-2">
+      <div class="d-flex flex-column align-items-center justify-content-center py-4">
+        <div class="rounded-circle mb-3 d-flex align-items-center justify-content-center shadow-sm" style="width: 72px; height: 72px; background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: #ffffff;">
+          <i class="ph-bold ph-trophy fs-1"></i>
+        </div>
+        <span class="badge bg-success-subtle text-success rounded-pill px-3 py-1 mb-2 fw-bold" style="font-size: 0.78rem;">
+          SRS ROUND COMPLETED
+        </span>
+        <h3 class="fw-bold text-dark mb-2" style="font-size: 1.75rem; letter-spacing: -0.02em;">
+          Hoàn thành lượt ôn tập!
+        </h3>
+        <p class="text-secondary small mb-4" style="max-width: 440px; font-size: 0.92rem; line-height: 1.6;">
+          Tuyệt vời! Bạn vừa ôn tập qua <strong>{{ words|length }} từ vựng</strong>. Thuật toán SRS đã tự động lên lịch nhắc lại từ đúng thời điểm.
+        </p>
+        <div class="d-flex flex-wrap gap-2.5 justify-content-center">
+          <button class="btn btn-primary rounded-3 px-4 py-2.5 fw-bold shadow-sm d-inline-flex align-items-center gap-2" onclick="location.reload()">
+            <i class="ph-bold ph-arrow-counter-clockwise fs-5"></i>
+            <span>Ôn lại từ đầu</span>
+          </button>
+          <a href="{{ url_for('learning.vocabulary') }}" class="btn btn-light border rounded-3 px-4 py-2.5 fw-bold text-secondary d-inline-flex align-items-center gap-2">
+            <i class="ph-bold ph-books fs-5"></i>
+            <span>Thư viện Từ vựng</span>
+          </a>
+        </div>
+      </div>
+    </div>
+
+  </div>
+  {% else %}
+  <!-- Empty State -->
+  <div class="card-modern p-5 text-center mx-auto mt-3" style="max-width: 580px;">
+    <div class="d-flex flex-column align-items-center justify-content-center py-4">
+      <div class="rounded-circle mb-3 d-flex align-items-center justify-content-center" style="width: 60px; height: 60px; background-color: var(--primary-subtle); color: var(--primary);">
+        <i class="ph-bold ph-cards fs-2"></i>
+      </div>
+      <h5 class="fw-bold text-dark mb-1.5">Chưa có flashcard cho bộ lọc này</h5>
+      <p class="text-muted small mb-3.5">
+        Hãy thử chọn lại cấp độ hoặc chủ đề khác để tiếp tục ôn tập từ vựng.
+      </p>
+      <a href="{{ url_for('learning.flashcards') }}" class="btn btn-primary fw-bold px-4 py-2 rounded-3">
+        <i class="ph-bold ph-arrow-counter-clockwise me-1.5"></i> Xem tất cả thẻ
+      </a>
+    </div>
+  </div>
+  {% endif %}
+
+</div>
+
+<!-- Flashcard Audio & Keyboard Control Script -->
+<script>
+function speakFlashcard(text) {
+  if ('speechSynthesis' in window) {
+    window.speechSynthesis.cancel();
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.lang = 'en-US';
+    utterance.rate = 0.9;
+    window.speechSynthesis.speak(utterance);
+  }
+}
+
+document.addEventListener("keydown", function(e) {
+  const activeWrap = document.querySelector(".flashcard-wrap:not(.d-none)");
+  if (!activeWrap) return;
+
+  // Spacebar to flip active card
+  if (e.code === "Space" && e.target.tagName !== "INPUT" && e.target.tagName !== "TEXTAREA") {
+    e.preventDefault();
+    const card = activeWrap.querySelector(".flashcard");
+    if (card) card.classList.toggle("flipped");
+  }
+
+  // Left arrow or '1' -> Review (Chưa nhớ)
+  if (e.key === "ArrowLeft" || e.key === "1") {
+    e.preventDefault();
+    const reviewBtn = activeWrap.querySelectorAll("[data-card-action]")[0];
+    if (reviewBtn && !reviewBtn.disabled) reviewBtn.click();
+  }
+
+  // Right arrow or '2' -> Known (Đã nhớ)
+  if (e.key === "ArrowRight" || e.key === "2") {
+    e.preventDefault();
+    const knownBtn = activeWrap.querySelectorAll("[data-card-action]")[1];
+    if (knownBtn && !knownBtn.disabled) knownBtn.click();
+  }
+});
+</script>
+{% endblock %}
 

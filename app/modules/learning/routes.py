@@ -524,16 +524,11 @@ def report_word(word_id):
 @bp.get("/flashcards")
 @login_required
 def flashcards():
-    level, topic = request.args.get("level", ""), request.args.get("topic", "")
-    query = Vocabulary.query
-    if level:
-        query = query.filter_by(level=level)
-    if topic:
-        query = query.filter_by(topic=topic)
-    words = query.order_by(Vocabulary.id).all()
-    topics = [r[0] for r in db.session.query(Vocabulary.topic).distinct().order_by(Vocabulary.topic).all()]
-    return render_template("learning/flashcards.html", words=words, topics=topics, level=level,
-                           topic=topic, form=ActionForm())
+    from .models import FlashcardSet
+    sets = FlashcardSet.query.filter(
+        (FlashcardSet.user_id == current_user.id) | (FlashcardSet.is_public == True)
+    ).order_by(FlashcardSet.created_at.desc()).all()
+    return render_template("learning/flashcard_sets.html", sets=sets)
 
 
 @bp.post("/flashcards/<int:word_id>/<action>")
@@ -629,7 +624,6 @@ def progress():
 @login_required
 def flashcard_sets():
     from .models import FlashcardSet
-    # Lấy các học phần do user tạo hoặc công khai
     sets = FlashcardSet.query.filter(
         (FlashcardSet.user_id == current_user.id) | (FlashcardSet.is_public == True)
     ).order_by(FlashcardSet.created_at.desc()).all()

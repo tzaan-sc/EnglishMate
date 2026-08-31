@@ -55,22 +55,24 @@
         border: none !important;
     }
     .card-front {
-        background-color: #f2f7f4;
-        color: #111827;
+        background-color: #ffffff;
+        color: #0f172a;
+        border: 1px solid var(--border-light) !important;
     }
     .card-back {
         transform: rotateX(180deg);
-        background-color: #31644d;
-        color: #ffffff;
+        background: linear-gradient(145deg, #ffffff 0%, #f0fdf4 100%);
+        color: #065f46;
+        border: 1px solid #a7f3d0 !important;
     }
-    .card-text { font-size: 3.5rem; font-weight: 800; letter-spacing: -1px; margin-bottom: 0.5rem; line-height: 1.1; }
-    .card-subtext { font-size: 1.25rem; font-weight: 400; opacity: 0.8; }
+    .card-text { font-size: 3.2rem; font-weight: 800; letter-spacing: -1px; margin-bottom: 0.5rem; line-height: 1.1; }
+    .card-subtext { font-size: 1.25rem; font-weight: 400; opacity: 0.85; }
     
     .card-hint {
         position: absolute;
         bottom: 2rem;
         left: 3rem;
-        font-size: 1rem;
+        font-size: 0.95rem;
         font-weight: 500;
         opacity: 0.7;
     }
@@ -79,16 +81,16 @@
         position: absolute;
         top: 2rem;
         left: 3rem;
-        background-color: rgba(0,0,0,0.05);
+        background-color: var(--primary-subtle);
         padding: 0.4rem 1rem;
         border-radius: 0.5rem;
         font-size: 0.85rem;
         font-weight: 700;
-        color: #31644d;
+        color: var(--primary);
     }
     .card-back .card-tag {
-        background-color: rgba(255,255,255,0.15);
-        color: #ffffff;
+        background-color: #d1fae5;
+        color: #065f46;
     }
     
     /* Swipe animations */
@@ -108,40 +110,41 @@
         font-size: 3rem; transition: all 0.2s;
         background: transparent;
     }
-    .btn-study-action:hover { transform: scale(1.1); box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
-    .btn-study-action.mark-learn { color: #d9534f; border: 2px solid #d9534f; }
-    .btn-study-action.mark-know { color: #31644d; border: 2px solid #31644d; }
+    .btn-study-action:hover { transform: scale(1.08); box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
+    .btn-study-action.mark-learn { color: #f59e0b; border: 2px solid #f59e0b; }
+    .btn-study-action.mark-know { color: #059669; border: 2px solid #059669; }
     .transition-hover { transition: all 0.2s; }
     .transition-hover:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.1) !important; }
 </style>
 
 <div class="container py-4" style="max-width: 900px;">
-    <!-- Nút Quay Lại -->
+    <!-- Nút Quay Lại & Header -->
     <div class="mb-4">
-        <a href="{{ url_for('learning.flashcard_sets') }}" class="text-decoration-none text-muted mb-3 d-inline-block fw-bold" style="font-size: 0.95rem;">
-            <i class="bi bi-arrow-left me-1"></i> Quay lại thư viện
+        <a href="{{ url_for('learning.flashcard_sets') }}" class="text-decoration-none text-secondary mb-3 d-inline-flex align-items-center gap-1.5 fw-bold" style="font-size: 0.9rem;">
+            <i class="ph-bold ph-arrow-left"></i> Quay lại thư viện bộ thẻ
         </a>
-        <div class="d-flex justify-content-between align-items-center">
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
             <div>
-                <h2 class="fw-bold text-dark mb-1" style="letter-spacing: -0.5px;">{{ fset.title }}</h2>
-                <div class="text-muted" style="font-size: 0.9rem;">
-                    Tạo bởi <span class="fw-bold text-dark">{{ fset.user.username }}</span> &bull; {{ fset.items|length }} thẻ
+                <h2 class="fw-bold text-dark mb-1" style="font-size: 1.75rem; letter-spacing: -0.02em;">{{ fset.title }}</h2>
+                <div class="text-muted small">
+                    Tạo bởi <strong class="text-dark">{{ fset.user.username }}</strong> &bull; <span class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill px-2.5 py-0.5 fw-bold">{{ fset.items|length }} thuật ngữ</span>
                 </div>
             </div>
-            <div class="d-flex gap-2 align-items-center">
+            <div class="d-flex gap-2 align-items-center flex-wrap">
                 {% if fset.user_id == current_user.id %}
-                <a href="{{ url_for('learning.flashcard_set_edit', set_id=fset.id) }}" class="btn btn-light rounded-circle shadow-sm d-flex justify-content-center align-items-center transition-hover" title="Sửa học phần" style="width: 45px; height: 45px; color: #31644d; background-color: #f2f7f4; border: 1px solid rgba(49,100,77,0.1);">
-                    <i class="bi bi-pencil-fill fs-5"></i>
+                <a href="{{ url_for('learning.flashcard_set_edit', set_id=fset.id) }}" class="btn btn-light border rounded-3 p-2 text-secondary d-flex justify-content-center align-items-center transition-hover shadow-xs" title="Sửa học phần" style="width: 42px; height: 42px;">
+                    <i class="ph-bold ph-pencil fs-5"></i>
                 </a>
                 {% endif %}
-                <button class="btn btn-light rounded-circle shadow-sm d-flex justify-content-center align-items-center transition-hover" data-bs-toggle="modal" data-bs-target="#settingsModal" title="Cấu hình phiên học" style="width: 45px; height: 45px; color: #31644d; background-color: #f2f7f4; border: 1px solid rgba(49,100,77,0.1);">
-                    <i class="bi bi-gear-fill fs-5"></i>
+                <button class="btn btn-light border rounded-3 p-2 text-secondary d-flex justify-content-center align-items-center transition-hover shadow-xs" data-bs-toggle="modal" data-bs-target="#settingsModal" title="Cấu hình phiên học" style="width: 42px; height: 42px;">
+                    <i class="ph-bold ph-gear fs-5"></i>
                 </button>
-                <button class="btn btn-light rounded-circle shadow-sm d-flex justify-content-center align-items-center transition-hover" onclick="copySetLink()" title="Chia sẻ học phần" style="width: 45px; height: 45px; color: #31644d; background-color: #f2f7f4; border: 1px solid rgba(49,100,77,0.1);">
-                    <i class="bi bi-share-fill fs-5"></i>
+                <button class="btn btn-light border rounded-3 p-2 text-secondary d-flex justify-content-center align-items-center transition-hover shadow-xs" onclick="copySetLink()" title="Chia sẻ học phần" style="width: 42px; height: 42px;">
+                    <i class="ph-bold ph-share-network fs-5"></i>
                 </button>
-                <button class="btn fw-bold px-4 rounded-pill d-flex align-items-center gap-2 shadow-sm transition-hover ms-2" onclick="toggleFocusMode()" style="background-color: #31644d; color: white; border: none; height: 45px;">
-                    <i class="bi bi-arrows-fullscreen"></i> Luyện tập toàn màn hình
+                <button class="btn btn-primary fw-bold px-3.5 rounded-3 d-flex align-items-center gap-2 shadow-sm transition-hover" onclick="toggleFocusMode()" style="height: 42px; font-size: 0.88rem;">
+                    <i class="ph-bold ph-arrows-out-simple"></i>
+                    <span>Toàn màn hình</span>
                 </button>
             </div>
         </div>
@@ -151,19 +154,21 @@
     <div id="studyAreaWrapper" class="d-flex flex-column align-items-center w-100">
         <div id="studyArea" class="mb-5 position-relative w-100">
             <!-- Progress Bar -->
-            <div class="d-flex justify-content-between align-items-center mb-2 px-1 mt-4">
-                <div class="fw-bold text-dark fs-5" style="opacity: 0.85;">Thẻ <span id="progressText">1/{{ fset.items|length }}</span></div>
-                <div class="d-flex gap-4 fw-bold" style="font-size: 1.1rem;">
-                    <span class="d-flex align-items-center gap-1" style="color: #d9534f;" title="Đang học">
-                        <i class="bi bi-x-circle-fill"></i> <span id="learningCount">0</span>
+            <div class="d-flex justify-content-between align-items-center mb-2 px-1 mt-2">
+                <div class="fw-bold text-dark" style="font-size: 0.95rem;">
+                    Thẻ <span id="progressText" class="font-monospace text-primary">1/{{ fset.items|length }}</span>
+                </div>
+                <div class="d-flex gap-3 fw-bold" style="font-size: 0.9rem;">
+                    <span class="d-flex align-items-center gap-1 text-warning" title="Đang học">
+                        <i class="ph-bold ph-x-circle fs-5"></i> <span id="learningCount">0</span>
                     </span>
-                    <span class="d-flex align-items-center gap-1" style="color: #20c997;" title="Đã thuộc">
-                        <i class="bi bi-check-circle-fill"></i> <span id="knowCount">0</span>
+                    <span class="d-flex align-items-center gap-1 text-success" title="Đã thuộc">
+                        <i class="ph-bold ph-check-circle fs-5"></i> <span id="knowCount">0</span>
                     </span>
                 </div>
             </div>
-            <div class="progress mb-4" style="height: 6px; border-radius: 3px; background-color: #e5ece8;">
-                <div id="progressBar" class="progress-bar" role="progressbar" style="width: 0%; background-color: #31644d; transition: width 0.3s ease;"></div>
+            <div class="progress mb-4" style="height: 7px; border-radius: 9999px; background-color: var(--border-light);">
+                <div id="progressBar" class="progress-bar bg-primary" role="progressbar" style="width: 0%; border-radius: 9999px; transition: width 0.35s ease;"></div>
             </div>
 
             <!-- 3D Flashcard -->
@@ -173,85 +178,112 @@
                     <div class="card-front">
                         <div class="card-tag" id="frontTag">Thuật ngữ</div>
                         <div class="position-absolute top-0 end-0 p-4">
-                            <button class="btn btn-sm btn-light rounded-circle shadow-sm d-flex justify-content-center align-items-center p-0" onclick="event.stopPropagation(); playAudio('front')" style="width: 40px; height: 40px; color: #31644d;"><i class="bi bi-volume-up-fill fs-5"></i></button>
+                            <button class="btn btn-sm btn-light rounded-circle shadow-xs d-flex justify-content-center align-items-center p-0 text-primary" onclick="event.stopPropagation(); playAudio('front')" style="width: 40px; height: 40px; background-color: var(--primary-subtle);"><i class="ph-bold ph-speaker-high fs-5"></i></button>
                         </div>
-                        <div>
+                        <div class="my-auto py-2">
                             <div class="card-text" id="cardFrontText">Term</div>
                         </div>
                         <img id="cardFrontImg" src="" style="display: none; max-height: 120px; margin-top: 15px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); align-self: flex-start;">
                         
-                        <div class="card-hint">Chạm để xem nghĩa ↻</div>
+                        <div class="card-hint text-muted"><i class="ph-bold ph-arrows-clockwise text-primary me-1"></i> Chạm thẻ hoặc bấm Space để xem nghĩa</div>
                     </div>
                     <!-- Mặt sau (Back) -->
                     <div class="card-back">
                         <div class="card-tag" id="backTag">Định nghĩa</div>
                         <div class="position-absolute top-0 end-0 p-4">
-                            <button class="btn btn-sm btn-light rounded-circle shadow-sm d-flex justify-content-center align-items-center p-0" onclick="event.stopPropagation(); playAudio('back')" style="width: 40px; height: 40px; color: #31644d;"><i class="bi bi-volume-up-fill fs-5"></i></button>
+                            <button class="btn btn-sm btn-light rounded-circle shadow-xs d-flex justify-content-center align-items-center p-0 text-success" onclick="event.stopPropagation(); playAudio('back')" style="width: 40px; height: 40px; background-color: var(--success-subtle);"><i class="ph-bold ph-speaker-high fs-5"></i></button>
                         </div>
-                        <div>
-                            <div class="card-text" id="cardBackText">Definition</div>
+                        <div class="my-auto py-2">
+                            <div class="card-text text-success" id="cardBackText">Definition</div>
                         </div>
                         
-                        <div class="card-hint">Chạm để quay lại ↻</div>
+                        <div class="card-hint text-muted"><i class="ph-bold ph-arrow-u-down-left text-success me-1"></i> Chạm để quay lại mặt trước</div>
                     </div>
                 </div>
             </div>
             
             <!-- Summary Screen (Hidden by default) -->
-            <div id="summaryScreen" class="card shadow border-0 rounded-4 p-5 text-center" style="display: none; height: 400px; max-width: 700px; margin: 0 auto;">
-                <div class="d-flex flex-column h-100 justify-content-center align-items-center">
-                    <h3 class="fw-bold mb-5 fs-2 text-dark">Hoàn thành vòng học!</h3>
-                    <div class="row w-100 justify-content-center mb-5">
-                        <div class="col-4">
-                            <h1 class="text-success fw-bold display-4 mb-2" id="summaryKnow">0</h1>
-                            <div class="text-muted fw-bold text-uppercase" style="letter-spacing: 1px;">Đã thuộc</div>
+            <div id="summaryScreen" class="card-modern p-5 text-center" style="display: none; min-height: 380px; max-width: 700px; margin: 0 auto;">
+                <div class="d-flex flex-column h-100 justify-content-center align-items-center py-3">
+                    <div class="rounded-circle mb-3 d-flex align-items-center justify-content-center shadow-sm" style="width: 64px; height: 64px; background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: #ffffff;">
+                        <i class="ph-bold ph-trophy fs-1"></i>
+                    </div>
+                    <h3 class="fw-bold mb-3 fs-3 text-dark">Hoàn thành vòng ôn tập!</h3>
+                    <div class="row w-100 justify-content-center g-3 mb-4">
+                        <div class="col-5">
+                            <div class="p-3 rounded-3 bg-light border">
+                                <h2 class="text-success fw-bold mb-1" id="summaryKnow">0</h2>
+                                <div class="text-muted small fw-bold text-uppercase" style="font-size: 0.76rem; letter-spacing: 0.05em;">Đã thuộc</div>
+                            </div>
                         </div>
-                        <div class="col-4">
-                            <h1 class="text-warning fw-bold display-4 mb-2" id="summaryLearning">0</h1>
-                            <div class="text-muted fw-bold text-uppercase" style="letter-spacing: 1px;">Đang học</div>
+                        <div class="col-5">
+                            <div class="p-3 rounded-3 bg-light border">
+                                <h2 class="text-warning fw-bold mb-1" id="summaryLearning">0</h2>
+                                <div class="text-muted small fw-bold text-uppercase" style="font-size: 0.76rem; letter-spacing: 0.05em;">Cần học lại</div>
+                            </div>
                         </div>
                     </div>
-                    <button class="btn btn-primary btn-lg fw-bold rounded-pill px-5 py-3 shadow-sm" id="btnRestudy" onclick="startRound()" style="background-color: #4255ff; border: none; font-size: 1.1rem;">
-                        Tiếp tục học thẻ chưa thuộc
-                    </button>
+                    <div class="d-flex flex-wrap gap-2 justify-content-center">
+                        <button class="btn btn-primary fw-bold rounded-3 px-4 py-2.5 shadow-sm d-inline-flex align-items-center gap-2" id="btnRestudy" onclick="startRound()" style="font-size: 0.95rem;">
+                            <i class="ph-bold ph-arrow-counter-clockwise"></i>
+                            <span>Tiếp tục học thẻ chưa thuộc</span>
+                        </button>
+                        <a href="{{ url_for('learning.flashcard_sets') }}" class="btn btn-light border rounded-3 px-4 py-2.5 fw-bold text-secondary">
+                            Về danh mục bộ thẻ
+                        </a>
+                    </div>
                 </div>
             </div>
 
             <!-- Controls -->
-            <div class="d-flex justify-content-center gap-5 mt-4" id="studyControls">
-                <button class="btn btn-study-action mark-learn" onclick="markCard(false)" title="Đang học (Phím Trái / 1)">
-                    <i class="bi bi-x"></i>
+            <div class="d-flex justify-content-center gap-4 mt-4" id="studyControls">
+                <button class="btn btn-light border rounded-3 px-4 py-3 fw-bold text-secondary shadow-xs d-flex align-items-center gap-2 transition-hover" onclick="markCard(false)" title="Chưa nhớ (Phím Trái / 1)" style="min-width: 160px; font-size: 0.95rem;">
+                    <i class="ph-bold ph-arrow-counter-clockwise text-warning fs-5"></i>
+                    <span>Chưa nhớ (← / 1)</span>
                 </button>
-                <button class="btn btn-study-action mark-know" onclick="markCard(true)" title="Đã thuộc (Phím Phải / 2)">
-                    <i class="bi bi-check2"></i>
+                <button class="btn btn-primary rounded-3 px-4 py-3 fw-bold shadow-sm d-flex align-items-center gap-2 transition-hover" onclick="markCard(true)" title="Đã thuộc (Phím Phải / 2)" style="min-width: 160px; font-size: 0.95rem;">
+                    <i class="ph-bold ph-check-circle fs-5"></i>
+                    <span>Đã thuộc (→ / 2)</span>
                 </button>
             </div>
         </div>
     </div>
 
     <!-- Word List Area -->
-    <h4 class="fw-bold mb-4 mt-5">Danh sách thuật ngữ ({{ fset.items|length }})</h4>
-    <div class="row g-3 mb-5">
-        {% for item in fset.items %}
-        <div class="col-12">
-            <div class="card shadow-sm border-0 rounded-4">
-                <div class="card-body p-4 d-flex align-items-center">
-                    <div class="w-50 pe-4 border-end fw-bold fs-5 text-dark">
-                        {{ item.term }}
+    <div class="mt-5 pt-3">
+        <div class="d-flex justify-content-between align-items-center mb-3.5">
+            <h5 class="fw-bold text-dark mb-0">Danh sách thuật ngữ trong bộ thẻ</h5>
+            <span class="badge bg-primary-subtle text-primary rounded-pill px-3 py-1 fw-bold small">
+                {{ fset.items|length }} thuật ngữ
+            </span>
+        </div>
+
+        <div class="row g-3 mb-5">
+            {% for item in fset.items %}
+            <div class="col-12">
+                <div class="card-modern p-3.5 d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3">
+                    <div class="d-flex align-items-center gap-3" style="min-width: 240px;">
+                        <button type="button" class="btn btn-sm btn-light rounded-circle p-1.5 d-flex align-items-center justify-content-center text-primary shadow-xs" 
+                                onclick="playCustomAudio({{ item.term|tojson }}, 'en-US')" title="Nghe phát âm" style="width: 32px; height: 32px; background-color: var(--primary-subtle);">
+                            <i class="ph-bold ph-speaker-high fs-6"></i>
+                        </button>
+                        <h6 class="fw-bold text-dark mb-0 fs-5">{{ item.term }}</h6>
                     </div>
-                    <div class="w-50 ps-4 d-flex justify-content-between align-items-center">
-                        <span class="fs-5 text-dark">{{ item.definition }}</span>
-                        <div class="d-flex gap-3 align-items-center">
-                            {% if item.image_url %}
-                            <img src="{{ item.image_url }}" alt="Image" class="rounded shadow-sm" style="height: 50px; width: 60px; object-fit: cover;">
-                            {% endif %}
-                            <button class="btn btn-light rounded-circle text-muted" onclick="toggleStar(this, {{ item.id }})"><i class="bi bi-star fs-5"></i></button>
-                        </div>
+                    <div class="flex-grow-1 px-md-3">
+                        <span class="text-secondary fw-medium">{{ item.definition }}</span>
+                    </div>
+                    <div class="d-flex gap-2 align-items-center">
+                        {% if item.image_url %}
+                        <img src="{{ item.image_url }}" alt="Image" class="rounded-3 shadow-xs border" style="height: 44px; width: 56px; object-fit: cover;">
+                        {% endif %}
+                        <button class="btn btn-light border rounded-circle text-muted p-1.5 d-flex align-items-center justify-content-center" onclick="toggleStar(this, {{ item.id }})" style="width: 32px; height: 32px;">
+                            <i class="ph-bold ph-star fs-6"></i>
+                        </button>
                     </div>
                 </div>
             </div>
+            {% endfor %}
         </div>
-        {% endfor %}
     </div>
 </div>
 
@@ -548,6 +580,15 @@
         utterance.rate = 1.0;
         
         window.speechSynthesis.cancel(); 
+        window.speechSynthesis.speak(utterance);
+    }
+
+    function playCustomAudio(text, lang = 'en-US') {
+        if (!('speechSynthesis' in window)) return;
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.lang = lang;
+        utterance.rate = 0.9;
+        window.speechSynthesis.cancel();
         window.speechSynthesis.speak(utterance);
     }
 
