@@ -42,6 +42,7 @@ if db_path.exists():
         ("exam_sound_effects", "BOOLEAN NOT NULL DEFAULT 1"),
         ("xp", "INTEGER NOT NULL DEFAULT 0"),
         ("level", "INTEGER NOT NULL DEFAULT 1"),
+        ("level_start_date", "DATE"),
         ("daily_goal_xp", "INTEGER NOT NULL DEFAULT 50"),
         ("daily_reward_claimed_date", "DATE"),
     ]
