@@ -32,6 +32,9 @@
       <a class="nav-link px-3 py-1.5 fw-bold small text-secondary {% if request.endpoint=='admin.audit_logs' %}bg-white shadow-xs text-danger active{% endif %}" href="{{ url_for('admin.audit_logs') }}">
         📜 Audit Logs
       </a>
+      <a class="nav-link px-3 py-1.5 fw-bold small text-secondary {% if request.endpoint and 'import' in request.endpoint %}bg-white shadow-xs text-danger active{% endif %}" href="{{ url_for('admin.import_hub') }}">
+        📥 Import Excel
+      </a>
       <a class="nav-link px-3 py-1.5 fw-bold small text-secondary {% if request.endpoint and 'exam_upload' in request.endpoint %}bg-white shadow-xs text-danger active{% endif %}" href="{{ url_for('admin.exam_upload') }}">
         📤 Upload Đề thi
       </a>

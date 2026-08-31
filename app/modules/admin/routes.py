@@ -1,14 +1,16 @@
+import os
 from functools import wraps
 
-from flask import abort, flash, redirect, render_template, request, url_for
+from flask import abort, flash, redirect, render_template, request, url_for, jsonify, send_from_directory
 from flask_login import current_user, login_required
 
 from ...extensions import db
 from ..auth.models import User
 from ..exams.models import Exam
-from ..learning.models import Lesson, Question, QuizAttempt, Vocabulary
+from ..learning.models import Lesson, Question, QuizAttempt, Vocabulary, GrammarTopic
 from . import bp
 from .forms import ConfirmForm, LessonForm, VocabularyForm
+from .importer import parse_and_validate_excel, commit_import_records, CONTENT_SCHEMAS
 
 
 def admin_required(view):
@@ -603,3 +605,97 @@ def exam_stats_analytics(exam_id):
     }
 
     return render_template("admin/exam_stats.html", exam=exam, attempts=attempts, analytics=analytics)
+
+
+# --- EXCEL CONTENT IMPORT HUB ---
+
+@bp.get("/import")
+@admin_required
+def import_hub():
+    stats = {
+        "vocabulary_count": Vocabulary.query.count(),
+        "grammar_count": GrammarTopic.query.count(),
+        "lessons_count": Lesson.query.count(),
+        "questions_count": Question.query.count(),
+        "exams_count": Exam.query.count()
+    }
+    return render_template("admin/import_hub.html", schemas=CONTENT_SCHEMAS, stats=stats)
+
+
+@bp.get("/import/template/<content_type>")
+@admin_required
+def download_import_template(content_type):
+    from ...utils.template_generator import generate_all_templates, TEMPLATE_DIR, JSON_TEMPLATE_DIR
+    if not os.path.exists(TEMPLATE_DIR) or len(os.listdir(TEMPLATE_DIR)) < 5:
+        generate_all_templates()
+
+    fmt = request.args.get("format", "xlsx").lower()
+    base_dir = JSON_TEMPLATE_DIR if fmt == "json" else TEMPLATE_DIR
+    ext = "json" if fmt == "json" else "xlsx"
+
+    filename_map = {
+        "vocabulary": f"template_vocabulary.{ext}",
+        "grammar": f"template_grammar.{ext}",
+        "lessons": f"template_lessons.{ext}",
+        "questions": f"template_questions.{ext}",
+        "exams": f"template_exams.{ext}",
+    }
+    filename = filename_map.get(content_type)
+    if not filename or not os.path.exists(os.path.join(base_dir, filename)):
+        abort(404)
+
+    return send_from_directory(
+        base_dir,
+        filename,
+        as_attachment=True,
+        download_name=f"englishmate_{filename}"
+    )
+
+
+@bp.post("/import/validate")
+@admin_required
+def validate_import_file():
+    if "file" not in request.files:
+        return jsonify({"success": False, "error": "Vui lòng chọn file Excel hoặc JSON để upload."}), 400
+
+    uploaded_file = request.files["file"]
+    content_type = request.form.get("content_type", "").strip()
+
+    if not uploaded_file or uploaded_file.filename == "":
+        return jsonify({"success": False, "error": "Chưa chọn file."}), 400
+
+    fname = uploaded_file.filename.lower()
+    if not (fname.endswith(".xlsx") or fname.endswith(".json")):
+        return jsonify({"success": False, "error": "Chỉ chấp nhận file định dạng Excel (.xlsx) hoặc JSON (.json)."}), 400
+
+    from .importer import parse_and_validate_file
+    result = parse_and_validate_file(uploaded_file, uploaded_file.filename, content_type)
+    if not result["success"]:
+        return jsonify(result), 400
+
+    return jsonify(result)
+
+
+@bp.post("/import/commit")
+@admin_required
+def commit_import():
+    data = request.get_json() or {}
+    content_type = data.get("content_type")
+    valid_records = data.get("valid_records", [])
+    mode = data.get("mode", "insert_or_update")
+
+    if not content_type or not valid_records:
+        return jsonify({"success": False, "error": "Không có dữ liệu hợp lệ để import."}), 400
+
+    try:
+        res = commit_import_records(
+            content_type=content_type,
+            valid_records=valid_records,
+            user_id=current_user.id,
+            mode=mode
+        )
+        return jsonify(res)
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"success": False, "error": f"Lỗi khi lưu vào Database: {str(e)}"}), 500
+

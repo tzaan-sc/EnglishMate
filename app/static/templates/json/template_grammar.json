@@ -1,0 +1,24 @@
+[
+  {
+    "title": "Thì Hiện Tại Hoàn Thành (Present Perfect Tense)",
+    "category": "Các thì (Tenses)",
+    "level": "A2",
+    "difficulty": "Medium",
+    "summary": "Diễn tả hành động đã xảy ra trong quá khứ nhưng có kết quả hoặc liên quan mật thiết đến hiện tại.",
+    "rule_explanation": "1. CÔNG THỨC KHẲNG ĐỊNH:\nS + have / has + V3/ed + (O)\n\n2. CÔNG THỨC PHỦ ĐỊNH:\nS + have / has + not (haven't / hasn't) + V3/ed\n\n3. CÂU HỎI:\nHave / Has + S + V3/ed...?",
+    "examples_json": "I have lived in Hanoi for 5 years.|Tôi đã sống ở Hà Nội được 5 năm.\nShe has already finished her homework.|Cô ấy đã làm xong bài tập về nhà rồi.",
+    "common_mistakes": "Nhầm lẫn giữa Thì Quá Khứ Đơn (Past Simple - có thời gian xác định cụ thể trong quá khứ như yesterday, in 2020) và Hiện Tại Hoàn Thành.",
+    "tips_tricks": "Dấu hiệu nhận biết đặc trưng: since, for, already, yet, just, ever, never, so far, up to now."
+  },
+  {
+    "title": "Câu Điều Kiện Loại 2 (Conditional Type 2)",
+    "category": "Câu điều kiện (Conditionals)",
+    "level": "B1",
+    "difficulty": "Medium",
+    "summary": "Diễn tả giả định trái ngược với thực tế ở hiện tại hoặc khó có thể xảy ra.",
+    "rule_explanation": "Mệnh đề If: If + S + V2/ed (động từ to be dùng 'were' cho mọi ngôi)\nMệnh đề chính: S + would / could + V_inf",
+    "examples_json": "If I were you, I would accept the job offer.|Nếu tôi là bạn, tôi sẽ nhận lời đề nghị làm việc đó.\nIf he had more money, he would travel around the world.|Nếu anh ấy có nhiều tiền hơn, anh ấy sẽ đi du lịch vòng quanh thế giới.",
+    "common_mistakes": "Dùng 'was' thay vì 'were' trong các bài thi trang trọng (Formal English quy định dùng 'were').",
+    "tips_tricks": "Hãy nhớ câu cửa miệng: 'If I were you, I would...' để luôn nhớ chia 'were' và 'would + V_inf'."
+  }
+]

@@ -1,0 +1,47 @@
+[
+  {
+    "category": "TOEIC",
+    "title": "TOEIC Reading Mini Test 01",
+    "duration_minutes": "20",
+    "difficulty": "Medium",
+    "skill": "READING",
+    "part": "Part 5",
+    "question_text": "All employees are requested to submit their expense reports _______ Friday afternoon.",
+    "option_a": "by",
+    "option_b": "until",
+    "option_c": "at",
+    "option_d": "on",
+    "correct_answer": "A",
+    "explanation": "'By Friday afternoon' nghĩa là trước hoặc muộn nhất vào chiều thứ Sáu (deadline). 'Until' chỉ hành động kéo dài liên tục."
+  },
+  {
+    "category": "TOEIC",
+    "title": "TOEIC Reading Mini Test 01",
+    "duration_minutes": "20",
+    "difficulty": "Medium",
+    "skill": "READING",
+    "part": "Part 5",
+    "question_text": "Mr. Henderson was _______ promoted to Senior Marketing Director.",
+    "option_a": "recent",
+    "option_b": "recently",
+    "option_c": "more recent",
+    "option_d": "recency",
+    "correct_answer": "B",
+    "explanation": "Vị trí đứng giữa trợ động từ 'was' và phân từ hai 'promoted' cần một trạng từ (Adverb) để bổ nghĩa -> chọn 'recently'."
+  },
+  {
+    "category": "IELTS",
+    "title": "IELTS General Practice Test 01",
+    "duration_minutes": "60",
+    "difficulty": "Hard",
+    "skill": "READING",
+    "part": "Section 1",
+    "question_text": "According to the notice, what must visitors do before entering the construction area?",
+    "option_a": "Sign the guestbook",
+    "option_b": "Wear a hard hat and safety vest",
+    "option_c": "Call their supervisor",
+    "option_d": "Leave their mobile phones at reception",
+    "correct_answer": "B",
+    "explanation": "Đoạn văn quy định rõ tất cả khách tham quan bắt buộc phải trang bị mũ bảo hộ và áo phản quang trước khi bước vào công trường."
+  }
+]

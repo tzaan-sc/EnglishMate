@@ -1,0 +1,35 @@
+[
+  {
+    "question_text": "She _______ in this company since 2018.",
+    "option_a": "works",
+    "option_b": "worked",
+    "option_c": "has worked",
+    "option_d": "is working",
+    "correct_option": "C",
+    "explanation": "Dấu hiệu nhận biết 'since 2018' chỉ hành động bắt đầu từ quá khứ và kéo dài đến hiện tại -> chia Hiện tại hoàn thành (has worked).",
+    "topic": "Tenses",
+    "level": "A2"
+  },
+  {
+    "question_text": "If the weather _______ fine tomorrow, we will go for a picnic.",
+    "option_a": "is",
+    "option_b": "was",
+    "option_c": "will be",
+    "option_d": "were",
+    "correct_option": "A",
+    "explanation": "Câu điều kiện loại 1 (Conditional Type 1) diễn tả khả năng có thật ở tương lai: Mệnh đề If chia Hiện tại đơn (is).",
+    "topic": "Conditionals",
+    "level": "A2"
+  },
+  {
+    "question_text": "The committee reached a _______ decision after several hours of intense debate.",
+    "option_a": "unanimous",
+    "option_b": "reluctant",
+    "option_c": "hesitant",
+    "option_d": "ambiguous",
+    "correct_option": "A",
+    "explanation": "'Unanimous' nghĩa là nhất trí/đồng thuận hoàn toàn. Câu diễn tả ủy ban đã đạt được quyết định nhất trí sau nhiều giờ tranh luận.",
+    "topic": "Vocabulary",
+    "level": "B2"
+  }
+]

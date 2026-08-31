@@ -1,0 +1,558 @@
+{% extends "base.html" %}
+{% block title %}Trung tâm Import Dữ liệu Học tập · EnglishMate Admin{% endblock %}
+
+{% block content %}
+<div class="container-fluid max-w-6xl py-4">
+
+  <!-- PAGE HEADER & NAVIGATION -->
+  <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4.5 pb-2">
+    <div>
+      <div class="d-flex align-items-center gap-2 mb-1.5">
+        <span class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill px-3 py-1 font-semibold" style="font-size: 0.76rem;">
+          ADMIN CONTENT MANAGEMENT
+        </span>
+      </div>
+      <h2 class="fw-bold text-dark mb-1" style="font-size: 1.75rem; letter-spacing: -0.02em;">
+        Trung tâm Import Dữ liệu Học tập
+      </h2>
+      <p class="text-secondary small mb-0" style="font-size: 0.92rem;">
+        Nạp hàng loạt từ vựng, ngữ pháp, bài học, câu hỏi và đề thi vào Database bằng file <strong>Excel (.xlsx)</strong> hoặc <strong>JSON (.json)</strong>.
+      </p>
+    </div>
+    <div class="d-flex gap-2">
+      <a href="{{ url_for('admin.dashboard') }}" class="btn btn-light border fw-semibold text-secondary px-3.5 py-2 rounded-3 shadow-xs d-inline-flex align-items-center gap-1.5 transition-hover" style="font-size: 0.88rem;">
+        <i class="ph-bold ph-arrow-left"></i>
+        <span>Về trang Admin</span>
+      </a>
+    </div>
+  </div>
+
+  <!-- CURRENT DATABASE METRICS BAR (CLEAN & COMPACT) -->
+  <div class="card-modern p-3 mb-4.5">
+    <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 text-center text-md-start">
+      <div class="d-flex align-items-center gap-2 ps-2">
+        <i class="ph-bold ph-database text-primary fs-5"></i>
+        <span class="fw-bold text-dark small">Dữ liệu hiện có trong Database:</span>
+      </div>
+      <div class="d-flex flex-wrap gap-2 gap-md-4 align-items-center justify-content-center justify-content-md-end flex-grow-1 pe-2">
+        <div class="d-flex align-items-center gap-1.5">
+          <span class="badge bg-primary-subtle text-primary rounded-pill px-2.5 py-1 fw-bold font-monospace" style="font-size: 0.85rem;">{{ stats.vocabulary_count }}</span>
+          <span class="text-secondary small" style="font-size: 0.82rem;">Từ vựng</span>
+        </div>
+        <div class="d-flex align-items-center gap-1.5">
+          <span class="badge bg-success-subtle text-success rounded-pill px-2.5 py-1 fw-bold font-monospace" style="font-size: 0.85rem;">{{ stats.grammar_count }}</span>
+          <span class="text-secondary small" style="font-size: 0.82rem;">Ngữ pháp</span>
+        </div>
+        <div class="d-flex align-items-center gap-1.5">
+          <span class="badge bg-info-subtle text-info rounded-pill px-2.5 py-1 fw-bold font-monospace" style="font-size: 0.85rem;">{{ stats.lessons_count }}</span>
+          <span class="text-secondary small" style="font-size: 0.82rem;">Bài học</span>
+        </div>
+        <div class="d-flex align-items-center gap-1.5">
+          <span class="badge bg-warning-subtle text-warning rounded-pill px-2.5 py-1 fw-bold font-monospace" style="font-size: 0.85rem;">{{ stats.questions_count }}</span>
+          <span class="text-secondary small" style="font-size: 0.82rem;">Câu hỏi</span>
+        </div>
+        <div class="d-flex align-items-center gap-1.5">
+          <span class="badge bg-danger-subtle text-danger rounded-pill px-2.5 py-1 fw-bold font-monospace" style="font-size: 0.85rem;">{{ stats.exams_count }}</span>
+          <span class="text-secondary small" style="font-size: 0.82rem;">Đề thi</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- STEP 1: DOWNLOAD TEMPLATES CATALOG TABLE -->
+  <div class="card-modern p-4 mb-4.5">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <div>
+        <h5 class="fw-bold text-dark mb-1 d-flex align-items-center gap-2" style="font-size: 1.15rem;">
+          <span class="rounded-circle bg-primary text-white d-inline-flex align-items-center justify-content-center fw-bold" style="width: 26px; height: 26px; font-size: 0.8rem;">1</span>
+          <span>Tải File Mẫu Chuẩn (Excel / JSON)</span>
+        </h5>
+        <p class="text-secondary small mb-0" style="font-size: 0.88rem;">
+          Tải file mẫu về máy, điền dữ liệu học tập của bạn vào các cột/trường tương ứng rồi nạp lên ở Bước 2.
+        </p>
+      </div>
+    </div>
+
+    <!-- Clean Responsive Table -->
+    <div class="table-responsive border rounded-3 overflow-hidden">
+      <table class="table table-hover align-middle mb-0" style="font-size: 0.88rem;">
+        <thead class="table-light">
+          <tr>
+            <th style="min-width: 180px;">Loại Dữ Liệu</th>
+            <th style="min-width: 320px;">Các trường thông tin chuẩn</th>
+            <th class="text-end" style="min-width: 220px;">Tải File Mẫu</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- 1. Vocabulary -->
+          <tr>
+            <td>
+              <div class="d-flex align-items-center gap-2">
+                <span class="fs-4">📗</span>
+                <div>
+                  <strong class="text-dark d-block">Từ vựng (Vocabulary)</strong>
+                  <span class="text-muted small">Dùng cho Flashcard, Tra cứu & Games</span>
+                </div>
+              </div>
+            </td>
+            <td>
+              <span class="text-secondary small">
+                <code>word</code>, <code>pronunciation</code>, <code>part_of_speech</code>, <code>meaning_vi</code>, <code>example_en</code>, <code>example_vi</code>, <code>topic</code>, <code>level</code> (A1-C2), collocations, synonyms
+              </span>
+            </td>
+            <td class="text-end">
+              <div class="d-inline-flex gap-1.5">
+                <a href="{{ url_for('admin.download_import_template', content_type='vocabulary', format='xlsx') }}" class="btn btn-sm btn-light border fw-bold text-success shadow-2xs d-inline-flex align-items-center gap-1 px-2.5 py-1" title="Tải Excel">
+                  <i class="ph-bold ph-file-xls fs-6"></i>
+                  <span>Excel (.xlsx)</span>
+                </a>
+                <a href="{{ url_for('admin.download_import_template', content_type='vocabulary', format='json') }}" class="btn btn-sm btn-light border fw-semibold text-secondary shadow-2xs d-inline-flex align-items-center gap-1 px-2.5 py-1" title="Tải JSON">
+                  <i class="ph-bold ph-file-code fs-6 text-primary"></i>
+                  <span>JSON (.json)</span>
+                </a>
+              </div>
+            </td>
+          </tr>
+
+          <!-- 2. Grammar -->
+          <tr>
+            <td>
+              <div class="d-flex align-items-center gap-2">
+                <span class="fs-4">📘</span>
+                <div>
+                  <strong class="text-dark d-block">Ngữ pháp (Grammar)</strong>
+                  <span class="text-muted small">Cẩm nang & Quy tắc ngữ pháp</span>
+                </div>
+              </div>
+            </td>
+            <td>
+              <span class="text-secondary small">
+                <code>title</code>, <code>category</code>, <code>level</code>, <code>difficulty</code> (Easy/Medium/Hard), <code>summary</code>, <code>rule_explanation</code>, <code>examples_json</code>, common_mistakes, tips_tricks
+              </span>
+            </td>
+            <td class="text-end">
+              <div class="d-inline-flex gap-1.5">
+                <a href="{{ url_for('admin.download_import_template', content_type='grammar', format='xlsx') }}" class="btn btn-sm btn-light border fw-bold text-success shadow-2xs d-inline-flex align-items-center gap-1 px-2.5 py-1" title="Tải Excel">
+                  <i class="ph-bold ph-file-xls fs-6"></i>
+                  <span>Excel (.xlsx)</span>
+                </a>
+                <a href="{{ url_for('admin.download_import_template', content_type='grammar', format='json') }}" class="btn btn-sm btn-light border fw-semibold text-secondary shadow-2xs d-inline-flex align-items-center gap-1 px-2.5 py-1" title="Tải JSON">
+                  <i class="ph-bold ph-file-code fs-6 text-primary"></i>
+                  <span>JSON (.json)</span>
+                </a>
+              </div>
+            </td>
+          </tr>
+
+          <!-- 3. Lessons -->
+          <tr>
+            <td>
+              <div class="d-flex align-items-center gap-2">
+                <span class="fs-4">📙</span>
+                <div>
+                  <strong class="text-dark d-block">Bài học (Lessons)</strong>
+                  <span class="text-muted small">Bài giảng các kỹ năng & khóa học</span>
+                </div>
+              </div>
+            </td>
+            <td>
+              <span class="text-secondary small">
+                <code>title</code>, <code>level</code> (A1-C2), <code>skill</code> (Writing/Speaking/Reading/Listening...), <code>short_description</code>, <code>content</code> (Markdown), <code>examples</code>, thumbnail_url
+              </span>
+            </td>
+            <td class="text-end">
+              <div class="d-inline-flex gap-1.5">
+                <a href="{{ url_for('admin.download_import_template', content_type='lessons', format='xlsx') }}" class="btn btn-sm btn-light border fw-bold text-success shadow-2xs d-inline-flex align-items-center gap-1 px-2.5 py-1" title="Tải Excel">
+                  <i class="ph-bold ph-file-xls fs-6"></i>
+                  <span>Excel (.xlsx)</span>
+                </a>
+                <a href="{{ url_for('admin.download_import_template', content_type='lessons', format='json') }}" class="btn btn-sm btn-light border fw-semibold text-secondary shadow-2xs d-inline-flex align-items-center gap-1 px-2.5 py-1" title="Tải JSON">
+                  <i class="ph-bold ph-file-code fs-6 text-primary"></i>
+                  <span>JSON (.json)</span>
+                </a>
+              </div>
+            </td>
+          </tr>
+
+          <!-- 4. Questions -->
+          <tr>
+            <td>
+              <div class="d-flex align-items-center gap-2">
+                <span class="fs-4">📕</span>
+                <div>
+                  <strong class="text-dark d-block">Câu hỏi & Bài tập (Questions)</strong>
+                  <span class="text-muted small">Ngân hàng trắc nghiệm & Quiz</span>
+                </div>
+              </div>
+            </td>
+            <td>
+              <span class="text-secondary small">
+                <code>question_text</code>, <code>option_a</code>, <code>option_b</code>, <code>option_c</code>, <code>option_d</code>, <code>correct_option</code> (A/B/C/D), <code>explanation</code>, <code>topic</code>, <code>level</code>
+              </span>
+            </td>
+            <td class="text-end">
+              <div class="d-inline-flex gap-1.5">
+                <a href="{{ url_for('admin.download_import_template', content_type='questions', format='xlsx') }}" class="btn btn-sm btn-light border fw-bold text-success shadow-2xs d-inline-flex align-items-center gap-1 px-2.5 py-1" title="Tải Excel">
+                  <i class="ph-bold ph-file-xls fs-6"></i>
+                  <span>Excel (.xlsx)</span>
+                </a>
+                <a href="{{ url_for('admin.download_import_template', content_type='questions', format='json') }}" class="btn btn-sm btn-light border fw-semibold text-secondary shadow-2xs d-inline-flex align-items-center gap-1 px-2.5 py-1" title="Tải JSON">
+                  <i class="ph-bold ph-file-code fs-6 text-primary"></i>
+                  <span>JSON (.json)</span>
+                </a>
+              </div>
+            </td>
+          </tr>
+
+          <!-- 5. Exams -->
+          <tr>
+            <td>
+              <div class="d-flex align-items-center gap-2">
+                <span class="fs-4">📓</span>
+                <div>
+                  <strong class="text-dark d-block">Đề thi (TOEIC / IELTS Exams)</strong>
+                  <span class="text-muted small">Đề thi thử & bài kiểm tra trọn gói</span>
+                </div>
+              </div>
+            </td>
+            <td>
+              <span class="text-secondary small">
+                <code>category</code>, <code>title</code>, <code>duration_minutes</code>, <code>difficulty</code>, <code>skill</code>, <code>part</code>, <code>question_text</code>, <code>option_a</code>..<code>option_d</code>, <code>correct_answer</code>, <code>explanation</code>
+              </span>
+            </td>
+            <td class="text-end">
+              <div class="d-inline-flex gap-1.5">
+                <a href="{{ url_for('admin.download_import_template', content_type='exams', format='xlsx') }}" class="btn btn-sm btn-light border fw-bold text-success shadow-2xs d-inline-flex align-items-center gap-1 px-2.5 py-1" title="Tải Excel">
+                  <i class="ph-bold ph-file-xls fs-6"></i>
+                  <span>Excel (.xlsx)</span>
+                </a>
+                <a href="{{ url_for('admin.download_import_template', content_type='exams', format='json') }}" class="btn btn-sm btn-light border fw-semibold text-secondary shadow-2xs d-inline-flex align-items-center gap-1 px-2.5 py-1" title="Tải JSON">
+                  <i class="ph-bold ph-file-code fs-6 text-primary"></i>
+                  <span>JSON (.json)</span>
+                </a>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- STEP 2: UPLOAD & VALIDATION AREA -->
+  <div class="card-modern p-4 mb-4.5">
+    <div class="mb-3.5">
+      <h5 class="fw-bold text-dark mb-1 d-flex align-items-center gap-2" style="font-size: 1.15rem;">
+        <span class="rounded-circle bg-primary text-white d-inline-flex align-items-center justify-content-center fw-bold" style="width: 26px; height: 26px; font-size: 0.8rem;">2</span>
+        <span>Upload File & Kiểm Tra Dữ Liệu</span>
+      </h5>
+      <p class="text-secondary small mb-0" style="font-size: 0.88rem;">
+        Hệ thống sẽ tự động quét cú pháp, kiểm tra các cột bắt buộc và phát hiện lỗi trước khi lưu vào Database.
+      </p>
+    </div>
+
+    <form id="uploadValidateForm" enctype="multipart/form-data">
+      <div class="row g-3 mb-4">
+        <!-- Content Type Selection -->
+        <div class="col-md-4">
+          <label class="form-label fw-bold small text-dark mb-1.5">1. Chọn loại dữ liệu nạp <span class="text-danger">*</span></label>
+          <select class="form-select border shadow-none py-2.5 fw-semibold" id="selectContentType" required style="border-color: var(--border-light); font-size: 0.9rem;">
+            <option value="" disabled selected>-- Chọn danh mục --</option>
+            <option value="vocabulary">📗 Từ vựng (Vocabulary)</option>
+            <option value="grammar">📘 Ngữ pháp (Grammar Topics)</option>
+            <option value="lessons">📙 Bài học (Lessons)</option>
+            <option value="questions">📕 Câu hỏi Trắc nghiệm (Questions)</option>
+            <option value="exams">📓 Đề thi (TOEIC / IELTS Exams)</option>
+          </select>
+        </div>
+
+        <!-- File Upload Drag & Drop Area -->
+        <div class="col-md-8">
+          <label class="form-label fw-bold small text-dark mb-1.5">2. Chọn file (.xlsx hoặc .json) <span class="text-danger">*</span></label>
+          <div class="input-group">
+            <input class="form-control border shadow-none py-2.5" type="file" id="excelFileInput" accept=".xlsx, .json" required style="border-color: var(--border-light); font-size: 0.9rem;">
+          </div>
+          <div class="form-text text-muted small mt-1">Hỗ trợ các file định dạng Microsoft Excel (.xlsx) hoặc JavaScript Object Notation (.json).</div>
+        </div>
+      </div>
+
+      <div class="d-flex justify-content-end">
+        <button type="submit" class="btn btn-primary fw-bold px-4 py-2.5 rounded-3 shadow-sm d-inline-flex align-items-center gap-2" id="btnValidate" style="font-size: 0.92rem;">
+          <i class="ph-bold ph-magnifying-glass fs-5"></i>
+          <span>Kiểm tra & Xem trước Dữ liệu</span>
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <!-- STEP 3: PREVIEW & VALIDATION RESULTS (HIDDEN INITIALLY) -->
+  <div id="previewSection" class="card-modern p-4 mb-4.5" style="display: none;">
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4 pb-3 border-bottom border-light">
+      <div>
+        <h5 class="fw-bold text-dark mb-1 d-flex align-items-center gap-2" style="font-size: 1.15rem;">
+          <span class="rounded-circle bg-success text-white d-inline-flex align-items-center justify-content-center fw-bold" style="width: 26px; height: 26px; font-size: 0.8rem;">3</span>
+          <span>Kết quả Kiểm tra Dữ liệu (Validation Results)</span>
+        </h5>
+        <span class="badge bg-primary-subtle text-primary fw-bold rounded-pill px-3 py-1 mt-1" id="previewContentTitle">Loại dữ liệu</span>
+      </div>
+
+      <!-- Metric Badges -->
+      <div class="d-flex gap-2 flex-wrap">
+        <span class="badge bg-light text-dark border rounded-pill px-3 py-2 fw-semibold" style="font-size: 0.85rem;">
+          Tổng số dòng: <strong id="valTotal">0</strong>
+        </span>
+        <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-3 py-2 fw-bold" style="font-size: 0.85rem;">
+          ✓ Hợp lệ: <strong id="valValid">0</strong>
+        </span>
+        <span class="badge bg-danger-subtle text-danger border border-danger-subtle rounded-pill px-3 py-2 fw-bold" id="badgeErrorWrapper" style="font-size: 0.85rem;">
+          ✕ Bị lỗi: <strong id="valError">0</strong>
+        </span>
+      </div>
+    </div>
+
+    <!-- Error Alerts (if any) -->
+    <div id="errorAlertBox" class="mb-4" style="display: none;">
+      <div class="alert alert-danger border-0 rounded-3 p-3.5 mb-0">
+        <div class="fw-bold mb-2 d-flex align-items-center gap-2 text-danger fs-6">
+          <i class="ph-bold ph-warning-circle fs-5"></i>
+          <span>Phát hiện các dòng dữ liệu không hợp lệ:</span>
+        </div>
+        <div class="table-responsive" style="max-height: 220px; overflow-y: auto;">
+          <table class="table table-sm table-bordered bg-white small mb-0">
+            <thead class="table-light">
+              <tr>
+                <th style="width: 85px;">Dòng #</th>
+                <th>Dữ liệu nhận diện</th>
+                <th>Lý do lỗi</th>
+              </tr>
+            </thead>
+            <tbody id="errorTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Valid Sample Preview Table -->
+    <div class="mb-4">
+      <div class="d-flex justify-content-between align-items-center mb-2">
+        <h6 class="fw-bold text-dark mb-0" style="font-size: 0.95rem;">Xem trước dữ liệu hợp lệ (Mẫu 10 bản ghi đầu):</h6>
+      </div>
+      <div class="table-responsive border rounded-3" style="max-height: 320px; overflow-y: auto;">
+        <table class="table table-sm table-hover table-striped small mb-0" id="previewDataTable">
+          <thead class="table-light sticky-top" id="previewTableHead"></thead>
+          <tbody id="previewTableBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Import Actions & Modes -->
+    <div class="p-3.5 bg-light rounded-3 border d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
+      <div>
+        <div class="form-check">
+          <input class="form-check-input" type="radio" name="importMode" id="modeInsertOrUpdate" value="insert_or_update" checked>
+          <label class="form-check-label fw-bold text-dark small" for="modeInsertOrUpdate">
+            Cập nhật nếu bản ghi đã tồn tại (khuyên dùng)
+          </label>
+        </div>
+        <div class="form-check mt-1">
+          <input class="form-check-input" type="radio" name="importMode" id="modeSkipExisting" value="skip_existing">
+          <label class="form-check-label text-secondary small" for="modeSkipExisting">
+            Chỉ thêm mới, bỏ qua nếu bản ghi đã có trong Database
+          </label>
+        </div>
+      </div>
+
+      <button type="button" class="btn btn-success fw-bold px-4 py-2.5 rounded-3 shadow-sm d-inline-flex align-items-center gap-2" id="btnCommitImport" style="font-size: 0.95rem;">
+        <i class="ph-bold ph-check-circle fs-5"></i>
+        <span>Xác nhận Nạp vào Database</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- SUCCESS NOTIFICATION BOX (HIDDEN INITIALLY) -->
+  <div id="successResultBox" class="card-modern p-5 text-center mb-5" style="display: none;">
+    <div class="rounded-circle mx-auto mb-3 d-flex align-items-center justify-content-center shadow-xs" style="width: 64px; height: 64px; background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: #ffffff;">
+      <i class="ph-bold ph-check-circle fs-1"></i>
+    </div>
+    <h3 class="fw-bold text-dark mb-2">Import Dữ liệu Thành Công!</h3>
+    <p class="text-secondary mb-4" id="successSummaryText" style="font-size: 1rem;">
+      Đã nạp thành công các bản ghi vào hệ thống.
+    </p>
+
+    <div class="d-flex justify-content-center gap-2 flex-wrap">
+      <button type="button" class="btn btn-primary fw-bold px-4 py-2.5 rounded-3 shadow-sm" onclick="resetImportFlow()">
+        <i class="ph-bold ph-plus-circle me-1.5"></i> Tiếp tục Import file khác
+      </button>
+      <a href="{{ url_for('learning.vocabulary') }}" class="btn btn-light border fw-semibold text-secondary px-4 py-2.5 rounded-3" id="btnViewFrontend">
+        Xem trên giao diện học
+      </a>
+    </div>
+  </div>
+
+</div>
+
+<!-- Custom JavaScript for Validation and Commit Flow -->
+<script>
+let currentValidationData = null;
+const csrfToken = "{{ csrf_token() }}";
+
+document.getElementById("uploadValidateForm").addEventListener("submit", async function(e) {
+  e.preventDefault();
+  const contentType = document.getElementById("selectContentType").value;
+  const fileInput = document.getElementById("excelFileInput");
+
+  if (!contentType || !fileInput.files[0]) {
+    alert("Vui lòng chọn loại dữ liệu và file Excel/JSON.");
+    return;
+  }
+
+  const formData = new FormData();
+  formData.append("content_type", contentType);
+  formData.append("file", fileInput.files[0]);
+
+  const btnValidate = document.getElementById("btnValidate");
+  btnValidate.disabled = true;
+  btnValidate.innerHTML = `<span class="spinner-border spinner-border-sm me-1.5"></span> Đang kiểm tra...`;
+
+  try {
+    const res = await fetch("{{ url_for('admin.validate_import_file') }}", {
+      method: "POST",
+      headers: { "X-CSRFToken": csrfToken },
+      body: formData
+    });
+
+    const data = await res.json();
+    if (!res.ok || !data.success) {
+      alert("Lỗi kiểm tra file: " + (data.error || "Không xác định"));
+      return;
+    }
+
+    currentValidationData = data;
+    renderPreview(data);
+  } catch (err) {
+    alert("Lỗi kết nối máy chủ: " + err.message);
+  } finally {
+    btnValidate.disabled = false;
+    btnValidate.innerHTML = `<i class="ph-bold ph-magnifying-glass fs-5"></i><span>Kiểm tra & Xem trước Dữ liệu</span>`;
+  }
+});
+
+function renderPreview(data) {
+  document.getElementById("previewSection").style.display = "block";
+  document.getElementById("successResultBox").style.display = "none";
+  document.getElementById("previewContentTitle").textContent = data.content_title;
+  document.getElementById("valTotal").textContent = data.total_rows;
+  document.getElementById("valValid").textContent = data.valid_count;
+  document.getElementById("valError").textContent = data.error_count;
+
+  // Handle Errors
+  const errorBox = document.getElementById("errorAlertBox");
+  const errorTableBody = document.getElementById("errorTableBody");
+  errorTableBody.innerHTML = "";
+
+  if (data.error_count > 0) {
+    errorBox.style.display = "block";
+    data.error_records.forEach(err => {
+      const row = document.createElement("tr");
+      const sampleSnippet = Object.entries(err.data).slice(0, 3).map(([k, v]) => `<strong>${k}</strong>: ${v}`).join(", ");
+      row.innerHTML = `
+        <td class="text-danger fw-bold font-monospace">Dòng ${err.row_number}</td>
+        <td><div class="text-truncate" style="max-width: 320px;">${sampleSnippet}</div></td>
+        <td class="text-danger">${err.errors.join("<br>")}</td>
+      `;
+      errorTableBody.appendChild(row);
+    });
+  } else {
+    errorBox.style.display = "none";
+  }
+
+  // Handle Valid Preview Table
+  const thead = document.getElementById("previewTableHead");
+  const tbody = document.getElementById("previewTableBody");
+  thead.innerHTML = "";
+  tbody.innerHTML = "";
+
+  if (data.preview_sample.length > 0) {
+    const keys = Object.keys(data.preview_sample[0]);
+    const headerRow = document.createElement("tr");
+    headerRow.innerHTML = `<th style="width: 45px;">#</th>` + keys.map(k => `<th>${k}</th>`).join("");
+    thead.appendChild(headerRow);
+
+    data.preview_sample.forEach((item, idx) => {
+      const row = document.createElement("tr");
+      row.innerHTML = `<td class="text-muted fw-bold">${idx + 1}</td>` + keys.map(k => `<td><div class="text-truncate" style="max-width: 220px;">${item[k] || '<span class="text-muted fst-italic">null</span>'}</div></td>`).join("");
+      tbody.appendChild(row);
+    });
+  }
+
+  // Scroll to preview
+  document.getElementById("previewSection").scrollIntoView({ behavior: 'smooth' });
+}
+
+document.getElementById("btnCommitImport").addEventListener("click", async function() {
+  if (!currentValidationData || currentValidationData.valid_count === 0) {
+    alert("Không có dòng dữ liệu hợp lệ để import.");
+    return;
+  }
+
+  const mode = document.querySelector('input[name="importMode"]:checked')?.value || "insert_or_update";
+  const btnCommit = this;
+  btnCommit.disabled = true;
+  btnCommit.innerHTML = `<span class="spinner-border spinner-border-sm me-1.5"></span> Đang nạp vào Database...`;
+
+  try {
+    const res = await fetch("{{ url_for('admin.commit_import') }}", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-CSRFToken": csrfToken
+      },
+      body: JSON.stringify({
+        content_type: currentValidationData.content_type,
+        valid_records: currentValidationData.valid_records,
+        mode: mode
+      })
+    });
+
+    const result = await res.json();
+    if (!res.ok || !result.success) {
+      alert("Lỗi khi lưu vào Database: " + (result.error || "Không xác định"));
+      btnCommit.disabled = false;
+      btnCommit.innerHTML = `<i class="ph-bold ph-check-circle fs-5"></i><span>Xác nhận Nạp vào Database</span>`;
+      return;
+    }
+
+    // Success State
+    document.getElementById("previewSection").style.display = "none";
+    document.getElementById("successResultBox").style.display = "block";
+    document.getElementById("successSummaryText").textContent = 
+      `Đã thêm mới thành công ${result.inserted_count} bản ghi và cập nhật ${result.updated_count} bản ghi vào hệ thống.`;
+
+    // Dynamic link to frontend
+    const frontendLinkMap = {
+      "vocabulary": "{{ url_for('learning.vocabulary') }}",
+      "grammar": "{{ url_for('learning.grammar_overview') }}",
+      "lessons": "{{ url_for('learning.lessons') }}",
+      "exams": "{{ url_for('exams.toeic') }}"
+    };
+    const frontUrl = frontendLinkMap[currentValidationData.content_type] || "{{ url_for('learning.lessons') }}";
+    document.getElementById("btnViewFrontend").setAttribute("href", frontUrl);
+
+    // Scroll to success box
+    document.getElementById("successResultBox").scrollIntoView({ behavior: 'smooth' });
+
+  } catch (err) {
+    alert("Lỗi kết nối: " + err.message);
+    btnCommit.disabled = false;
+    btnCommit.innerHTML = `<i class="ph-bold ph-check-circle fs-5"></i><span>Xác nhận Nạp vào Database</span>`;
+  }
+});
+
+function resetImportFlow() {
+  document.getElementById("uploadValidateForm").reset();
+  document.getElementById("previewSection").style.display = "none";
+  document.getElementById("successResultBox").style.display = "none";
+  currentValidationData = null;
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+</script>
+{% endblock %}

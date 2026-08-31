@@ -1,0 +1,58 @@
+[
+  {
+    "word": "accomplish",
+    "pronunciation": "/əˈkʌm.plɪʃ/",
+    "part_of_speech": "verb",
+    "meaning_vi": "hoàn thành, đạt được",
+    "example_en": "She accomplished all her goals for this semester.",
+    "example_vi": "Cô ấy đã hoàn thành mọi mục tiêu trong học kỳ này.",
+    "topic": "Education",
+    "level": "B1",
+    "image_url": "https://images.unsplash.com/photo-1434030216411-0b793f4b4173?w=500",
+    "collocations": "accomplish a mission; accomplish a task",
+    "synonyms": "achieve, complete, fulfill",
+    "antonyms": "fail, abandon"
+  },
+  {
+    "word": "sustainable",
+    "pronunciation": "/səˈsteɪ.nə.bəl/",
+    "part_of_speech": "adjective",
+    "meaning_vi": "bền vững, thân thiện với môi trường",
+    "example_en": "The company is committed to sustainable development.",
+    "example_vi": "Công ty cam kết phát triển bền vững.",
+    "topic": "Environment",
+    "level": "B2",
+    "image_url": "https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?w=500",
+    "collocations": "sustainable energy; sustainable development",
+    "synonyms": "eco-friendly, renewable",
+    "antonyms": "unsustainable, wasteful"
+  },
+  {
+    "word": "negotiate",
+    "pronunciation": "/nəˈɡoʊ.ʃi.eɪt/",
+    "part_of_speech": "verb",
+    "meaning_vi": "đàm phán, thương lượng",
+    "example_en": "The union is negotiating for better working conditions.",
+    "example_vi": "Công đoàn đang đàm phán để có điều kiện làm việc tốt hơn.",
+    "topic": "Business",
+    "level": "B2",
+    "image_url": "",
+    "collocations": "negotiate a contract; negotiate terms",
+    "synonyms": "bargain, discuss",
+    "antonyms": "surrender"
+  },
+  {
+    "word": "pivotal",
+    "pronunciation": "/ˈpɪv.ə.t̬əl/",
+    "part_of_speech": "adjective",
+    "meaning_vi": "then chốt, mang tính quyết định",
+    "example_en": "He played a pivotal role in the success of the project.",
+    "example_vi": "Anh ấy đóng một vai trò then chốt trong sự thành công của dự án.",
+    "topic": "General",
+    "level": "C1",
+    "image_url": "",
+    "collocations": "pivotal role; pivotal moment",
+    "synonyms": "crucial, vital, critical",
+    "antonyms": "trivial, insignificant"
+  }
+]
