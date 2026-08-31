@@ -5,144 +5,159 @@
 
   
 
-  <!-- TOP WIDGETS ROW -->
-  <div class="row g-3 align-items-stretch">
-    <!-- Blank/Custom Decorative Widget Slot -->
-    <div class="col-lg-4">
-      <div id="welcomeBanner" class="card border rounded-4 h-100 d-flex align-items-center justify-content-center position-relative overflow-hidden transition-all" style="background-color: #f1f3f5; border-style: dashed !important; border-color: #cbd5e1 !important; min-height: 180px;">
-        <!-- Media Container Background -->
-        <div id="bannerMediaContainer" class="position-absolute w-100 h-100 top-0 start-0"
-          style="z-index: 1; pointer-events: none;"></div>
-
+  <!-- TOP HERO & STATS ROW -->
+  <div class="row g-4 align-items-stretch mb-4">
+    <!-- LEFT: HERO GREETING & NEXT ACTIONS (COL-LG-8) -->
+    <div class="col-lg-8">
+      <div id="welcomeBanner" class="hero-welcome-card p-4 p-lg-5 h-100 d-flex flex-column justify-content-between position-relative overflow-hidden">
+        <!-- Media Container Background for Custom Banner -->
+        <div id="bannerMediaContainer" class="position-absolute w-100 h-100 top-0 start-0" style="z-index: 1; pointer-events: none;"></div>
         <!-- Dark Overlay (Only active when media is filled) -->
-        <div id="bannerOverlay" class="position-absolute w-100 h-100 top-0 start-0 d-none"
-          style="z-index: 1; background: rgba(0, 0, 0, 0.15); pointer-events: none;"></div>
-
-        <!-- Placeholder instructions inside blank square (completely empty) -->
+        <div id="bannerOverlay" class="position-absolute w-100 h-100 top-0 start-0 d-none" style="z-index: 1; background: rgba(15, 23, 42, 0.45); pointer-events: none;"></div>
         <div id="bannerPlaceholder" class="d-none" style="z-index: 2; pointer-events: none;"></div>
 
-        <!-- Action buttons on top right -->
-        <div class="position-absolute d-flex align-items-center" style="top: 15px; right: 15px; z-index: 10;">
+        <!-- Custom Banner Controls (Top Right) -->
+        <div class="position-absolute d-flex align-items-center gap-1.5" style="top: 16px; right: 16px; z-index: 10;">
           <button id="btnResetBanner"
-            class="btn btn-sm btn-danger border-0 d-none me-1 d-flex align-items-center justify-content-center"
-            style="border-radius: 50%; width: 34px; height: 34px; background: rgba(220, 53, 69, 0.45); color: white;"
-            title="Khôi phục ảnh nền mặc định">
-            <svg id="resetBannerSvg" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="#ffffff" viewBox="0 0 16 16">
-              <path d="M2.146 2.854a.5.5 0 1 1 .708-.708L8 7.293l5.146-5.147a.5.5 0 0 1 .708.708L8.707 8l5.147 5.146a.5.5 0 0 1-.708.708L8 8.707l-5.146 5.147a.5.5 0 0 1-.708-.708L7.293 8z"/>
-            </svg>
+            class="btn btn-sm btn-danger border-0 d-none d-flex align-items-center justify-content-center"
+            style="border-radius: 50%; width: 32px; height: 32px; background: rgba(239, 68, 68, 0.7); color: white;"
+            title="Khôi phục nền mặc định">
+            <i class="ph ph-x" style="font-size: 14px;"></i>
           </button>
           <button id="btnChangeBanner"
-            class="btn btn-sm btn-light border d-flex align-items-center justify-content-center"
-            style="border-radius: 50%; width: 34px; height: 34px; background: #ffffff;"
-            title="Thay đổi ảnh/hình nền động">
-            <svg id="changeBannerSvg" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="#475569" viewBox="0 0 16 16">
-              <path d="M6.002 5.5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0"/>
-              <path d="M2.002 1a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V3a2 2 0 0 0-2-2zm12 1a1 1 0 0 1 1 1v6.5l-3.777-1.947a.5.5 0 0 0-.577.093l-3.71 3.71-2.66-1.772a.5.5 0 0 0-.63.062L1.002 12V3a1 1 0 0 1 1-1z"/>
-            </svg>
+            class="btn btn-sm btn-light border-0 d-flex align-items-center justify-content-center shadow-sm"
+            style="border-radius: 50%; width: 32px; height: 32px; background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(8px); color: #334155;"
+            title="Tùy chỉnh ảnh/video nền">
+            <i class="ph ph-image" style="font-size: 15px;"></i>
           </button>
         </div>
-
         <input type="file" id="bannerFileInput" accept="image/*,video/*" class="d-none">
-      </div>
-    </div>
 
-    <!-- Middle Stats Widget -->
-    <div class="col-lg-4">
-      <div class="card border-0 rounded-4 shadow-sm h-100 p-4 bg-white d-flex flex-column justify-content-center">
-        <span class="text-muted small fw-bold text-uppercase mb-3 tracking-wider text-center">Thống kê học tập</span>
-        <div class="row g-2">
-          <div class="col-6">
-            <div class="bg-light p-2.5 rounded-3 text-center border" style="background-color: #f8faf8 !important;">
-              <h3 class="fw-800 text-green mb-0" style="font-size: 1.6rem;">{{ learned }}</h3>
-              <small class="text-muted" style="font-size: 0.72rem;">Từ vựng</small>
-            </div>
+        <!-- Hero Content (Greeting & Subtitle) -->
+        <div class="position-relative" style="z-index: 2;">
+          <div class="d-inline-flex align-items-center gap-2 px-3 py-1 rounded-pill mb-3" style="background: rgba(255, 255, 255, 0.2); backdrop-filter: blur(6px); font-size: 0.78rem; font-weight: 700;">
+            <span>🎯 Mục tiêu hôm nay</span>
+            <span style="opacity: 0.6;">•</span>
+            <span>1 bài học & 10 từ vựng</span>
           </div>
-          <div class="col-6">
-            <div class="bg-light p-2.5 rounded-3 text-center border" style="background-color: #f8faf8 !important;">
-              <h3 class="fw-800 text-success mb-0" style="font-size: 1.6rem;">{{ completed }}</h3>
-              <small class="text-muted" style="font-size: 0.72rem;">Bài học</small>
-            </div>
-          </div>
-          <div class="col-6">
-            <div class="bg-light p-2.5 rounded-3 text-center border" style="background-color: #f8faf8 !important;">
-              <h3 class="fw-800 text-info mb-0" style="font-size: 1.6rem;">{{ attempts }}</h3>
-              <small class="text-muted" style="font-size: 0.72rem;">Quiz làm</small>
-            </div>
-          </div>
-          <div class="col-6">
-            <div class="bg-light p-2.5 rounded-3 text-center border" style="background-color: #f8faf8 !important;">
-              <h3 class="fw-800 text-warning mb-0" style="font-size: 1.6rem;">{{ average }}%</h3>
-              <small class="text-muted" style="font-size: 0.72rem;">Điểm trung bình</small>
-            </div>
-          </div>
+          <h2 class="fw-bold mb-2 text-white" style="font-size: 1.85rem; letter-spacing: -0.02em;">
+            Chào mừng trở lại, {{ current_user.full_name or current_user.username }}! 👋
+          </h2>
+          <p class="text-white-50 mb-0" style="font-size: 0.95rem; max-width: 540px;">
+            Mỗi ngày một chút kiến thức để làm chủ tiếng Anh tự tin và tự nhiên hơn.
+          </p>
+        </div>
+
+        <!-- Hero Actions / CTAs -->
+        <div class="d-flex flex-wrap align-items-center gap-2.5 pt-4 mt-3 position-relative" style="z-index: 2;">
+          {% if next_lesson %}
+          <a href="{{ url_for('learning.lesson_detail', lesson_id=next_lesson.id) }}" class="btn btn-light fw-bold px-3.5 py-2 text-primary d-inline-flex align-items-center gap-2 shadow-sm rounded-3">
+            <i class="ph ph-play-fill"></i> Tiếp tục: {{ next_lesson.title|truncate(26) }}
+          </a>
+          {% endif %}
+          {% if srs_due_count > 0 %}
+          <a href="{{ url_for('learning.game_lobby') }}" class="btn btn-warning text-dark fw-bold px-3.5 py-2 d-inline-flex align-items-center gap-2 shadow-sm rounded-3">
+            <i class="ph ph-lightning-fill"></i> Ôn {{ srs_due_count }} từ đến hạn
+          </a>
+          {% endif %}
+          <a href="{{ url_for('learning.vocabulary') }}" class="btn btn-outline-light fw-semibold px-3 py-2 d-inline-flex align-items-center gap-1.5 rounded-3" style="border-color: rgba(255, 255, 255, 0.4);">
+            <i class="ph ph-book-open"></i> Từ vựng
+          </a>
+          <a href="{{ url_for('learning.game_lobby') }}" class="btn btn-outline-light fw-semibold px-3 py-2 d-inline-flex align-items-center gap-1.5 rounded-3" style="border-color: rgba(255, 255, 255, 0.4);">
+            <i class="ph ph-game-controller"></i> Luyện Game
+          </a>
         </div>
       </div>
     </div>
 
-    <!-- Right Streak Widget -->
-    {% set streak_num = current_user.get_current_streak() %}
+    <!-- RIGHT: STREAK & QUICK STATS (COL-LG-4) -->
     <div class="col-lg-4">
-      <div class="card border-0 rounded-4 text-white h-100 p-4 position-relative overflow-hidden transition-all"
-        style="background: {% if streak_num > 0 %}linear-gradient(135deg, #f57c00 0%, #ff9800 100%){% else %}linear-gradient(135deg, #64748b 0%, #94a3b8 100%){% endif %};">
-        <div class="d-flex justify-content-between align-items-center">
-          <span class="text-white-50 small fw-bold text-uppercase tracking-wider">Chuỗi ngày học tập</span>
-          <span class="badge bg-white text-dark rounded-pill px-2 py-1 small fw-bold" style="font-size: 0.65rem; opacity: 0.9;">Kỷ lục: {{ current_user.longest_streak }} ngày</span>
-        </div>
-        <div class="d-flex align-items-baseline gap-2 mt-2">
-          <h1 class="fw-800 mb-0 display-4">
-            <span style="{% if streak_num == 0 %}filter: grayscale(100%); opacity: 0.65;{% endif %}">🔥</span>
-            <span>{{ streak_num }}</span>
-          </h1>
-          <span class="fw-bold">ngày</span>
-        </div>
+      <div class="card-modern p-4 h-100 d-flex flex-column justify-content-between">
+        <!-- Streak Header & Counter -->
+        <div>
+          {% set streak_num = current_user.get_current_streak() %}
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <span class="text-muted small fw-bold text-uppercase" style="letter-spacing: 0.05em;">Chuỗi học tập</span>
+            <span class="badge bg-light text-muted border rounded-pill px-2.5 py-1" style="font-size: 0.72rem; font-weight: 700;">
+              Kỷ lục: {{ current_user.longest_streak }} ngày
+            </span>
+          </div>
 
-        <!-- Days of the week indicator -->
-        <div class="d-flex justify-content-between align-items-center mt-3 pt-2 border-top border-white-10">
-          {% for day, active in week_days %}
-          <div class="d-flex flex-column align-items-center gap-1">
-            <span class="small" style="font-size: 0.75rem; opacity: 0.8;">{{ day }}</span>
-            <div class="rounded-circle d-flex align-items-center justify-content-center"
-              style="width: 24px; height: 24px; background: {% if active %}#ffffff{% else %}rgba(255, 255, 255, 0.2){% endif %}; color: {% if active %}{% if streak_num > 0 %}#f57c00{% else %}#475569{% endif %}{% else %}#ffffff{% endif %}; font-size: 0.7rem; font-weight: bold;">
-              {% if active %}✓{% else %}{% endif %}
+          <div class="d-flex align-items-center gap-3 mb-3">
+            <div class="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0"
+                 style="width: 52px; height: 52px; background-color: var(--accent-streak-subtle); color: var(--accent-streak); font-size: 1.75rem;">
+              🔥
+            </div>
+            <div>
+              <div class="d-flex align-items-baseline gap-1.5">
+                <span class="fs-2 fw-800 text-dark lh-1">{{ streak_num }}</span>
+                <span class="text-muted fw-bold small">ngày liên tiếp</span>
+              </div>
+              <small class="text-muted" style="font-size: 0.76rem;">
+                {% if streak_num > 0 %}Học hôm nay để duy trì chuỗi!{% else %}Bắt đầu chuỗi học ngay hôm nay!{% endif %}
+              </small>
             </div>
           </div>
-          {% endfor %}
+
+          <!-- Weekly Streak Dots -->
+          <div class="d-flex justify-content-between align-items-center pt-2.5 pb-3 border-top border-light">
+            {% for day, active in week_days %}
+            <div class="d-flex flex-column align-items-center gap-1">
+              <span class="text-muted" style="font-size: 0.72rem; font-weight: 600;">{{ day }}</span>
+              <div class="rounded-circle d-flex align-items-center justify-content-center"
+                style="width: 22px; height: 22px; background-color: {% if active %}var(--primary){% else %}var(--border-light){% endif %}; color: #ffffff; font-size: 0.68rem; font-weight: bold;">
+                {% if active %}✓{% endif %}
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+
+        <!-- 4 Key Metrics 2x2 Grid -->
+        <div class="pt-3 border-top border-light">
+          <div class="row g-2">
+            <div class="col-6">
+              <div class="p-2.5 rounded-3 text-center" style="background-color: var(--bg-surface-subtle);">
+                <div class="fw-800 text-primary mb-0" style="font-size: 1.35rem;">{{ learned }}</div>
+                <small class="text-muted" style="font-size: 0.72rem; font-weight: 600;">Từ vựng đã học</small>
+              </div>
+            </div>
+            <div class="col-6">
+              <div class="p-2.5 rounded-3 text-center" style="background-color: var(--bg-surface-subtle);">
+                <div class="fw-800 text-primary mb-0" style="font-size: 1.35rem;">{{ completed }}</div>
+                <small class="text-muted" style="font-size: 0.72rem; font-weight: 600;">Bài học xong</small>
+              </div>
+            </div>
+            <div class="col-6">
+              <div class="p-2.5 rounded-3 text-center" style="background-color: var(--bg-surface-subtle);">
+                <div class="fw-800 text-info mb-0" style="font-size: 1.35rem;">{{ attempts }}</div>
+                <small class="text-muted" style="font-size: 0.72rem; font-weight: 600;">Quiz đã làm</small>
+              </div>
+            </div>
+            <div class="col-6">
+              <div class="p-2.5 rounded-3 text-center" style="background-color: var(--bg-surface-subtle);">
+                <div class="fw-800 text-warning mb-0" style="font-size: 1.35rem;">{{ average }}%</div>
+                <small class="text-muted" style="font-size: 0.72rem; font-weight: 600;">Điểm trung bình</small>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
   </div>
 
-  
-
-  <!-- DAILY MOTIVATION QUOTE & QUICK ACTIONS -->
-  <div class="card border-0 rounded-4 shadow-sm bg-white p-3.5 my-4">
-    <div class="row align-items-center g-3">
-      <div class="col-lg-7 d-flex align-items-center gap-3">
-        <div class="rounded-circle bg-purple-subtle text-purple d-flex align-items-center justify-content-center flex-shrink-0" style="width: 48px; height: 48px; font-size: 1.5rem;">
-          💡
-        </div>
-        <div>
-          <div class="fw-bold text-dark small mb-0.5">"{{ daily_quote.en }}"</div>
-          <div class="text-muted small" style="font-size: 0.76rem;">{{ daily_quote.vi }} — <em>{{ daily_quote.author }}</em></div>
-        </div>
+  <!-- DAILY MOTIVATION QUOTE -->
+  <div class="card-modern p-3.5 mb-4">
+    <div class="d-flex align-items-center gap-3">
+      <div class="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0"
+           style="width: 44px; height: 44px; background-color: var(--primary-subtle); color: var(--primary); font-size: 1.35rem;">
+        💡
       </div>
-      <div class="col-lg-5 d-flex justify-content-lg-end gap-2 flex-wrap">
-        {% if next_lesson %}
-        <a href="{{ url_for('learning.lesson_detail', lesson_id=next_lesson.id) }}" class="btn btn-sm btn-primary rounded-pill px-3 fw-bold shadow-xs">
-          <i class="ph ph-play me-1"></i> Học bài tiếp
-        </a>
-        {% endif %}
-        <a href="{{ url_for('learning.vocabulary') }}" class="btn btn-sm btn-outline-success rounded-pill px-3 fw-bold">
-          <i class="ph ph-book-open me-1"></i> Từ vựng
-        </a>
-        <a href="{{ url_for('learning.game_lobby') }}" class="btn btn-sm btn-outline-warning text-dark rounded-pill px-3 fw-bold">
-          <i class="ph ph-lightning me-1"></i> Luyện Game
-        </a>
-        {% if srs_due_count > 0 %}
-        <a href="{{ url_for('learning.game_lobby') }}" class="btn btn-sm btn-danger rounded-pill px-3 fw-bold shadow-xs animate-pulse">
-          ⚡ Ôn {{ srs_due_count }} thẻ đến hạn
-        </a>
-        {% endif %}
+      <div class="flex-grow-1">
+        <div class="fw-bold text-dark mb-0.5" style="font-size: 0.92rem;">"{{ daily_quote.en }}"</div>
+        <div class="text-muted small" style="font-size: 0.8rem;">
+          {{ daily_quote.vi }} — <span class="fw-semibold text-secondary">{{ daily_quote.author }}</span>
+        </div>
       </div>
     </div>
   </div>

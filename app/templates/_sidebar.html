@@ -1,159 +1,141 @@
 <div class="d-flex flex-column h-100 justify-content-between">
-    <div>
-        <div class="sidebar-menu p-3">
-            <ul class="nav nav-pills flex-column gap-1">
-                {% if current_user.is_authenticated and current_user.is_admin %}
-                <!-- ADMIN MANAGEMENT SECTION (TOP OF SIDEBAR) -->
-                <li class="nav-item mb-1">
-                    <span class="text-danger small fw-bold text-uppercase px-3 mb-2 d-flex align-items-center gap-1.5" style="font-size: 0.65rem; letter-spacing: 0.6px;">
-                        Quản trị hệ thống
-                    </span>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link d-flex align-items-center gap-3 px-3 py-2.5 {% if request.path == url_for('admin.dashboard') %}active{% endif %}" href="{{ url_for('admin.dashboard') }}">
-                        <span class="menu-icon-box bg-danger-subtle text-danger" style="width: 32px; height: 32px; font-size: 1.1rem; display: inline-flex; align-items: center; justify-content: center;">
-                            <i class="ph ph-chart-pie-slice"></i>
-                        </span>
-                        <span>Tổng quan Admin</span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link d-flex align-items-center gap-3 px-3 py-2.5 {% if request.path.startswith('/admin/lessons') %}active{% endif %}" href="{{ url_for('admin.lessons') }}">
-                        <span class="menu-icon-box bg-purple-subtle text-purple" style="width: 32px; height: 32px; font-size: 1.1rem; display: inline-flex; align-items: center; justify-content: center;">
-                            <i class="ph ph-books"></i>
-                        </span>
-                        <span>Quản lý bài học</span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link d-flex align-items-center gap-3 px-3 py-2.5 {% if request.path.startswith('/admin/vocabulary') %}active{% endif %}" href="{{ url_for('admin.vocabulary') }}">
-                        <span class="menu-icon-box bg-success-subtle text-success" style="width: 32px; height: 32px; font-size: 1.1rem; display: inline-flex; align-items: center; justify-content: center;">
-                            <i class="ph ph-book-open-text"></i>
-                        </span>
-                        <span>Quản lý từ vựng</span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link d-flex align-items-center gap-3 px-3 py-2.5 {% if request.path == url_for('admin.users') %}active{% endif %}" href="{{ url_for('admin.users') }}">
-                        <span class="menu-icon-box bg-primary-subtle text-primary" style="width: 32px; height: 32px; font-size: 1.1rem; display: inline-flex; align-items: center; justify-content: center;">
-                            <i class="ph ph-users"></i>
-                        </span>
-                        <span>Quản lý người dùng</span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link d-flex align-items-center gap-3 px-3 py-2.5 {% if request.path == url_for('admin.roles') %}active{% endif %}" href="{{ url_for('admin.roles') }}">
-                        <span class="menu-icon-box bg-warning-subtle text-warning" style="width: 32px; height: 32px; font-size: 1.1rem; display: inline-flex; align-items: center; justify-content: center;">
-                            <i class="ph ph-shield-check"></i>
-                        </span>
-                        <span>Vai trò & Phân quyền</span>
-                    </a>
-                </li>
-                <li class="nav-item mb-2">
-                    <a class="nav-link d-flex align-items-center gap-3 px-3 py-2.5 {% if request.path == url_for('admin.audit_logs') %}active{% endif %}" href="{{ url_for('admin.audit_logs') }}">
-                        <span class="menu-icon-box bg-secondary-subtle text-secondary" style="width: 32px; height: 32px; font-size: 1.1rem; display: inline-flex; align-items: center; justify-content: center;">
-                            <i class="ph ph-receipt"></i>
-                        </span>
-                        <span>Nhật ký Audit Logs</span>
-                    </a>
-                </li>
+    <div class="sidebar-menu p-3 overflow-auto">
+        <ul class="nav nav-pills flex-column gap-1">
+            {% if current_user.is_authenticated and current_user.is_admin %}
+            <!-- ADMIN MANAGEMENT SECTION (FOR ADMINS) -->
+            <li class="nav-item mb-1">
+                <span class="sidebar-heading text-danger d-flex align-items-center gap-1.5">
+                    <i class="ph ph-shield-check"></i> Quản trị hệ thống
+                </span>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link-modern {% if request.path == url_for('admin.dashboard') %}active{% endif %}" href="{{ url_for('admin.dashboard') }}">
+                    <i class="ph ph-chart-pie-slice"></i>
+                    <span>Tổng quan Admin</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link-modern {% if request.path.startswith('/admin/lessons') %}active{% endif %}" href="{{ url_for('admin.lessons') }}">
+                    <i class="ph ph-books"></i>
+                    <span>Quản lý bài học</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link-modern {% if request.path.startswith('/admin/vocabulary') %}active{% endif %}" href="{{ url_for('admin.vocabulary') }}">
+                    <i class="ph ph-book-open-text"></i>
+                    <span>Quản lý từ vựng</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link-modern {% if request.path == url_for('admin.users') %}active{% endif %}" href="{{ url_for('admin.users') }}">
+                    <i class="ph ph-users"></i>
+                    <span>Quản lý người dùng</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link-modern {% if request.path == url_for('admin.roles') %}active{% endif %}" href="{{ url_for('admin.roles') }}">
+                    <i class="ph ph-shield-chevron"></i>
+                    <span>Vai trò & Phân quyền</span>
+                </a>
+            </li>
+            <li class="nav-item mb-2">
+                <a class="nav-link-modern {% if request.path == url_for('admin.audit_logs') %}active{% endif %}" href="{{ url_for('admin.audit_logs') }}">
+                    <i class="ph ph-receipt"></i>
+                    <span>Nhật ký Audit</span>
+                </a>
+            </li>
 
-                <!-- SEPARATOR & LEARNER INTERFACE PREVIEW SECTION (BELOW ADMIN) -->
-                <li class="nav-item mt-2 pt-2 border-top">
-                    <span class="text-muted small fw-bold text-uppercase px-3 mb-2 d-flex align-items-center gap-1.5" style="font-size: 0.65rem; letter-spacing: 0.5px;">
-                        Quan sát giao diện học viên
-                    </span>
-                </li>
-                {% endif %}
+            <!-- SEPARATOR -->
+            <li class="nav-item my-2 border-top"></li>
+            {% endif %}
 
-                <!-- LEARNER MENU ITEMS -->
-                <li class="nav-item">
-                    <a class="nav-link nav-link-primary d-flex align-items-center gap-3 px-3 py-2.5 {% if request.path == url_for('main.dashboard') %}active{% endif %}" href="{{ url_for('main.dashboard') }}">
-                        <span class="menu-icon-box bg-primary-subtle text-primary fs-5">
-                            <i class="ph ph-house"></i>
-                        </span>
-                        <span>Trang chủ</span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link nav-link-purple d-flex align-items-center gap-3 px-3 py-2.5 {% if request.path.startswith(url_for('learning.lessons')) and not request.path.startswith('/admin') %}active{% endif %}" href="{{ url_for('learning.lessons') }}">
-                        <span class="menu-icon-box bg-purple-subtle text-purple fs-5">
-                            <i class="ph ph-graduation-cap"></i>
-                        </span>
-                        <span>Bài học</span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link nav-link-success d-flex align-items-center gap-3 px-3 py-2.5 {% if request.path.startswith(url_for('learning.vocabulary')) and not request.path.startswith('/admin') %}active{% endif %}" href="{{ url_for('learning.vocabulary') }}">
-                        <span class="menu-icon-box bg-success-subtle text-success fs-5">
-                            <i class="ph ph-notebook"></i>
-                        </span>
-                        <span>Từ vựng</span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link nav-link-warning d-flex align-items-center gap-3 px-3 py-2.5 {% if request.path.startswith('/games') %}active{% endif %}" href="{{ url_for('learning.game_lobby') }}">
-                        <span class="menu-icon-box bg-warning-subtle text-warning fs-5">
-                            <i class="ph ph-lightning"></i>
-                        </span>
-                        <span>Game phản xạ</span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link nav-link-primary d-flex align-items-center gap-3 px-3 py-2.5 {% if request.path.startswith('/flashcard-sets') %}active{% endif %}" href="{{ url_for('learning.flashcard_sets') }}">
-                        <span class="menu-icon-box bg-primary-subtle text-primary fs-5">
-                            <i class="ph ph-cards"></i>
-                        </span>
-                        <span>Tạo Flashcard</span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link nav-link-info d-flex align-items-center gap-3 px-3 py-2.5 {% if request.path.startswith(url_for('learning.quiz')) %}active{% endif %}" href="{{ url_for('learning.quiz') }}">
-                        <span class="menu-icon-box bg-info-subtle text-info fs-5">
-                            <i class="ph ph-check-square-offset"></i>
-                        </span>
-                        <span>Quiz ôn tập</span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link nav-link-danger d-flex align-items-center gap-3 px-3 py-2.5 {% if request.path.startswith(url_for('exams.exam_list')) %}active{% endif %}" href="{{ url_for('exams.exam_list') }}">
-                        <span class="menu-icon-box bg-danger-subtle text-danger fs-5">
-                            <i class="ph ph-certificate"></i>
-                        </span>
-                        <span>Luyện đề</span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link nav-link-warning d-flex align-items-center gap-3 px-3 py-2.5 {% if request.path.startswith('/gamification') or request.path == '/leaderboard' %}active{% endif %}" href="{{ url_for('learning.gamification_hub') }}">
-                        <span class="menu-icon-box bg-warning-subtle text-warning fs-5">
-                            <i class="ph ph-trophy"></i>
-                        </span>
-                        <span>Xếp hạng & Thưởng</span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link nav-link-dark d-flex align-items-center gap-3 px-3 py-2.5 {% if request.path.startswith(url_for('learning.progress')) %}active{% endif %}" href="{{ url_for('learning.progress') }}">
-                        <span class="menu-icon-box bg-dark-subtle text-dark fs-5">
-                            <i class="ph ph-trend-up"></i>
-                        </span>
-                        <span>Tiến độ</span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link nav-link-success d-flex align-items-center gap-3 px-3 py-2.5 {% if request.path == url_for('main.profile') %}active{% endif %}" href="{{ url_for('main.profile') }}">
-                        <span class="menu-icon-box bg-success-subtle text-success fs-5">
-                            <i class="ph ph-user-circle"></i>
-                        </span>
-                        <span>Hồ sơ cá nhân</span>
-                    </a>
-                </li>
-            </ul>
-        </div>
+            <!-- SECTION 1: HỌC TẬP (LEARNING) -->
+            <li class="nav-item">
+                <span class="sidebar-heading">Học tập</span>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link-modern {% if request.path == url_for('main.dashboard') %}active{% endif %}" href="{{ url_for('main.dashboard') }}">
+                    <i class="ph ph-house"></i>
+                    <span>Trang chủ</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link-modern {% if request.path.startswith(url_for('learning.lessons')) and not request.path.startswith('/admin') %}active{% endif %}" href="{{ url_for('learning.lessons') }}">
+                    <i class="ph ph-graduation-cap"></i>
+                    <span>Bài học</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link-modern {% if request.path.startswith(url_for('learning.vocabulary')) and not request.path.startswith('/admin') %}active{% endif %}" href="{{ url_for('learning.vocabulary') }}">
+                    <i class="ph ph-book-open"></i>
+                    <span>Từ vựng</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link-modern {% if request.path.startswith('/flashcard-sets') %}active{% endif %}" href="{{ url_for('learning.flashcard_sets') }}">
+                    <i class="ph ph-cards"></i>
+                    <span>Bộ thẻ Flashcard</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link-modern {% if request.path.startswith('/grammar') %}active{% endif %}" href="{{ url_for('learning.grammar_overview') }}">
+                    <i class="ph ph-textbox"></i>
+                    <span>Ngữ pháp</span>
+                </a>
+            </li>
+
+            <!-- SECTION 2: LUYỆN TẬP & THI (PRACTICE) -->
+            <li class="nav-item mt-2">
+                <span class="sidebar-heading">Luyện tập & Thi</span>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link-modern {% if request.path.startswith('/games') %}active{% endif %}" href="{{ url_for('learning.game_lobby') }}">
+                    <i class="ph ph-game-controller"></i>
+                    <span>Game phản xạ</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link-modern {% if request.path.startswith(url_for('learning.quiz')) %}active{% endif %}" href="{{ url_for('learning.quiz') }}">
+                    <i class="ph ph-check-circle"></i>
+                    <span>Quiz ôn tập</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link-modern {% if request.path.startswith(url_for('exams.exam_list')) %}active{% endif %}" href="{{ url_for('exams.exam_list') }}">
+                    <i class="ph ph-certificate"></i>
+                    <span>Luyện thi TOEIC</span>
+                </a>
+            </li>
+
+            <!-- SECTION 3: CÁ NHÂN & TIẾN ĐỘ (PERSONAL) -->
+            <li class="nav-item mt-2">
+                <span class="sidebar-heading">Cá nhân</span>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link-modern {% if request.path.startswith('/gamification') or request.path == '/leaderboard' %}active{% endif %}" href="{{ url_for('learning.gamification_hub') }}">
+                    <i class="ph ph-trophy"></i>
+                    <span>Xếp hạng & Thưởng</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link-modern {% if request.path.startswith(url_for('learning.progress')) %}active{% endif %}" href="{{ url_for('learning.progress') }}">
+                    <i class="ph ph-chart-line-up"></i>
+                    <span>Tiến độ học tập</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link-modern {% if request.path == url_for('main.profile') %}active{% endif %}" href="{{ url_for('main.profile') }}">
+                    <i class="ph ph-user-circle"></i>
+                    <span>Hồ sơ cá nhân</span>
+                </a>
+            </li>
+        </ul>
     </div>
     
-    <div class="sidebar-profile p-3 border-top bg-light-subtle">
+    <!-- SIDEBAR PROFILE FOOTER -->
+    <div class="sidebar-profile p-3 border-top bg-white">
         <div class="d-flex align-items-center justify-content-between">
-            <a href="{{ url_for('main.profile') }}" class="d-flex align-items-center gap-2 text-truncate text-decoration-none" title="Xem hồ sơ cá nhân">
+            <a href="{{ url_for('main.profile') }}" class="d-flex align-items-center gap-2.5 text-truncate text-decoration-none" title="Xem hồ sơ cá nhân">
                 <div class="profile-avatar-circle">
                     {% if current_user.avatar and current_user.avatar != 'default_avatar.png' %}
                     <img src="{{ url_for('static', filename='uploads/avatars/' + current_user.avatar) }}" class="w-100 h-100 rounded-circle object-fit-cover" alt="Avatar">
@@ -161,18 +143,18 @@
                     {{ current_user.username[0].upper() }}
                     {% endif %}
                 </div>
-                <div class="d-flex flex-column text-truncate" style="max-width: 120px;">
+                <div class="d-flex flex-column text-truncate" style="max-width: 125px;">
                     <span class="fw-bold text-dark text-truncate small" title="{{ current_user.full_name or current_user.username }}">{{ current_user.full_name or current_user.username }}</span>
                     {% if current_user.is_admin %}
-                    <span class="badge bg-danger-subtle text-danger border border-danger-subtle rounded-pill px-1.5 py-0.5 text-center" style="font-size: 0.62rem; width: fit-content;">Quản trị viên</span>
+                    <span class="badge bg-danger-subtle text-danger border border-danger-subtle rounded-pill px-1.5 py-0.5" style="font-size: 0.62rem; width: fit-content;">Quản trị viên</span>
                     {% else %}
-                    <span class="text-muted" style="font-size: 0.68rem;">Học viên</span>
+                    <span class="text-muted" style="font-size: 0.72rem;">Học viên</span>
                     {% endif %}
                 </div>
             </a>
             <form method="post" action="{{ url_for('auth.logout') }}" class="m-0">
                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                <button class="btn btn-link p-1 text-danger border-0 d-flex align-items-center justify-content-center" type="submit" title="Đăng xuất">
+                <button class="btn btn-sm btn-light border-0 text-muted p-1.5 d-flex align-items-center justify-content-center rounded-3" type="submit" title="Đăng xuất" style="transition: all 0.2s ease;" onmouseover="this.classList.add('text-danger')" onmouseout="this.classList.remove('text-danger')">
                     <i class="ph ph-sign-out fs-5"></i>
                 </button>
             </form>
