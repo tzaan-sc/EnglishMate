@@ -98,13 +98,11 @@ def parse_questions_from_text(raw_text: str, default_topic="General", default_le
             answer_key_map[int(m.group(1))] = m.group(2).upper()
 
     # 2. Tách các câu hỏi bằng regex chia khối
-    # Regex nhận diện điểm bắt đầu câu hỏi
     q_split_pattern = r"(?=(?:^|\n)\s*(?:Câu|Question|\b)\s*(\d+)[\.\:\/\-\)])"
     chunks = re.split(q_split_pattern, full_clean_text, flags=re.IGNORECASE)
 
     questions = []
     
-    # chunks sẽ có dạng: [preamble, q_num_1, chunk_1, q_num_2, chunk_2, ...]
     if len(chunks) > 1 and chunks[1].isdigit():
         idx = 1
         while idx < len(chunks) - 1:
@@ -116,7 +114,6 @@ def parse_questions_from_text(raw_text: str, default_topic="General", default_le
             if parsed_q:
                 questions.append(parsed_q)
     else:
-        # Cách 2: Quét tuần tự từng dòng nếu không chia chunk được
         current_q_num = None
         current_lines = []
         for line in lines:
@@ -146,7 +143,6 @@ def _extract_single_question(q_num: int, text: str, key_map: dict, topic: str, l
     if not lines:
         return None
 
-    # Tìm đáp án đúng trực tiếp trong câu (nếu có: Đáp án: A, Key: B, Chọn C...)
     correct_option = key_map.get(q_num, "")
     explanation = ""
 
@@ -157,43 +153,36 @@ def _extract_single_question(q_num: int, text: str, key_map: dict, topic: str, l
     exp_match = re.search(r"(?:Giải thích|Giai thich|Explanation|Lý do|Note)[\s\:\-\.]([\s\S]+)", text, re.IGNORECASE)
     if exp_match:
         explanation = exp_match.group(1).strip()
-        # Loại bỏ phần explanation ra khỏi text để đỡ nhiễu options
         text = text[:exp_match.start()].strip()
 
-    # Tìm Options A, B, C, D
-    # Pattern 1: Tìm A. ... B. ... C. ... D. ... trên cùng 1 dòng hoặc các dòng
     opt_pattern = r"(?:^|\s|\t)(?:[\[\(]?([A-D])[\]\)\.\:\-])\s*([\s\S]*?)(?=(?:[\[\(]?[A-D][\]\)\.\:\-]|$))"
     options_found = {}
 
     for m in re.finditer(opt_pattern, text):
         opt_letter = m.group(1).upper()
         opt_val = m.group(2).strip()
-        # Clean trailing answer tag if present
         opt_val = re.sub(r"(?:Đáp án|Dap an|Answer|Key|Giải thích)[\s\S]*$", "", opt_val, flags=re.IGNORECASE).strip()
         if opt_val and opt_letter not in options_found:
             options_found[opt_letter] = opt_val
 
-    # Question text là phần trước Option đầu tiên
     first_opt_match = re.search(r"(?:^|\s)(?:[\[\(]?[A-D][\]\)\.\:\-])\s*", text)
     if first_opt_match:
         q_text = text[:first_opt_match.start()].strip()
     else:
         q_text = lines[0].strip()
 
-    # Clean q_text: Xóa tiền tố "Câu 1:", "Question 1."
     q_text = re.sub(r"^(?:Câu|Question|\b)?\s*\d+[\.\:\/\-\)]\s*", "", q_text, flags=re.IGNORECASE).strip()
 
     if not q_text or len(options_found) < 2:
         return None
 
-    # Mặc định nếu thiếu A, B, C, D thì gán rỗng
     opt_a = options_found.get("A", "")
     opt_b = options_found.get("B", "")
     opt_c = options_found.get("C", "")
     opt_d = options_found.get("D", "")
 
     if not correct_option:
-        correct_option = "A"  # Mặc định an toàn nếu chưa gán key
+        correct_option = "A"
 
     if not explanation:
         explanation = f"Đáp án chính xác là {correct_option}."
@@ -224,16 +213,10 @@ def parse_vocabulary_from_text(raw_text: str, default_topic="General", default_l
       - accomplish /əˈkʌm.plɪʃ/ (v): hoàn thành, đạt được - She accomplished her goal.
       - resilient (adj) - kiên cường
       - negotiate (v): đàm phán
-      - 1. innovate (v): đổi mới
     """
     lines = [line.strip() for line in raw_text.splitlines() if line.strip()]
     vocab_list = []
 
-    # Regex nhận diện dòng từ vựng
-    # Group 1: Word
-    # Group 2: Pronunciation (tùy chọn trong /.../)
-    # Group 3: Part of speech (tùy chọn trong (...))
-    # Group 4: Meaning & example
     vocab_pattern = r"^(?:\d+[\.\-\)]\s*|\-\s*|\*\s*)?([a-zA-Z\s\-\'\’]+?)(?:\s+[\/\[]([^\/\]]+)[\/\]])?(?:\s*\(([a-zA-Z\.\,\s]+)\))?\s*(?:[\:\-\=]\s*|\t)(.+)$"
 
     for idx, line in enumerate(lines, start=1):
@@ -244,7 +227,6 @@ def parse_vocabulary_from_text(raw_text: str, default_topic="General", default_l
             pos_raw = m.group(3).strip().lower() if m.group(3) else "noun"
             rest = m.group(4).strip()
 
-            # Chuẩn hóa Part of speech
             pos = "noun"
             if any(k in pos_raw for k in ["v", "verb", "động từ"]):
                 pos = "verb"
@@ -255,7 +237,6 @@ def parse_vocabulary_from_text(raw_text: str, default_topic="General", default_l
             elif any(k in pos_raw for k in ["n", "noun", "danh từ"]):
                 pos = "noun"
 
-            # Tách meaning và example nếu có dấu gạch ngang hoặc ví dụ (Ex:)
             meaning = rest
             example_en = f"This is an example using the word '{word}'."
             example_vi = f"Đây là ví dụ minh họa cho từ '{word}'."
