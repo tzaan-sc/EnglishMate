@@ -2676,3 +2676,233 @@ a:hover {
     transform: translateY(-1px);
     box-shadow: 0 6px 15px rgba(245, 124, 0, 0.3);
 }
+
+/* ============================================================
+   TOPBAR PILLS (Redesigned — theo design tham khảo)
+   ============================================================ */
+.topbar-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    border-radius: 14px;
+    padding: 8px 16px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    line-height: 1;
+    border: 1.5px solid transparent;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+    cursor: default;
+}
+
+.topbar-pill-icon {
+    font-size: 1.15rem;
+    line-height: 1;
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+}
+
+.topbar-pill-divider {
+    width: 1px;
+    height: 13px;
+    display: inline-block;
+    border-radius: 2px;
+    flex-shrink: 0;
+}
+
+.topbar-pill-value {
+    font-weight: 700;
+    font-size: 0.9rem;
+}
+
+.topbar-pill-label {
+    font-weight: 500;
+    font-size: 0.75rem;
+    opacity: 0.75;
+}
+
+/* Streak — Inactive */
+.topbar-pill.streak-inactive {
+    background-color: #fef2ec;
+    border-color: #fcd5bb;
+    color: #c2410c;
+}
+.topbar-pill.streak-inactive .topbar-pill-icon {
+    color: #e07040;
+    opacity: 0.55;
+}
+.topbar-pill.streak-inactive .topbar-pill-divider {
+    background-color: #fcd5bb;
+}
+
+/* Streak — Active */
+.topbar-pill.streak-active {
+    background-color: #fef2ec;
+    border-color: #fbbf9a;
+    color: #c2410c;
+}
+.topbar-pill.streak-active .topbar-pill-icon {
+    color: #ea580c;
+}
+.topbar-pill.streak-active .topbar-pill-divider {
+    background-color: #fdba74;
+}
+
+/* Level pill */
+.topbar-pill.topbar-pill--level {
+    background-color: #eff6ff;
+    border-color: #bfdbfe;
+    color: #1d4ed8;
+    cursor: pointer;
+}
+.topbar-pill.topbar-pill--level .topbar-pill-icon {
+    color: #2563eb;
+}
+.topbar-pill.topbar-pill--level .topbar-pill-divider {
+    background-color: #bfdbfe;
+}
+.topbar-pill.topbar-pill--level:hover {
+    background-color: #dbeafe;
+    border-color: #93c5fd;
+    transform: translateY(-1px);
+    box-shadow: 0 3px 8px rgba(37, 99, 235, 0.12);
+}
+
+/* ============================================================
+   TOPBAR ICON BUTTON (Notification bell)
+   ============================================================ */
+.topbar-icon-btn {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 42px;
+    height: 42px;
+    border-radius: 12px;
+    background: #ffffff;
+    border: 1.5px solid #e8edf2;
+    color: #64748b;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    flex-shrink: 0;
+    box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06);
+}
+
+.topbar-icon-btn:hover {
+    background: #f8fafc;
+    color: #334155;
+    border-color: #cbd5e1;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 10px rgba(15, 23, 42, 0.08);
+}
+
+.topbar-icon-btn:focus,
+.topbar-icon-btn:focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: 2px;
+}
+
+/* Notification badge dot — màu cam/vàng như tham khảo */
+.notif-badge {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    min-width: 8px;
+    height: 8px;
+    background: #f59e0b;
+    border-radius: 9999px;
+    border: 2px solid #fff;
+    padding: 0;
+    font-size: 0;
+    line-height: 0;
+}
+
+/* Khi có số > 9 thì hiện text */
+.notif-badge.has-count {
+    min-width: 17px;
+    height: 17px;
+    font-size: 0.6rem;
+    font-weight: 800;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 3px;
+    top: 3px;
+    right: 3px;
+}
+
+/* ============================================================
+   NOTIFICATION DROPDOWN
+   ============================================================ */
+.notif-dropdown {
+    border: 1.5px solid var(--line) !important;
+    border-radius: var(--radius-md) !important;
+    overflow: hidden;
+    padding: 0 !important;
+    box-shadow: 0 8px 24px -4px rgba(15, 23, 42, 0.12),
+                0 4px 8px -2px rgba(15, 23, 42, 0.06) !important;
+}
+
+.notif-header {
+    background: var(--bg-surface);
+}
+
+.notif-body {
+    max-height: 320px;
+    overflow-y: auto;
+}
+
+.notif-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--line);
+    transition: background 0.15s;
+    cursor: pointer;
+}
+
+.notif-item:hover {
+    background: var(--bg-surface-subtle);
+}
+
+.notif-item-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: var(--primary-subtle);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.9rem;
+    flex-shrink: 0;
+}
+
+.notif-item-body {
+    flex: 1;
+    min-width: 0;
+}
+
+.notif-item-title {
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    line-height: 1.3;
+    margin-bottom: 2px;
+}
+
+.notif-item-time {
+    font-size: 0.72rem;
+    color: var(--text-muted);
+}
+
+.notif-empty {
+    padding: 28px 16px;
+    color: var(--text-muted);
+}
+
+.notif-footer {
+    background: var(--bg-surface-subtle);
+}

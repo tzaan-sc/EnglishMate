@@ -37,7 +37,7 @@
           </a>
         </div>
 
-        <!-- Right Controls: Streak & Pro Upgrade Button -->
+        <!-- Right Controls: Streak, Level, Notifications, Pro Upgrade -->
         <div class="d-flex align-items-center gap-2">
           {% if current_user.is_authenticated and current_user.is_admin %}
             {% if request.path.startswith('/admin') %}
@@ -51,27 +51,49 @@
             {% endif %}
           {% endif %}
 
-          <!-- Streak badge -->
-          {% set current_streak_num = current_user.get_current_streak() if current_user.is_authenticated else 0 %}
-          <div class="streak-pill {% if current_streak_num > 0 %}streak-active{% else %}streak-inactive{% endif %}" title="Chuỗi ngày học (Kỷ lục: {{ current_user.longest_streak if current_user.is_authenticated else 0 }} ngày)">
-            <span class="streak-icon" style="font-size: 1rem; line-height: 1;">🔥</span>
-            <span class="streak-divider"></span>
-            <span class="streak-count">{{ current_streak_num }}</span>
-          </div>
-
-          <!-- Level & XP pill -->
-          <a href="{{ url_for('learning.gamification_hub') }}" class="streak-pill text-decoration-none shadow-xs" title="Cấp độ {{ current_user.get_level() }} ({{ current_user.xp }} XP) - Xem Bảng xếp hạng & Thưởng" style="background-color: #f5f3ff; border-color: #ddd6fe; color: #7c3aed;">
-            <span class="streak-icon" style="font-size: 0.95rem; line-height: 1;">⚡</span>
-            <span class="streak-divider" style="background-color: #ddd6fe;"></span>
-            <span class="streak-count" style="color: #7c3aed;">Lv.{{ current_user.get_level() }}</span>
+          <!-- 1. Level pill -->
+          <a href="{{ url_for('learning.gamification_hub') }}" class="topbar-pill topbar-pill--level text-decoration-none" title="Cấp độ {{ current_user.get_level() }} ({{ current_user.xp }} XP)">
+            <i class="ph ph-medal topbar-pill-icon"></i>
+            <span class="topbar-pill-value">Lv.<strong>{{ current_user.get_level() }}</strong></span>
           </a>
 
-          <!-- Pro Upgrade button -->
+          <!-- 2. Streak badge -->
+          {% set current_streak_num = current_user.get_current_streak() if current_user.is_authenticated else 0 %}
+          <div class="topbar-pill {% if current_streak_num > 0 %}streak-active{% else %}streak-inactive{% endif %}" title="Chuỗi ngày học (Kỷ lục: {{ current_user.longest_streak if current_user.is_authenticated else 0 }} ngày)">
+            <i class="ph ph-flame topbar-pill-icon"></i>
+            <span class="topbar-pill-value">{{ current_streak_num }}</span>
+          </div>
+
+          <!-- 3. Notification bell -->
+          <div class="dropdown">
+            <button class="topbar-icon-btn" type="button" id="notifDropdown" data-bs-toggle="dropdown" aria-expanded="false" title="Thông báo">
+              <i class="ph ph-bell" style="font-size: 1.1rem;"></i>
+              <span class="notif-badge" id="notifBadge" style="display:none;">0</span>
+            </button>
+            <div class="dropdown-menu dropdown-menu-end notif-dropdown shadow" aria-labelledby="notifDropdown" style="min-width: 300px;">
+              <div class="notif-header d-flex justify-content-between align-items-center px-3 py-2 border-bottom">
+                <span class="fw-700 text-dark" style="font-size:0.9rem;">Thông báo</span>
+                <span class="badge bg-primary-subtle text-primary rounded-pill" style="font-size:0.7rem;" id="notifCount">Mới</span>
+              </div>
+              <div class="notif-body" id="notifList">
+                <div class="notif-empty d-flex flex-column align-items-center justify-content-center py-4 text-muted">
+                  <span style="font-size: 2rem;">🔔</span>
+                  <span style="font-size: 0.82rem; margin-top: 6px;">Chưa có thông báo nào</span>
+                </div>
+              </div>
+              <div class="notif-footer border-top px-3 py-2 text-center">
+                <a href="#" class="text-primary" style="font-size: 0.8rem; font-weight: 600; text-decoration: none;">Xem tất cả thông báo →</a>
+              </div>
+            </div>
+          </div>
+
+          <!-- 4. Pro Upgrade button -->
           <a href="#" class="btn-upgrade-pro text-decoration-none">
-            <span>★</span>
+            <i class="ph ph-crown" style="font-size: 0.9rem;"></i>
             <span>NÂNG CẤP PRO</span>
           </a>
         </div>
+
       </header>
 
       <!-- Main body split container (Sidebar on left, Content on right) -->
