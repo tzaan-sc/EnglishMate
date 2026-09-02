@@ -1,3 +1,4 @@
+import csv
 import io
 import json
 import uuid
@@ -48,9 +49,130 @@ CONTENT_SCHEMAS = {
 
 
 def parse_and_validate_file(file_stream, filename, content_type):
-    if filename.lower().endswith(".json"):
+    fn = filename.lower()
+    if fn.endswith(".json"):
         return parse_and_validate_json(file_stream, content_type)
+    elif fn.endswith(".csv"):
+        return parse_and_validate_csv(file_stream, content_type)
     return parse_and_validate_excel(file_stream, content_type)
+
+
+def parse_and_validate_csv(file_stream, content_type):
+    if content_type not in CONTENT_SCHEMAS:
+        return {
+            "success": False,
+            "error": f"Loại nội dung '{content_type}' không được hỗ trợ."
+        }
+
+    schema = CONTENT_SCHEMAS[content_type]
+    raw_bytes = file_stream.read()
+    
+    # Try decoding with utf-8-sig (for Excel utf-8 BOM), utf-8, or latin-1
+    text_content = None
+    for enc in ["utf-8-sig", "utf-8", "cp1258", "latin-1"]:
+        try:
+            text_content = raw_bytes.decode(enc)
+            break
+        except Exception:
+            continue
+            
+    if text_content is None:
+        return {
+            "success": False,
+            "error": "Không thể giải mã file CSV. Vui lòng lưu file ở định dạng UTF-8."
+        }
+
+    # Detect delimiter (comma or semicolon)
+    sample_line = text_content.splitlines()[0] if text_content.splitlines() else ""
+    delimiter = ";" if sample_line.count(";") > sample_line.count(",") else ","
+
+    reader = csv.reader(io.StringIO(text_content), delimiter=delimiter)
+    rows = list(reader)
+
+    if not rows:
+        return {
+            "success": False,
+            "error": "File CSV trống, không có dữ liệu."
+        }
+
+    raw_headers = [str(h or "").strip().lower() for h in rows[0]]
+    missing_cols = [col for col in schema["required_columns"] if col not in raw_headers]
+    if missing_cols:
+        return {
+            "success": False,
+            "error": f"File CSV thiếu các cột bắt buộc: {', '.join(missing_cols)}."
+        }
+
+    header_indices = {col: raw_headers.index(col) for col in raw_headers if col}
+
+    valid_records = []
+    error_records = []
+
+    for row_idx, row in enumerate(rows[1:], start=2):
+        if not any(row) or all(not str(c).strip() for c in row):
+            continue
+
+        row_data = {}
+        for col_name, col_idx in header_indices.items():
+            val = row[col_idx] if col_idx < len(row) else ""
+            row_data[col_name] = str(val).strip() if val is not None else ""
+
+        row_errors = []
+
+        for req_col in schema["required_columns"]:
+            if not row_data.get(req_col):
+                row_errors.append(f"Cột '{req_col}' không được để trống")
+
+        if "level" in row_data and row_data["level"]:
+            level_upper = row_data["level"].upper()
+            if "level_valid" in schema and level_upper not in schema["level_valid"]:
+                row_errors.append(f"Cấp độ '{row_data['level']}' không hợp lệ (Phải là A1, A2, B1, B2, C1, hoặc C2)")
+            row_data["level"] = level_upper
+
+        if "difficulty" in row_data and row_data["difficulty"]:
+            diff_title = row_data["difficulty"].title()
+            if "difficulty_valid" in schema and diff_title not in schema["difficulty_valid"]:
+                row_errors.append(f"Độ khó '{row_data['difficulty']}' không hợp lệ (Phải là Easy, Medium, hoặc Hard)")
+            row_data["difficulty"] = diff_title
+
+        if "skill" in row_data and row_data["skill"]:
+            skill_title = row_data["skill"].title()
+            if "skill_valid" in schema and skill_title not in schema["skill_valid"]:
+                row_errors.append(f"Kỹ năng '{row_data['skill']}' không hợp lệ (Phải là Grammar, Vocabulary, Reading, Listening, Speaking, Writing, General)")
+            row_data["skill"] = skill_title
+
+        if "correct_option" in row_data and row_data["correct_option"]:
+            opt_upper = row_data["correct_option"].upper()
+            if "correct_option_valid" in schema and opt_upper not in schema["correct_option_valid"]:
+                row_errors.append(f"Đáp án đúng '{row_data['correct_option']}' không hợp lệ (Phải là A, B, C, hoặc D)")
+            row_data["correct_option"] = opt_upper
+
+        if row_errors:
+            error_records.append({
+                "row_number": row_idx,
+                "data": row_data,
+                "errors": row_errors
+            })
+        else:
+            valid_records.append({
+                "row_number": row_idx,
+                "data": row_data
+            })
+
+    batch_id = str(uuid.uuid4())
+
+    return {
+        "success": True,
+        "batch_id": batch_id,
+        "content_type": content_type,
+        "content_title": schema["title"],
+        "total_rows": len(valid_records) + len(error_records),
+        "valid_count": len(valid_records),
+        "error_count": len(error_records),
+        "valid_records": valid_records,
+        "error_records": error_records,
+        "preview_sample": [r["data"] for r in valid_records[:10]]
+    }
 
 
 def parse_and_validate_json(file_stream, content_type):
