@@ -2024,7 +2024,8 @@ a:hover {
 
 .lesson-card-shell .lesson-card-body {
     flex: 1;
-    gap: var(--space-5);
+    gap: 20px;
+    padding: 20px !important;
 }
 
 .lesson-card-shell .lesson-card-copy,
@@ -2034,7 +2035,7 @@ a:hover {
 }
 
 .lesson-card-shell .lesson-card-copy {
-    gap: var(--space-3);
+    gap: 14px;
 }
 
 .lesson-card-shell .lesson-card-meta,
@@ -2058,16 +2059,16 @@ a:hover {
 
 .lesson-card-shell .lesson-card-copy h5,
 .lesson-card-shell .lesson-card-copy h6 {
-    line-height: 1.4;
+    line-height: 1.45;
 }
 
 .lesson-card-shell .lesson-card-copy p {
-    line-height: 1.55;
+    line-height: 1.65;
 }
 
 .lesson-card-shell .lesson-card-footer {
-    gap: var(--space-4);
-    padding-top: var(--space-4) !important;
+    gap: 16px;
+    padding-top: 16px !important;
 }
 
 .lesson-card-shell .difficulty-block {

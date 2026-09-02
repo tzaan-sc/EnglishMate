@@ -61,6 +61,7 @@
             <li class="nav-item my-2 border-top"></li>
             {% endif %}
 
+            {% if not current_user.is_admin %}
             <!-- SECTION 1: HỌC TẬP (LEARNING) -->
             <li class="nav-item">
                 <span class="sidebar-heading">Học tập</span>
@@ -141,6 +142,7 @@
                     <span>Hồ sơ cá nhân</span>
                 </a>
             </li>
+            {% endif %}
         </ul>
     </div>
     
