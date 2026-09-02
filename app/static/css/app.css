@@ -1,3 +1,21 @@
+/* Lucide is the single icon system used by all interface controls. */
+.lucide {
+    width: 1em;
+    height: 1em;
+    flex: 0 0 auto;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    vertical-align: -0.125em;
+}
+
+.btn > .lucide,
+.nav-link-modern > .lucide,
+.topbar-pill > .lucide,
+.input-group-text > .lucide {
+    display: inline-block;
+}
+
 :root {
     /* Base Neutral Surface & Typography Tokens (Modern Slate Scale) */
     --bg-canvas: #f8fafc;
@@ -58,6 +76,14 @@
     --radius-lg: 16px;
     --radius-xl: 20px;
     --radius-full: 9999px;
+
+    /* Shared spacing scale */
+    --space-1: 4px;
+    --space-2: 8px;
+    --space-3: 12px;
+    --space-4: 16px;
+    --space-5: 24px;
+    --space-6: 32px;
 
     /* Bootstrap Overrides */
     --bs-primary: var(--primary);
@@ -471,6 +497,9 @@ a:hover {
     background: white;
     border-radius: 22px;
     padding: 27px;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
     box-shadow: 0 20px 40px rgba(24, 64, 42, .18)
 }
 
@@ -483,8 +512,16 @@ a:hover {
 
 .daily-card h3 {
     font-weight: 800;
-    margin: 7px 0;
+    margin: 0;
     font-size: 1.4rem
+}
+
+.daily-card .progress {
+    margin-top: 0 !important;
+}
+
+.daily-card > .d-flex:last-child {
+    margin-top: calc(var(--space-4) * -1) !important;
 }
 
 .level-chip {
@@ -614,6 +651,7 @@ a:hover {
     border: 1px solid var(--line);
     border-radius: 20px;
     padding: 28px;
+    gap: var(--space-4);
     background: var(--paper);
     transition: .25s
 }
@@ -633,12 +671,14 @@ a:hover {
 
 .feature-card h4 {
     font-weight: 800;
-    margin: 35px 0 10px
+    margin: 0
 }
 
 .feature-card p {
     color: var(--muted);
-    min-height: 54px
+    min-height: 0;
+    margin: 0;
+    line-height: 1.55
 }
 
 .feature-card a {
@@ -1007,7 +1047,10 @@ a:hover {
 }
 
 .page-heading {
-    margin-bottom: 32px
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+    margin-bottom: var(--space-6)
 }
 
 .page-heading.mx-auto {
@@ -1020,7 +1063,7 @@ a:hover {
     font-size: clamp(2rem, 4vw, 3rem);
     font-weight: 800;
     letter-spacing: -.05em;
-    margin: 10px 0
+    margin: 0
 }
 
 .page-heading p,
@@ -1028,6 +1071,17 @@ a:hover {
 .lesson-header p {
     color: var(--muted);
     margin: 0
+}
+
+.section-title {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+}
+
+.section-title h2,
+.section-title p {
+    margin: 0;
 }
 
 .stat-grid {
@@ -1513,7 +1567,14 @@ a:hover {
 }
 
 .quiz-setup form {
-    text-align: left
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+    text-align: left;
+}
+
+.quiz-setup form > * {
+    margin-bottom: 0 !important;
 }
 
 .quiz-setup>small {
@@ -1718,7 +1779,7 @@ a:hover {
 .panel h3 {
     font-size: 1.05rem;
     font-weight: 800;
-    margin-bottom: 20px
+    margin: 0 0 var(--space-4)
 }
 
 .timeline-item {
@@ -1952,6 +2013,119 @@ a:hover {
 
 .error-page p {
     color: var(--muted)
+}
+
+/* Shared content rhythm: keep repeated learning cards aligned across views. */
+.lesson-card-shell,
+.lesson-card-shell .lesson-card-body {
+    display: flex;
+    flex-direction: column;
+}
+
+.lesson-card-shell .lesson-card-body {
+    flex: 1;
+    gap: var(--space-5);
+}
+
+.lesson-card-shell .lesson-card-copy,
+.lesson-card-shell .lesson-card-footer {
+    display: flex;
+    flex-direction: column;
+}
+
+.lesson-card-shell .lesson-card-copy {
+    gap: var(--space-3);
+}
+
+.lesson-card-shell .lesson-card-meta,
+.lesson-card-shell .lesson-card-actions {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+}
+
+.lesson-card-shell .lesson-card-meta {
+    justify-content: space-between;
+}
+
+.lesson-card-shell .lesson-card-copy h5,
+.lesson-card-shell .lesson-card-copy h6,
+.lesson-card-shell .lesson-card-copy p,
+.lesson-card-shell .lesson-card-footer,
+.lesson-card-shell .lesson-card-footer .difficulty-block {
+    margin: 0;
+}
+
+.lesson-card-shell .lesson-card-copy h5,
+.lesson-card-shell .lesson-card-copy h6 {
+    line-height: 1.4;
+}
+
+.lesson-card-shell .lesson-card-copy p {
+    line-height: 1.55;
+}
+
+.lesson-card-shell .lesson-card-footer {
+    gap: var(--space-4);
+    padding-top: var(--space-4) !important;
+}
+
+.lesson-card-shell .difficulty-block {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+}
+
+.lesson-card-shell .difficulty-label {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    line-height: 1.2;
+}
+
+.lesson-card-shell .progress {
+    height: 5px;
+    flex: none;
+}
+
+.lesson-card-shell .lesson-card-actions {
+    width: 100%;
+}
+
+.lesson-card-shell .lesson-card-actions .btn {
+    margin: 0;
+}
+
+.stat-card {
+    gap: var(--space-2);
+}
+
+.stat-icon {
+    margin-bottom: var(--space-2);
+}
+
+.learning-card {
+    gap: var(--space-4);
+}
+
+.learning-card h4,
+.learning-card p {
+    line-height: 1.45;
+}
+
+.result-answer {
+    gap: var(--space-4);
+}
+
+@media(max-width:767px) {
+    .lesson-card-shell .lesson-card-actions {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .lesson-card-shell .lesson-card-actions .btn {
+        width: 100%;
+    }
 }
 
 @media(max-width:991px) {
