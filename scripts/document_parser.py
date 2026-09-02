@@ -1,7 +1,7 @@
 """
 document_parser.py
 ===================
-Trích xuất tự động Câu hỏi Trắc nghiệm và Từ vựng từ file Word (.docx), PDF (.pdf), Text (.txt, .md).
+Thuật toán phân tích và trích xuất Câu hỏi trắc nghiệm & Từ vựng từ file Word (.docx), PDF (.pdf), Text (.txt, .md).
 """
 
 import os
@@ -81,15 +81,14 @@ def extract_text_from_file(file_path: str) -> str:
 def parse_questions_from_text(raw_text: str, default_topic="General", default_level="B1", default_skill="Grammar") -> list:
     """
     Nhận diện thông minh các khối câu hỏi trắc nghiệm tiếng Anh.
-    Hỗ trợ các dạng đánh số:
-      Câu 1:, Question 1., 1., 1/, [1], Part 5: Question 101...
+    Hỗ trợ các dạng: Câu 1:, Question 1., 1., 1/, [1], Part 5: Question 101...
     Hỗ trợ đáp án A, B, C, D trên cùng dòng hoặc xuống dòng.
     Hỗ trợ bóc tách Đáp án đúng (Key/Answer) và Giải thích (Explanation).
     """
     lines = [line.strip() for line in raw_text.splitlines() if line.strip()]
     full_clean_text = "\n".join(lines)
 
-    # 1. Tách danh sách đáp án tổng hợp (nếu có bảng key ở cuối tài liệu, ví dụ: 1.A 2.B 3.C 4.D)
+    # Tách danh sách đáp án tổng hợp (nếu có bảng key ở cuối tài liệu, ví dụ: 1.A 2.B 3.C 4.D)
     answer_key_map = {}
     key_section_match = re.search(r"(?:ĐÁP ÁN|DAP AN|ANSWER KEY|KEY|BẢNG ĐÁP ÁN)[:\s\n]+([\s\S]+)$", full_clean_text, re.IGNORECASE)
     if key_section_match:
@@ -97,7 +96,7 @@ def parse_questions_from_text(raw_text: str, default_topic="General", default_le
         for m in re.finditer(r"(?:Câu|Question|\b)?\s*(\d+)[\.\s\:\-\)]+\s*([A-D])\b", key_text, re.IGNORECASE):
             answer_key_map[int(m.group(1))] = m.group(2).upper()
 
-    # 2. Tách các câu hỏi bằng regex chia khối
+    # Tách các câu hỏi bằng regex chia khối
     q_split_pattern = r"(?=(?:^|\n)\s*(?:Câu|Question|\b)\s*(\d+)[\.\:\/\-\)])"
     chunks = re.split(q_split_pattern, full_clean_text, flags=re.IGNORECASE)
 

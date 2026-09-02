@@ -1,11 +1,11 @@
 """
-fetch_vocabulary_api.py
-=======================
+fetch_vocab.py
+==============
 Tự động gọi Free Dictionary API và MyMemory Translation API
 để lấy phiên âm IPA, định nghĩa, ví dụ, từ đồng nghĩa và tự động dịch sang tiếng Việt.
 
 Sử dụng:
-    python scripts/3_api_enricher/fetch_vocabulary_api.py
+    python scripts/fetch_vocab.py
 """
 
 import os
@@ -25,7 +25,7 @@ if sys.platform == "win32" and hasattr(sys.stdout, "reconfigure"):
         pass
 
 # Thêm đường dẫn root vào sys.path
-BASE_DIR = Path(__file__).resolve().parent.parent.parent
+BASE_DIR = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(BASE_DIR))
 
 

@@ -1,18 +1,18 @@
 """
-validate_vocabulary.py
-======================
-Script chuyên dụng để duyệt từng dòng trong file CSV từ vựng, kiểm tra:
-1. Tính đầy đủ của các trường dữ liệu bắt buộc (Word, Meaning, IPA, Level, POS...).
+validate_vocab.py
+=================
+Script kiểm tra & đánh giá độ chuẩn xác của file CSV Từ vựng:
+1. Đầy đủ các trường bắt buộc (Word, Meaning, IPA, Level, POS...).
 2. Phát hiện từ vựng bị trùng lặp (Duplicate check).
 3. Kiểm tra tính hợp lệ của Level (A1-C2) và Part of speech (noun, verb, adj, adv...).
-4. Kiểm tra logic câu ví dụ (câu ví dụ tiếng Anh có chứa từ vựng đó không).
-5. [Tùy chọn] Kiểm tra chính tả & đối chiếu từ điển qua Free Dictionary API.
-6. [Tùy chọn] Tự động sửa lỗi / tự động điền các trường bị thiếu và xuất file CSV sạch.
+4. Kiểm tra logic câu ví dụ tiếng Anh.
+5. [Tùy chọn] Đối chiếu từ điển Free Dictionary API.
+6. [Tùy chọn] Tự động sửa lỗi / điền giá trị chuẩn và xuất file CSV sạch.
 
 Cách dùng:
-    python scripts/2_data_validator/validate_vocabulary.py
+    python scripts/validate_vocab.py
     hoặc:
-    python scripts/2_data_validator/validate_vocabulary.py path/to/my_words.csv --online --auto-fix
+    python scripts/validate_vocab.py csv_templates/vocabulary_template.csv --online --auto-fix
 """
 
 import os
@@ -31,6 +31,9 @@ if sys.platform == "win32" and hasattr(sys.stdout, "reconfigure"):
         sys.stdout.reconfigure(encoding="utf-8")
     except Exception:
         pass
+
+BASE_DIR = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(BASE_DIR))
 
 VALID_LEVELS = {"A1", "A2", "B1", "B2", "C1", "C2"}
 VALID_POS = {
@@ -158,7 +161,7 @@ def validate_vocabulary_dataset(file_path: str, check_online=False, auto_fix=Fal
                 seen_words[word_lower] = idx
 
             if re.search(r"[0-9_@#$%^&*+=<>{}\[\]|\\]", word):
-                warnings.append(f"Từ vựng chứa ký tự số hoặc ký tự đặc biệt lạ")
+                warnings.append("Từ vựng chứa ký tự số hoặc ký tự đặc biệt lạ")
 
         if not meaning_vi:
             errors.append("Cột 'meaning_vi' bị để trống")
@@ -274,8 +277,7 @@ def validate_vocabulary_dataset(file_path: str, check_online=False, auto_fix=Fal
 
 
 def main():
-    root_dir = Path(__file__).resolve().parent.parent.parent
-    default_path = os.path.join(root_dir, "csv_templates", "vocabulary_template.csv")
+    default_path = os.path.join(BASE_DIR, "csv_templates", "vocabulary_template.csv")
     
     if len(sys.argv) > 1 and not sys.argv[1].startswith("-"):
         csv_file = sys.argv[1]

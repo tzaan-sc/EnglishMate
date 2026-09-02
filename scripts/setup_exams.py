@@ -1,13 +1,13 @@
 """
-setup_sample_exams.py
-=====================
+setup_exams.py
+==============
 Khởi tạo cấu trúc bảng Đề thi (Exam tables) trong PostgreSQL / SQLite.
 """
 
 import sys
 from pathlib import Path
 
-BASE_DIR = Path(__file__).resolve().parent.parent.parent
+BASE_DIR = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(BASE_DIR))
 
 from app import create_app

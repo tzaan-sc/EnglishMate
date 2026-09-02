@@ -5,7 +5,7 @@ Chạy bóc tách tài liệu Word (.docx), PDF (.pdf), Text (.txt) từ Google 
 sang định dạng CSV chuẩn hoặc nạp trực tiếp vào cơ sở dữ liệu PostgreSQL.
 
 Sử dụng:
-    python scripts/1_data_extractor/extract_data.py
+    python scripts/extract_data.py
 """
 
 import os
@@ -21,17 +21,25 @@ if sys.platform == "win32" and hasattr(sys.stdout, "reconfigure"):
         pass
 
 # Thêm đường dẫn root vào sys.path để gọi Flask app và models
-BASE_DIR = Path(__file__).resolve().parent.parent.parent
+BASE_DIR = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(BASE_DIR))
 
-from scripts.data_extractor.document_parser import (
-    extract_text_from_file,
-    parse_questions_from_text,
-    parse_vocabulary_from_text,
-)
+try:
+    from scripts.document_parser import (
+        extract_text_from_file,
+        parse_questions_from_text,
+        parse_vocabulary_from_text,
+    )
+except ImportError:
+    from document_parser import (
+        extract_text_from_file,
+        parse_questions_from_text,
+        parse_vocabulary_from_text,
+    )
 
-INPUT_DIR = os.path.join(os.path.dirname(__file__), "input_files")
-OUTPUT_DIR = os.path.join(os.path.dirname(__file__), "output_csv")
+SCRIPTS_DIR = os.path.dirname(__file__)
+INPUT_DIR = os.path.join(SCRIPTS_DIR, "input_files")
+OUTPUT_DIR = os.path.join(SCRIPTS_DIR, "output_csv")
 
 os.makedirs(INPUT_DIR, exist_ok=True)
 os.makedirs(OUTPUT_DIR, exist_ok=True)
@@ -116,14 +124,24 @@ def import_vocabulary_to_db(vocab_list: list):
 
 
 def process_all_input_files():
+    # Quét file trong input_files
     files = [f for f in os.listdir(INPUT_DIR) if os.path.isfile(os.path.join(INPUT_DIR, f)) and not f.startswith(".")]
+    
     if not files:
-        print(f"\n[!] Thư mục 'scripts/1_data_extractor/input_files/' hiện chưa có file tài liệu nào.")
-        print(f"    👉 Hãy chép các file Word (.docx), PDF (.pdf) hoặc Text (.txt) từ Google Drive vào thư mục đó trước rồi chạy lại nhé!")
-        return
+        print(f"\n[!] Thư mục 'scripts/input_files/' hiện chưa có file tài liệu nào.")
+        print(f"    👉 Hãy chép các file Word (.docx), PDF (.pdf) hoặc Text (.txt) từ Google Drive vào thư mục 'scripts/input_files/' rồi chạy lại nhé!")
+        
+        custom_file = input("\nHoặc nhập trực tiếp đường dẫn file tài liệu cần bóc tách (nhấn Enter để thoát): ").strip()
+        if custom_file and os.path.exists(custom_file):
+            files = [custom_file]
+            target_dir = ""
+        else:
+            return
+    else:
+        target_dir = INPUT_DIR
 
     print(f"\n=======================================================")
-    print(f" 📂 Tìm thấy {len(files)} file tài liệu trong 'input_files/':")
+    print(f" 📂 Tìm thấy {len(files)} file tài liệu để xử lý:")
     for idx, f in enumerate(files, 1):
         print(f"   [{idx}] {f}")
     print(f"=======================================================\n")
@@ -136,7 +154,7 @@ def process_all_input_files():
 
     all_raw_text = []
     for f in files:
-        file_path = os.path.join(INPUT_DIR, f)
+        file_path = os.path.join(target_dir, f) if target_dir else f
         print(f" -> Đang đọc file: {f}...")
         txt = extract_text_from_file(file_path)
         if txt:

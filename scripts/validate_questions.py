@@ -1,14 +1,16 @@
 """
 validate_questions.py
 =====================
-Script chuyên dụng để kiểm tra tính chính xác của file CSV Ngân hàng Câu hỏi Trắc nghiệm:
-1. Đảm bảo có đủ 4 lựa chọn A, B, C, D.
-2. Kiểm tra đáp án đúng (correct_option) có khớp với A, B, C, D không.
-3. Kiểm tra câu hỏi trùng lặp.
+Script kiểm tra & đánh giá tính chính xác của file CSV Ngân hàng Câu hỏi:
+1. Đảm bảo đủ 4 phương án lựa chọn A, B, C, D.
+2. Kiểm tra đáp án đúng (correct_option) có khớp A, B, C, D không.
+3. Kiểm tra câu hỏi bị trùng lặp.
 4. Kiểm tra cấp độ (A1-C2) và giải thích (explanation).
 
 Cách dùng:
-    python scripts/2_data_validator/validate_questions.py
+    python scripts/validate_questions.py
+    hoặc:
+    python scripts/validate_questions.py csv_templates/questions_template.csv
 """
 
 import os
@@ -23,6 +25,9 @@ if sys.platform == "win32" and hasattr(sys.stdout, "reconfigure"):
         sys.stdout.reconfigure(encoding="utf-8")
     except Exception:
         pass
+
+BASE_DIR = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(BASE_DIR))
 
 VALID_LEVELS = {"A1", "A2", "B1", "B2", "C1", "C2"}
 VALID_OPTIONS = {"A", "B", "C", "D"}
@@ -156,8 +161,7 @@ def validate_questions_dataset(file_path: str):
 
 
 def main():
-    root_dir = Path(__file__).resolve().parent.parent.parent
-    default_path = os.path.join(root_dir, "csv_templates", "questions_template.csv")
+    default_path = os.path.join(BASE_DIR, "csv_templates", "questions_template.csv")
     
     if len(sys.argv) > 1:
         csv_file = sys.argv[1]
