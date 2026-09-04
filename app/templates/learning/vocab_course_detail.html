@@ -1,0 +1,223 @@
+{% extends "base.html" %}
+{% block title %}{{ subcategory.title }} · Từ vựng EnglishMate{% endblock %}
+
+{% block content %}
+<div class="container-fluid max-w-7xl py-4">
+
+  <!-- BREADCRUMBS -->
+  <nav aria-label="breadcrumb" class="mb-3">
+    <ol class="breadcrumb mb-0 small">
+      <li class="breadcrumb-item">
+        <a href="{{ url_for('learning.vocabulary') }}" class="text-muted text-decoration-none d-inline-flex align-items-center gap-1">
+          <i class="ph-bold ph-book-open"></i> Từ vựng
+        </a>
+      </li>
+      <li class="breadcrumb-item">
+        <a href="{{ url_for('learning.vocabulary', tab=cat_key) }}" class="text-muted text-decoration-none">
+          {{ category.title }}
+        </a>
+      </li>
+      <li class="breadcrumb-item active text-primary fw-bold" aria-current="page">
+        {{ subcategory.title }}
+      </li>
+    </ol>
+  </nav>
+
+  <!-- COMPACT COURSE BANNER -->
+  <div class="card border-0 p-4 mb-4 shadow-sm position-relative overflow-hidden" 
+       style="background: {{ category.gradient }}; color: #ffffff; border-radius: 16px;">
+    
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
+      <div>
+        <div class="d-flex align-items-center gap-2 mb-1.5">
+          <span class="badge rounded-pill px-2.5 py-0.5 small" style="background: rgba(255,255,255,0.2); font-size: 0.75rem;">
+            {{ category.badge }}
+          </span>
+          <span class="badge rounded-pill px-2.5 py-0.5 small fw-bold text-white" style="background: {{ subcategory.color }}; font-size: 0.75rem;">
+            Cấp độ {{ subcategory.level }}
+          </span>
+        </div>
+
+        <div class="d-flex align-items-center gap-2.5">
+          <span class="fs-2">{{ subcategory.icon }}</span>
+          <h3 class="fw-bold text-white mb-0" style="letter-spacing: -0.01em;">
+            {{ subcategory.title }}
+          </h3>
+        </div>
+      </div>
+
+      <!-- Quick Stats & Actions -->
+      <div class="d-flex flex-wrap align-items-center gap-2">
+        <div class="bg-white text-dark px-3 py-2 rounded-3 shadow-xs d-flex align-items-center gap-2.5">
+          <div class="text-end">
+            <div class="small fw-bold text-dark">{{ course_learned_words }}/{{ course_total_words }} từ</div>
+            <div class="text-muted" style="font-size: 0.7rem;">Đã học {{ course_progress_pct }}%</div>
+          </div>
+          <div class="progress" style="width: 50px; height: 6px; border-radius: 3px; background-color: #f1f5f9;">
+            <div class="progress-bar bg-primary" role="progressbar" style="width: {{ course_progress_pct }}%;"></div>
+          </div>
+        </div>
+
+        <a href="{{ url_for('learning.study_vocabulary', level=subcategory.level) }}" class="btn btn-light rounded-pill px-3 py-2 fw-bold text-primary shadow-xs d-inline-flex align-items-center gap-1.5" style="font-size: 0.84rem;">
+          <i class="ph-bold ph-play-circle fs-5"></i>
+          <span>Study Mode</span>
+        </a>
+        <a href="{{ url_for('learning.flashcards') }}" class="btn btn-outline-light rounded-pill px-3 py-2 fw-semibold d-inline-flex align-items-center gap-1.5" style="font-size: 0.84rem; background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.25);">
+          <i class="ph-bold ph-cards"></i> Flashcard
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- LESSON UNITS / TOPICS NAV FILTER & SEARCH -->
+  <div class="card border-0 shadow-xs rounded-4 p-3 bg-white mb-4">
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-2.5">
+      
+      <!-- Units Filter Pills -->
+      <div class="d-flex align-items-center gap-1.5 overflow-auto pb-1 pb-md-0" style="scrollbar-width: thin;">
+        <span class="small fw-bold text-muted ps-1" style="white-space: nowrap; font-size: 0.82rem;">
+          Bài học:
+        </span>
+        <a href="{{ url_for('learning.vocab_course_detail', cat_key=cat_key, subcat_key=subcat_key) }}" 
+           class="badge rounded-pill text-decoration-none px-3 py-1.5 fw-semibold {% if not unit_filter %}bg-primary text-white shadow-xs{% else %}bg-light text-secondary border{% endif %}" 
+           style="font-size: 0.8rem; white-space: nowrap;">
+          Tất cả ({{ words|length }})
+        </a>
+        {% for u in units %}
+        <a href="{{ url_for('learning.vocab_course_detail', cat_key=cat_key, subcat_key=subcat_key, unit=u.name) }}" 
+           class="badge rounded-pill text-decoration-none px-3 py-1.5 fw-semibold {% if unit_filter == u.name %}bg-primary text-white shadow-xs{% else %}bg-light text-secondary border{% endif %}" 
+           style="font-size: 0.8rem; white-space: nowrap;">
+          {{ u.name }} ({{ u.learned }}/{{ u.total }})
+        </a>
+        {% endfor %}
+      </div>
+
+      <!-- Search in Course -->
+      <div style="min-width: 230px;">
+        <form method="get" class="m-0">
+          {% if unit_filter %}
+          <input type="hidden" name="unit" value="{{ unit_filter }}">
+          {% endif %}
+          <div class="input-group input-group-sm">
+            <span class="input-group-text bg-white border-end-0 text-muted rounded-start-pill ps-2.5">
+              <i class="ph-bold ph-magnifying-glass"></i>
+            </span>
+            <input class="form-control border-start-0 ps-0 shadow-none" 
+                   name="q" value="{{ search }}" 
+                   placeholder="Tìm từ trong bài..." 
+                   style="font-size: 0.82rem;">
+            {% if search %}
+            <a href="{{ url_for('learning.vocab_course_detail', cat_key=cat_key, subcat_key=subcat_key, unit=unit_filter) }}" class="btn btn-light border border-start-0 text-muted">
+              <i class="ph-bold ph-x"></i>
+            </a>
+            {% endif %}
+            <button type="submit" class="btn btn-dark rounded-end-pill px-2.5 fw-bold">Tìm</button>
+          </div>
+        </form>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- WORDS LIST -->
+  <div class="vocab-words-list mb-5">
+    
+    <div class="d-flex justify-content-between align-items-center mb-3 px-1">
+      <span class="fw-bold text-dark small">Danh sách từ vựng ({{ words|length }})</span>
+      <span class="badge bg-primary-subtle text-primary rounded-pill px-2.5 py-1 small fw-bold">
+        {{ course_learned_words }} đã thuộc
+      </span>
+    </div>
+
+    {% if words %}
+    <div class="d-flex flex-column gap-2.5">
+      {% for word in words %}
+      {% set is_learned = word.id in learned_ids %}
+      {% set is_fav = word.id in favorite_ids %}
+      
+      <article class="card border-0 rounded-3 p-3 shadow-xs bg-white transition-hover" style="border: 1px solid #e2e8f0 !important;">
+        <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-2.5">
+          
+          <!-- Word + Audio + IPA -->
+          <div class="d-flex align-items-center gap-2.5" style="min-width: 220px;">
+            <button type="button" class="btn btn-sm btn-light rounded-circle p-1.5 d-flex align-items-center justify-content-center text-primary shadow-xs" 
+                    onclick="speakWord('{{ word.word }}')" 
+                    title="Nghe phát âm" style="width: 32px; height: 32px; background-color: #eff6ff;">
+              <i class="ph-bold ph-speaker-high fs-6"></i>
+            </button>
+            <div>
+              <div class="d-flex align-items-center gap-2">
+                <h5 class="fw-bold text-dark mb-0" style="font-size: 1.1rem;">
+                  {{ word.word }}
+                </h5>
+                <span class="badge bg-light text-muted border rounded-pill px-1.5 py-0.5" style="font-size: 0.7rem;">
+                  {{ word.part_of_speech }}
+                </span>
+              </div>
+              <small class="text-muted" style="font-size: 0.8rem;">{{ word.pronunciation }}</small>
+            </div>
+          </div>
+
+          <!-- Meaning & Example -->
+          <div class="flex-grow-1 px-md-3">
+            <div class="fw-bold text-dark small mb-0.5" style="font-size: 0.95rem;">
+              {{ word.meaning_vi }}
+            </div>
+            <div class="text-secondary small fst-italic" style="font-size: 0.82rem; line-height: 1.45;">
+              "{{ word.example_en }}"
+            </div>
+          </div>
+
+          <!-- Unit Tag & Action Buttons -->
+          <div class="d-flex align-items-center gap-2 align-self-end align-self-md-center">
+            {% if word.lesson_unit or word.topic %}
+            <span class="badge bg-light text-muted border rounded-pill px-2 py-1 small" style="font-size: 0.72rem;">
+              {{ word.lesson_unit or word.topic }}
+            </span>
+            {% endif %}
+
+            <!-- Favorite Form -->
+            <form method="post" action="{{ url_for('learning.favorite_word', word_id=word.id) }}" class="m-0">
+              {{ form.hidden_tag() }}
+              <button type="submit" class="btn btn-sm btn-light border rounded-circle p-1.5 text-warning" title="Yêu thích" style="width: 32px; height: 32px;">
+                <i class="{% if is_fav %}ph-fill ph-star text-warning{% else %}ph-bold ph-star text-muted{% endif %} fs-6"></i>
+              </button>
+            </form>
+
+            <!-- Learn Action Form -->
+            <form method="post" action="{{ url_for('learning.learn_word', word_id=word.id) }}" class="m-0">
+              {{ form.hidden_tag() }}
+              <button class="btn {% if is_learned %}btn-success text-white{% else %}btn-outline-primary{% endif %} btn-sm rounded-pill px-3 py-1 fw-bold" 
+                      {% if is_learned %}disabled{% endif %} style="font-size: 0.78rem;">
+                {{ '✓ Đã học' if is_learned else '+ Học' }}
+              </button>
+            </form>
+          </div>
+
+        </div>
+      </article>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="card border-0 rounded-4 p-4 text-center bg-white shadow-xs">
+      <p class="text-muted small mb-0">Chưa có từ vựng nào thuộc bộ lọc này.</p>
+    </div>
+    {% endif %}
+
+  </div>
+
+</div>
+
+<!-- Audio Script -->
+<script>
+function speakWord(text) {
+  if ('speechSynthesis' in window) {
+    window.speechSynthesis.cancel();
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.lang = 'en-US';
+    utterance.rate = 0.9;
+    window.speechSynthesis.speak(utterance);
+  }
+}
+</script>
+{% endblock %}

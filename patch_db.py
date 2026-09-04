@@ -68,6 +68,21 @@ if db_path.exists():
 
     conn.commit()
 
+    # Patch vocabulary table columns
+    cursor.execute("PRAGMA table_info(vocabulary)")
+    vocab_cols = [row[1] for row in cursor.fetchall()]
+    new_vocab_cols = [
+        ("category", "VARCHAR(50) NOT NULL DEFAULT 'cefr'"),
+        ("subcategory", "VARCHAR(100)"),
+        ("lesson_unit", "VARCHAR(100)"),
+    ]
+    for col_name, col_type in new_vocab_cols:
+        if col_name not in vocab_cols:
+            print(f"Adding column {col_name} to vocabulary...")
+            cursor.execute(f"ALTER TABLE vocabulary ADD COLUMN {col_name} {col_type}")
+
+    conn.commit()
+
     cursor.execute("""
     CREATE TABLE IF NOT EXISTS user_session (
         id VARCHAR(64) PRIMARY KEY,

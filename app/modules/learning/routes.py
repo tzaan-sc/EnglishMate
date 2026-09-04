@@ -11,6 +11,8 @@ from .models import (Badge, Challenge, GrammarErrorLog, GrammarExerciseAttempt, 
                        GrammarRuleBookmark, GrammarTopic, Lesson, LessonBookmark, LessonFavorite,
                        LessonNote, LessonProgress, LessonReport, Question, Quiz, QuizAttempt,
                        QuizAttemptAnswer, UserBadge, UserChallenge, Vocabulary, VocabularyProgress, WordReport)
+from .vocab_catalog import (VOCAB_CATEGORIES, get_category_info, get_subcategory_info,
+                           normalize_category_key, normalize_subcategory_key)
 from . import bp
 from .forms import ActionForm, QuizStartForm
 
@@ -309,43 +311,27 @@ def complete_lesson(lesson_id):
 @bp.get("/vocabulary")
 @login_required
 def vocabulary():
+    active_tab = request.args.get("tab", "all").strip().lower()
     search = request.args.get("q", "").strip()
-    level, topic = request.args.get("level", ""), request.args.get("topic", "")
-    query = Vocabulary.query
-    if search:
-        query = query.filter(Vocabulary.word.ilike(f"%{search}%"))
-    if level:
-        query = query.filter_by(level=level)
-    if topic:
-        query = query.filter_by(topic=topic)
+    selected_cat = request.args.get("cat", "").strip().lower()
+    selected_subcat = request.args.get("subcat", "").strip().lower()
+    level = request.args.get("level", "").strip()
+    topic = request.args.get("topic", "").strip()
 
+    # User progress mapping
     all_progress = VocabularyProgress.query.filter_by(user_id=current_user.id).all()
     progress_map = {p.vocabulary_id: p for p in all_progress}
-    learned = {p.vocabulary_id for p in all_progress if p.learned_count > 0}
+    learned_ids = {p.vocabulary_id for p in all_progress if p.learned_count > 0 or p.review_count > 0}
 
+    # Global vocabulary metrics
     total_vocab_count = Vocabulary.query.count()
     mastered_count = sum(1 for p in all_progress if p.learned_count >= 3 or p.review_count >= 3)
     learning_count = sum(1 for p in all_progress if (0 < p.learned_count < 3) or (0 < p.review_count < 3))
     new_vocab_count = max(0, total_vocab_count - (mastered_count + learning_count))
-    review_vocab_count = sum(1 for p in all_progress if p.review_count > 0 or p.learned_count > 0)
-
+    review_vocab_count = len(learned_ids)
     overall_progress_pct = round(((mastered_count + learning_count) / total_vocab_count * 100)) if total_vocab_count > 0 else 0
 
-    levels = ["A1", "A2", "B1", "B2", "C1", "C2"]
-    level_stats = []
-    for lvl in levels:
-        lvl_total = Vocabulary.query.filter_by(level=lvl).count()
-        if lvl_total > 0:
-            lvl_words = [v.id for v in Vocabulary.query.filter_by(level=lvl).all()]
-            lvl_learned = sum(1 for wid in lvl_words if wid in progress_map and (progress_map[wid].learned_count > 0 or progress_map[wid].review_count > 0))
-            lvl_pct = round((lvl_learned / lvl_total) * 100)
-            level_stats.append({
-                "level": lvl,
-                "total": lvl_total,
-                "learned": lvl_learned,
-                "pct": lvl_pct
-            })
-
+    # Daily Goal & SRS Due
     today_date = date.today()
     today_learned_count = sum(1 for p in all_progress if p.learned_count > 0 and p.last_reviewed_at and p.last_reviewed_at.date() == today_date)
     today_reviewed_count = sum(1 for p in all_progress if p.review_count > 0 and p.last_reviewed_at and p.last_reviewed_at.date() == today_date)
@@ -359,17 +345,96 @@ def vocabulary():
         (VocabularyProgress.next_review_at <= now_dt) | (VocabularyProgress.next_review_at.is_(None))
     ).count()
 
+    # Fetch all vocab IDs and subcategories for quick calculation
+    all_vocab_records = db.session.query(
+        Vocabulary.id, Vocabulary.category, Vocabulary.subcategory, Vocabulary.lesson_unit, Vocabulary.topic, Vocabulary.level
+    ).all()
+
+    # Build Course Catalog with dynamic stats
+    catalog = {}
+    for cat_key, cat_data in VOCAB_CATEGORIES.items():
+        cat_courses = []
+        cat_total_words = 0
+        cat_learned_words = 0
+
+        for subcat_key, subcat_data in cat_data["subcategories"].items():
+            # Find matching words
+            matched_words = [
+                v for v in all_vocab_records
+                if (v.category and v.category.lower() == cat_key and v.subcategory and v.subcategory.lower() == subcat_key)
+                or (cat_key == "cefr" and v.category and v.category.lower() == "cefr" and v.level and v.level.lower() == subcat_key)
+            ]
+            w_total = len(matched_words)
+            w_learned = sum(1 for v in matched_words if v.id in learned_ids)
+            w_pct = round((w_learned / w_total * 100)) if w_total > 0 else 0
+            
+            # Distinct units count
+            units_set = {v.lesson_unit or v.topic for v in matched_words if v.lesson_unit or v.topic}
+            units_count = len(units_set) if units_set else (1 if w_total > 0 else 0)
+
+            cat_total_words += w_total
+            cat_learned_words += w_learned
+
+            cat_courses.append({
+                "key": subcat_key,
+                "title": subcat_data["title"],
+                "level": subcat_data["level"],
+                "icon": subcat_data["icon"],
+                "color": subcat_data["color"],
+                "description": subcat_data["description"],
+                "target": subcat_data.get("target", ""),
+                "total_words": w_total,
+                "learned_words": w_learned,
+                "progress_pct": w_pct,
+                "units_count": units_count,
+            })
+
+        cat_pct = round((cat_learned_words / cat_total_words * 100)) if cat_total_words > 0 else 0
+        catalog[cat_key] = {
+            "key": cat_key,
+            "title": cat_data["title"],
+            "subtitle": cat_data["subtitle"],
+            "badge": cat_data["badge"],
+            "icon": cat_data["icon"],
+            "color": cat_data["color"],
+            "gradient": cat_data["gradient"],
+            "description": cat_data["description"],
+            "courses": cat_courses,
+            "total_words": cat_total_words,
+            "learned_words": cat_learned_words,
+            "progress_pct": cat_pct,
+        }
+
+    # Query for filtered word list if user is searching / filtering
+    query = Vocabulary.query
+    has_filter = bool(search or selected_cat or selected_subcat or level or topic)
+    if search:
+        query = query.filter((Vocabulary.word.ilike(f"%{search}%")) | (Vocabulary.meaning_vi.ilike(f"%{search}%")))
+    if selected_cat:
+        query = query.filter(Vocabulary.category.ilike(selected_cat))
+    if selected_subcat:
+        query = query.filter(Vocabulary.subcategory.ilike(selected_subcat))
+    if level:
+        query = query.filter_by(level=level)
+    if topic:
+        query = query.filter_by(topic=topic)
+
     topics = [r[0] for r in db.session.query(Vocabulary.topic).distinct().order_by(Vocabulary.topic).all()]
-    words_list = query.order_by(Vocabulary.word).all()
+    words_list = query.order_by(Vocabulary.word).limit(100).all() if has_filter else []
 
     return render_template(
         "learning/vocabulary.html",
-        words=words_list,
-        learned=learned,
-        topics=topics,
+        catalog=catalog,
+        active_tab=active_tab,
         search=search,
+        selected_cat=selected_cat,
+        selected_subcat=selected_subcat,
         level=level,
         topic=topic,
+        has_filter=has_filter,
+        words=words_list,
+        learned=learned_ids,
+        topics=topics,
         form=ActionForm(),
         total_vocab_count=total_vocab_count,
         mastered_count=mastered_count,
@@ -378,11 +443,93 @@ def vocabulary():
         review_vocab_count=review_vocab_count,
         due_words_count=due_words_count,
         overall_progress_pct=overall_progress_pct,
-        level_stats=level_stats,
         today_learned_count=today_learned_count,
         today_reviewed_count=today_reviewed_count,
         daily_goal=daily_goal,
         daily_goal_pct=daily_goal_pct,
+    )
+
+
+@bp.get("/vocabulary/courses/<cat_key>/<subcat_key>")
+@login_required
+def vocab_course_detail(cat_key, subcat_key):
+    cat_info = get_category_info(cat_key)
+    subcat_info = get_subcategory_info(cat_key, subcat_key)
+
+    if not cat_info or not subcat_info:
+        flash("Khóa học từ vựng không tồn tại hoặc đã được cập nhật.", "warning")
+        return redirect(url_for("learning.vocabulary"))
+
+    unit_filter = request.args.get("unit", "").strip()
+    search = request.args.get("q", "").strip()
+
+    # Query matching words for this course
+    query = Vocabulary.query.filter(
+        (Vocabulary.category.ilike(cat_key) & Vocabulary.subcategory.ilike(subcat_key))
+        | (Vocabulary.category.ilike("cefr") & Vocabulary.level.ilike(subcat_key) if cat_key == "cefr" else False)
+    )
+
+    if unit_filter:
+        query = query.filter((Vocabulary.lesson_unit == unit_filter) | (Vocabulary.topic == unit_filter))
+    if search:
+        query = query.filter((Vocabulary.word.ilike(f"%{search}%")) | (Vocabulary.meaning_vi.ilike(f"%{search}%")))
+
+    all_course_words = Vocabulary.query.filter(
+        (Vocabulary.category.ilike(cat_key) & Vocabulary.subcategory.ilike(subcat_key))
+        | (Vocabulary.category.ilike("cefr") & Vocabulary.level.ilike(subcat_key) if cat_key == "cefr" else False)
+    ).all()
+
+    words_list = query.order_by(Vocabulary.id).all()
+
+    # User progress
+    all_progress = VocabularyProgress.query.filter_by(user_id=current_user.id).all()
+    progress_map = {p.vocabulary_id: p for p in all_progress}
+    learned_ids = {p.vocabulary_id for p in all_progress if p.learned_count > 0 or p.review_count > 0}
+    favorite_ids = {p.vocabulary_id for p in all_progress if p.is_favorite}
+
+    # Group words into Lesson Units / Topics
+    units_map = {}
+    for w in all_course_words:
+        u_name = w.lesson_unit or w.topic or "Tổng quát"
+        if u_name not in units_map:
+            units_map[u_name] = {"name": u_name, "words": [], "learned_count": 0}
+        units_map[u_name]["words"].append(w)
+        if w.id in learned_ids:
+            units_map[u_name]["learned_count"] += 1
+
+    units = []
+    for u_name, data in units_map.items():
+        total_u = len(data["words"])
+        learned_u = data["learned_count"]
+        pct_u = round((learned_u / total_u * 100)) if total_u > 0 else 0
+        units.append({
+            "name": u_name,
+            "total": total_u,
+            "learned": learned_u,
+            "pct": pct_u,
+        })
+    units.sort(key=lambda x: x["name"])
+
+    course_total_words = len(all_course_words)
+    course_learned_words = sum(1 for w in all_course_words if w.id in learned_ids)
+    course_progress_pct = round((course_learned_words / course_total_words * 100)) if course_total_words > 0 else 0
+
+    return render_template(
+        "learning/vocab_course_detail.html",
+        category=cat_info,
+        subcategory=subcat_info,
+        cat_key=cat_key,
+        subcat_key=subcat_key,
+        words=words_list,
+        units=units,
+        unit_filter=unit_filter,
+        search=search,
+        learned_ids=learned_ids,
+        favorite_ids=favorite_ids,
+        course_total_words=course_total_words,
+        course_learned_words=course_learned_words,
+        course_progress_pct=course_progress_pct,
+        form=ActionForm(),
     )
 
 
