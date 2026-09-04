@@ -2,14 +2,80 @@
 {% block title %}Thư viện Bài học · EnglishMate{% endblock %}
 
 {% block content %}
-<div class="container-fluid py-2">
+<div class="container-fluid max-w-7xl py-4">
 
+  <!-- ZONE 1: HERO & STATS BANNER -->
+  <div class="hero-brand-card p-4 p-lg-4 mb-4 shadow-sm">
+    <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3 mb-3 position-relative" style="z-index: 2;">
+      <div>
+        <div class="d-inline-flex align-items-center gap-1.5 px-2.5 py-0.5 rounded-pill mb-2" style="background: rgba(255, 255, 255, 0.18); backdrop-filter: blur(8px); font-size: 0.74rem; font-weight: 700; color: #a7f3d0;">
+          <i class="ph-bold ph-graduation-cap"></i>
+          <span>LỘ TRÌNH BÀI HỌC TOÀN DIỆN</span>
+        </div>
+        <h3 class="fw-bold text-white mb-1 d-flex align-items-center gap-2" style="letter-spacing: -0.01em;">
+          Thư viện Bài học & Kỹ năng
+        </h3>
+        <p class="text-white-50 mb-0 small">
+          Rèn luyện bài bản 4 kỹ năng tiếng Anh theo khung <strong>CEFR A1 - C2</strong>, Ngữ pháp và Đọc hiểu.
+        </p>
+      </div>
 
+      <!-- Quick Actions -->
+      <div class="d-flex flex-wrap gap-2 align-items-center">
+        {% if recommended_lesson %}
+        <a href="{{ url_for('learning.lesson_detail', lesson_id=recommended_lesson.id) }}" class="btn btn-light rounded-pill px-3.5 py-1.5 fw-bold text-primary shadow-xs d-inline-flex align-items-center gap-1.5" style="font-size: 0.84rem;">
+          <i class="ph-bold ph-play-circle fs-6"></i>
+          <span>Học tiếp: {{ recommended_lesson.title|truncate(20) }}</span>
+        </a>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- 4 Clean Stat Pills -->
+    <div class="row g-2 pt-2 border-top" style="border-color: rgba(255, 255, 255, 0.1) !important; position: relative; z-index: 2;">
+      <div class="col-6 col-md-3">
+        <div class="d-flex align-items-center gap-2 p-2 rounded-3" style="background: rgba(255, 255, 255, 0.04);">
+          <i class="ph-bold ph-book-open text-primary fs-5"></i>
+          <div>
+            <span class="text-white-50 d-block" style="font-size: 0.72rem;">Tổng bài học</span>
+            <strong class="text-white small">{{ total_lessons }} bài</strong>
+          </div>
+        </div>
+      </div>
+      <div class="col-6 col-md-3">
+        <div class="d-flex align-items-center gap-2 p-2 rounded-3" style="background: rgba(255, 255, 255, 0.04);">
+          <i class="ph-bold ph-check-circle text-success fs-5"></i>
+          <div>
+            <span class="text-white-50 d-block" style="font-size: 0.72rem;">Đã hoàn thành</span>
+            <strong class="text-white small">{{ completed_count }} bài</strong>
+          </div>
+        </div>
+      </div>
+      <div class="col-6 col-md-3">
+        <div class="d-flex align-items-center gap-2 p-2 rounded-3" style="background: rgba(255, 255, 255, 0.04);">
+          <i class="ph-bold ph-chart-donut text-info fs-5"></i>
+          <div>
+            <span class="text-white-50 d-block" style="font-size: 0.72rem;">Tiến độ chung</span>
+            <strong class="text-white small">{{ (completed_count / total_lessons * 100)|round|int if total_lessons > 0 else 0 }}%</strong>
+          </div>
+        </div>
+      </div>
+      <div class="col-6 col-md-3">
+        <div class="d-flex align-items-center gap-2 p-2 rounded-3" style="background: rgba(255, 255, 255, 0.04);">
+          <i class="ph-bold ph-target text-warning fs-5"></i>
+          <div>
+            <span class="text-white-50 d-block" style="font-size: 0.72rem;">Mục tiêu ngày</span>
+            <strong class="text-white small">{{ today_completed_lessons }}/2 bài</strong>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <!-- SECTION: SEARCH, QUICK FILTERS & CATALOG -->
   <div id="lessonCatalog" class="mb-4">
     <!-- Search & Filter Card -->
-    <div class="card-modern p-4 mb-4">
+    <div class="card border rounded-4 p-4 mb-4 bg-white shadow-xs" style="border-color: #e2e8f0 !important;">
       <form method="get" action="{{ url_for('learning.lessons') }}">
         
         <!-- Search Input Bar & Fast Action -->
