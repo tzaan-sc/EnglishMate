@@ -152,26 +152,9 @@ function replaceEmojiIcons() {
 function initializeIcons() {
   replaceSocialIcons();
   replaceEmojiIcons();
-  document.querySelectorAll("i[class*='ph'], i[class*='bi-']").forEach((icon) => {
-    const sourceClass = [...icon.classList].find((name) =>
-      (name.startsWith("ph-") && !["ph-bold", "ph-fill"].includes(name)) || name.startsWith("bi-"));
-    if (!sourceClass) return;
-    icon.dataset.lucide = normalizeLegacyIconName(sourceClass);
-    [...icon.classList]
-      .filter((name) => name === "ph" || name.startsWith("ph-") || name === "bi" || name.startsWith("bi-"))
-      .forEach((name) => icon.classList.remove(name));
-  });
-
-  document.querySelectorAll("svg.bi").forEach((icon) => {
-    const sourceClass = [...icon.classList].find((name) => name.startsWith("bi-"));
-    if (!sourceClass) return;
-    const replacement = document.createElement("i");
-    replacement.dataset.lucide = normalizeLegacyIconName(sourceClass);
-    replacement.className = icon.className;
-    icon.replaceWith(replacement);
-  });
-
-  if (window.lucide) window.lucide.createIcons({ attrs: { "aria-hidden": "true" } });
+  if (window.lucide) {
+    window.lucide.createIcons({ attrs: { "aria-hidden": "true" } });
+  }
 }
 
 document.addEventListener("DOMContentLoaded", () => {

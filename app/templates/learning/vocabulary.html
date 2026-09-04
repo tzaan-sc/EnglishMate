@@ -131,37 +131,37 @@
       <li class="nav-item">
         <a class="nav-link rounded-pill px-3 py-1.5 fw-semibold {% if active_tab == 'all' or not active_tab %}active bg-primary text-white shadow-xs{% else %}bg-white text-secondary border{% endif %}"
            href="{{ url_for('learning.vocabulary', tab='all') }}" style="font-size: 0.84rem; white-space: nowrap;">
-          Tất cả
+          <i class="ph-bold ph-squares-four me-1"></i> Tất cả
         </a>
       </li>
       <li class="nav-item">
         <a class="nav-link rounded-pill px-3 py-1.5 fw-semibold {% if active_tab == 'cefr' %}active bg-primary text-white shadow-xs{% else %}bg-white text-secondary border{% endif %}"
            href="{{ url_for('learning.vocabulary', tab='cefr') }}" style="font-size: 0.84rem; white-space: nowrap;">
-          🌍 CEFR (A0-C2)
+          <i class="ph-bold ph-globe me-1"></i> CEFR (A0-C2)
         </a>
       </li>
       <li class="nav-item">
         <a class="nav-link rounded-pill px-3 py-1.5 fw-semibold {% if active_tab == 'toeic' %}active bg-primary text-white shadow-xs{% else %}bg-white text-secondary border{% endif %}"
            href="{{ url_for('learning.vocabulary', tab='toeic') }}" style="font-size: 0.84rem; white-space: nowrap;">
-          🎯 TOEIC
+          <i class="ph-bold ph-target me-1"></i> TOEIC
         </a>
       </li>
       <li class="nav-item">
         <a class="nav-link rounded-pill px-3 py-1.5 fw-semibold {% if active_tab == 'ielts' %}active bg-primary text-white shadow-xs{% else %}bg-white text-secondary border{% endif %}"
            href="{{ url_for('learning.vocabulary', tab='ielts') }}" style="font-size: 0.84rem; white-space: nowrap;">
-          🎓 IELTS
+          <i class="ph-bold ph-graduation-cap me-1"></i> IELTS
         </a>
       </li>
       <li class="nav-item">
         <a class="nav-link rounded-pill px-3 py-1.5 fw-semibold {% if active_tab == 'specialized' %}active bg-primary text-white shadow-xs{% else %}bg-white text-secondary border{% endif %}"
            href="{{ url_for('learning.vocabulary', tab='specialized') }}" style="font-size: 0.84rem; white-space: nowrap;">
-          💼 Chuyên ngành
+          <i class="ph-bold ph-briefcase me-1"></i> Chuyên ngành
         </a>
       </li>
       <li class="nav-item">
         <a class="nav-link rounded-pill px-3 py-1.5 fw-semibold {% if active_tab == 'topic' %}active bg-primary text-white shadow-xs{% else %}bg-white text-secondary border{% endif %}"
            href="{{ url_for('learning.vocabulary', tab='topic') }}" style="font-size: 0.84rem; white-space: nowrap;">
-          🌿 Chủ đề
+          <i class="ph-bold ph-sparkle me-1"></i> Chủ đề
         </a>
       </li>
     </ul>
@@ -248,8 +248,10 @@
       
       <!-- Category Header Bar -->
       <div class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom">
-        <div class="d-flex align-items-center gap-2">
-          <span class="fs-4">{{ cat.courses[0].icon if cat.courses else '📚' }}</span>
+        <div class="d-flex align-items-center gap-2.5">
+          <div class="rounded-3 d-flex align-items-center justify-content-center bg-{{ cat.color }}-subtle text-{{ cat.color }}" style="width: 36px; height: 36px;">
+            <i class="ph-bold {{ cat.icon }} fs-5"></i>
+          </div>
           <h5 class="fw-bold text-dark mb-0">{{ cat.title }}</h5>
           <span class="badge bg-{{ cat.color }}-subtle text-{{ cat.color }} border border-{{ cat.color }}-subtle rounded-pill px-2.5 py-0.5 small fw-bold" style="font-size: 0.72rem;">
             {{ cat.badge }}
@@ -274,10 +276,14 @@
             <!-- Card Header: Icon + Title + Level -->
             <div>
               <div class="d-flex justify-content-between align-items-start gap-2 mb-2">
-                <span class="rounded-3 d-flex align-items-center justify-content-center" 
-                      style="width: 38px; height: 38px; background: #f8fafc; font-size: 1.25rem;">
-                  {{ course.icon }}
-                </span>
+                <div class="rounded-3 d-flex align-items-center justify-content-center" 
+                      style="width: 38px; height: 38px; background: {{ course.color }}18; color: {{ course.color }};">
+                  {% if course.icon.startswith('ph-') %}
+                  <i class="ph-bold {{ course.icon }} fs-5"></i>
+                  {% else %}
+                  <span style="font-size: 1.15rem;">{{ course.icon }}</span>
+                  {% endif %}
+                </div>
                 <span class="badge rounded-pill px-2 py-0.5 small fw-bold text-white" style="background: {{ course.color }}; font-size: 0.72rem;">
                   {{ course.level }}
                 </span>
