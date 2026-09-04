@@ -422,6 +422,13 @@ def vocabulary():
     topics = [r[0] for r in db.session.query(Vocabulary.topic).distinct().order_by(Vocabulary.topic).all()]
     words_list = query.order_by(Vocabulary.word).limit(100).all() if has_filter else []
 
+    # Flashcard sets query (personal and public sets)
+    from .models import FlashcardSet
+    flashcard_sets = FlashcardSet.query.filter(
+        (FlashcardSet.user_id == current_user.id) | (FlashcardSet.is_public == True)
+    ).order_by(FlashcardSet.created_at.desc()).all()
+    my_sets_count = sum(1 for s in flashcard_sets if s.user_id == current_user.id)
+
     return render_template(
         "learning/vocabulary.html",
         catalog=catalog,
@@ -447,6 +454,8 @@ def vocabulary():
         today_reviewed_count=today_reviewed_count,
         daily_goal=daily_goal,
         daily_goal_pct=daily_goal_pct,
+        flashcard_sets=flashcard_sets,
+        my_sets_count=my_sets_count,
     )
 
 
@@ -671,11 +680,7 @@ def report_word(word_id):
 @bp.get("/flashcards")
 @login_required
 def flashcards():
-    from .models import FlashcardSet
-    sets = FlashcardSet.query.filter(
-        (FlashcardSet.user_id == current_user.id) | (FlashcardSet.is_public == True)
-    ).order_by(FlashcardSet.created_at.desc()).all()
-    return render_template("learning/flashcard_sets.html", sets=sets)
+    return redirect(url_for("learning.vocabulary", tab="flashcards"))
 
 
 @bp.post("/flashcards/<int:word_id>/<action>")
@@ -770,11 +775,7 @@ def progress():
 @bp.get("/flashcard-sets")
 @login_required
 def flashcard_sets():
-    from .models import FlashcardSet
-    sets = FlashcardSet.query.filter(
-        (FlashcardSet.user_id == current_user.id) | (FlashcardSet.is_public == True)
-    ).order_by(FlashcardSet.created_at.desc()).all()
-    return render_template("learning/flashcard_sets.html", sets=sets)
+    return redirect(url_for("learning.vocabulary", tab="flashcards"))
 
 
 @bp.route("/flashcard-sets/new", methods=["GET", "POST"])
@@ -821,7 +822,7 @@ def flashcard_set_create():
                 
         db.session.commit()
         flash(f"Học phần '{title}' đã được tạo thành công!", "success")
-        return redirect(url_for("learning.flashcard_sets"))
+        return redirect(url_for("learning.vocabulary", tab="flashcards"))
         
     return render_template("learning/flashcard_create.html", fset=None)
 
@@ -978,7 +979,7 @@ def flashcard_set_delete(set_id):
     db.session.delete(fset)
     db.session.commit()
     flash(f"Học phần '{fset.title}' đã bị xóa.", "success")
-    return redirect(url_for("learning.flashcard_sets"))
+    return redirect(url_for("learning.vocabulary", tab="flashcards"))
 
 
 # ==========================================

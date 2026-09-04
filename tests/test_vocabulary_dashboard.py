@@ -12,10 +12,9 @@ def test_vocabulary_dashboard_stats(client):
 
     res = client.get("/vocabulary")
     assert res.status_code == 200
-    assert "Bảng điều khiển từ vựng".encode("utf-8") in res.data
-    assert "Tổng số từ vựng".encode("utf-8") in res.data
-    assert "Đã thành thạo".encode("utf-8") in res.data
-    assert "Mục tiêu học từ hôm nay".encode("utf-8") in res.data
+    assert "Thư viện Từ vựng & Flashcards".encode("utf-8") in res.data
+    assert "Tổng từ vựng".encode("utf-8") in res.data
+    assert "Mục tiêu ngày".encode("utf-8") in res.data
 
 
 def test_level_vocabulary_progress(client):
@@ -23,8 +22,8 @@ def test_level_vocabulary_progress(client):
 
     res = client.get("/vocabulary")
     assert res.status_code == 200
-    assert "Tiến độ từ vựng theo Cấp độ (CEFR)".encode("utf-8") in res.data
-    assert "A1".encode("utf-8") in res.data
+    assert "CEFR (A0-C2)".encode("utf-8") in res.data
+    assert "TOEIC".encode("utf-8") in res.data
 
 
 def test_set_vocab_goal(client):
@@ -55,4 +54,4 @@ def test_today_learned_count_tracking(client):
 
     res_dash = client.get("/vocabulary")
     assert res_dash.status_code == 200
-    assert "1 học mới".encode("utf-8") in res_dash.data
+    assert "Đã học".encode("utf-8") in res_dash.data

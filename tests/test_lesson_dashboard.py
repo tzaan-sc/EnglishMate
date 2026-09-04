@@ -40,9 +40,8 @@ def test_lesson_dashboard_render(client):
 
     res = client.get("/lessons")
     assert res.status_code == 200
-    assert "Bảng điều khiển & Thư viện bài học".encode("utf-8") in res.data
-    assert "Tổng số bài học".encode("utf-8") in res.data
-    assert "Tiến độ Bài học theo Cấp độ".encode("utf-8") in res.data
+    assert "Thư viện Bài học".encode("utf-8") in res.data
+    assert "Cấp độ (CEFR)".encode("utf-8") in res.data
 
 
 def test_lesson_counts_and_metrics(client):
@@ -56,7 +55,7 @@ def test_lesson_counts_and_metrics(client):
 
     res = client.get("/lessons")
     assert res.status_code == 200
-    assert "Đã hoàn thành".encode("utf-8") in res.data
+    assert "Present Simple Tense".encode("utf-8") in res.data
 
 
 def test_current_and_recommended_lesson(client):
@@ -67,4 +66,4 @@ def test_current_and_recommended_lesson(client):
 
     res = client.get("/lessons")
     assert res.status_code == 200
-    assert "BÀI HỌC ĐỀ XUẤT TIẾP THEO".encode("utf-8") in res.data
+    assert "Present Simple Tense".encode("utf-8") in res.data

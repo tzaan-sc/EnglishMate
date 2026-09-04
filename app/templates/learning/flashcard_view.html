@@ -120,8 +120,8 @@
 <div class="container py-4" style="max-width: 900px;">
     <!-- Nút Quay Lại & Header -->
     <div class="mb-4">
-        <a href="{{ url_for('learning.flashcard_sets') }}" class="text-decoration-none text-secondary mb-3 d-inline-flex align-items-center gap-1.5 fw-bold" style="font-size: 0.9rem;">
-            <i class="ph-bold ph-arrow-left"></i> Quay lại thư viện bộ thẻ
+        <a href="{{ url_for('learning.vocabulary', tab='flashcards') }}" class="text-decoration-none text-secondary mb-3 d-inline-flex align-items-center gap-1.5 fw-bold" style="font-size: 0.9rem;">
+            <i class="ph-bold ph-arrow-left"></i> Quay lại Từ vựng & Flashcards
         </a>
         <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
             <div>
@@ -228,8 +228,8 @@
                             <i class="ph-bold ph-arrow-counter-clockwise"></i>
                             <span>Tiếp tục học thẻ chưa thuộc</span>
                         </button>
-                        <a href="{{ url_for('learning.flashcard_sets') }}" class="btn btn-light border rounded-3 px-4 py-2.5 fw-bold text-secondary">
-                            Về danh mục bộ thẻ
+                        <a href="{{ url_for('learning.vocabulary', tab='flashcards') }}" class="btn btn-light border rounded-3 px-4 py-2.5 fw-bold text-secondary">
+                            Về danh mục Flashcards
                         </a>
                     </div>
                 </div>

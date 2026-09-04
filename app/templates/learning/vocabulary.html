@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% block title %}Từ vựng & Bài học · EnglishMate{% endblock %}
+{% block title %}Từ vựng & Flashcards · EnglishMate{% endblock %}
 
 {% block content %}
 <div class="container-fluid max-w-7xl py-4">
@@ -11,24 +11,25 @@
     <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3 mb-3">
       <div>
         <h3 class="fw-bold text-white mb-1 d-flex align-items-center gap-2" style="letter-spacing: -0.01em;">
-          <i class="ph-fill ph-translate text-primary"></i> Thư viện Từ vựng & Khóa học
+          <i class="ph-fill ph-translate text-primary"></i> Thư viện Từ vựng & Flashcards
         </h3>
         <p class="text-white-50 mb-0 small">
-          Chọn lộ trình theo <strong>CEFR</strong>, <strong>TOEIC</strong>, <strong>IELTS</strong>, <strong>Chuyên ngành</strong> hoặc <strong>Chủ đề</strong>.
+          Học theo lộ trình chuẩn (<strong>CEFR</strong>, <strong>TOEIC</strong>, <strong>IELTS</strong>, <strong>Chuyên ngành</strong>) hoặc tự tạo <strong>Bộ Flashcard cá nhân</strong>.
         </p>
       </div>
 
       <!-- Quick Actions -->
       <div class="d-flex flex-wrap gap-2 align-items-center">
+        <a href="{{ url_for('learning.flashcard_set_create') }}" class="btn btn-primary rounded-pill px-3 py-1.5 fw-bold shadow-xs d-inline-flex align-items-center gap-1.5" style="font-size: 0.84rem;">
+          <i class="ph-bold ph-plus-circle fs-6"></i>
+          <span>+ Tạo Bộ thẻ mới</span>
+        </a>
         {% if due_words_count > 0 %}
         <a href="{{ url_for('learning.review_vocabulary') }}" class="btn btn-warning rounded-pill px-3 py-1.5 fw-bold shadow-xs d-inline-flex align-items-center gap-1.5" style="font-size: 0.84rem;">
           <i class="ph-bold ph-alarm"></i>
           <span>Ôn {{ due_words_count }} từ đến hạn</span>
         </a>
         {% endif %}
-        <a href="{{ url_for('learning.flashcard_sets') }}" class="btn btn-outline-light rounded-pill px-3 py-1.5 fw-semibold d-inline-flex align-items-center gap-1.5" style="font-size: 0.84rem; background: rgba(255,255,255,0.06); border-color: rgba(255,255,255,0.2);">
-          <i class="ph-bold ph-cards"></i> Flashcard
-        </a>
         <a href="{{ url_for('learning.vocabulary_stats') }}" class="btn btn-outline-light rounded-pill px-2.5 py-1.5 fw-semibold" style="font-size: 0.84rem; background: rgba(255,255,255,0.06); border-color: rgba(255,255,255,0.2);" title="Thống kê">
           <i class="ph-bold ph-chart-line-up"></i>
         </a>
@@ -44,7 +45,7 @@
         <div class="d-flex align-items-center gap-2 p-2 rounded-3" style="background: rgba(255,255,255,0.04);">
           <i class="ph-bold ph-book-open text-primary fs-5"></i>
           <div>
-            <span class="text-white-50 d-block" style="font-size: 0.72rem;">Tổng từ</span>
+            <span class="text-white-50 d-block" style="font-size: 0.72rem;">Tổng từ vựng</span>
             <strong class="text-white small">{{ total_vocab_count }} từ</strong>
           </div>
         </div>
@@ -60,6 +61,15 @@
       </div>
       <div class="col-6 col-md-3">
         <div class="d-flex align-items-center gap-2 p-2 rounded-3" style="background: rgba(255,255,255,0.04);">
+          <i class="ph-bold ph-cards text-info fs-5"></i>
+          <div>
+            <span class="text-white-50 d-block" style="font-size: 0.72rem;">Bộ Flashcard</span>
+            <strong class="text-white small">{{ flashcard_sets|length }} bộ ({{ my_sets_count }} của tôi)</strong>
+          </div>
+        </div>
+      </div>
+      <div class="col-6 col-md-3">
+        <div class="d-flex align-items-center gap-2 p-2 rounded-3" style="background: rgba(255,255,255,0.04);">
           <i class="ph-bold ph-target text-warning fs-5"></i>
           <div>
             <span class="text-white-50 d-block" style="font-size: 0.72rem;">Mục tiêu ngày</span>
@@ -67,20 +77,52 @@
           </div>
         </div>
       </div>
-      <div class="col-6 col-md-3">
-        <div class="d-flex align-items-center gap-2 p-2 rounded-3" style="background: rgba(255,255,255,0.04);">
-          <i class="ph-bold ph-trophy text-info fs-5"></i>
-          <div>
-            <span class="text-white-50 d-block" style="font-size: 0.72rem;">Thành thạo</span>
-            <strong class="text-white small">{{ mastered_count }} từ</strong>
-          </div>
-        </div>
-      </div>
     </div>
 
   </div>
 
-  <!-- ZONE 2: CATEGORY NAV TABS & SEARCH -->
+  <!-- ZONE 2: PRIMARY TABS SWITCHER (KHO TỪ VỰNG HỆ THỐNG vs BỘ FLASHCARD CÁ NHÂN) -->
+  {% set is_flashcards_tab = (active_tab == 'flashcards') %}
+  <div class="card border p-1.5 mb-4 rounded-4 bg-white shadow-xs">
+    <div class="d-flex flex-column flex-sm-row justify-content-between align-items-stretch align-items-sm-center gap-2">
+      
+      <!-- Segmented Control Switcher -->
+      <div class="nav nav-pills d-flex p-1 bg-light rounded-pill border" style="gap: 4px;">
+        <a class="nav-link rounded-pill px-3.5 py-2 fw-bold text-center d-flex align-items-center justify-content-center gap-2 {% if not is_flashcards_tab %}active bg-white text-dark shadow-xs border{% else %}text-secondary{% endif %}"
+           href="{{ url_for('learning.vocabulary', tab='all') }}" style="font-size: 0.88rem;">
+          <i class="ph-bold ph-books fs-6 text-primary"></i>
+          <span>Kho từ vựng hệ thống</span>
+          <span class="badge rounded-pill bg-primary-subtle text-primary border ms-1" style="font-size: 0.72rem;">{{ total_vocab_count }} từ</span>
+        </a>
+
+        <a class="nav-link rounded-pill px-3.5 py-2 fw-bold text-center d-flex align-items-center justify-content-center gap-2 {% if is_flashcards_tab %}active bg-white text-dark shadow-xs border{% else %}text-secondary{% endif %}"
+           href="{{ url_for('learning.vocabulary', tab='flashcards') }}" style="font-size: 0.88rem;">
+          <i class="ph-bold ph-cards fs-6 text-info"></i>
+          <span>Bộ Flashcard cá nhân</span>
+          <span class="badge rounded-pill bg-info-subtle text-info border ms-1" style="font-size: 0.72rem;">{{ flashcard_sets|length }} bộ</span>
+        </a>
+      </div>
+
+      <!-- Quick Action on the right -->
+      <div class="d-none d-md-flex align-items-center gap-2 pe-2">
+        {% if is_flashcards_tab %}
+        <a href="{{ url_for('learning.flashcard_set_create') }}" class="btn btn-sm btn-primary rounded-pill px-3 py-1.5 fw-bold d-inline-flex align-items-center gap-1">
+          <i class="ph-bold ph-plus"></i> Tạo bộ thẻ mới
+        </a>
+        {% endif %}
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ZONE 3: TAB CONTENT -->
+
+  {% if not is_flashcards_tab %}
+  <!-- ======================================================== -->
+  <!-- TAB 1: KHO TỪ VỰNG HỆ THỐNG (CEFR, TOEIC, IELTS,...) -->
+  <!-- ======================================================== -->
+
+  <!-- Subcategory pills & Search -->
   <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
     <!-- Category Pills -->
     <ul class="nav nav-pills gap-1.5 flex-nowrap overflow-auto pb-1 pb-md-0" style="scrollbar-width: thin;">
@@ -144,7 +186,7 @@
     </div>
   </div>
 
-  <!-- ZONE 3: QUICK SEARCH RESULTS (IF SEARCH ACTIVE) -->
+  <!-- SEARCH RESULTS (IF SEARCH ACTIVE) -->
   {% if has_filter %}
   <div class="card border rounded-4 p-3 mb-4 bg-white shadow-sm">
     <div class="d-flex justify-content-between align-items-center mb-3">
@@ -196,13 +238,13 @@
   </div>
   {% endif %}
 
-  <!-- ZONE 4: STREAMLINED & VISUAL COURSE CATALOG -->
+  <!-- COURSE CATALOG -->
   <div class="vocab-catalog-container">
     {% for cat_key, cat in catalog.items() %}
     {% if active_tab == 'all' or active_tab == cat_key %}
     <section class="category-block mb-4" id="cat-{{ cat_key }}">
       
-      <!-- Category Header Bar (Clean & Compact) -->
+      <!-- Category Header Bar -->
       <div class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom">
         <div class="d-flex align-items-center gap-2">
           <span class="fs-4">{{ cat.courses[0].icon if cat.courses else '📚' }}</span>
@@ -220,7 +262,7 @@
         </div>
       </div>
 
-      <!-- Minimal & Visual Course Cards Grid -->
+      <!-- Course Cards Grid -->
       <div class="row g-3">
         {% for course in cat.courses %}
         <div class="col-sm-6 col-lg-4 col-xl-3">
@@ -278,9 +320,148 @@
     {% endfor %}
   </div>
 
+  {% else %}
+  <!-- ======================================================== -->
+  <!-- TAB 2: BỘ FLASHCARD CÁ NHÂN & CỘNG ĐỒNG (USER DECKS) -->
+  <!-- ======================================================== -->
+
+  <div class="flashcards-tab-container">
+    
+    <!-- Header Controls: Filters + Search + Create Button -->
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
+      
+      <!-- Filter Pills -->
+      <div class="d-flex gap-2 flex-wrap">
+        <button type="button" class="btn btn-sm btn-primary rounded-pill px-3.5 py-1.5 fw-bold filter-set-btn active" data-filter="all">
+          Tất cả học phần ({{ flashcard_sets|length }})
+        </button>
+        <button type="button" class="btn btn-sm btn-light border rounded-pill px-3.5 py-1.5 fw-semibold text-secondary filter-set-btn" data-filter="mine">
+          Của tôi ({{ my_sets_count }})
+        </button>
+        <button type="button" class="btn btn-sm btn-light border rounded-pill px-3.5 py-1.5 fw-semibold text-secondary filter-set-btn" data-filter="public">
+          Hệ thống / Cộng đồng
+        </button>
+      </div>
+
+      <!-- Right Controls: Search + Create -->
+      <div class="d-flex align-items-center gap-2">
+        <div class="position-relative" style="min-width: 240px;">
+          <input type="text" class="form-control form-control-sm rounded-pill ps-4 shadow-none border" id="searchSetInput" 
+                 placeholder="Tìm theo tên bộ thẻ..." style="font-size: 0.84rem; padding-top: 0.45rem; padding-bottom: 0.45rem;">
+          <i class="ph-bold ph-magnifying-glass position-absolute top-50 start-0 translate-middle-y ms-2.5 text-muted" style="font-size: 0.88rem;"></i>
+        </div>
+
+        <a href="{{ url_for('learning.flashcard_set_create') }}" class="btn btn-sm btn-primary fw-bold rounded-pill px-3 py-1.5 shadow-xs d-inline-flex align-items-center gap-1.5" style="white-space: nowrap; font-size: 0.84rem;">
+          <i class="ph-bold ph-plus-circle"></i>
+          <span>Tạo bộ thẻ mới</span>
+        </a>
+      </div>
+
+    </div>
+
+    <!-- FLASHCARD SETS GRID -->
+    <div class="row g-3 mb-5" id="setsGrid">
+      {% for fset in flashcard_sets %}
+      {% set is_mine = (current_user.id == fset.user_id) %}
+      <div class="col-md-6 col-lg-4 set-item-card" data-owner="{{ 'mine' if is_mine else 'public' }}" data-title="{{ fset.title|lower }}">
+        <div class="card h-100 rounded-4 p-3.5 bg-white border shadow-xs transition-hover d-flex flex-column justify-content-between" 
+             style="cursor: pointer; border-color: #e2e8f0 !important;" onclick="window.location.href='{{ url_for('learning.flashcard_set_view', set_id=fset.id) }}'">
+          
+          <div>
+            <!-- Badges & Actions -->
+            <div class="d-flex justify-content-between align-items-start mb-2.5">
+              <div class="d-flex align-items-center gap-1.5 flex-wrap">
+                <span class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill px-2.5 py-1 fw-bold" style="font-size: 0.74rem;">
+                  <i class="ph-bold ph-cards me-1"></i>{{ fset.items|length }} thuật ngữ
+                </span>
+                {% if is_mine %}
+                <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-2.5 py-1 fw-bold" style="font-size: 0.72rem;">
+                  <i class="ph-bold ph-user me-0.5"></i> Của tôi
+                </span>
+                {% else %}
+                <span class="badge bg-light text-secondary border rounded-pill px-2.5 py-1 fw-semibold" style="font-size: 0.72rem;">
+                  <i class="ph-bold ph-globe me-0.5"></i> Công khai
+                </span>
+                {% endif %}
+              </div>
+
+              {% if is_mine %}
+              <div class="dropdown" onclick="event.stopPropagation();">
+                <button class="btn btn-sm btn-light border rounded-circle p-1 text-muted shadow-none d-flex align-items-center justify-content-center" type="button" data-bs-toggle="dropdown" style="width: 28px; height: 28px;">
+                  <i class="ph-bold ph-dots-three-vertical"></i>
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end shadow-sm border rounded-3 p-1">
+                  <li>
+                    <a class="dropdown-item rounded-2 small fw-semibold text-secondary py-1.5" href="{{ url_for('learning.flashcard_set_edit', set_id=fset.id) }}">
+                      <i class="ph-bold ph-pencil me-2 text-primary"></i> Sửa học phần
+                    </a>
+                  </li>
+                  <li><hr class="dropdown-divider my-1"></li>
+                  <li>
+                    <form action="{{ url_for('learning.flashcard_set_delete', set_id=fset.id) }}" method="post" onsubmit="return confirm('Bạn có chắc chắn muốn xóa học phần này không? Toàn bộ thẻ và tiến trình học sẽ bị xóa vĩnh viễn.');">
+                      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                      <button type="submit" class="dropdown-item rounded-2 small fw-semibold text-danger py-1.5">
+                        <i class="ph-bold ph-trash me-2"></i> Xóa học phần
+                      </button>
+                    </form>
+                  </li>
+                </ul>
+              </div>
+              {% endif %}
+            </div>
+
+            <!-- Title & Description -->
+            <h5 class="fw-bold text-dark mb-1.5" style="font-size: 1.05rem; letter-spacing: -0.01em;">
+              {{ fset.title }}
+            </h5>
+            {% if fset.description %}
+            <p class="text-secondary small mb-3" style="line-height: 1.5; font-size: 0.84rem; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">
+              {{ fset.description }}
+            </p>
+            {% else %}
+            <p class="text-muted small fst-italic mb-3" style="font-size: 0.8rem;">Không có mô tả chi tiết.</p>
+            {% endif %}
+          </div>
+
+          <!-- Footer Info & CTA -->
+          <div class="pt-2.5 border-top d-flex justify-content-between align-items-center mt-2" style="border-color: #f1f5f9 !important;">
+            <div class="d-flex align-items-center gap-1.5">
+              <div class="rounded-circle bg-primary-subtle text-primary fw-bold d-flex align-items-center justify-content-center" style="width: 24px; height: 24px; font-size: 0.72rem;">
+                {{ fset.user.username[0].upper() }}
+              </div>
+              <span class="text-secondary small fw-medium" style="font-size: 0.78rem;">{{ fset.user.username }}</span>
+            </div>
+
+            <span class="btn btn-light btn-sm text-primary fw-bold rounded-pill px-3 py-1 border d-inline-flex align-items-center gap-1" style="font-size: 0.78rem;">
+              <span>Học ngay</span>
+              <i class="ph-bold ph-arrow-right"></i>
+            </span>
+          </div>
+
+        </div>
+      </div>
+      {% else %}
+      <div class="col-12 text-center py-5">
+        <div class="card border rounded-4 p-5 text-center mx-auto bg-white shadow-xs" style="max-width: 520px;">
+          <div class="rounded-circle mb-3 d-flex align-items-center justify-content-center mx-auto bg-primary-subtle text-primary" style="width: 60px; height: 60px;">
+            <i class="ph-bold ph-cards fs-2"></i>
+          </div>
+          <h5 class="fw-bold text-dark mb-1.5">Chưa có bộ Flashcard nào</h5>
+          <p class="text-muted small mb-3.5">Hãy tạo bộ thẻ Flashcard đầu tiên để ghi nhớ nhanh các từ vựng theo nhu cầu học tập của bạn!</p>
+          <a href="{{ url_for('learning.flashcard_set_create') }}" class="btn btn-primary fw-bold px-4 py-2 rounded-pill shadow-xs">
+            <i class="ph-bold ph-plus-circle me-1.5"></i> Tạo bộ thẻ mới
+          </a>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+
+  </div>
+  {% endif %}
+
 </div>
 
-<!-- Audio Script -->
+<!-- Scripts -->
 <script>
 function speakWord(text) {
   if ('speechSynthesis' in window) {
@@ -291,5 +472,48 @@ function speakWord(text) {
     window.speechSynthesis.speak(utterance);
   }
 }
+
+// Client-side search & filter for Flashcard Sets
+document.addEventListener("DOMContentLoaded", function() {
+  const filterBtns = document.querySelectorAll(".filter-set-btn");
+  const searchInput = document.getElementById("searchSetInput");
+  const setCards = document.querySelectorAll(".set-item-card");
+
+  function filterSets() {
+    const activeFilter = document.querySelector(".filter-set-btn.active")?.dataset.filter || "all";
+    const query = (searchInput?.value || "").toLowerCase().trim();
+
+    setCards.forEach(card => {
+      const owner = card.dataset.owner;
+      const title = card.dataset.title;
+
+      const matchFilter = (activeFilter === "all") || 
+                          (activeFilter === "mine" && owner === "mine") || 
+                          (activeFilter === "public" && owner === "public");
+
+      const matchSearch = !query || title.includes(query);
+
+      if (matchFilter && matchSearch) {
+        card.classList.remove("d-none");
+      } else {
+        card.classList.add("d-none");
+      }
+    });
+  }
+
+  filterBtns.forEach(btn => {
+    btn.addEventListener("click", function() {
+      filterBtns.forEach(b => {
+        b.classList.remove("btn-primary", "text-white", "active");
+        b.classList.add("btn-light", "border", "text-secondary");
+      });
+      this.classList.add("btn-primary", "text-white", "active");
+      this.classList.remove("btn-light", "border", "text-secondary");
+      filterSets();
+    });
+  });
+
+  searchInput?.addEventListener("input", filterSets);
+});
 </script>
 {% endblock %}

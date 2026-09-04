@@ -79,15 +79,9 @@
                 </a>
             </li>
             <li class="nav-item">
-                <a class="nav-link-modern {% if request.path.startswith(url_for('learning.vocabulary')) and not request.path.startswith('/admin') %}active{% endif %}" href="{{ url_for('learning.vocabulary') }}">
+                <a class="nav-link-modern {% if request.path.startswith(url_for('learning.vocabulary')) or request.path.startswith('/flashcard-sets') and not request.path.startswith('/admin') %}active{% endif %}" href="{{ url_for('learning.vocabulary') }}">
                     <i class="ph ph-book-open"></i>
-                    <span>Từ vựng</span>
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link-modern {% if request.path.startswith('/flashcard-sets') %}active{% endif %}" href="{{ url_for('learning.flashcard_sets') }}">
-                    <i class="ph ph-cards"></i>
-                    <span>Bộ thẻ Flashcard</span>
+                    <span>Từ vựng & Flashcards</span>
                 </a>
             </li>
             <li class="nav-item">

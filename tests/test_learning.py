@@ -43,7 +43,7 @@ def test_all_learner_pages_render(client, app):
         "/flashcards", "/quiz", "/toeic", "/progress"
     ]
     for endpoint in endpoints:
-        assert client.get(endpoint).status_code == 200
+        assert client.get(endpoint, follow_redirects=True).status_code == 200
 
 
 def test_streak_mechanics(app):

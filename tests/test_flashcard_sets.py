@@ -31,7 +31,7 @@ def test_flashcard_sets_lobby_requires_login(client):
 
 def test_flashcard_sets_lobby_success(client, flashcard_setup):
     login(client)
-    response = client.get("/flashcard-sets")
+    response = client.get("/flashcard-sets", follow_redirects=True)
     assert response.status_code == 200
     assert "Animals" in response.get_data(as_text=True)
 
