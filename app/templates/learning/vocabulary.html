@@ -273,10 +273,10 @@
           <div class="card h-100 border-0 rounded-4 p-3 shadow-xs bg-white transition-hover d-flex flex-column justify-content-between"
                style="border: 1px solid #e2e8f0 !important;">
             
-            <!-- Card Header: Icon + Title + Level -->
+            <!-- Card Header: Icon + Title -->
             <div>
-              <div class="d-flex justify-content-between align-items-start gap-2 mb-2">
-                <div class="rounded-3 d-flex align-items-center justify-content-center" 
+              <div class="mb-2.5">
+                <div class="rounded-3 d-inline-flex align-items-center justify-content-center" 
                       style="width: 38px; height: 38px; background: {{ course.color }}18; color: {{ course.color }};">
                   {% if course.icon.startswith('ph-') %}
                   <i class="ph-bold {{ course.icon }} fs-5"></i>
@@ -284,9 +284,6 @@
                   <span style="font-size: 1.15rem;">{{ course.icon }}</span>
                   {% endif %}
                 </div>
-                <span class="badge rounded-pill px-2 py-0.5 small fw-bold text-white" style="background: {{ course.color }}; font-size: 0.72rem;">
-                  {{ course.level }}
-                </span>
               </div>
 
               <h6 class="fw-bold text-dark mb-1" style="font-size: 0.95rem; line-height: 1.35;">
