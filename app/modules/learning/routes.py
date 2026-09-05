@@ -21,10 +21,21 @@ from .forms import ActionForm, QuizStartForm
 @login_required
 def lessons():
     level = request.args.get("level", "").strip()
-    skill = request.args.get("skill", "").strip()
+    raw_skill = request.args.get("skill", "All").strip()
     status = request.args.get("status", "").strip()
     sort = request.args.get("sort", "").strip()
-    q = request.args.get("q", "").strip()
+    search = (request.args.get("search") or request.args.get("q") or "").strip()
+    q = search
+
+    # Validate and normalize skill
+    valid_skills = ["All", "Listening", "Reading", "Speaking", "Writing"]
+    matched_skill = next((s for s in valid_skills if s.lower() == raw_skill.lower()), None)
+    if matched_skill:
+        current_skill = matched_skill
+    elif raw_skill in ["Vocabulary", "Grammar"]:
+        current_skill = raw_skill
+    else:
+        current_skill = "All"
 
     all_lessons = Lesson.query.filter_by(is_active=True).order_by(Lesson.level, Lesson.id).all()
     user_progress_list = LessonProgress.query.filter_by(user_id=current_user.id).all()
@@ -32,15 +43,126 @@ def lessons():
     favorites = LessonFavorite.query.filter_by(user_id=current_user.id).all()
     favorite_ids = {f.lesson_id for f in favorites}
 
-    total_lessons = len(all_lessons)
-    completed_count = len(done)
-    in_progress_count = max(0, total_lessons - completed_count)
+    # Skill counts for tab badges
+    skill_counts = {
+        "All": len(all_lessons),
+        "Listening": sum(1 for l in all_lessons if l.skill == "Listening"),
+        "Reading": sum(1 for l in all_lessons if l.skill == "Reading"),
+        "Speaking": sum(1 for l in all_lessons if l.skill == "Speaking"),
+        "Writing": sum(1 for l in all_lessons if l.skill == "Writing"),
+    }
+
+    # Scoped stats for current active skill
+    if current_skill == "All":
+        scoped_lessons = all_lessons
+    else:
+        scoped_lessons = [l for l in all_lessons if l.skill == current_skill]
+
+    scoped_total = len(scoped_lessons)
+    scoped_completed = sum(1 for l in scoped_lessons if l.id in done)
+    scoped_in_progress = max(0, scoped_total - scoped_completed)
+    scoped_favorites = sum(1 for l in scoped_lessons if l.id in favorite_ids)
+    scoped_completion_rate = round((scoped_completed / scoped_total * 100)) if scoped_total > 0 else 0
+
+    statistics = {
+        "total": scoped_total,
+        "completed": scoped_completed,
+        "in_progress": scoped_in_progress,
+        "favorite_count": scoped_favorites,
+        "completion_rate": scoped_completion_rate,
+        "audio_minutes": scoped_completed * 5 if current_skill == "Listening" else 0
+    }
+
+    # Hero Banner Configurations
+    hero_configs = {
+        "All": {
+            "title": "Thư viện Bài học",
+            "subtitle": "Khám phá và luyện tập tất cả các kỹ năng tiếng Anh trong một thư viện học tập thống nhất.",
+            "badge": "LỘ TRÌNH BÀI HỌC TOÀN DIỆN",
+            "icon": "ph-bold ph-graduation-cap",
+            "gradient": "linear-gradient(135deg, #065f46 0%, #047857 50%, #059669 100%)",
+            "card_class": "hero-all",
+            "stat_label_3": "Tiến độ chung",
+            "stat_val_3": f"{scoped_completion_rate}%",
+            "stat_icon_3": "ph-bold ph-chart-donut",
+            "stat_color_3": "text-info",
+            "stat_label_4": "Yêu thích",
+            "stat_val_4": f"{scoped_favorites} bài",
+            "stat_icon_4": "ph-bold ph-heart",
+            "stat_color_4": "text-danger"
+        },
+        "Listening": {
+            "title": "Luyện Nghe",
+            "subtitle": "Cải thiện khả năng nghe hiểu thông qua hội thoại, thông báo, podcast và các bài nghe theo cấp độ.",
+            "badge": "KỸ NĂNG NGHE HIỂU · LISTENING",
+            "icon": "ph-bold ph-headphones",
+            "gradient": "linear-gradient(135deg, #312e81 0%, #4338ca 50%, #6366f1 100%)",
+            "card_class": "hero-listening",
+            "stat_label_3": "Tỷ lệ hoàn thành",
+            "stat_val_3": f"{scoped_completion_rate}%",
+            "stat_icon_3": "ph-bold ph-chart-line-up",
+            "stat_color_3": "text-info",
+            "stat_label_4": "Thời lượng audio đã học",
+            "stat_val_4": f"{scoped_completed * 5} phút",
+            "stat_icon_4": "ph-bold ph-clock",
+            "stat_color_4": "text-warning"
+        },
+        "Reading": {
+            "title": "Đọc hiểu",
+            "subtitle": "Phát triển khả năng đọc hiểu thông qua các đoạn văn, email, bài báo và nội dung theo cấp độ CEFR.",
+            "badge": "KỸ NĂNG ĐỌC HIỂU · READING",
+            "icon": "ph-bold ph-book-open-text",
+            "gradient": "linear-gradient(135deg, #0f766e 0%, #0d9488 50%, #14b8a6 100%)",
+            "card_class": "hero-reading",
+            "stat_label_3": "Số bài đang học",
+            "stat_val_3": f"{scoped_in_progress} bài",
+            "stat_icon_3": "ph-bold ph-hourglass-high",
+            "stat_color_3": "text-warning",
+            "stat_label_4": "Tỷ lệ hoàn thành",
+            "stat_val_4": f"{scoped_completion_rate}%",
+            "stat_icon_4": "ph-bold ph-chart-donut",
+            "stat_color_4": "text-info"
+        },
+        "Speaking": {
+            "title": "Luyện Nói",
+            "subtitle": "Luyện giao tiếp, phát âm, ngữ điệu và phản xạ tiếng Anh thông qua các tình huống thực tế.",
+            "badge": "KỸ NĂNG GIAO TIẾP & NÓI · SPEAKING",
+            "icon": "ph-bold ph-chats-circle",
+            "gradient": "linear-gradient(135deg, #9a3412 0%, #c2410c 50%, #ea580c 100%)",
+            "card_class": "hero-speaking",
+            "stat_label_3": "Số bài đang học",
+            "stat_val_3": f"{scoped_in_progress} bài",
+            "stat_icon_3": "ph-bold ph-hourglass-high",
+            "stat_color_3": "text-warning",
+            "stat_label_4": "Tỷ lệ hoàn thành",
+            "stat_val_4": f"{scoped_completion_rate}%",
+            "stat_icon_4": "ph-bold ph-chart-donut",
+            "stat_color_4": "text-info"
+        },
+        "Writing": {
+            "title": "Luyện Viết",
+            "subtitle": "Rèn luyện khả năng viết câu, đoạn văn, email và các nội dung tiếng Anh theo chủ đề.",
+            "badge": "KỸ NĂNG VIẾT ỨNG DỤNG · WRITING",
+            "icon": "ph-bold ph-pen-nib",
+            "gradient": "linear-gradient(135deg, #881337 0%, #be123c 50%, #e11d48 100%)",
+            "card_class": "hero-writing",
+            "stat_label_3": "Số bài đang học",
+            "stat_val_3": f"{scoped_in_progress} bài",
+            "stat_icon_3": "ph-bold ph-hourglass-high",
+            "stat_color_3": "text-warning",
+            "stat_label_4": "Tỷ lệ hoàn thành",
+            "stat_val_4": f"{scoped_completion_rate}%",
+            "stat_icon_4": "ph-bold ph-chart-donut",
+            "stat_color_4": "text-info"
+        }
+    }
+    hero = hero_configs.get(current_skill, hero_configs["All"])
 
     # Level progress breakdown (A1-C2)
     levels = ["A1", "A2", "B1", "B2", "C1", "C2"]
     level_stats = []
     for lvl in levels:
-        lvl_lessons = [l for l in all_lessons if l.level == lvl]
+        lvl_lessons = [l for l in scoped_lessons if l.level == lvl]
         lvl_total = len(lvl_lessons)
         lvl_done = sum(1 for l in lvl_lessons if l.id in done)
         lvl_pct = round((lvl_done / lvl_total * 100)) if lvl_total > 0 else 0
@@ -51,10 +173,9 @@ def lessons():
             "pct": lvl_pct
         })
 
-    # Skill progress breakdown
-    skills = ["Vocabulary", "Grammar", "Reading", "Listening", "Speaking"]
+    # Backward compatibility skill_stats
     skill_stats = []
-    for sk in skills:
+    for sk in ["Vocabulary", "Grammar", "Reading", "Listening", "Speaking", "Writing"]:
         sk_lessons = [l for l in all_lessons if l.skill == sk]
         sk_total = len(sk_lessons)
         sk_done = sum(1 for l in sk_lessons if l.id in done)
@@ -66,35 +187,17 @@ def lessons():
             "pct": sk_pct
         })
 
-    # Current lesson (most recent progress) & Recommended next lesson
-    sorted_progress = sorted(user_progress_list, key=lambda p: p.completed_at, reverse=True)
-    current_lesson = db.session.get(Lesson, sorted_progress[0].lesson_id) if sorted_progress else (all_lessons[0] if all_lessons else None)
-    
-    recommended_lesson = None
-    for l in all_lessons:
-        if l.id not in done:
-            recommended_lesson = l
-            break
-    if not recommended_lesson and all_lessons:
-        recommended_lesson = all_lessons[0]
-
-    # Daily lesson goal
-    today_date = date.today()
-    today_completed_lessons = sum(1 for p in user_progress_list if p.completed_at and p.completed_at.date() == today_date)
-    daily_lesson_goal = 2
-    daily_goal_pct = min(100, round((today_completed_lessons / daily_lesson_goal * 100))) if daily_lesson_goal > 0 else 0
-
-    # Filtered query for lesson library display
+    # Filtered query for lesson display
     query = Lesson.query.filter_by(is_active=True)
-    if level:
+    if current_skill != "All":
+        query = query.filter_by(skill=current_skill)
+    if level and level in levels:
         query = query.filter_by(level=level)
-    if skill:
-        query = query.filter_by(skill=skill)
-    if q:
+    if search:
         query = query.filter(
-            Lesson.title.ilike(f"%{q}%") | 
-            Lesson.short_description.ilike(f"%{q}%") | 
-            Lesson.content.ilike(f"%{q}%")
+            Lesson.title.ilike(f"%{search}%") | 
+            Lesson.short_description.ilike(f"%{search}%") | 
+            Lesson.content.ilike(f"%{search}%")
         )
 
     lessons_list = query.all()
@@ -102,12 +205,22 @@ def lessons():
     # Filter by status
     if status == "completed":
         lessons_list = [l for l in lessons_list if l.id in done]
-    elif status == "new":
+    elif status in ["new", "not_started"]:
         lessons_list = [l for l in lessons_list if l.id not in done]
     elif status == "favorite":
         lessons_list = [l for l in lessons_list if l.id in favorite_ids]
 
-    # Sorting logic
+    # Recommended next lesson (based on filtered list if available, else scoped lessons)
+    recommended_pool = lessons_list if lessons_list else scoped_lessons
+    recommended_lesson = None
+    for l in recommended_pool:
+        if l.id not in done:
+            recommended_lesson = l
+            break
+    if not recommended_lesson and recommended_pool:
+        recommended_lesson = recommended_pool[0]
+
+    # Sorting
     level_rank = {"A1": 1, "A2": 2, "B1": 3, "B2": 4, "C1": 5, "C2": 6}
     if sort == "popularity":
         lessons_list.sort(key=lambda l: (l.view_count or 0), reverse=True)
@@ -120,22 +233,33 @@ def lessons():
     else:
         lessons_list.sort(key=lambda l: (level_rank.get(l.level, 99), l.id))
 
+    # Daily lesson goal
+    today_date = date.today()
+    today_completed_lessons = sum(1 for p in user_progress_list if p.completed_at and p.completed_at.date() == today_date)
+    daily_lesson_goal = 2
+    daily_goal_pct = min(100, round((today_completed_lessons / daily_lesson_goal * 100))) if daily_lesson_goal > 0 else 0
+
     return render_template(
         "learning/lessons.html",
         lessons=lessons_list,
+        current_skill=current_skill,
+        skill=current_skill if current_skill != "All" else "",
+        skill_param=current_skill,
         level=level,
-        skill=skill,
         status=status,
         sort=sort,
+        search=search,
         q=q,
         done=done,
         favorite_ids=favorite_ids,
-        total_lessons=total_lessons,
-        completed_count=completed_count,
-        in_progress_count=in_progress_count,
+        skill_counts=skill_counts,
+        statistics=statistics,
+        hero=hero,
+        total_lessons=scoped_total,
+        completed_count=scoped_completed,
+        in_progress_count=scoped_in_progress,
         level_stats=level_stats,
         skill_stats=skill_stats,
-        current_lesson=current_lesson,
         recommended_lesson=recommended_lesson,
         today_completed_lessons=today_completed_lessons,
         daily_lesson_goal=daily_lesson_goal,
