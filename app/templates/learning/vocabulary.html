@@ -268,36 +268,32 @@
         </div>
       </div>
 
-      <!-- Course Cards Grid (Bố cục thẻ hình ảnh + Floating Pill tiến độ) -->
+      <!-- Course Cards Grid (Bố cục thẻ gọn gàng, trong suốt, không chấm bi) -->
       <div class="row g-3 g-md-4">
         {% for course in cat.courses %}
         <div class="col-sm-6 col-md-4 col-lg-3">
           <a href="{{ url_for('learning.vocab_course_detail', cat_key=cat_key, subcat_key=course.key) }}" 
              class="text-decoration-none text-dark d-block h-100">
-            <div class="card h-100 border-0 rounded-4 overflow-hidden shadow-xs bg-white transition-all position-relative vocab-folder-card"
-                 style="border: 1px solid #e2e8f0 !important;">
+            <div class="card h-100 rounded-4 overflow-hidden shadow-2xs bg-white position-relative vocab-folder-card"
+                 style="border: 1px solid #e2e8f0 !important; transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s ease, border-color 0.2s ease;">
               
-              <!-- Card Visual Header Area -->
-              <div class="position-relative d-flex align-items-center justify-content-center overflow-hidden" 
-                   style="height: 155px; background: linear-gradient(135deg, {{ course.color }}14 0%, #f8fafc 100%);">
+              <!-- Card Visual Header Area (Trong suốt & tinh tế, không chấm bi) -->
+              <div class="position-relative d-flex align-items-center justify-content-center" 
+                   style="height: 125px; background: {{ course.color }}0a;">
                 
-                <!-- Background Pattern Circles -->
-                <div class="position-absolute top-0 start-0 w-100 h-100 opacity-20 pointer-events-none" 
-                     style="background-image: radial-gradient({{ course.color }} 1.5px, transparent 1.5px); background-size: 14px 14px;"></div>
-
                 <!-- Center Themed Illustration / Icon -->
-                <div class="rounded-circle d-flex align-items-center justify-content-center shadow-xs position-relative z-index-2 transition-transform hover-scale" 
-                     style="width: 64px; height: 64px; background: #ffffff; color: {{ course.color }}; border: 1px solid rgba(0,0,0,0.06);">
+                <div class="rounded-circle d-flex align-items-center justify-content-center shadow-2xs position-relative z-index-2 transition-transform" 
+                     style="width: 58px; height: 58px; background: #ffffff; color: {{ course.color }}; border: 1.5px solid {{ course.color }}28;">
                   {% if course.icon.startswith('ph-') %}
-                  <i class="ph-bold {{ course.icon }}" style="font-size: 1.85rem;"></i>
+                  <i class="ph-bold {{ course.icon }}" style="font-size: 1.75rem;"></i>
                   {% else %}
-                  <span style="font-size: 1.85rem;">{{ course.icon }}</span>
+                  <span style="font-size: 1.75rem;">{{ course.icon }}</span>
                   {% endif %}
                 </div>
 
                 <!-- Category Mini Tag (Top Left) -->
                 <div class="position-absolute top-0 start-0 m-2.5 z-index-2">
-                  <span class="badge bg-white text-secondary border rounded-pill px-2.5 py-1 small fw-semibold shadow-2xs" style="font-size: 0.68rem;">
+                  <span class="badge bg-white text-secondary border rounded-pill px-2.5 py-1 small fw-semibold shadow-2xs" style="font-size: 0.7rem; border-color: #e2e8f0 !important;">
                     {{ course.units_count }} bài học
                   </span>
                 </div>
@@ -315,21 +311,21 @@
               <!-- Card Body: Title & Floating Progress Pill -->
               <div class="p-3 d-flex flex-column align-items-center text-center justify-content-between flex-grow-1">
                 
-                <h6 class="fw-bold text-dark mb-1 line-clamp-2 w-100" style="font-size: 0.98rem; line-height: 1.35; min-height: 2.7em;">
+                <h6 class="fw-bold text-dark mb-1 line-clamp-2 w-100" style="font-size: 0.95rem; line-height: 1.35; min-height: 2.6em;">
                   {{ course.title }}
                 </h6>
 
-                <p class="text-muted small line-clamp-1 mb-2.5 w-100" style="font-size: 0.78rem;">
+                <p class="text-muted small line-clamp-2 mb-3 w-100" style="font-size: 0.78rem; line-height: 1.45; min-height: 2.2em;">
                   {{ course.description }}
                 </p>
 
-                <!-- Floating Progress Pill (Bố cục tham khảo: checkmark + số lượng & icon đồng hồ + bài) -->
-                <div class="d-inline-flex align-items-center gap-3 px-3 py-1.5 rounded-pill shadow-xs w-auto mt-auto" 
-                     style="background: #1e293b; color: #ffffff; font-size: 0.8rem; border: 1px solid rgba(255,255,255,0.1);">
+                <!-- Floating Progress Pill (Gọn gàng, độ tương phản cao, hiện đại) -->
+                <div class="d-inline-flex align-items-center gap-2.5 px-3 py-1.5 rounded-pill shadow-xs w-auto mt-auto" 
+                     style="background: #0f172a; color: #ffffff; font-size: 0.78rem; border: 1px solid rgba(255,255,255,0.08);">
                   
                   <!-- Metric 1: Learned / Total -->
                   <div class="d-flex align-items-center gap-1.5 fw-bold" style="color: #38bdf8;" title="Số từ đã học / Tổng số từ">
-                    <i class="ph-fill ph-check-circle" style="font-size: 0.95rem;"></i>
+                    <i class="ph-fill ph-check-circle" style="font-size: 0.92rem;"></i>
                     <span>{{ course.learned_words }}/{{ course.total_words }}</span>
                   </div>
 
@@ -337,7 +333,7 @@
 
                   <!-- Metric 2: Units Count / Due -->
                   <div class="d-flex align-items-center gap-1.5 fw-bold" style="color: #fbbf24;" title="Số bài học trong thư mục">
-                    <i class="ph-fill ph-clock-countdown" style="font-size: 0.95rem;"></i>
+                    <i class="ph-fill ph-clock" style="font-size: 0.92rem;"></i>
                     <span>{{ course.units_count }}</span>
                   </div>
                 </div>

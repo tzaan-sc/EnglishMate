@@ -5,184 +5,127 @@
 
 {% block content %}
 <style>
-  .study-dark-wrapper {
-    background-color: #0d0d10;
-    min-height: calc(100vh - 70px);
-    color: #e4e4e7;
+  .study-wrapper {
+    background-color: #09090b;
+    min-height: calc(100vh - 65px);
+    color: #f4f4f5;
   }
-  .study-card {
+  .study-card-minimal {
     background: #18181b;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 24px;
-    box-shadow: 0 20px 45px rgba(0, 0, 0, 0.6);
-    min-height: 380px;
-    transition: transform 0.2s ease, border-color 0.2s ease;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 20px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+    min-height: 340px;
+    transition: all 0.2s ease;
   }
-  .study-card.clickable-card {
+  .clickable-card {
     cursor: pointer;
   }
-  .study-card.clickable-card:hover {
-    border-color: rgba(16, 185, 129, 0.4);
+  .clickable-card:hover {
+    border-color: rgba(16, 185, 129, 0.3);
   }
   
-  /* Flashcard assessment buttons */
-  .btn-assess-mastered, .btn-assess-review {
-    background: #1c1917;
-    border: 1px solid #292524;
-    color: #10b981;
-    font-weight: 700;
-    border-radius: 14px;
-    padding: 12px 18px;
-    transition: all 0.15s ease;
-  }
-  .btn-assess-mastered:hover, .btn-assess-review:hover {
-    background: #292524;
-    color: #34d399;
-    border-color: #10b981;
-    transform: translateY(-1px);
-  }
-  .btn-assess-unknown {
-    background: #0284c7;
-    border: 1px solid #0369a1;
+  /* Buttons */
+  .btn-study-green {
+    background: #10b981;
     color: #ffffff;
+    border: none;
     font-weight: 700;
-    border-radius: 14px;
-    padding: 12px 28px;
+    border-radius: 12px;
+    padding: 11px 20px;
     transition: all 0.15s ease;
   }
-  .btn-assess-unknown:hover {
+  .btn-study-green:hover {
+    background: #059669;
+    color: #ffffff;
+  }
+
+  .btn-study-dark {
+    background: #27272a;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: #f4f4f5;
+    font-weight: 600;
+    border-radius: 12px;
+    padding: 11px 18px;
+    transition: all 0.15s ease;
+  }
+  .btn-study-dark:hover {
+    background: #3f3f46;
+    color: #ffffff;
+  }
+
+  .btn-study-blue {
+    background: #0284c7;
+    color: #ffffff;
+    border: none;
+    font-weight: 700;
+    border-radius: 12px;
+    padding: 11px 24px;
+    transition: all 0.15s ease;
+  }
+  .btn-study-blue:hover {
     background: #0369a1;
     color: #ffffff;
-    transform: translateY(-1px);
   }
 
-  /* True / False Buttons */
-  .btn-tf-choice {
-    background: #18181b;
-    border: 1.5px solid #27272a;
-    color: #f4f4f5;
-    font-weight: 700;
-    font-size: 1.05rem;
-    border-radius: 16px;
-    padding: 14px 20px;
-    transition: all 0.15s ease;
-  }
-  .btn-tf-choice:hover {
-    background: #27272a;
-    border-color: rgba(255, 255, 255, 0.25);
-    color: #ffffff;
-    transform: translateY(-2px);
-  }
-
-  /* Typing Input & Buttons */
-  .typing-input-box {
+  .typing-box {
     background: #18181b !important;
     color: #ffffff !important;
-    border: 2px solid #0284c7 !important;
-    border-radius: 16px !important;
-    padding: 14px 20px !important;
-    font-size: 1.15rem !important;
+    border: 1.5px solid #0284c7 !important;
+    border-radius: 12px !important;
+    padding: 12px 16px !important;
+    font-size: 1.1rem !important;
     font-weight: 600 !important;
     text-align: center;
-    box-shadow: 0 0 0 4px rgba(2, 132, 199, 0.15) !important;
   }
-  .typing-input-box.is-correct {
+  .typing-box.is-correct {
     background: #052e16 !important;
     border-color: #10b981 !important;
     color: #34d399 !important;
-    box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.2) !important;
   }
-  .typing-input-box.is-wrong {
+  .typing-box.is-wrong {
     background: #450a0a !important;
     border-color: #ef4444 !important;
     color: #f87171 !important;
-    box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.2) !important;
-  }
-
-  .btn-hint {
-    background: rgba(16, 185, 129, 0.08);
-    border: 1.5px solid #10b981;
-    color: #10b981;
-    font-weight: 700;
-    border-radius: 14px;
-    padding: 12px 20px;
-    transition: all 0.15s ease;
-  }
-  .btn-hint:hover {
-    background: rgba(16, 185, 129, 0.18);
-    color: #34d399;
-  }
-
-  .btn-check-submit {
-    background: #10b981;
-    border: none;
-    color: #ffffff;
-    font-weight: 700;
-    border-radius: 14px;
-    padding: 12px 28px;
-    transition: all 0.15s ease;
-  }
-  .btn-check-submit:hover {
-    background: #059669;
-    color: #ffffff;
-    transform: translateY(-1px);
-  }
-
-  .feedback-drawer {
-    background: #1c1c20;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 20px;
-    padding: 20px;
-    margin-top: 20px;
-    box-shadow: 0 15px 35px rgba(0,0,0,0.5);
   }
 
   .shortcut-tag {
-    opacity: 0.85;
+    opacity: 0.7;
+    font-size: 0.85em;
   }
   .hide-shortcuts .shortcut-tag {
     display: none !important;
   }
 </style>
 
-<div class="study-dark-wrapper py-4 px-3 d-flex flex-column justify-content-between" id="studyApp">
+<div class="study-wrapper py-3 px-3 d-flex flex-column justify-content-between" id="studyApp">
   
   <!-- ========================================== -->
-  <!-- 1. TOP HEADER & PROGRESS BAR               -->
+  <!-- 1. TOP HEADER & SLIM PROGRESS BAR          -->
   <!-- ========================================== -->
-  <div class="container max-w-2xl px-0">
+  <div class="container max-w-xl px-0">
     
-    <!-- Top Row: Shortcut toggle + Close button -->
-    <div class="d-flex justify-content-between align-items-center mb-3">
-      <button type="button" class="btn btn-sm rounded-pill px-3 py-1 fw-semibold" 
-              id="toggleShortcutsBtn" onclick="toggleShortcuts()"
-              style="background: rgba(16, 185, 129, 0.12); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.3); font-size: 0.8rem;">
-        <span id="shortcutBtnText">Ẩn phím tắt</span>
-      </button>
-
-      <a href="{{ back_url }}" class="btn btn-sm btn-dark text-white-50 hover-text-white rounded-circle p-2 border-0" title="Đóng bài học (Esc)">
-        <i class="ph-bold ph-x fs-5"></i>
-      </a>
-    </div>
-
-    <!-- Green Progress Bar -->
-    <div class="progress rounded-pill mb-3" style="height: 6px; background: rgba(255,255,255,0.08);">
-      <div class="progress-bar rounded-pill" id="studyProgressBar" role="progressbar" 
-           style="background: linear-gradient(90deg, #059669 0%, #10b981 100%); width: 0%; transition: width 0.3s ease;"></div>
-    </div>
-
-    <!-- Status Sub-header: Dynamic Activity Title + Mastery Ring Icon -->
-    <div class="d-flex justify-content-between align-items-center mb-4">
+    <!-- Top row: Mode text + Controls -->
+    <div class="d-flex justify-content-between align-items-center mb-2">
       <div class="d-flex align-items-center gap-2">
-        <i class="ph-fill ph-lightning fs-5 text-warning" id="activityIcon" style="display: none;"></i>
-        <span class="fw-bold text-white fs-6" id="activityTitle">Từ mới</span>
+        <span class="fw-bold text-white small" id="activityTitle">Từ mới</span>
       </div>
-      
-      <!-- Bean / Topic Icon Badge -->
-      <div class="rounded-circle d-flex align-items-center justify-content-center" 
-           style="width: 34px; height: 34px; border: 2px solid #10b981; color: #10b981; background: rgba(16, 185, 129, 0.1);">
-        <i class="ph-fill ph-plant" style="font-size: 1.05rem;"></i>
+
+      <div class="d-flex align-items-center gap-2">
+        <button type="button" class="btn btn-sm btn-dark text-muted py-0.5 px-2 rounded-pill small border-0" 
+                id="toggleShortcutsBtn" onclick="toggleShortcuts()" style="font-size: 0.75rem;">
+          <span id="shortcutBtnText">Ẩn phím tắt</span>
+        </button>
+
+        <a href="{{ back_url }}" class="btn btn-sm btn-dark text-white-50 hover-text-white rounded-circle p-1 border-0" title="Thoát (Esc)">
+          <i class="ph-bold ph-x fs-6"></i>
+        </a>
       </div>
+    </div>
+
+    <!-- Slim Green Progress Bar -->
+    <div class="progress rounded-pill mb-4" style="height: 4px; background: rgba(255,255,255,0.1);">
+      <div class="progress-bar bg-success rounded-pill" id="studyProgressBar" role="progressbar" style="width: 0%; transition: width 0.25s ease;"></div>
     </div>
 
   </div>
@@ -190,202 +133,139 @@
   <!-- ========================================== -->
   <!-- 2. MAIN EXERCISE CONTAINER                 -->
   <!-- ========================================== -->
-  <div class="container max-w-2xl px-0 my-auto">
+  <div class="container max-w-xl px-0 my-auto">
 
-    <!-- ========================================== -->
-    <!-- EXERCISE TYPE 1: FLASHCARD 2-PHASE         -->
-    <!-- ========================================== -->
+    <!-- EXERCISE 1: FLASHCARD -->
     <div id="exerciseFlashcard" style="display: none;">
-      <div class="study-card clickable-card p-4 p-md-5 d-flex flex-column justify-content-between text-center position-relative" 
-           id="mainStudyCard" onclick="flipCard()">
+      <div class="study-card-minimal clickable-card p-4 d-flex flex-column justify-content-between text-center position-relative" onclick="flipCard()">
         
-        <!-- Phase 1: Mặt trước (Tiếng Anh trước) -->
+        <!-- Front: Tiếng Anh -->
         <div id="cardFaceFront" class="d-flex flex-column justify-content-center align-items-center my-auto">
-          <h1 class="display-4 fw-extrabold text-white mb-4" id="frontWordText" style="letter-spacing: -0.02em;">
+          <h2 class="fw-extrabold text-white mb-3" id="frontWordText" style="font-size: 2.2rem; letter-spacing: -0.01em;">
             word
-          </h1>
+          </h2>
 
-          <div class="d-flex flex-column gap-2 mb-3">
-            <div class="d-flex align-items-center justify-content-center gap-2 cursor-pointer text-white-50 hover-text-info" 
-                 onclick="event.stopPropagation(); playCurrentAudio('en-US');" title="Nghe phát âm US">
-              <div class="rounded-circle bg-primary bg-opacity-20 d-flex align-items-center justify-content-center" style="width: 32px; height: 32px;">
-                <i class="ph-fill ph-speaker-high" style="color: #38bdf8;"></i>
-              </div>
-              <span class="fw-bold text-white small">US</span>
-              <span class="text-white-50 font-monospace small" id="frontPronUS">/pron/</span>
+          <!-- Clean Pronunciation buttons -->
+          <div class="d-flex align-items-center gap-3">
+            <div class="d-flex align-items-center gap-1.5 cursor-pointer text-white-50 hover-text-white" 
+                 onclick="event.stopPropagation(); playCurrentAudio('en-US');">
+              <i class="ph-fill ph-speaker-high text-primary"></i>
+              <span class="small fw-bold text-white">US</span>
+              <span class="small text-white-50 font-monospace" id="frontPronUS">/pron/</span>
             </div>
-
-            <div class="d-flex align-items-center justify-content-center gap-2 cursor-pointer text-white-50 hover-text-info" 
-                 onclick="event.stopPropagation(); playCurrentAudio('en-GB');" title="Nghe phát âm UK">
-              <div class="rounded-circle bg-primary bg-opacity-20 d-flex align-items-center justify-content-center" style="width: 32px; height: 32px;">
-                <i class="ph-fill ph-speaker-high" style="color: #38bdf8;"></i>
-              </div>
-              <span class="fw-bold text-white small">UK</span>
-              <span class="text-white-50 font-monospace small" id="frontPronUK">/pron/</span>
+            <div class="d-flex align-items-center gap-1.5 cursor-pointer text-white-50 hover-text-white" 
+                 onclick="event.stopPropagation(); playCurrentAudio('en-GB');">
+              <i class="ph-fill ph-speaker-high text-primary"></i>
+              <span class="small fw-bold text-white">UK</span>
+              <span class="small text-white-50 font-monospace" id="frontPronUK">/pron/</span>
             </div>
           </div>
         </div>
 
-        <!-- Phase 2: Mặt sau (Hình ảnh + Dịch nghĩa + Ví dụ) -->
+        <!-- Back: Tiếng Việt -->
         <div id="cardFaceBack" class="d-flex flex-column justify-content-center align-items-center my-auto" style="display: none !important;">
-          <div class="mb-3" id="backImageContainer" style="display: none;">
-            <img src="" id="backImage" class="rounded-3 shadow-md object-fit-cover" style="max-width: 180px; max-height: 120px; border: 1px solid rgba(255,255,255,0.12);" alt="illustration">
-          </div>
-
           <div class="fst-italic text-white-50 small mb-1" id="backPartOfSpeech">noun</div>
-          <h3 class="fw-bold text-white mb-2" id="backMeaningVi" style="font-size: 1.35rem; line-height: 1.4;">
+          <h4 class="fw-bold text-white mb-2" id="backMeaningVi" style="font-size: 1.25rem;">
             Nghĩa tiếng Việt
-          </h3>
-
-          <div class="p-2.5 rounded-3 mt-2 text-start w-100 max-w-md" id="backExampleBox" 
-               style="background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.06); font-size: 0.85rem;">
-            <div class="text-white fw-medium mb-1" id="backExampleEn">"Example sentence"</div>
-            <div class="text-white-50" id="backExampleVi">"Bản dịch ví dụ"</div>
-          </div>
+          </h4>
+          <div class="small text-white-50" id="backExampleEn" style="max-width: 90%;">"Example"</div>
         </div>
 
-        <!-- Bottom Hint: Lật - Nhấn Space -->
-        <div class="pt-3 mt-auto d-flex align-items-center justify-content-center gap-2 fw-semibold" style="color: #10b981; font-size: 0.88rem;">
-          <i class="ph-bold ph-cards"></i>
-          <span>Lật <span class="shortcut-tag">- Nhấn Space</span></span>
+        <!-- Bottom Hint -->
+        <div class="pt-3 mt-auto small text-success fw-semibold">
+          <i class="ph-bold ph-cards me-1"></i>Lật <span class="shortcut-tag">- Nhấn Space</span>
         </div>
       </div>
 
-      <!-- Assessment Options for Flashcard -->
-      <div class="mt-4 text-center" id="assessmentSection">
-        <p class="text-white fw-bold mb-3" style="font-size: 0.95rem;">
-          Bạn thuộc từ này ở mức nào?
-        </p>
-
-        <div class="row g-2 justify-content-center mb-2">
-          <div class="col-6 col-sm-5">
-            <button type="button" class="btn btn-assess-mastered w-100 d-flex align-items-center justify-content-center gap-1.5" onclick="submitAssessment('mastered')">
-              <span>Thông thạo</span>
-              <span class="shortcut-tag text-white-50 small ms-1">- Nhấn 1</span>
+      <!-- 3 Assessment Buttons -->
+      <div class="mt-3 text-center" id="assessmentSection">
+        <p class="text-white-50 small mb-2">Bạn thuộc từ này ở mức nào?</p>
+        <div class="row g-2 justify-content-center">
+          <div class="col-4">
+            <button type="button" class="btn btn-study-dark w-100 py-2 small" onclick="submitAssessment('mastered')">
+              <span class="text-success fw-bold">Thuộc</span> <span class="shortcut-tag">- 1</span>
             </button>
           </div>
-
-          <div class="col-6 col-sm-5">
-            <button type="button" class="btn btn-assess-review w-100 d-flex align-items-center justify-content-center gap-1.5" onclick="submitAssessment('review')">
-              <span>Nhớ tạm</span>
-              <span class="shortcut-tag text-white-50 small ms-1">- Nhấn 3</span>
+          <div class="col-4">
+            <button type="button" class="btn btn-study-dark w-100 py-2 small" onclick="submitAssessment('review')">
+              <span class="text-warning fw-bold">Nhớ tạm</span> <span class="shortcut-tag">- 3</span>
             </button>
           </div>
-        </div>
-
-        <div class="row justify-content-center">
-          <div class="col-12 col-sm-6">
-            <button type="button" class="btn btn-assess-unknown w-100 d-flex align-items-center justify-content-center gap-1.5" onclick="submitAssessment('unknown')">
-              <span>Chưa biết</span>
-              <span class="shortcut-tag opacity-75 small ms-1">- Nhấn Enter</span>
+          <div class="col-4">
+            <button type="button" class="btn btn-study-blue w-100 py-2 small" onclick="submitAssessment('unknown')">
+              <span>Chưa biết</span> <span class="shortcut-tag">- Enter</span>
             </button>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- ========================================== -->
-    <!-- EXERCISE TYPE 2: TRUE / FALSE (ĐÚNG HAY SAI)-->
-    <!-- ========================================== -->
+    <!-- EXERCISE 2: TRUE / FALSE -->
     <div id="exerciseTrueFalse" style="display: none;">
-      <div class="study-card p-4 p-md-5 d-flex flex-column justify-content-between text-center">
-        <div class="my-auto py-3">
-          <div class="text-white-50 fst-italic small mb-2" id="tfPartOfSpeech">(noun)</div>
-          <h4 class="fw-bold text-white mb-3" id="tfMeaning" style="line-height: 1.45; font-size: 1.25rem;">
-            mặt, thể diện; đương đầu, đối phó
-          </h4>
-
-          <div class="text-success small fw-semibold my-3" style="color: #10b981 !important; font-size: 0.95rem;">
-            là nghĩa của
-          </div>
-
-          <h1 class="display-5 fw-extrabold text-white mb-2" id="tfWord">
-            leg
-          </h1>
+      <div class="study-card-minimal p-4 d-flex flex-column justify-content-between text-center">
+        <div class="my-auto py-2">
+          <div class="text-white-50 fst-italic small mb-1" id="tfPartOfSpeech">(noun)</div>
+          <h5 class="fw-bold text-white mb-2" id="tfMeaning" style="font-size: 1.15rem;">
+            định nghĩa
+          </h5>
+          <div class="text-success small my-2">là nghĩa của</div>
+          <h2 class="fw-bold text-white mb-0" id="tfWord">word</h2>
         </div>
 
-        <div class="row g-3 justify-content-center mt-4">
+        <div class="row g-2 justify-content-center mt-3">
           <div class="col-6">
-            <button type="button" class="btn btn-tf-choice w-100 py-3" onclick="submitTrueFalse(false)">
-              <span>Sai</span>
-              <span class="shortcut-tag text-white-50 small ms-1">- Nhấn 1</span>
+            <button type="button" class="btn btn-study-dark w-100 py-2.5" onclick="submitTrueFalse(false)">
+              <span>Sai</span> <span class="shortcut-tag">- 1</span>
             </button>
           </div>
           <div class="col-6">
-            <button type="button" class="btn btn-tf-choice w-100 py-3" onclick="submitTrueFalse(true)">
-              <span>Đúng</span>
-              <span class="shortcut-tag text-white-50 small ms-1">- Nhấn 2</span>
+            <button type="button" class="btn btn-study-dark w-100 py-2.5" onclick="submitTrueFalse(true)">
+              <span>Đúng</span> <span class="shortcut-tag">- 2</span>
             </button>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- ========================================== -->
-    <!-- EXERCISE TYPE 3: TYPING (NHẬP TỪ)          -->
-    <!-- ========================================== -->
+    <!-- EXERCISE 3: TYPING -->
     <div id="exerciseTyping" style="display: none;">
-      <div class="study-card p-4 p-md-5 d-flex flex-column justify-content-between text-center">
-        
+      <div class="study-card-minimal p-4 d-flex flex-column justify-content-between text-center">
         <div class="my-auto">
-          <div class="text-white-50 fst-italic small mb-2" id="typingPos">(adjective)</div>
-          <h4 class="fw-bold text-white mb-4" id="typingMeaning" style="font-size: 1.25rem; line-height: 1.45;">
-            có hiệu quả, sinh lợi nhiều
-          </h4>
+          <div class="text-white-50 fst-italic small mb-1" id="typingPos">(noun)</div>
+          <h5 class="fw-bold text-white mb-3" id="typingMeaning" style="font-size: 1.15rem;">
+            định nghĩa
+          </h5>
 
           <!-- Input field -->
-          <div class="position-relative max-w-md mx-auto mb-3">
-            <input type="text" id="typingInput" class="form-control form-control-lg typing-input-box" 
-                   placeholder="" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"
+          <div class="max-w-sm mx-auto mb-2">
+            <input type="text" id="typingInput" class="form-control typing-box" 
+                   placeholder="Nhập từ tiếng Anh..." autocomplete="off"
                    onkeydown="handleTypingKeydown(event)">
-            <span class="position-absolute end-0 top-50 translate-middle-y me-3" id="typingStatusIcon" style="display: none;">
-              <!-- Icon tick/cross -->
-            </span>
           </div>
 
-          <!-- Wrong Answer Correction -->
           <div class="small text-white-50 fw-semibold mb-2" id="typingCorrectionBox" style="display: none;">
             Đáp án đúng: <span class="text-success fw-bold font-monospace" id="typingCorrectAnswer">word</span>
           </div>
         </div>
 
-        <!-- Pre-submit Actions -->
-        <div class="d-flex justify-content-between align-items-center gap-2 max-w-md mx-auto w-100" id="typingActionRow">
-          <button type="button" class="btn btn-hint d-flex align-items-center gap-1.5" onclick="giveTypingHint()">
-            <i class="ph-fill ph-lightbulb"></i>
-            <span>Gợi ý (<span id="hintCount">1</span>)</span>
-            <span class="shortcut-tag text-white-50 small ms-1">- Nhấn Shift</span>
+        <!-- Buttons -->
+        <div class="d-flex justify-content-center gap-2 max-w-sm mx-auto w-100" id="typingActionRow">
+          <button type="button" class="btn btn-study-dark flex-grow-1 py-2 small" onclick="giveTypingHint()">
+            💡 Gợi ý <span class="shortcut-tag">- Shift</span>
           </button>
-
-          <button type="button" class="btn btn-check-submit d-flex align-items-center gap-1.5" onclick="checkTypingAnswer()">
-            <span>Kiểm tra</span>
-            <span class="shortcut-tag opacity-80 small ms-1">- Nhấn Enter</span>
+          <button type="button" class="btn btn-study-green flex-grow-1 py-2 small" onclick="checkTypingAnswer()">
+            Kiểm tra <span class="shortcut-tag">- Enter</span>
           </button>
         </div>
 
-        <!-- Post-submit Feedback Drawer (Matching screenshot 3 & 4) -->
-        <div class="feedback-drawer text-start" id="typingFeedbackDrawer" style="display: none;">
-          <div class="d-flex justify-content-between align-items-center mb-2">
-            <h5 class="fw-bold mb-0" id="feedbackTitle" style="color: #10b981;">Chính xác</h5>
-            <button type="button" class="btn btn-sm btn-link text-white-50 p-0 border-0" title="Báo cáo">
-              <i class="ph-fill ph-flag"></i>
-            </button>
+        <!-- Feedback Result Drawer -->
+        <div class="p-3 rounded-3 mt-3 bg-dark border border-secondary border-opacity-25 text-start" id="typingFeedbackDrawer" style="display: none;">
+          <div class="d-flex justify-content-between align-items-center mb-1">
+            <strong class="fw-bold small" id="feedbackTitle" style="color: #10b981;">Chính xác</strong>
+            <span class="text-white fw-bold" id="feedbackWord">word</span>
           </div>
-
-          <div class="d-flex align-items-center gap-2 mb-1">
-            <span class="fw-bold fs-5 text-white" id="feedbackWord">productive</span>
-            <button type="button" class="btn btn-sm btn-link p-0 text-white-50 hover-text-white" onclick="playCurrentAudio('en-US')">
-              <i class="ph-fill ph-speaker-high fs-5"></i>
-            </button>
-          </div>
-
-          <div class="small text-white-50 mb-3" id="feedbackMeaning">(adjective) có hiệu quả, sinh lợi nhiều</div>
-
-          <div class="mb-3 text-center" id="feedbackImgContainer" style="display: none;">
-            <img src="" id="feedbackImg" class="rounded-3 shadow-sm object-fit-cover" style="max-width: 180px; max-height: 110px; border: 1px solid rgba(255,255,255,0.12);" alt="illustration">
-          </div>
-
-          <button type="button" class="btn w-100 py-2.5 fw-bold rounded-3 text-white" id="feedbackNextBtn" 
+          <div class="small text-white-50 mb-2" id="feedbackMeaning">meaning</div>
+          <button type="button" class="btn w-100 py-1.5 fw-bold rounded-2 text-white small" id="feedbackNextBtn" 
                   style="background: #10b981; border: 0;" onclick="advanceAfterFeedback()">
             Tiếp tục <span class="shortcut-tag">- Nhấn Space</span>
           </button>
@@ -394,123 +274,62 @@
       </div>
     </div>
 
-    <!-- ========================================== -->
-    <!-- 4. SESSION COMPLETION SUMMARY CARD         -->
-    <!-- (MATCHING SCREENSHOT 5)                    -->
-    <!-- ========================================== -->
-    <div class="study-card p-4 p-md-5 text-center my-auto" id="completionCard" style="display: none;">
-      
-      <!-- Big Emoji Avatar -->
-      <div class="fs-1 mb-2" id="completionEmoji" style="font-size: 4rem;">
-        🥺
+    <!-- SUMMARY SCREEN -->
+    <div class="study-card-minimal p-4 text-center my-auto" id="completionCard" style="display: none;">
+      <div class="fs-1 mb-2" id="completionEmoji">🎉</div>
+      <h4 class="fw-bold text-white mb-1">Hoàn thành bài học!</h4>
+      <p class="text-white-50 small mb-3">Bạn vừa luyện tập xong <strong class="text-white" id="statPracticedWords">12</strong> từ</p>
+
+      <div class="d-inline-block px-3 py-1.5 rounded-pill bg-dark border border-secondary border-opacity-50 text-warning fw-bold small mb-4" id="statTotalXP">
+        +15 XP
       </div>
 
-      <!-- Star Rating -->
-      <div class="d-flex justify-content-center gap-1 text-warning fs-4 mb-3" id="completionStars">
-        <i class="ph-fill ph-star"></i>
-        <i class="ph-fill ph-star-half"></i>
-        <i class="ph-bold ph-star text-white-50"></i>
-        <i class="ph-bold ph-star text-white-50"></i>
-        <i class="ph-bold ph-star text-white-50"></i>
+      <div class="d-flex justify-content-center gap-2">
+        <a href="{{ back_url }}" class="btn btn-light rounded-pill px-4 py-2 fw-bold text-dark small">
+          Về danh sách bài học
+        </a>
+        <button type="button" class="btn btn-primary rounded-pill px-4 py-2 fw-bold text-white small" onclick="restartSession()">
+          Học lại bài này
+        </button>
       </div>
-
-      <h5 class="fw-bold text-white mb-1">
-        Bạn vừa luyện tập <span class="text-success fw-extrabold" id="statPracticedWords">12</span> từ
-      </h5>
-      <div class="fw-bold mb-4" style="color: #38bdf8;" id="statTotalXP">
-        +15 Điểm KN
-      </div>
-
-      <!-- Section: Tiếp tục học -->
-      <div class="text-start mt-4 pt-3 border-top border-secondary border-opacity-25">
-        <h6 class="fw-bold text-white mb-3" style="font-size: 0.95rem;">Tiếp tục học</h6>
-
-        <!-- Topic Card -->
-        <div class="card p-3 rounded-4 bg-dark border border-secondary border-opacity-25 mb-3">
-          <div class="d-flex align-items-center gap-3">
-            <div class="rounded-3 bg-success bg-opacity-20 d-flex align-items-center justify-content-center text-success flex-shrink-0" style="width: 44px; height: 44px;">
-              <i class="ph-fill ph-image fs-4"></i>
-            </div>
-            <div>
-              <h6 class="fw-bold text-white mb-0.5">{{ unit_title }}</h6>
-              <small class="text-success d-flex align-items-center gap-1">
-                <i class="ph-fill ph-clock"></i> {{ total_words }} từ vựng trong bài
-              </small>
-            </div>
-          </div>
-        </div>
-
-        <!-- 2 Action Buttons (Luyện tập thông thường & Thẻ ghi nhớ) -->
-        <div class="row g-2">
-          <div class="col-6">
-            <button type="button" class="btn btn-success w-100 py-2.5 fw-bold rounded-3 d-flex align-items-center justify-content-center gap-1.5 shadow-sm" onclick="restartSession()">
-              <i class="ph-bold ph-lightning"></i>
-              <span>Luyện tập</span>
-            </button>
-          </div>
-          <div class="col-6">
-            <a href="{{ back_url }}" class="btn w-100 py-2.5 fw-bold rounded-3 d-flex align-items-center justify-content-center gap-1.5 text-white" 
-               style="background: #8b5cf6; border: none;">
-              <i class="ph-bold ph-cards"></i>
-              <span>Về bài học</span>
-            </a>
-          </div>
-        </div>
-
-      </div>
-
     </div>
 
   </div>
 
-  <!-- Bottom Empty Spacer for visual vertical balance -->
-  <div class="container max-w-2xl px-0 py-2"></div>
+  <div class="container max-w-xl px-0 py-1"></div>
 
 </div>
 
 <script>
-// Load words data
 const rawWordsData = {{ words_data|tojson }};
 let sessionEarnedXP = 0;
 let sessionMasteredCount = 0;
 let shortcutsVisible = true;
-
-// Build interactive mixed exercise sequence
-// Sequence for each word: Flashcard -> True/False -> Typing
 let activities = [];
 let currentActivityIndex = 0;
 let isFlipped = false;
-let currentFeedbackState = null; // for typing feedback
+let currentFeedbackState = null;
+let typingHintIndex = 1;
 
 function buildActivityQueue() {
   activities = [];
   rawWordsData.forEach((word) => {
-    // 1. Flashcard Phase
-    activities.push({
-      type: 'flashcard',
-      word: word
-    });
-
-    // 2. True / False Matching Activity
-    const isTrue = Math.random() > 0.45;
-    let tfWord = word;
-    if (!isTrue && rawWordsData.length > 1) {
+    activities.push({ type: 'flashcard', word: word });
+    
+    // 1 short check (true/false or typing)
+    if (Math.random() > 0.5 && rawWordsData.length > 1) {
       const otherWords = rawWordsData.filter(w => w.id !== word.id);
-      tfWord = otherWords[Math.floor(Math.random() * otherWords.length)];
+      const isTrue = Math.random() > 0.5;
+      const candidate = isTrue ? word : otherWords[Math.floor(Math.random() * otherWords.length)];
+      activities.push({
+        type: 'true_false',
+        targetWord: word,
+        displayCandidateWord: candidate,
+        isCorrectAnswer: (candidate.id === word.id)
+      });
+    } else {
+      activities.push({ type: 'typing', word: word });
     }
-    activities.push({
-      type: 'true_false',
-      targetWord: word,
-      displayCandidateWord: tfWord,
-      isCorrectAnswer: (tfWord.id === word.id)
-    });
-
-    // 3. Typing Activity
-    activities.push({
-      type: 'typing',
-      word: word,
-      hintLetters: 1
-    });
   });
 }
 
@@ -529,14 +348,11 @@ function renderCurrentActivity() {
   }
 
   const act = activities[currentActivityIndex];
-  
-  // Hide all exercise containers
   document.getElementById('exerciseFlashcard').style.display = 'none';
   document.getElementById('exerciseTrueFalse').style.display = 'none';
   document.getElementById('exerciseTyping').style.display = 'none';
   document.getElementById('completionCard').style.display = 'none';
 
-  // Update progress
   const progressPct = Math.round(((currentActivityIndex + 1) / activities.length) * 100);
   document.getElementById('studyProgressBar').style.width = `${Math.max(5, progressPct)}%`;
 
@@ -549,39 +365,18 @@ function renderCurrentActivity() {
   }
 }
 
-/* ==================================================== */
-/* 1. FLASHCARD LOGIC                                   */
-/* ==================================================== */
 function renderFlashcard(word) {
   document.getElementById('exerciseFlashcard').style.display = 'block';
   document.getElementById('activityTitle').textContent = word.is_learned ? "Ôn tập" : "Từ mới";
-  document.getElementById('activityIcon').style.display = 'none';
 
   isFlipped = false;
   document.getElementById('frontWordText').textContent = word.word;
   document.getElementById('frontPronUS').textContent = word.pronunciation || `/${word.word}/`;
   document.getElementById('frontPronUK').textContent = word.pronunciation || `/${word.word}/`;
 
-  document.getElementById('backPartOfSpeech').textContent = word.part_of_speech ? word.part_of_speech.toLowerCase() : 'word';
+  document.getElementById('backPartOfSpeech').textContent = word.part_of_speech ? `(${word.part_of_speech.toLowerCase()})` : '';
   document.getElementById('backMeaningVi').textContent = word.meaning_vi;
-
-  const imgContainer = document.getElementById('backImageContainer');
-  const imgEl = document.getElementById('backImage');
-  if (word.image_url) {
-    imgEl.src = word.image_url;
-    imgContainer.style.display = 'block';
-  } else {
-    imgContainer.style.display = 'none';
-  }
-
-  const exBox = document.getElementById('backExampleBox');
-  if (word.example_en) {
-    document.getElementById('backExampleEn').textContent = `“${word.example_en}”`;
-    document.getElementById('backExampleVi').textContent = word.example_vi ? `— ${word.example_vi}` : '';
-    exBox.style.display = 'block';
-  } else {
-    exBox.style.display = 'none';
-  }
+  document.getElementById('backExampleEn').textContent = word.example_en ? `"${word.example_en}"` : '';
 
   document.getElementById('cardFaceFront').style.setProperty('display', 'flex', 'important');
   document.getElementById('cardFaceBack').style.setProperty('display', 'none', 'important');
@@ -615,23 +410,16 @@ function submitAssessment(rating) {
   });
 
   if (rating === 'mastered') sessionMasteredCount++;
-  
   currentActivityIndex++;
   renderCurrentActivity();
 }
 
-/* ==================================================== */
-/* 2. TRUE / FALSE (ĐÚNG HAY SAI) LOGIC                 */
-/* ==================================================== */
 function renderTrueFalse(act) {
   document.getElementById('exerciseTrueFalse').style.display = 'block';
   document.getElementById('activityTitle').textContent = "Đúng hay sai?";
-  document.getElementById('activityIcon').style.display = 'none';
-
   document.getElementById('tfPartOfSpeech').textContent = act.targetWord.part_of_speech ? `(${act.targetWord.part_of_speech.toLowerCase()})` : '';
   document.getElementById('tfMeaning').textContent = act.targetWord.meaning_vi;
   document.getElementById('tfWord').textContent = act.displayCandidateWord.word;
-
   playAudioText(act.displayCandidateWord.word, 'en-US');
 }
 
@@ -639,33 +427,16 @@ function submitTrueFalse(userSaidTrue) {
   const act = activities[currentActivityIndex];
   if (!act || act.type !== 'true_false') return;
 
-  const isCorrect = (userSaidTrue === act.isCorrectAnswer);
-  if (isCorrect) {
+  if (userSaidTrue === act.isCorrectAnswer) {
     sessionEarnedXP += 2;
-    sessionMasteredCount++;
-  } else {
-    // Re-queue typing or test again
-    activities.push({
-      type: 'typing',
-      word: act.targetWord,
-      hintLetters: 1
-    });
   }
-
   currentActivityIndex++;
   renderCurrentActivity();
 }
 
-/* ==================================================== */
-/* 3. TYPING (NHẬP TỪ) LOGIC                            */
-/* ==================================================== */
-let typingHintIndex = 1;
-
 function renderTyping(word) {
   document.getElementById('exerciseTyping').style.display = 'block';
   document.getElementById('activityTitle').textContent = "Nhập từ";
-  document.getElementById('activityIcon').style.display = 'inline-block';
-
   typingHintIndex = 1;
   currentFeedbackState = null;
 
@@ -674,22 +445,19 @@ function renderTyping(word) {
 
   const inputEl = document.getElementById('typingInput');
   inputEl.value = '';
-  inputEl.className = 'form-control form-control-lg typing-input-box';
+  inputEl.className = 'form-control typing-box';
   inputEl.disabled = false;
   
   document.getElementById('typingCorrectionBox').style.display = 'none';
-  document.getElementById('typingStatusIcon').style.display = 'none';
   document.getElementById('typingFeedbackDrawer').style.display = 'none';
   document.getElementById('typingActionRow').style.display = 'flex';
-  document.getElementById('hintCount').textContent = word.word.length;
 
-  setTimeout(() => inputEl.focus(), 50);
+  setTimeout(() => inputEl.focus(), 40);
 }
 
 function giveTypingHint() {
   const act = activities[currentActivityIndex];
   if (!act || act.type !== 'typing') return;
-
   const target = act.word.word;
   const inputEl = document.getElementById('typingInput');
   inputEl.value = target.substring(0, Math.min(target.length, typingHintIndex));
@@ -716,10 +484,7 @@ function checkTypingAnswer() {
   if (!act || act.type !== 'typing') return;
 
   const inputEl = document.getElementById('typingInput');
-  const userVal = inputEl.value.trim().toLowerCase();
-  const correctVal = act.word.word.trim().toLowerCase();
-
-  const isCorrect = (userVal === correctVal);
+  const isCorrect = (inputEl.value.trim().toLowerCase() === act.word.word.trim().toLowerCase());
   currentFeedbackState = isCorrect ? 'correct' : 'wrong';
 
   inputEl.disabled = true;
@@ -730,48 +495,23 @@ function checkTypingAnswer() {
   const fbWord = document.getElementById('feedbackWord');
   const fbMeaning = document.getElementById('feedbackMeaning');
   const fbNextBtn = document.getElementById('feedbackNextBtn');
-  const fbImgCont = document.getElementById('feedbackImgContainer');
-  const fbImg = document.getElementById('feedbackImg');
 
   fbWord.textContent = act.word.word;
-  fbMeaning.textContent = `${act.word.part_of_speech ? '(' + act.word.part_of_speech.toLowerCase() + ') ' : ''}${act.word.meaning_vi}`;
-
-  if (act.word.image_url) {
-    fbImg.src = act.word.image_url;
-    fbImgCont.style.display = 'block';
-  } else {
-    fbImgCont.style.display = 'none';
-  }
+  fbMeaning.textContent = act.word.meaning_vi;
 
   if (isCorrect) {
-    inputEl.className = 'form-control form-control-lg typing-input-box is-correct';
-    document.getElementById('typingStatusIcon').innerHTML = '<i class="ph-fill ph-check-circle text-success fs-4"></i>';
-    document.getElementById('typingStatusIcon').style.display = 'block';
-
+    inputEl.className = 'form-control typing-box is-correct';
     fbTitle.textContent = "Chính xác";
     fbTitle.style.color = "#10b981";
     fbNextBtn.style.background = "#10b981";
-
     sessionEarnedXP += 3;
-    sessionMasteredCount++;
   } else {
-    inputEl.className = 'form-control form-control-lg typing-input-box is-wrong';
-    document.getElementById('typingStatusIcon').innerHTML = '<i class="ph-fill ph-x-circle text-danger fs-4"></i>';
-    document.getElementById('typingStatusIcon').style.display = 'block';
-
+    inputEl.className = 'form-control typing-box is-wrong';
     document.getElementById('typingCorrectionBox').style.display = 'block';
     document.getElementById('typingCorrectAnswer').textContent = act.word.word;
-
     fbTitle.textContent = "Không chính xác";
     fbTitle.style.color = "#ef4444";
     fbNextBtn.style.background = "#ef4444";
-
-    // Re-queue to practice again
-    activities.push({
-      type: 'typing',
-      word: act.word,
-      hintLetters: 1
-    });
   }
 
   drawer.style.display = 'block';
@@ -784,9 +524,6 @@ function advanceAfterFeedback() {
   renderCurrentActivity();
 }
 
-/* ==================================================== */
-/* 4. COMPLETION SUMMARY SCREEN (SCREENSHOT 5)         */
-/* ==================================================== */
 function showCompletionSummary() {
   document.getElementById('exerciseFlashcard').style.display = 'none';
   document.getElementById('exerciseTrueFalse').style.display = 'none';
@@ -795,30 +532,18 @@ function showCompletionSummary() {
   document.getElementById('studyProgressBar').style.width = '100%';
 
   document.getElementById('statPracticedWords').textContent = rawWordsData.length;
-  document.getElementById('statTotalXP').textContent = `+${Math.max(15, sessionEarnedXP)} Điểm KN`;
+  document.getElementById('statTotalXP').textContent = `+${Math.max(10, sessionEarnedXP)} XP`;
 
-  // Rating stars and emoji
-  const emojiEl = document.getElementById('completionEmoji');
-  const starsEl = document.getElementById('completionStars');
-  if (sessionMasteredCount >= rawWordsData.length * 2) {
-    emojiEl.textContent = '🤩';
-    starsEl.innerHTML = '<i class="ph-fill ph-star"></i><i class="ph-fill ph-star"></i><i class="ph-fill ph-star"></i><i class="ph-fill ph-star"></i><i class="ph-fill ph-star"></i>';
-  } else if (sessionMasteredCount >= rawWordsData.length) {
-    emojiEl.textContent = '😊';
-    starsEl.innerHTML = '<i class="ph-fill ph-star"></i><i class="ph-fill ph-star"></i><i class="ph-fill ph-star"></i><i class="ph-fill ph-star"></i><i class="ph-bold ph-star text-white-50"></i>';
-  } else {
-    emojiEl.textContent = '🥺';
-    starsEl.innerHTML = '<i class="ph-fill ph-star"></i><i class="ph-fill ph-star-half"></i><i class="ph-bold ph-star text-white-50"></i><i class="ph-bold ph-star text-white-50"></i><i class="ph-bold ph-star text-white-50"></i>';
-  }
+  // Auto redirect after 2s
+  setTimeout(() => {
+    window.location.href = "{{ back_url }}";
+  }, 2000);
 }
 
 function restartSession() {
   initStudySession();
 }
 
-/* ==================================================== */
-/* AUDIO & HELPERS                                      */
-/* ==================================================== */
 function playAudioText(text, lang = 'en-US') {
   if ('speechSynthesis' in window) {
     window.speechSynthesis.cancel();
@@ -833,9 +558,7 @@ function playCurrentAudio(lang = 'en-US') {
   const act = activities[currentActivityIndex];
   if (!act) return;
   const word = act.word || act.targetWord || act.displayCandidateWord;
-  if (word && word.word) {
-    playAudioText(word.word, lang);
-  }
+  if (word && word.word) playAudioText(word.word, lang);
 }
 
 function toggleShortcuts() {
@@ -851,19 +574,12 @@ function toggleShortcuts() {
   }
 }
 
-/* ==================================================== */
-/* GLOBAL KEYBOARD SHORTCUTS                            */
-/* ==================================================== */
 document.addEventListener('keydown', (e) => {
   if (e.key === 'Escape') {
     window.location.href = "{{ back_url }}";
     return;
   }
-
-  // If in typing input, let handleTypingKeydown handle it
-  if (document.activeElement && document.activeElement.id === 'typingInput') {
-    return;
-  }
+  if (document.activeElement && document.activeElement.id === 'typingInput') return;
 
   const act = activities[currentActivityIndex];
   if (!act) return;
@@ -898,7 +614,6 @@ document.addEventListener('keydown', (e) => {
   }
 });
 
-// Initialize on load
 document.addEventListener('DOMContentLoaded', () => {
   initStudySession();
 });
