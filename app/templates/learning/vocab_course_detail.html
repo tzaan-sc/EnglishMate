@@ -1,105 +1,203 @@
 {% extends "base.html" %}
-{% block title %}{{ subcategory.title }} · Từ vựng EnglishMate{% endblock %}
+{% block title %}{% if selected_unit %}{{ selected_unit.name }} · {{ subcategory.title }}{% else %}{{ subcategory.title }}{% endif %} · Từ vựng EnglishMate{% endblock %}
 
 {% block content %}
-<div class="container-fluid max-w-7xl py-4">
+<div class="container-fluid max-w-7xl py-3 pb-5 mb-5">
 
-  <!-- BREADCRUMBS -->
-  <nav aria-label="breadcrumb" class="mb-3">
-    <ol class="breadcrumb mb-0 small">
-      <li class="breadcrumb-item">
-        <a href="{{ url_for('learning.vocabulary') }}" class="text-muted text-decoration-none d-inline-flex align-items-center gap-1">
-          <i class="ph-bold ph-book-open"></i> Từ vựng
-        </a>
-      </li>
-      <li class="breadcrumb-item">
-        <a href="{{ url_for('learning.vocabulary', tab=cat_key) }}" class="text-muted text-decoration-none">
-          {{ category.title }}
-        </a>
-      </li>
-      <li class="breadcrumb-item active text-primary fw-bold" aria-current="page">
-        {{ subcategory.title }}
-      </li>
-    </ol>
-  </nav>
-
-  <!-- COMPACT COURSE BANNER -->
-  <div class="card border-0 p-4 mb-4 shadow-sm position-relative overflow-hidden" 
-       style="background: {{ category.gradient }}; color: #ffffff; border-radius: 16px;">
+  <!-- ========================================== -->
+  <!-- 1. TOP HEADER BANNER (THEO LAYOUT THAM KHẢO)-->
+  <!-- ========================================== -->
+  <div class="p-3 p-md-4 mb-4 rounded-4 shadow-sm text-white position-relative overflow-hidden" 
+       style="background: {{ category.gradient or 'linear-gradient(135deg, #065f46 0%, #047857 50%, #059669 100%)' }};">
     
     <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
-      <div>
-        <div class="d-flex align-items-center gap-2 mb-1.5">
-          <span class="badge rounded-pill px-2.5 py-0.5 small" style="background: rgba(255,255,255,0.2); font-size: 0.75rem;">
-            {{ category.badge }}
-          </span>
-          <span class="badge rounded-pill px-2.5 py-0.5 small fw-bold text-white" style="background: {{ subcategory.color }}; font-size: 0.75rem;">
-            Cấp độ {{ subcategory.level }}
-          </span>
+      
+      <!-- Left: Back Button + Unit/Course Logo + Title -->
+      <div class="d-flex align-items-center gap-3">
+        {% if selected_unit %}
+        <!-- In unit view: back to all units of course -->
+        <a href="{{ url_for('learning.vocab_course_detail', cat_key=cat_key, subcat_key=subcat_key) }}" 
+           class="btn btn-light rounded-circle shadow-xs d-flex align-items-center justify-content-center border-0 text-dark flex-shrink-0"
+           style="width: 40px; height: 40px;" title="Quay lại danh sách bài học">
+          <i class="ph-bold ph-caret-left fs-5"></i>
+        </a>
+
+        <div class="rounded-circle bg-white text-primary d-flex align-items-center justify-content-center shadow-xs flex-shrink-0"
+             style="width: 48px; height: 48px; color: {{ selected_unit.color or '#059669' }};">
+          <i class="ph-bold {{ selected_unit.icon or 'ph-desktop' }} fs-4"></i>
         </div>
 
-        <div class="d-flex align-items-center gap-2.5">
-          <div class="rounded-3 d-flex align-items-center justify-content-center text-white" style="width: 44px; height: 44px; background: rgba(255,255,255,0.2);">
-            {% if subcategory.icon.startswith('ph-') %}
-            <i class="ph-bold {{ subcategory.icon }} fs-3"></i>
-            {% else %}
-            <span class="fs-3">{{ subcategory.icon }}</span>
-            {% endif %}
-          </div>
-          <h3 class="fw-bold text-white mb-0" style="letter-spacing: -0.01em;">
+        <div>
+          <h3 class="fw-bold text-white mb-0.5" style="font-size: 1.35rem; letter-spacing: -0.01em;">
+            {{ selected_unit.name }}
+          </h3>
+          <small class="text-white-50">
+            {{ subcategory.title }} • {{ selected_unit.total }} từ vựng trong bài
+          </small>
+        </div>
+
+        {% else %}
+        <!-- In course view: back to category catalog -->
+        <a href="{{ url_for('learning.vocabulary', tab=cat_key) }}" 
+           class="btn btn-light rounded-circle shadow-xs d-flex align-items-center justify-content-center border-0 text-dark flex-shrink-0"
+           style="width: 40px; height: 40px;" title="Quay lại danh mục">
+          <i class="ph-bold ph-caret-left fs-5"></i>
+        </a>
+
+        <div class="rounded-circle bg-white text-primary d-flex align-items-center justify-content-center shadow-xs flex-shrink-0"
+             style="width: 48px; height: 48px; color: {{ subcategory.color or '#059669' }};">
+          {% if subcategory.icon.startswith('ph-') %}
+          <i class="ph-bold {{ subcategory.icon }} fs-4"></i>
+          {% else %}
+          <span class="fs-4">{{ subcategory.icon }}</span>
+          {% endif %}
+        </div>
+
+        <div>
+          <h3 class="fw-bold text-white mb-0.5" style="font-size: 1.35rem; letter-spacing: -0.01em;">
             {{ subcategory.title }}
           </h3>
+          <small class="text-white-50">
+            {{ category.title }} • {{ course_total_words }} từ vựng ({{ units|length }} bài học)
+          </small>
+        </div>
+        {% endif %}
+      </div>
+
+      <!-- Right: Floating Pill Metrics (Đã học & Cần luyện tập) -->
+      <div class="d-flex align-items-center gap-2">
+        <div class="d-inline-flex align-items-center gap-3 px-3.5 py-2 rounded-pill shadow-xs" 
+             style="background: rgba(15, 23, 42, 0.75); backdrop-filter: blur(8px); border: 1px solid rgba(255,255,255,0.15); font-size: 0.84rem;">
+          
+          {% if selected_unit %}
+          <!-- Unit Metrics -->
+          <div class="d-flex align-items-center gap-1.5 fw-bold" style="color: {% if selected_unit.learned == selected_unit.total %}#4ade80{% else %}#38bdf8{% endif %};">
+            <i class="ph-fill ph-check-circle fs-6"></i>
+            <span>{{ selected_unit.learned }}/{{ selected_unit.total }} đã học</span>
+          </div>
+
+          <span style="color: rgba(255,255,255,0.3);">|</span>
+
+          <div class="d-flex align-items-center gap-1.5 fw-bold" style="color: #fbbf24;">
+            <i class="ph-fill ph-clock-countdown fs-6"></i>
+            <span>{{ selected_unit.due_count }} cần luyện tập</span>
+          </div>
+
+          {% else %}
+          <!-- Course Metrics -->
+          <div class="d-flex align-items-center gap-1.5 fw-bold" style="color: #38bdf8;">
+            <i class="ph-fill ph-check-circle fs-6"></i>
+            <span>{{ course_learned_words }}/{{ course_total_words }} đã học</span>
+          </div>
+
+          <span style="color: rgba(255,255,255,0.3);">|</span>
+
+          <div class="d-flex align-items-center gap-1.5 fw-bold" style="color: #fbbf24;">
+            <i class="ph-fill ph-clock-countdown fs-6"></i>
+            <span>{{ total_due_count }} cần luyện tập</span>
+          </div>
+          {% endif %}
+
         </div>
       </div>
 
-      <!-- Quick Stats & Actions -->
-      <div class="d-flex flex-wrap align-items-center gap-2">
-        <div class="bg-white text-dark px-3 py-2 rounded-3 shadow-xs d-flex align-items-center gap-2.5">
-          <div class="text-end">
-            <div class="small fw-bold text-dark">{{ course_learned_words }}/{{ course_total_words }} từ</div>
-            <div class="text-muted" style="font-size: 0.7rem;">Đã học {{ course_progress_pct }}%</div>
-          </div>
-          <div class="progress" style="width: 50px; height: 6px; border-radius: 3px; background-color: #f1f5f9;">
-            <div class="progress-bar bg-primary" role="progressbar" style="width: {{ course_progress_pct }}%;"></div>
-          </div>
-        </div>
-
-        <a href="{{ url_for('learning.study_vocabulary', level=subcategory.level) }}" class="btn btn-light rounded-pill px-3 py-2 fw-bold text-primary shadow-xs d-inline-flex align-items-center gap-1.5" style="font-size: 0.84rem;">
-          <i class="ph-bold ph-play-circle fs-5"></i>
-          <span>Study Mode</span>
-        </a>
-        <a href="{{ url_for('learning.flashcards') }}" class="btn btn-outline-light rounded-pill px-3 py-2 fw-semibold d-inline-flex align-items-center gap-1.5" style="font-size: 0.84rem; background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.25);">
-          <i class="ph-bold ph-cards"></i> Flashcard
-        </a>
-      </div>
     </div>
   </div>
 
-  <!-- LESSON UNITS / TOPICS NAV FILTER & SEARCH -->
-  <div class="card border-0 shadow-xs rounded-4 p-3 bg-white mb-4">
-    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-2.5">
-      
-      <!-- Units Filter Pills -->
-      <div class="d-flex align-items-center gap-1.5 overflow-auto pb-1 pb-md-0" style="scrollbar-width: thin;">
-        <span class="small fw-bold text-muted ps-1" style="white-space: nowrap; font-size: 0.82rem;">
-          Bài học:
-        </span>
-        <a href="{{ url_for('learning.vocab_course_detail', cat_key=cat_key, subcat_key=subcat_key) }}" 
-           class="badge rounded-pill text-decoration-none px-3 py-1.5 fw-semibold {% if not unit_filter %}bg-primary text-white shadow-xs{% else %}bg-light text-secondary border{% endif %}" 
-           style="font-size: 0.8rem; white-space: nowrap;">
-          Tất cả ({{ words|length }})
+  {% if not selected_unit %}
+  <!-- ========================================== -->
+  <!-- 2. LESSON UNITS CIRCULAR GRID (COURSE VIEW)-->
+  <!-- ========================================== -->
+  <div class="card border-0 rounded-4 p-4 p-md-4 mb-4 bg-white shadow-xs" style="border: 1px solid #e2e8f0 !important;">
+    <div class="d-flex justify-content-between align-items-center mb-4 pb-2 border-bottom">
+      <div>
+        <h5 class="fw-bold text-dark mb-0.5">Danh sách Bài học (Mỗi bài ~12 từ)</h5>
+        <small class="text-muted">Bấm chọn một bài học để xem chi tiết từ vựng và bắt đầu luyện tập</small>
+      </div>
+    </div>
+
+    <!-- 5-Column Responsive Circle Unit Grid -->
+    <div class="row row-cols-2 row-cols-sm-3 row-cols-md-4 row-cols-lg-5 g-4 text-center justify-content-center">
+      {% for u in units %}
+      <div class="col">
+        <a href="{{ url_for('learning.vocab_course_detail', cat_key=cat_key, subcat_key=subcat_key, unit=u.id) }}" 
+           class="text-decoration-none text-dark d-flex flex-column align-items-center group-hover transition-all p-2 rounded-3">
+          
+          <!-- Circular Thumbnail with Progress Ring -->
+          <div class="position-relative d-flex align-items-center justify-content-center mb-2.5 transition-transform hover-scale" 
+               style="width: 78px; height: 78px;">
+            
+            <!-- Conic Gradient Progress Ring -->
+            <div class="position-absolute top-0 start-0 w-100 h-100 rounded-circle"
+                 style="background: conic-gradient({{ u.color or '#10b981' }} 0% {{ u.pct }}%, #e2e8f0 {{ u.pct }}% 100%); padding: 4px;">
+              <!-- Inner White Mask -->
+              <div class="w-100 h-100 rounded-circle bg-white d-flex align-items-center justify-content-center shadow-xs">
+                <!-- Icon inside circle -->
+                <div class="rounded-circle d-flex align-items-center justify-content-center" 
+                     style="width: 54px; height: 54px; background: {{ u.color }}15; color: {{ u.color }};">
+                  <i class="ph-bold {{ u.icon or 'ph-book-open' }} fs-3"></i>
+                </div>
+              </div>
+            </div>
+
+            <!-- Checkmark badge if 100% completed -->
+            {% if u.pct == 100 %}
+            <span class="position-absolute bottom-0 end-0 bg-success text-white rounded-circle p-0.5 d-flex align-items-center justify-content-center shadow-xs" 
+                  style="width: 20px; height: 20px; font-size: 0.65rem;">
+              <i class="ph-fill ph-check"></i>
+            </span>
+            {% endif %}
+          </div>
+
+          <!-- Unit Title -->
+          <h6 class="fw-bold text-dark mb-1.5 text-center line-clamp-2" 
+              style="font-size: 0.88rem; line-height: 1.35; max-width: 140px; min-height: 2.4em;">
+            {{ u.name }}
+          </h6>
+
+          <!-- Unit Floating Pill (✓ Learned/Total  ⏱ Due) -->
+          <div class="d-inline-flex align-items-center gap-2 px-2.5 py-1 rounded-pill shadow-2xs mt-auto" 
+               style="background: #1e293b; color: #ffffff; font-size: 0.74rem;">
+            <!-- Learned -->
+            <div class="d-flex align-items-center gap-1 fw-bold" style="color: {% if u.learned == u.total %}#4ade80{% else %}#38bdf8{% endif %};">
+              <i class="ph-fill ph-check-circle" style="font-size: 0.82rem;"></i>
+              <span>{{ u.learned }}/{{ u.total }}</span>
+            </div>
+
+            <span style="color: rgba(255,255,255,0.3);">|</span>
+
+            <!-- Due -->
+            <div class="d-flex align-items-center gap-1 fw-bold" style="color: #fbbf24;">
+              <i class="ph-fill ph-clock-countdown" style="font-size: 0.82rem;"></i>
+              <span>{{ u.due_count }}</span>
+            </div>
+          </div>
+
         </a>
-        {% for u in units %}
-        <a href="{{ url_for('learning.vocab_course_detail', cat_key=cat_key, subcat_key=subcat_key, unit=u.name) }}" 
-           class="badge rounded-pill text-decoration-none px-3 py-1.5 fw-semibold {% if unit_filter == u.name %}bg-primary text-white shadow-xs{% else %}bg-light text-secondary border{% endif %}" 
-           style="font-size: 0.8rem; white-space: nowrap;">
-          {{ u.name }} ({{ u.learned }}/{{ u.total }})
-        </a>
-        {% endfor %}
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- ========================================== -->
+  <!-- 3. WORDS LIST FOR SELECTED UNIT / COURSE   -->
+  <!-- ========================================== -->
+  <div class="card border-0 rounded-4 p-4 bg-white shadow-xs mb-4" style="border: 1px solid #e2e8f0 !important;">
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4 pb-2 border-bottom">
+      <div>
+        <h5 class="fw-bold text-dark mb-0.5">
+          {% if selected_unit %}
+          Danh sách Từ vựng - {{ selected_unit.name }}
+          {% else %}
+          Tất cả từ vựng trong khóa học
+          {% endif %}
+        </h5>
+        <small class="text-muted">Bấm vào bất kỳ thẻ từ nào để mở bảng tra cứu chi tiết và phát âm</small>
       </div>
 
-      <!-- Search in Course -->
-      <div style="min-width: 230px;">
+      <!-- Search in Unit / Course -->
+      <div style="min-width: 240px;">
         <form method="get" class="m-0">
           {% if unit_filter %}
           <input type="hidden" name="unit" value="{{ unit_filter }}">
@@ -110,119 +208,490 @@
             </span>
             <input class="form-control border-start-0 ps-0 shadow-none" 
                    name="q" value="{{ search }}" 
-                   placeholder="Tìm từ trong bài..." 
+                   placeholder="Tìm từ vựng..." 
                    style="font-size: 0.82rem;">
             {% if search %}
             <a href="{{ url_for('learning.vocab_course_detail', cat_key=cat_key, subcat_key=subcat_key, unit=unit_filter) }}" class="btn btn-light border border-start-0 text-muted">
               <i class="ph-bold ph-x"></i>
             </a>
             {% endif %}
-            <button type="submit" class="btn btn-dark rounded-end-pill px-2.5 fw-bold">Tìm</button>
           </div>
         </form>
       </div>
-
-    </div>
-  </div>
-
-  <!-- WORDS LIST -->
-  <div class="vocab-words-list mb-5">
-    
-    <div class="d-flex justify-content-between align-items-center mb-3 px-1">
-      <span class="fw-bold text-dark small">Danh sách từ vựng ({{ words|length }})</span>
-      <span class="badge bg-primary-subtle text-primary rounded-pill px-2.5 py-1 small fw-bold">
-        {{ course_learned_words }} đã thuộc
-      </span>
     </div>
 
     {% if words %}
-    <div class="d-flex flex-column gap-2.5">
+    <!-- 3-Column Grid matching reference card layout -->
+    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-3">
       {% for word in words %}
       {% set is_learned = word.id in learned_ids %}
-      {% set is_fav = word.id in favorite_ids %}
-      
-      <article class="card border-0 rounded-3 p-3 shadow-xs bg-white transition-hover" style="border: 1px solid #e2e8f0 !important;">
-        <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-2.5">
+      {% set is_favorite = word.id in favorite_ids %}
+      <div class="col">
+        <div class="card h-100 border rounded-4 p-3 bg-white shadow-2xs hover-shadow transition-all d-flex flex-row align-items-center justify-content-between gap-3 position-relative cursor-pointer word-card-item"
+             style="border: 1px solid rgba(0,0,0,0.08) !important; cursor: pointer;"
+             onclick="openWordDetail({{ word.id }})"
+             id="word-card-{{ word.id }}">
           
-          <!-- Word + Audio + IPA -->
-          <div class="d-flex align-items-center gap-2.5" style="min-width: 220px;">
-            <button type="button" class="btn btn-sm btn-light rounded-circle p-1.5 d-flex align-items-center justify-content-center text-primary shadow-xs" 
-                    onclick="speakWord('{{ word.word }}')" 
-                    title="Nghe phát âm" style="width: 32px; height: 32px; background-color: #eff6ff;">
-              <i class="ph-bold ph-speaker-high fs-6"></i>
-            </button>
-            <div>
-              <div class="d-flex align-items-center gap-2">
-                <h5 class="fw-bold text-dark mb-0" style="font-size: 1.1rem;">
-                  {{ word.word }}
-                </h5>
-                <span class="badge bg-light text-muted border rounded-pill px-1.5 py-0.5" style="font-size: 0.7rem;">
-                  {{ word.part_of_speech }}
-                </span>
-              </div>
-              <small class="text-muted" style="font-size: 0.8rem;">{{ word.pronunciation }}</small>
+          <!-- Left: Progress / Status Indicator Ring -->
+          <div class="position-relative d-flex align-items-center justify-content-center flex-shrink-0" style="width: 42px; height: 42px;">
+            <div class="rounded-circle d-flex align-items-center justify-content-center shadow-xs" 
+                 id="word-status-ring-{{ word.id }}"
+                 style="width: 38px; height: 38px; {% if is_learned %}border: 2px solid #10b981; background: #ecfdf5; color: #059669;{% else %}border: 2px dashed #cbd5e1; background: #f8fafc; color: #94a3b8;{% endif %}">
+              {% if is_learned %}
+              <i class="ph-fill ph-check-circle fs-5"></i>
+              {% else %}
+              <i class="ph-bold ph-circle-dashed fs-5"></i>
+              {% endif %}
             </div>
           </div>
 
-          <!-- Meaning & Example -->
-          <div class="flex-grow-1 px-md-3">
-            <div class="fw-bold text-dark small mb-0.5" style="font-size: 0.95rem;">
-              {{ word.meaning_vi }}
-            </div>
-            <div class="text-secondary small fst-italic" style="font-size: 0.82rem; line-height: 1.45;">
-              "{{ word.example_en }}"
-            </div>
-          </div>
-
-          <!-- Unit Tag & Action Buttons -->
-          <div class="d-flex align-items-center gap-2 align-self-end align-self-md-center">
-            {% if word.lesson_unit or word.topic %}
-            <span class="badge bg-light text-muted border rounded-pill px-2 py-1 small" style="font-size: 0.72rem;">
-              {{ word.lesson_unit or word.topic }}
-            </span>
-            {% endif %}
-
-            <!-- Favorite Form -->
-            <form method="post" action="{{ url_for('learning.favorite_word', word_id=word.id) }}" class="m-0">
-              {{ form.hidden_tag() }}
-              <button type="submit" class="btn btn-sm btn-light border rounded-circle p-1.5 text-warning" title="Yêu thích" style="width: 32px; height: 32px;">
-                <i class="{% if is_fav %}ph-fill ph-star text-warning{% else %}ph-bold ph-star text-muted{% endif %} fs-6"></i>
+          <!-- Middle: English Word & Vietnamese Meaning -->
+          <div class="flex-grow-1 overflow-hidden">
+            <div class="d-flex align-items-center gap-1.5 mb-0.5">
+              <span class="fw-bold fs-6" style="color: #059669;">{{ word.word }}</span>
+              <button type="button" class="btn btn-sm btn-link p-0 text-muted hover-text-primary" onclick="event.stopPropagation(); speakWord('{{ word.word }}', 'en-US')" title="Phát âm từ vựng">
+                <i class="ph-bold ph-speaker-high" style="font-size: 0.95rem;"></i>
               </button>
-            </form>
+            </div>
+            <div class="text-truncate" style="font-size: 0.82rem;" title="{{ word.part_of_speech }} {{ word.meaning_vi }}">
+              <span class="fst-italic text-muted me-1">({{ word.part_of_speech or 'word' }})</span>
+              <span class="fw-medium text-dark">{{ word.meaning_vi }}</span>
+            </div>
+          </div>
 
-            <!-- Learn Action Form -->
+          <!-- Right: Bookmark / Flashcard Toggle Icon -->
+          <div class="flex-shrink-0" onclick="event.stopPropagation();">
             <form method="post" action="{{ url_for('learning.learn_word', word_id=word.id) }}" class="m-0">
               {{ form.hidden_tag() }}
-              <button class="btn {% if is_learned %}btn-success text-white{% else %}btn-outline-primary{% endif %} btn-sm rounded-pill px-3 py-1 fw-bold" 
-                      {% if is_learned %}disabled{% endif %} style="font-size: 0.78rem;">
-                {{ '✓ Đã học' if is_learned else '+ Học' }}
+              <button type="submit" class="btn btn-sm rounded-circle p-2 d-flex align-items-center justify-content-center {% if is_learned %}btn-light text-success border{% else %}btn-light text-muted border-0 hover-bg-primary-subtle{% endif %}" 
+                      title="{% if is_learned %}Đã học (nhấn để học lại){% else %}Đánh dấu đã học{% endif %}" style="width: 34px; height: 34px;">
+                <i class="ph-bold {% if is_learned %}ph-bookmark-simple-fill text-success{% else %}ph-bookmark-simple{% endif %} fs-5"></i>
               </button>
             </form>
           </div>
 
         </div>
-      </article>
+      </div>
       {% endfor %}
     </div>
     {% else %}
-    <div class="card border-0 rounded-4 p-4 text-center bg-white shadow-xs">
-      <p class="text-muted small mb-0">Chưa có từ vựng nào thuộc bộ lọc này.</p>
-    </div>
+    <p class="text-muted text-center py-4 my-0">Không tìm thấy từ vựng nào trong phần này.</p>
     {% endif %}
+  </div>
 
+  <!-- ========================================== -->
+  <!-- 4. BOTTOM FLOATING ACTION BAR              -->
+  <!-- ========================================== -->
+  {% set cur_learned = selected_unit.learned if selected_unit else course_learned_words %}
+  {% set cur_total = selected_unit.total if selected_unit else course_total_words %}
+
+  <div class="sticky-bottom py-2 mt-4" style="bottom: 1rem; z-index: 50; pointer-events: none;">
+    <div class="card border-0 shadow-lg rounded-pill p-2 mx-auto" 
+         style="max-width: 580px; background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 1px solid rgba(0, 0, 0, 0.08) !important; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.12), 0 8px 10px -6px rgba(0, 0, 0, 0.1) !important; pointer-events: auto;">
+      <div class="row g-2 align-items-center m-0">
+        
+        {% if cur_learned == 0 %}
+        <!-- CASE 1: Chưa có từ nào đã học -> [Học từ mới] (Xanh dương) + [Thẻ ghi nhớ] (Tím) -->
+        <div class="col-6 p-0 px-1">
+          <a href="{{ url_for('learning.study_vocabulary', cat=cat_key, subcat=subcat_key, unit=selected_unit.id if selected_unit else unit_filter) }}" 
+             class="btn btn-primary w-100 py-2.5 fw-bold rounded-pill shadow-xs d-flex align-items-center justify-content-center gap-2 text-white" 
+             style="background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%); border: 0; font-size: 0.9rem;">
+            <i class="ph-bold ph-book-open fs-5"></i>
+            <span>Học từ mới</span>
+          </a>
+        </div>
+
+        <div class="col-6 p-0 px-1">
+          <a href="{{ url_for('learning.study_vocabulary', cat=cat_key, subcat=subcat_key, unit=selected_unit.id if selected_unit else unit_filter, mode='flashcard') }}" 
+             class="btn w-100 py-2.5 fw-bold rounded-pill shadow-xs d-flex align-items-center justify-content-center gap-2 text-white" 
+             style="background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%); border: 0; font-size: 0.9rem;">
+            <i class="ph-bold ph-cards fs-5"></i>
+            <span>Thẻ ghi nhớ</span>
+          </a>
+        </div>
+
+        {% elif cur_learned < cur_total %}
+        <!-- CASE 2: Đã học một phần -> [Học tiếp] (Xanh dương) + [Luyện tập] (Cam) + [Thẻ ghi nhớ] (Tím) -->
+        <div class="col-4 p-0 px-1">
+          <a href="{{ url_for('learning.study_vocabulary', cat=cat_key, subcat=subcat_key, unit=selected_unit.id if selected_unit else unit_filter) }}" 
+             class="btn btn-primary w-100 py-2 fw-bold rounded-pill shadow-xs d-flex align-items-center justify-content-center gap-1.5 text-white" 
+             style="background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%); border: 0; font-size: 0.88rem;">
+            <i class="ph-bold ph-book-open fs-5"></i>
+            <span class="d-none d-sm-inline">Học tiếp</span>
+            <span class="d-inline d-sm-none">Học</span>
+          </a>
+        </div>
+
+        <div class="col-4 p-0 px-1">
+          <a href="{{ url_for('learning.study_vocabulary', cat=cat_key, subcat=subcat_key, unit=selected_unit.id if selected_unit else unit_filter) }}" 
+             class="btn w-100 py-2 fw-bold rounded-pill shadow-xs d-flex align-items-center justify-content-center gap-1.5 text-white" 
+             style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); border: 0; font-size: 0.88rem;">
+            <i class="ph-bold ph-lightning fs-5"></i>
+            <span>Luyện tập</span>
+          </a>
+        </div>
+
+        <div class="col-4 p-0 px-1">
+          <a href="{{ url_for('learning.study_vocabulary', cat=cat_key, subcat=subcat_key, unit=selected_unit.id if selected_unit else unit_filter, mode='flashcard') }}" 
+             class="btn w-100 py-2 fw-bold rounded-pill shadow-xs d-flex align-items-center justify-content-center gap-1.5 text-white" 
+             style="background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%); border: 0; font-size: 0.88rem;">
+            <i class="ph-bold ph-cards fs-5"></i>
+            <span class="d-none d-sm-inline">Thẻ ghi nhớ</span>
+            <span class="d-inline d-sm-none">Flashcard</span>
+          </a>
+        </div>
+
+        {% else %}
+        <!-- CASE 3: Đã học tất cả từ -> [Luyện tập] (Cam) + [Thẻ ghi nhớ] (Tím) -->
+        <div class="col-6 p-0 px-1">
+          <a href="{{ url_for('learning.study_vocabulary', cat=cat_key, subcat=subcat_key, unit=selected_unit.id if selected_unit else unit_filter) }}" 
+             class="btn w-100 py-2.5 fw-bold rounded-pill shadow-xs d-flex align-items-center justify-content-center gap-2 text-white" 
+             style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); border: 0; font-size: 0.9rem;">
+            <i class="ph-bold ph-lightning fs-5"></i>
+            <span>Luyện tập</span>
+          </a>
+        </div>
+
+        <div class="col-6 p-0 px-1">
+          <a href="{{ url_for('learning.study_vocabulary', cat=cat_key, subcat=subcat_key, unit=selected_unit.id if selected_unit else unit_filter, mode='flashcard') }}" 
+             class="btn w-100 py-2.5 fw-bold rounded-pill shadow-xs d-flex align-items-center justify-content-center gap-2 text-white" 
+             style="background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%); border: 0; font-size: 0.9rem;">
+            <i class="ph-bold ph-cards fs-5"></i>
+            <span>Thẻ ghi nhớ</span>
+          </a>
+        </div>
+        {% endif %}
+
+      </div>
+    </div>
   </div>
 
 </div>
 
-<!-- Audio Script -->
+<!-- ========================================== -->
+<!-- 5. WORD DETAIL POPUP MODAL (THEO LAYOUT THAM KHẢO) -->
+<!-- ========================================== -->
+<div class="modal fade" id="wordDetailModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered" style="max-width: 540px;">
+    <div class="modal-content border-0 shadow-2xl rounded-4 text-white position-relative" 
+         style="background: #18181b; border: 1px solid rgba(255, 255, 255, 0.12) !important; backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px); box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5) !important;">
+      
+      <!-- Modal Header -->
+      <div class="modal-header border-0 pb-0 pt-3.5 px-4 d-flex align-items-center justify-content-between">
+        <div class="d-flex align-items-center gap-2.5">
+          <div class="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0" 
+               style="width: 36px; height: 36px; background: rgba(245, 158, 11, 0.15); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.3);">
+            <i class="ph-fill ph-plant fs-5"></i>
+          </div>
+          <h4 class="fw-bold text-white mb-0" id="mWordTitle" style="letter-spacing: -0.01em;">word</h4>
+        </div>
+
+        <div class="d-flex align-items-center gap-2">
+          <!-- Info Tooltip -->
+          <button type="button" class="btn btn-sm text-white-50 p-1 hover-text-white border-0" id="mInfoBtn" title="Thông tin từ">
+            <i class="ph-bold ph-info fs-5"></i>
+          </button>
+          
+          <!-- Favorite Bookmark -->
+          <button type="button" class="btn btn-sm text-white-50 p-1 hover-text-warning border-0" id="mFavBtn" onclick="toggleModalFavorite()" title="Yêu thích / Lưu từ">
+            <i class="ph-bold ph-floppy-disk fs-5" id="mFavIcon"></i>
+          </button>
+
+          <!-- Close button -->
+          <button type="button" class="btn-close btn-close-white shadow-none ms-1" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+      </div>
+
+      <!-- Modal Body -->
+      <div class="modal-body px-4 py-3">
+        
+        <!-- Top Section: Pronunciation + Action Buttons + Image -->
+        <div class="d-flex justify-content-between align-items-start gap-3 mb-3 pb-3 border-bottom border-secondary border-opacity-25">
+          
+          <!-- Left: Pronunciations (US & UK) -->
+          <div class="d-flex flex-column gap-1.5">
+            <div class="d-flex align-items-center gap-2 cursor-pointer text-white-50 hover-text-info transition-all" onclick="speakModal('en-US')" style="cursor: pointer;">
+              <i class="ph-fill ph-speaker-high" style="color: #38bdf8;"></i>
+              <span class="small fw-semibold text-white">US</span>
+              <span class="small text-white-50 font-monospace" id="mPronUS">/pron/</span>
+            </div>
+            <div class="d-flex align-items-center gap-2 cursor-pointer text-white-50 hover-text-info transition-all" onclick="speakModal('en-GB')" style="cursor: pointer;">
+              <i class="ph-fill ph-speaker-high" style="color: #38bdf8;"></i>
+              <span class="small fw-semibold text-white">UK</span>
+              <span class="small text-white-50 font-monospace" id="mPronUK">/pron/</span>
+            </div>
+
+            <div class="mt-2" id="mImageWrapper" style="display: none;">
+              <img src="" id="mWordImage" class="rounded-3 shadow-xs object-fit-cover" style="width: 120px; height: 80px; border: 1px solid rgba(255,255,255,0.15);" alt="illustration">
+            </div>
+          </div>
+
+          <!-- Right: Action Buttons (Đánh dấu chưa biết, Sửa nghĩa, Đặt câu) -->
+          <div class="d-flex flex-column align-items-end gap-2 flex-shrink-0">
+            <!-- Mark Learned / Unknown Toggle -->
+            <button type="button" class="btn btn-sm rounded-pill px-3 py-1 fw-bold shadow-xs transition-all" 
+                    id="mLearnedToggleBtn" onclick="toggleModalLearned()"
+                    style="background: #27272a; border: 1px solid rgba(255,255,255,0.15); color: #e4e4e7; font-size: 0.78rem;">
+              Đánh dấu chưa biết
+            </button>
+
+            <!-- Edit Meaning / Note -->
+            <button type="button" class="btn btn-sm p-0 fw-semibold text-decoration-none transition-all" 
+                    onclick="openEditMeaningPrompt()"
+                    style="color: #10b981; font-size: 0.8rem;">
+              Sửa nghĩa
+            </button>
+
+            <!-- Make Sentence -->
+            <button type="button" class="btn btn-sm p-0 fw-semibold text-decoration-none transition-all" 
+                    onclick="openMakeSentencePrompt()"
+                    style="color: #f59e0b; font-size: 0.8rem;">
+              Đặt câu
+            </button>
+          </div>
+
+        </div>
+
+        <!-- Part of Speech -->
+        <div class="fst-italic text-white-50 small mb-1" id="mPartOfSpeech">phrasal verb</div>
+
+        <!-- Meaning Vi (Cyan/Blue bold) -->
+        <h5 class="fw-bold mb-2.5" style="color: #38bdf8; font-size: 1.15rem; letter-spacing: -0.01em;" id="mMeaningVi">
+          tuân theo, chấp nhận, tuân thủ
+        </h5>
+
+        <!-- Definition En -->
+        <div class="small text-white-50 mb-3" id="mDefinitionEn" style="line-height: 1.5;">
+          1. To accept or obey an agreement, decision, or rule.
+        </div>
+
+        <!-- Examples Section -->
+        <div class="p-3 rounded-3 mb-3" style="background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.06);">
+          <div class="small text-white-50 fw-bold mb-1" style="font-size: 0.75rem;">Ví dụ:</div>
+          <div class="small text-white mb-1 fw-medium" id="mExampleEn">
+            Competitors must <span style="color: #c084fc; font-weight: 700;">abide by</span> the judge's decision.
+          </div>
+          <div class="small text-white-50" id="mExampleVi">
+            Các đấu thủ phải <span style="color: #c084fc; font-weight: 600;">tuân theo</span> quyết định của trọng tài.
+          </div>
+        </div>
+
+        <!-- Related Words (Collocations / Synonyms / Derivations) -->
+        <div>
+          <div class="small text-white-50 fw-medium mb-1.5" style="font-size: 0.78rem;">Các từ liên quan:</div>
+          <div class="d-flex flex-wrap gap-1.5" id="mRelatedWords">
+            <!-- Pills dynamically rendered -->
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+</div>
+
 <script>
-function speakWord(text) {
+let currentWordModalData = null;
+let modalInstance = null;
+
+function speakWord(text, lang = 'en-US') {
   if ('speechSynthesis' in window) {
-    window.speechSynthesis.cancel();
     const utterance = new SpeechSynthesisUtterance(text);
-    utterance.lang = 'en-US';
+    utterance.lang = lang;
     utterance.rate = 0.9;
     window.speechSynthesis.speak(utterance);
+  }
+}
+
+function speakModal(lang) {
+  if (currentWordModalData && currentWordModalData.word) {
+    speakWord(currentWordModalData.word, lang);
+  }
+}
+
+function openWordDetail(wordId) {
+  fetch(`/vocabulary/${wordId}/detail`)
+    .then(res => res.json())
+    .then(data => {
+      currentWordModalData = data;
+      renderModalContent(data);
+      if (!modalInstance) {
+        modalInstance = new bootstrap.Modal(document.getElementById('wordDetailModal'));
+      }
+      modalInstance.show();
+    })
+    .catch(err => {
+      console.error("Error loading word detail:", err);
+    });
+}
+
+function renderModalContent(data) {
+  document.getElementById('mWordTitle').textContent = data.word;
+  document.getElementById('mPronUS').textContent = data.pronunciation || `/${data.word}/`;
+  document.getElementById('mPronUK').textContent = data.pronunciation || `/${data.word}/`;
+  document.getElementById('mPartOfSpeech').textContent = data.part_of_speech ? data.part_of_speech.toLowerCase() : 'word';
+  document.getElementById('mMeaningVi').textContent = data.meaning_vi;
+  
+  // Definition
+  document.getElementById('mDefinitionEn').textContent = data.definition_en || `1. Definition and usage of ${data.word}.`;
+  
+  // Highlight word in example
+  const enRegex = new RegExp(`\\b(${data.word})\\b`, 'gi');
+  let highlightedEn = data.example_en || `Example sentence for ${data.word}.`;
+  if (enRegex.test(highlightedEn)) {
+    highlightedEn = highlightedEn.replace(enRegex, `<span style="color: #c084fc; font-weight: 700;">$1</span>`);
+  } else {
+    highlightedEn = highlightedEn.replace(data.word, `<span style="color: #c084fc; font-weight: 700;">${data.word}</span>`);
+  }
+  document.getElementById('mExampleEn').innerHTML = highlightedEn;
+  document.getElementById('mExampleVi').textContent = data.example_vi || '';
+
+  // Image
+  const imgWrap = document.getElementById('mImageWrapper');
+  const imgEl = document.getElementById('mWordImage');
+  if (data.image_url) {
+    imgEl.src = data.image_url;
+    imgWrap.style.display = 'block';
+  } else {
+    imgWrap.style.display = 'none';
+  }
+
+  // Favorite button
+  const favIcon = document.getElementById('mFavIcon');
+  if (data.is_favorite) {
+    favIcon.className = "ph-fill ph-floppy-disk text-warning fs-5";
+  } else {
+    favIcon.className = "ph-bold ph-floppy-disk fs-5";
+  }
+
+  // Learned Toggle Button
+  updateLearnedButtonState(data.is_learned);
+
+  // Related Words
+  const relContainer = document.getElementById('mRelatedWords');
+  relContainer.innerHTML = '';
+  if (data.related_words && data.related_words.length > 0) {
+    data.related_words.forEach(rw => {
+      const badge = document.createElement('span');
+      badge.className = 'badge rounded-pill bg-success bg-opacity-20 text-success border border-success border-opacity-25 px-2.5 py-1 fw-semibold cursor-pointer';
+      badge.style.fontSize = '0.78rem';
+      badge.textContent = rw;
+      badge.onclick = () => speakWord(rw, 'en-US');
+      relContainer.appendChild(badge);
+    });
+  } else {
+    const badge = document.createElement('span');
+    badge.className = 'badge rounded-pill bg-secondary bg-opacity-25 text-white-50 px-2.5 py-1';
+    badge.style.fontSize = '0.78rem';
+    badge.textContent = data.word;
+    relContainer.appendChild(badge);
+  }
+}
+
+function updateLearnedButtonState(isLearned) {
+  const btn = document.getElementById('mLearnedToggleBtn');
+  if (isLearned) {
+    btn.textContent = 'Đánh dấu chưa biết';
+    btn.style.background = '#27272a';
+    btn.style.color = '#e4e4e7';
+    btn.style.borderColor = 'rgba(255,255,255,0.15)';
+  } else {
+    btn.textContent = '✓ Đánh dấu đã học';
+    btn.style.background = 'linear-gradient(135deg, #059669 0%, #10b981 100%)';
+    btn.style.color = '#ffffff';
+    btn.style.borderColor = 'transparent';
+  }
+}
+
+function toggleModalLearned() {
+  if (!currentWordModalData) return;
+  fetch(`/vocabulary/${currentWordModalData.id}/toggle-learned`, {
+    method: 'POST',
+    headers: {
+      'X-Requested-With': 'XMLHttpRequest'
+    }
+  })
+  .then(res => res.json())
+  .then(res => {
+    if (res.success) {
+      currentWordModalData.is_learned = res.is_learned;
+      updateLearnedButtonState(res.is_learned);
+      
+      // Update the card on the page dynamically
+      const cardRing = document.getElementById(`word-status-ring-${currentWordModalData.id}`);
+      if (cardRing) {
+        if (res.is_learned) {
+          cardRing.style.border = '2px solid #10b981';
+          cardRing.style.background = '#ecfdf5';
+          cardRing.style.color = '#059669';
+          cardRing.innerHTML = '<i class="ph-fill ph-check-circle fs-5"></i>';
+        } else {
+          cardRing.style.border = '2px dashed #cbd5e1';
+          cardRing.style.background = '#f8fafc';
+          cardRing.style.color = '#94a3b8';
+          cardRing.innerHTML = '<i class="ph-bold ph-circle-dashed fs-5"></i>';
+        }
+      }
+    }
+  });
+}
+
+function toggleModalFavorite() {
+  if (!currentWordModalData) return;
+  fetch(`/vocabulary/${currentWordModalData.id}/favorite`, {
+    method: 'POST',
+    headers: {
+      'X-Requested-With': 'XMLHttpRequest'
+    }
+  })
+  .then(() => {
+    currentWordModalData.is_favorite = !currentWordModalData.is_favorite;
+    const favIcon = document.getElementById('mFavIcon');
+    if (currentWordModalData.is_favorite) {
+      favIcon.className = "ph-fill ph-floppy-disk text-warning fs-5";
+    } else {
+      favIcon.className = "ph-bold ph-floppy-disk fs-5";
+    }
+  });
+}
+
+function openEditMeaningPrompt() {
+  if (!currentWordModalData) return;
+  const newNote = prompt("Nhập ghi chú / bản dịch cá nhân của bạn:", currentWordModalData.personal_notes || currentWordModalData.meaning_vi);
+  if (newNote !== null && newNote.trim() !== '') {
+    fetch(`/vocabulary/${currentWordModalData.id}/notes`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Requested-With': 'XMLHttpRequest'
+      },
+      body: JSON.stringify({ personal_notes: newNote.trim() })
+    })
+    .then(res => res.json())
+    .then(() => {
+      currentWordModalData.personal_notes = newNote.trim();
+      document.getElementById('mMeaningVi').textContent = newNote.trim();
+    });
+  }
+}
+
+function openMakeSentencePrompt() {
+  if (!currentWordModalData) return;
+  const sentence = prompt(`Đặt một câu với từ "${currentWordModalData.word}":`, currentWordModalData.custom_example || '');
+  if (sentence !== null && sentence.trim() !== '') {
+    fetch(`/vocabulary/${currentWordModalData.id}/notes`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Requested-With': 'XMLHttpRequest'
+      },
+      body: JSON.stringify({ custom_example: sentence.trim() })
+    })
+    .then(res => res.json())
+    .then(() => {
+      currentWordModalData.custom_example = sentence.trim();
+      document.getElementById('mExampleEn').innerHTML = `<span style="color: #38bdf8;">[Câu của bạn]:</span> ${sentence.trim()}`;
+    });
   }
 }
 </script>

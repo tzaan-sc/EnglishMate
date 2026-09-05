@@ -1,5 +1,5 @@
 import random
-from datetime import date, datetime, timedelta
+from datetime import date, datetime, timedelta, timezone
 
 from flask import abort, flash, jsonify, redirect, render_template, request, session, url_for
 from flask_login import current_user, login_required
@@ -596,23 +596,18 @@ def vocab_course_detail(cat_key, subcat_key):
     unit_filter = request.args.get("unit", "").strip()
     search = request.args.get("q", "").strip()
 
-    # Query matching words for this course
-    query = Vocabulary.query.filter(
-        (Vocabulary.category.ilike(cat_key) & Vocabulary.subcategory.ilike(subcat_key))
-        | (Vocabulary.category.ilike("cefr") & Vocabulary.level.ilike(subcat_key) if cat_key == "cefr" else False)
-    )
-
-    if unit_filter:
-        query = query.filter((Vocabulary.lesson_unit == unit_filter) | (Vocabulary.topic == unit_filter))
-    if search:
-        query = query.filter((Vocabulary.word.ilike(f"%{search}%")) | (Vocabulary.meaning_vi.ilike(f"%{search}%")))
-
+    # Query all words belonging to this course
     all_course_words = Vocabulary.query.filter(
         (Vocabulary.category.ilike(cat_key) & Vocabulary.subcategory.ilike(subcat_key))
         | (Vocabulary.category.ilike("cefr") & Vocabulary.level.ilike(subcat_key) if cat_key == "cefr" else False)
-    ).all()
+    ).order_by(Vocabulary.id).all()
 
-    words_list = query.order_by(Vocabulary.id).all()
+    # If course words are empty in DB, fallback to words matching level or general pool
+    if not all_course_words:
+        target_level = subcat_info.get("level", "B1")
+        all_course_words = Vocabulary.query.filter_by(level=target_level).order_by(Vocabulary.id).all()
+        if not all_course_words:
+            all_course_words = Vocabulary.query.order_by(Vocabulary.id).limit(60).all()
 
     # User progress
     all_progress = VocabularyProgress.query.filter_by(user_id=current_user.id).all()
@@ -620,31 +615,105 @@ def vocab_course_detail(cat_key, subcat_key):
     learned_ids = {p.vocabulary_id for p in all_progress if p.learned_count > 0 or p.review_count > 0}
     favorite_ids = {p.vocabulary_id for p in all_progress if p.is_favorite}
 
-    # Group words into Lesson Units / Topics
-    units_map = {}
-    for w in all_course_words:
-        u_name = w.lesson_unit or w.topic or "Tổng quát"
-        if u_name not in units_map:
-            units_map[u_name] = {"name": u_name, "words": [], "learned_count": 0}
-        units_map[u_name]["words"].append(w)
-        if w.id in learned_ids:
-            units_map[u_name]["learned_count"] += 1
+    # Group words into Lesson Units of ~12 words (chunk size = 12)
+    TOEIC_DEFAULT_UNITS = [
+        ("Hợp Đồng", "ph-file-text", "#10b981"),
+        ("Thị Trường", "ph-chart-line-up", "#3b82f6"),
+        ("Sự Bảo Hành", "ph-shield-check", "#f59e0b"),
+        ("Kế Hoạch Kinh Doanh", "ph-briefcase", "#8b5cf6"),
+        ("Hội Nghị", "ph-users-three", "#ec4899"),
+        ("Máy Vi Tính", "ph-desktop", "#06b6d4"),
+        ("Công Nghệ Cho Công Sở", "ph-cpu", "#10b981"),
+        ("Các Quy Trình Trong Công Sở", "ph-arrows-split", "#6366f1"),
+        ("Điện Tử", "ph-lightning", "#f97316"),
+        ("Thư Tín", "ph-envelope-simple", "#e11d48"),
+        ("Quảng Cáo Việc Làm & Tuyển Dụng", "ph-megaphone", "#0d9488"),
+        ("Ứng Tuyển và Phỏng Vấn", "ph-user-focus", "#4f46e5"),
+        ("Tuyển Dụng và Đào Tạo", "ph-graduation-cap", "#d97706"),
+        ("Lương và Các Chế Độ Đãi Ngộ", "ph-currency-circle-dollar", "#059669"),
+        ("Thăng Chức, Lương Hưu và Thưởng", "ph-trophy", "#e11d48")
+    ]
 
+    CHUNK_SIZE = 12
     units = []
-    for u_name, data in units_map.items():
-        total_u = len(data["words"])
-        learned_u = data["learned_count"]
-        pct_u = round((learned_u / total_u * 100)) if total_u > 0 else 0
-        units.append({
-            "name": u_name,
-            "total": total_u,
-            "learned": learned_u,
-            "pct": pct_u,
-        })
-    units.sort(key=lambda x: x["name"])
+    
+    # Check if words already have distinct lesson_unit assigned
+    has_explicit_units = any(w.lesson_unit for w in all_course_words)
+    
+    # Helper to check if a word is due for review safely
+    now_utc = datetime.now(timezone.utc)
+    def check_is_due(w_id):
+        p = progress_map.get(w_id)
+        if not p or not p.next_review_at:
+            return False
+        dt = p.next_review_at
+        if dt.tzinfo is None:
+            dt = dt.replace(tzinfo=timezone.utc)
+        return dt <= now_utc
+
+    if has_explicit_units:
+        units_dict = {}
+        for w in all_course_words:
+            u_name = w.lesson_unit or "Tổng quát"
+            if u_name not in units_dict:
+                units_dict[u_name] = []
+            units_dict[u_name].append(w)
+        
+        for i, (u_name, w_list) in enumerate(units_dict.items()):
+            u_learned = sum(1 for w in w_list if w.id in learned_ids)
+            u_total = len(w_list)
+            u_due = sum(1 for w in w_list if w.id in learned_ids and check_is_due(w.id))
+            u_pct = round((u_learned / u_total * 100)) if u_total > 0 else 0
+            u_meta = TOEIC_DEFAULT_UNITS[i % len(TOEIC_DEFAULT_UNITS)]
+            units.append({
+                "id": str(i + 1),
+                "name": u_name,
+                "icon": u_meta[1],
+                "color": u_meta[2],
+                "total": u_total,
+                "learned": u_learned,
+                "due_count": u_due,
+                "pct": u_pct,
+                "words": w_list
+            })
+    else:
+        for i in range(0, len(all_course_words), CHUNK_SIZE):
+            chunk_words = all_course_words[i:i + CHUNK_SIZE]
+            u_index = i // CHUNK_SIZE
+            u_meta = TOEIC_DEFAULT_UNITS[u_index % len(TOEIC_DEFAULT_UNITS)]
+            u_name = chunk_words[0].topic if chunk_words and chunk_words[0].topic else u_meta[0]
+            if "toeic" in cat_key.lower():
+                u_name = u_meta[0]
+            
+            u_learned = sum(1 for w in chunk_words if w.id in learned_ids)
+            u_total = len(chunk_words)
+            u_due = sum(1 for w in chunk_words if w.id in learned_ids and check_is_due(w.id))
+            u_pct = round((u_learned / u_total * 100)) if u_total > 0 else 0
+            units.append({
+                "id": str(u_index + 1),
+                "name": u_name,
+                "icon": u_meta[1],
+                "color": u_meta[2],
+                "total": u_total,
+                "learned": u_learned,
+                "due_count": u_due,
+                "pct": u_pct,
+                "words": chunk_words
+            })
+
+    selected_unit = None
+    if unit_filter:
+        selected_unit = next((u for u in units if u["id"] == unit_filter or u["name"] == unit_filter), None)
+        words_list = selected_unit["words"] if selected_unit else all_course_words
+    else:
+        words_list = all_course_words
+
+    if search:
+        words_list = [w for w in words_list if search.lower() in w.word.lower() or search.lower() in w.meaning_vi.lower()]
 
     course_total_words = len(all_course_words)
     course_learned_words = sum(1 for w in all_course_words if w.id in learned_ids)
+    total_due_count = sum(u["due_count"] for u in units)
     course_progress_pct = round((course_learned_words / course_total_words * 100)) if course_total_words > 0 else 0
 
     return render_template(
@@ -656,11 +725,13 @@ def vocab_course_detail(cat_key, subcat_key):
         words=words_list,
         units=units,
         unit_filter=unit_filter,
+        selected_unit=selected_unit,
         search=search,
         learned_ids=learned_ids,
         favorite_ids=favorite_ids,
         course_total_words=course_total_words,
         course_learned_words=course_learned_words,
+        total_due_count=total_due_count,
         course_progress_pct=course_progress_pct,
         form=ActionForm(),
     )
@@ -700,8 +771,12 @@ def learn_word(word_id):
 @bp.get("/vocabulary/study")
 @login_required
 def study_vocabulary():
-    level = request.args.get("level", "")
-    topic = request.args.get("topic", "")
+    cat = request.args.get("cat", "").strip()
+    subcat = request.args.get("subcat", "").strip()
+    unit = request.args.get("unit", "").strip()
+    level = request.args.get("level", "").strip()
+    topic = request.args.get("topic", "").strip()
+    
     try:
         index = int(request.args.get("index", 0))
     except ValueError:
@@ -711,34 +786,96 @@ def study_vocabulary():
     show_meaning = request.args.get("show_meaning", "1") == "1"
     mode = request.args.get("mode", "study")
 
-    query = Vocabulary.query
-    if level:
-        query = query.filter_by(level=level)
-    if topic:
-        query = query.filter_by(topic=topic)
+    words = []
+    unit_title = ""
+    course_title = ""
 
-    words = query.order_by(Vocabulary.id).all()
+    if cat and subcat:
+        subcat_info = get_subcategory_info(cat, subcat)
+        if subcat_info:
+            course_title = subcat_info.get("title", subcat)
+        
+        all_course_words = Vocabulary.query.filter(
+            (Vocabulary.category.ilike(cat) & Vocabulary.subcategory.ilike(subcat))
+            | (Vocabulary.category.ilike("cefr") & Vocabulary.level.ilike(subcat) if cat == "cefr" else False)
+        ).order_by(Vocabulary.id).all()
+        
+        if not all_course_words:
+            target_level = subcat_info.get("level", "B1") if subcat_info else "B1"
+            all_course_words = Vocabulary.query.filter_by(level=target_level).order_by(Vocabulary.id).all()
+            if not all_course_words:
+                all_course_words = Vocabulary.query.order_by(Vocabulary.id).limit(60).all()
+
+        CHUNK_SIZE = 12
+        if unit:
+            unit_words = [w for w in all_course_words if w.lesson_unit and (w.lesson_unit == unit or str(w.lesson_unit) == unit)]
+            if not unit_words and unit.isdigit():
+                u_idx = int(unit) - 1
+                start_idx = max(0, u_idx * CHUNK_SIZE)
+                unit_words = all_course_words[start_idx:start_idx + CHUNK_SIZE]
+            
+            words = unit_words if unit_words else all_course_words[:CHUNK_SIZE]
+            unit_title = words[0].topic if words and words[0].topic else f"Bài {unit}"
+        else:
+            words = all_course_words[:CHUNK_SIZE]
+            unit_title = course_title
+    else:
+        query = Vocabulary.query
+        if level:
+            query = query.filter_by(level=level)
+        if topic:
+            query = query.filter_by(topic=topic)
+        words = query.order_by(Vocabulary.id).all()
+        if not words:
+            words = Vocabulary.query.order_by(Vocabulary.id).limit(12).all()
+        unit_title = topic or (f"Cấp độ {level}" if level else "Học từ vựng")
+
     if not words:
-        flash("Chưa có từ vựng nào thuộc cấp độ hoặc chủ đề này.", "info")
+        flash("Chưa có từ vựng nào trong bài học này.", "info")
         return redirect(url_for("learning.vocabulary"))
 
     if index < 0 or index >= len(words):
         index = 0
 
     current_word = words[index]
-
     progress = VocabularyProgress.query.filter_by(user_id=current_user.id, vocabulary_id=current_word.id).first()
     is_favorite = progress.is_favorite if progress else False
     is_learned = (progress.learned_count > 0 or progress.review_count > 0) if progress else False
 
-    topics = [r[0] for r in db.session.query(Vocabulary.topic).distinct().order_by(Vocabulary.topic).all()]
-    levels = ["A1", "A2", "B1", "B2", "C1", "C2"]
+    # Serialized words for smooth SPA flashcard experience
+    words_data = []
+    for w in words:
+        p = VocabularyProgress.query.filter_by(user_id=current_user.id, vocabulary_id=w.id).first()
+        words_data.append({
+            "id": w.id,
+            "word": w.word,
+            "pronunciation": w.pronunciation,
+            "part_of_speech": w.part_of_speech,
+            "meaning_vi": w.meaning_vi,
+            "example_en": w.example_en,
+            "example_vi": w.example_vi,
+            "image_url": w.image_url or "",
+            "topic": w.topic,
+            "level": w.level,
+            "is_learned": (p.learned_count > 0 or p.review_count > 0) if p else False,
+            "is_favorite": p.is_favorite if p else False,
+        })
+
+    back_url = url_for('learning.vocab_course_detail', cat_key=cat, subcat_key=subcat, unit=unit) if (cat and subcat) else url_for('learning.vocabulary')
 
     return render_template(
         "learning/study_vocabulary.html",
         word=current_word,
+        words=words,
+        words_data=words_data,
         index=index,
         total_words=len(words),
+        unit_title=unit_title,
+        course_title=course_title,
+        cat=cat,
+        subcat=subcat,
+        unit=unit,
+        back_url=back_url,
         level=level,
         topic=topic,
         autoplay=autoplay,
@@ -746,10 +883,49 @@ def study_vocabulary():
         mode=mode,
         is_favorite=is_favorite,
         is_learned=is_learned,
-        topics=topics,
-        levels=levels,
         form=ActionForm(),
     )
+
+
+@bp.post("/vocabulary/<int:word_id>/rate")
+@login_required
+def rate_word_study(word_id):
+    word = db.get_or_404(Vocabulary, word_id)
+    rating = request.json.get("rating") if request.is_json and request.json else request.form.get("rating", "mastered")
+    
+    progress = VocabularyProgress.query.filter_by(user_id=current_user.id, vocabulary_id=word.id).first()
+    if not progress:
+        progress = VocabularyProgress(user_id=current_user.id, vocabulary_id=word.id, learned_count=0, review_count=0, srs_level=1)
+        db.session.add(progress)
+    
+    earned_xp = 0
+    now_utc = datetime.now(timezone.utc)
+    if rating == "mastered":
+        progress.learned_count = (progress.learned_count or 0) + 1
+        progress.srs_level = min(5, (progress.srs_level or 1) + 1)
+        progress.next_review_at = now_utc + timedelta(days=3 * progress.srs_level)
+        earned_xp = 5
+        current_user.add_xp(5, reason="Học từ vựng thành thạo")
+    elif rating == "review":
+        progress.review_count = (progress.review_count or 0) + 1
+        progress.next_review_at = now_utc + timedelta(days=1)
+        earned_xp = 2
+        current_user.add_xp(2, reason="Ôn tập từ vựng")
+    else:
+        progress.review_count = (progress.review_count or 0) + 1
+        progress.srs_level = 1
+        progress.next_review_at = now_utc + timedelta(hours=4)
+    
+    progress.last_reviewed_at = now_utc
+    db.session.commit()
+    return jsonify({
+        "success": True,
+        "word_id": word.id,
+        "rating": rating,
+        "earned_xp": earned_xp,
+        "srs_level": progress.srs_level
+    })
+
 
 
 @bp.post("/vocabulary/<int:word_id>/favorite")
@@ -799,6 +975,78 @@ def report_word(word_id):
 
     flash(f"Cảm ơn bạn đã báo cáo sai sót cho từ “{word.word}”. Ban quản trị sẽ kiểm tra lại.", "success")
     return redirect(request.referrer or url_for("learning.vocabulary"))
+
+
+@bp.get("/vocabulary/<int:word_id>/detail")
+@login_required
+def vocab_word_detail_json(word_id):
+    word = db.get_or_404(Vocabulary, word_id)
+    progress = VocabularyProgress.query.filter_by(user_id=current_user.id, vocabulary_id=word.id).first()
+    is_learned = (progress.learned_count > 0 or progress.review_count > 0) if progress else False
+    is_favorite = progress.is_favorite if progress else False
+
+    related = []
+    if word.collocations:
+        related.extend([c.strip() for c in word.collocations.split(",") if c.strip()])
+    if word.synonyms:
+        related.extend([s.strip() for s in word.synonyms.split(",") if s.strip()])
+    if not related:
+        w_clean = word.word.strip().lower()
+        if len(w_clean) > 3:
+            related = [w_clean]
+            if not w_clean.endswith("ing"):
+                related.append(f"{w_clean}ing")
+            if not w_clean.endswith("ed"):
+                related.append(f"{w_clean}ed")
+
+    return jsonify({
+        "id": word.id,
+        "word": word.word,
+        "pronunciation": word.pronunciation,
+        "part_of_speech": word.part_of_speech,
+        "meaning_vi": word.meaning_vi,
+        "example_en": word.example_en or f"Please learn and remember the word '{word.word}'.",
+        "example_vi": word.example_vi or f"Vui lòng ghi nhớ từ '{word.word}'.",
+        "definition_en": f"To {word.meaning_vi.lower()} in context." if not word.example_en else f"1. Expressing {word.meaning_vi}.",
+        "topic": word.topic,
+        "level": word.level,
+        "image_url": word.image_url or "",
+        "is_learned": is_learned,
+        "is_favorite": is_favorite,
+        "personal_notes": progress.personal_notes if progress else "",
+        "custom_example": progress.custom_example if progress else "",
+        "related_words": related[:6]
+    })
+
+
+@bp.post("/vocabulary/<int:word_id>/toggle-learned")
+@login_required
+def toggle_word_learned_ajax(word_id):
+    word = db.get_or_404(Vocabulary, word_id)
+    progress = VocabularyProgress.query.filter_by(user_id=current_user.id, vocabulary_id=word.id).first()
+    if not progress:
+        progress = VocabularyProgress(user_id=current_user.id, vocabulary_id=word.id, learned_count=0, review_count=0)
+        db.session.add(progress)
+
+    if progress.learned_count > 0 or progress.review_count > 0:
+        progress.learned_count = 0
+        progress.review_count = 0
+        is_learned = False
+        msg = f"Đã đánh dấu '{word.word}' là chưa thuộc."
+    else:
+        progress.learned_count = 1
+        progress.last_reviewed_at = func.now()
+        is_learned = True
+        msg = f"Đã đánh dấu '{word.word}' là đã học!"
+        current_user.add_xp(5, reason="Học từ vựng")
+
+    db.session.commit()
+    return jsonify({
+        "success": True,
+        "is_learned": is_learned,
+        "message": msg
+    })
+
 
 
 @bp.get("/flashcards")

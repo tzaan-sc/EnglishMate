@@ -55,3 +55,15 @@ def test_today_learned_count_tracking(client):
     res_dash = client.get("/vocabulary")
     assert res_dash.status_code == 200
     assert "Đã học".encode("utf-8") in res_dash.data
+
+
+def test_vocab_course_detail_render(client):
+    login_student(client)
+
+    res = client.get("/vocabulary/courses/toeic/toeic_600")
+    assert res.status_code == 200
+    assert "600 từ vựng TOEIC".encode("utf-8") in res.data
+    assert "Danh sách Bài học".encode("utf-8") in res.data
+    assert "Học từ mới".encode("utf-8") in res.data
+    assert "Luyện tập".encode("utf-8") in res.data
+

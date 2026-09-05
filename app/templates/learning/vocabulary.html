@@ -244,78 +244,108 @@
   <div class="vocab-catalog-container">
     {% for cat_key, cat in catalog.items() %}
     {% if active_tab == 'all' or active_tab == cat_key %}
-    <section class="category-block mb-4" id="cat-{{ cat_key }}">
+    <section class="category-block mb-5" id="cat-{{ cat_key }}">
       
-      <!-- Category Header Bar -->
-      <div class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom">
-        <div class="d-flex align-items-center gap-2.5">
-          <div class="rounded-3 d-flex align-items-center justify-content-center bg-{{ cat.color }}-subtle text-{{ cat.color }}" style="width: 36px; height: 36px;">
-            <i class="ph-bold {{ cat.icon }} fs-5"></i>
+      <!-- Category Header Bar (Tham khảo: Tên danh mục + Số lượng thư mục) -->
+      <div class="d-flex justify-content-between align-items-end mb-3 pb-2 border-bottom">
+        <div>
+          <h4 class="fw-bold text-dark mb-0.5 d-flex align-items-center gap-2" style="font-size: 1.25rem;">
+            <div class="rounded-3 d-inline-flex align-items-center justify-content-center bg-{{ cat.color }}-subtle text-{{ cat.color }}" style="width: 32px; height: 32px; font-size: 1rem;">
+              <i class="ph-bold {{ cat.icon }}"></i>
+            </div>
+            <span>{{ cat.title }}</span>
+          </h4>
+          <div class="text-success fw-bold small ms-1" style="font-size: 0.82rem;">
+            {{ cat.courses|length }} thư mục
           </div>
-          <h5 class="fw-bold text-dark mb-0">{{ cat.title }}</h5>
-          <span class="badge bg-{{ cat.color }}-subtle text-{{ cat.color }} border border-{{ cat.color }}-subtle rounded-pill px-2.5 py-0.5 small fw-bold" style="font-size: 0.72rem;">
-            {{ cat.badge }}
-          </span>
         </div>
 
-        <div class="d-flex align-items-center gap-2">
-          <span class="small text-muted">{{ cat.learned_words }}/{{ cat.total_words }} từ ({{ cat.progress_pct }}%)</span>
-          <div class="progress" style="width: 70px; height: 6px; border-radius: 4px; background-color: #f1f5f9;">
+        <div class="d-none d-sm-flex align-items-center gap-2">
+          <span class="small text-muted fw-semibold">{{ cat.learned_words }}/{{ cat.total_words }} từ đã học ({{ cat.progress_pct }}%)</span>
+          <div class="progress" style="width: 80px; height: 6px; border-radius: 4px; background-color: #f1f5f9;">
             <div class="progress-bar bg-{{ cat.color }}" role="progressbar" style="width: {{ cat.progress_pct }}%;"></div>
           </div>
         </div>
       </div>
 
-      <!-- Course Cards Grid -->
-      <div class="row g-3">
+      <!-- Course Cards Grid (Bố cục thẻ hình ảnh + Floating Pill tiến độ) -->
+      <div class="row g-3 g-md-4">
         {% for course in cat.courses %}
-        <div class="col-sm-6 col-lg-4 col-xl-3">
-          <div class="card h-100 border-0 rounded-4 p-3 shadow-xs bg-white transition-hover d-flex flex-column justify-content-between"
-               style="border: 1px solid #e2e8f0 !important;">
-            
-            <!-- Card Header: Icon + Title -->
-            <div>
-              <div class="mb-2.5">
-                <div class="rounded-3 d-inline-flex align-items-center justify-content-center" 
-                      style="width: 38px; height: 38px; background: {{ course.color }}18; color: {{ course.color }};">
+        <div class="col-sm-6 col-md-4 col-lg-3">
+          <a href="{{ url_for('learning.vocab_course_detail', cat_key=cat_key, subcat_key=course.key) }}" 
+             class="text-decoration-none text-dark d-block h-100">
+            <div class="card h-100 border-0 rounded-4 overflow-hidden shadow-xs bg-white transition-all position-relative vocab-folder-card"
+                 style="border: 1px solid #e2e8f0 !important;">
+              
+              <!-- Card Visual Header Area -->
+              <div class="position-relative d-flex align-items-center justify-content-center overflow-hidden" 
+                   style="height: 155px; background: linear-gradient(135deg, {{ course.color }}14 0%, #f8fafc 100%);">
+                
+                <!-- Background Pattern Circles -->
+                <div class="position-absolute top-0 start-0 w-100 h-100 opacity-20 pointer-events-none" 
+                     style="background-image: radial-gradient({{ course.color }} 1.5px, transparent 1.5px); background-size: 14px 14px;"></div>
+
+                <!-- Center Themed Illustration / Icon -->
+                <div class="rounded-circle d-flex align-items-center justify-content-center shadow-xs position-relative z-index-2 transition-transform hover-scale" 
+                     style="width: 64px; height: 64px; background: #ffffff; color: {{ course.color }}; border: 1px solid rgba(0,0,0,0.06);">
                   {% if course.icon.startswith('ph-') %}
-                  <i class="ph-bold {{ course.icon }} fs-5"></i>
+                  <i class="ph-bold {{ course.icon }}" style="font-size: 1.85rem;"></i>
                   {% else %}
-                  <span style="font-size: 1.15rem;">{{ course.icon }}</span>
+                  <span style="font-size: 1.85rem;">{{ course.icon }}</span>
                   {% endif %}
                 </div>
+
+                <!-- Category Mini Tag (Top Left) -->
+                <div class="position-absolute top-0 start-0 m-2.5 z-index-2">
+                  <span class="badge bg-white text-secondary border rounded-pill px-2.5 py-1 small fw-semibold shadow-2xs" style="font-size: 0.68rem;">
+                    {{ course.units_count }} bài học
+                  </span>
+                </div>
+
+                <!-- Progress Ring / Star (Top Right) -->
+                {% if course.progress_pct == 100 %}
+                <div class="position-absolute top-0 end-0 m-2.5 z-index-2">
+                  <span class="badge bg-success text-white rounded-pill px-2 py-0.5 small shadow-2xs" style="font-size: 0.68rem;">
+                    <i class="ph-fill ph-check"></i> Xong
+                  </span>
+                </div>
+                {% endif %}
               </div>
 
-              <h6 class="fw-bold text-dark mb-1" style="font-size: 0.95rem; line-height: 1.35;">
-                {{ course.title }}
-              </h6>
-              
-              <div class="small text-muted mb-3" style="font-size: 0.78rem;">
-                <span class="text-secondary fw-semibold">{{ course.total_words }} từ</span> • {{ course.units_count }} bài học
+              <!-- Card Body: Title & Floating Progress Pill -->
+              <div class="p-3 d-flex flex-column align-items-center text-center justify-content-between flex-grow-1">
+                
+                <h6 class="fw-bold text-dark mb-1 line-clamp-2 w-100" style="font-size: 0.98rem; line-height: 1.35; min-height: 2.7em;">
+                  {{ course.title }}
+                </h6>
+
+                <p class="text-muted small line-clamp-1 mb-2.5 w-100" style="font-size: 0.78rem;">
+                  {{ course.description }}
+                </p>
+
+                <!-- Floating Progress Pill (Bố cục tham khảo: checkmark + số lượng & icon đồng hồ + bài) -->
+                <div class="d-inline-flex align-items-center gap-3 px-3 py-1.5 rounded-pill shadow-xs w-auto mt-auto" 
+                     style="background: #1e293b; color: #ffffff; font-size: 0.8rem; border: 1px solid rgba(255,255,255,0.1);">
+                  
+                  <!-- Metric 1: Learned / Total -->
+                  <div class="d-flex align-items-center gap-1.5 fw-bold" style="color: #38bdf8;" title="Số từ đã học / Tổng số từ">
+                    <i class="ph-fill ph-check-circle" style="font-size: 0.95rem;"></i>
+                    <span>{{ course.learned_words }}/{{ course.total_words }}</span>
+                  </div>
+
+                  <span style="color: rgba(255,255,255,0.25);">|</span>
+
+                  <!-- Metric 2: Units Count / Due -->
+                  <div class="d-flex align-items-center gap-1.5 fw-bold" style="color: #fbbf24;" title="Số bài học trong thư mục">
+                    <i class="ph-fill ph-clock-countdown" style="font-size: 0.95rem;"></i>
+                    <span>{{ course.units_count }}</span>
+                  </div>
+                </div>
+
               </div>
+
             </div>
-
-            <!-- Card Footer: Progress + Action -->
-            <div class="pt-2 border-top mt-auto" style="border-color: #f8fafc !important;">
-              <div class="d-flex justify-content-between align-items-center small text-muted mb-1.5" style="font-size: 0.75rem;">
-                <span>Tiến độ: <strong>{{ course.learned_words }}/{{ course.total_words }}</strong></span>
-                <strong class="text-dark">{{ course.progress_pct }}%</strong>
-              </div>
-
-              <div class="progress mb-2.5" style="height: 5px; border-radius: 4px; background-color: #f1f5f9;">
-                <div class="progress-bar" role="progressbar" 
-                     style="width: {{ course.progress_pct }}%; background-color: {{ course.color }};"></div>
-              </div>
-
-              <a href="{{ url_for('learning.vocab_course_detail', cat_key=cat_key, subcat_key=course.key) }}" 
-                 class="btn btn-light btn-sm w-100 rounded-3 py-1.5 fw-bold text-primary border d-inline-flex align-items-center justify-content-center gap-1"
-                 style="font-size: 0.82rem;">
-                <span>Học ngay</span>
-                <i class="ph-bold ph-arrow-right small"></i>
-              </a>
-            </div>
-
-          </div>
+          </a>
         </div>
         {% endfor %}
       </div>
