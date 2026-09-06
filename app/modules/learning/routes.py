@@ -449,11 +449,8 @@ def vocabulary():
 
     # Global vocabulary metrics
     total_vocab_count = Vocabulary.query.count()
-    mastered_count = sum(1 for p in all_progress if p.learned_count >= 3 or p.review_count >= 3)
-    learning_count = sum(1 for p in all_progress if (0 < p.learned_count < 3) or (0 < p.review_count < 3))
-    new_vocab_count = max(0, total_vocab_count - (mastered_count + learning_count))
     review_vocab_count = len(learned_ids)
-    overall_progress_pct = round(((mastered_count + learning_count) / total_vocab_count * 100)) if total_vocab_count > 0 else 0
+    overall_progress_pct = round((review_vocab_count / total_vocab_count * 100)) if total_vocab_count > 0 else 0
 
     # Daily Goal & SRS Due
     today_date = date.today()
@@ -543,7 +540,6 @@ def vocabulary():
     if topic:
         query = query.filter_by(topic=topic)
 
-    topics = [r[0] for r in db.session.query(Vocabulary.topic).distinct().order_by(Vocabulary.topic).all()]
     words_list = query.order_by(Vocabulary.word).limit(100).all() if has_filter else []
 
     # Flashcard sets query (personal and public sets)
@@ -565,12 +561,8 @@ def vocabulary():
         has_filter=has_filter,
         words=words_list,
         learned=learned_ids,
-        topics=topics,
         form=ActionForm(),
         total_vocab_count=total_vocab_count,
-        mastered_count=mastered_count,
-        learning_count=learning_count,
-        new_vocab_count=new_vocab_count,
         review_vocab_count=review_vocab_count,
         due_words_count=due_words_count,
         overall_progress_pct=overall_progress_pct,

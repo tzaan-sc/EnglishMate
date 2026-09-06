@@ -8,12 +8,8 @@
   <div class="hero-brand-card p-4 p-lg-4 mb-4 shadow-sm">
     <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3 mb-3 position-relative" style="z-index: 2;">
       <div>
-        <div class="d-inline-flex align-items-center gap-1.5 px-2.5 py-0.5 rounded-pill mb-2" style="background: rgba(255, 255, 255, 0.18); backdrop-filter: blur(8px); font-size: 0.74rem; font-weight: 700; color: #a7f3d0;">
-          <i class="ph-bold ph-translate"></i>
-          <span>KHO HỌC TỪ VỰNG & FLASHCARDS</span>
-        </div>
         <h3 class="fw-bold text-white mb-1 d-flex align-items-center gap-2" style="letter-spacing: -0.01em;">
-          Thư viện Từ vựng & Flashcards
+          Từ vựng & Flashcards
         </h3>
         <p class="text-white-50 mb-0 small">
           Học theo lộ trình chuẩn (<strong>CEFR</strong>, <strong>TOEIC</strong>, <strong>IELTS</strong>, <strong>Chuyên ngành</strong>) hoặc tự tạo <strong>Bộ Flashcard cá nhân</strong>.
@@ -22,21 +18,25 @@
 
       <!-- Quick Actions -->
       <div class="d-flex flex-wrap gap-2 align-items-center">
+        {% if is_flashcards_tab %}
         <a href="{{ url_for('learning.flashcard_set_create') }}" class="btn btn-light rounded-pill px-3 py-1.5 fw-bold text-primary shadow-xs d-inline-flex align-items-center gap-1.5" style="font-size: 0.84rem;">
           <i class="ph-bold ph-plus-circle fs-6"></i>
-          <span>+ Tạo Bộ thẻ mới</span>
+          <span>Tạo Bộ thẻ mới</span>
         </a>
+        {% endif %}
         {% if due_words_count > 0 %}
         <a href="{{ url_for('learning.review_vocabulary') }}" class="btn btn-warning rounded-pill px-3 py-1.5 fw-bold shadow-xs d-inline-flex align-items-center gap-1.5" style="font-size: 0.84rem;">
           <i class="ph-bold ph-alarm"></i>
           <span>Ôn {{ due_words_count }} từ đến hạn</span>
         </a>
         {% endif %}
-        <a href="{{ url_for('learning.vocabulary_stats') }}" class="btn btn-outline-light rounded-pill px-2.5 py-1.5 fw-semibold" style="font-size: 0.84rem; background: rgba(255,255,255,0.06); border-color: rgba(255,255,255,0.2);" title="Thống kê">
+        <a href="{{ url_for('learning.vocabulary_stats') }}" class="btn btn-outline-light rounded-pill px-3 py-1.5 fw-semibold d-inline-flex align-items-center gap-1.5" style="font-size: 0.84rem; background: rgba(255,255,255,0.06); border-color: rgba(255,255,255,0.2);">
           <i class="ph-bold ph-chart-line-up"></i>
+          <span>Thống kê</span>
         </a>
-        <a href="{{ url_for('learning.manage_vocabulary') }}" class="btn btn-outline-light rounded-pill px-2.5 py-1.5 fw-semibold" style="font-size: 0.84rem; background: rgba(255,255,255,0.06); border-color: rgba(255,255,255,0.2);" title="Quản lý từ vựng">
+        <a href="{{ url_for('learning.manage_vocabulary') }}" class="btn btn-outline-light rounded-pill px-3 py-1.5 fw-semibold d-inline-flex align-items-center gap-1.5" style="font-size: 0.84rem; background: rgba(255,255,255,0.06); border-color: rgba(255,255,255,0.2);">
           <i class="ph-bold ph-sliders-horizontal"></i>
+          <span>Quản lý</span>
         </a>
       </div>
     </div>
@@ -61,15 +61,7 @@
           </div>
         </div>
       </div>
-      <div class="col-6 col-md-3">
-        <div class="d-flex align-items-center gap-2 p-2 rounded-3" style="background: rgba(255,255,255,0.04);">
-          <i class="ph-bold ph-cards text-info fs-5"></i>
-          <div>
-            <span class="text-white-50 d-block" style="font-size: 0.72rem;">Bộ Flashcard</span>
-            <strong class="text-white small">{{ flashcard_sets|length }} bộ ({{ my_sets_count }} của tôi)</strong>
-          </div>
-        </div>
-      </div>
+
       <div class="col-6 col-md-3">
         <div class="d-flex align-items-center gap-2 p-2 rounded-3" style="background: rgba(255,255,255,0.04);">
           <i class="ph-bold ph-target text-warning fs-5"></i>
@@ -105,14 +97,7 @@
         </a>
       </div>
 
-      <!-- Quick Action on the right -->
-      <div class="d-none d-md-flex align-items-center gap-2 pe-2">
-        {% if is_flashcards_tab %}
-        <a href="{{ url_for('learning.flashcard_set_create') }}" class="btn btn-sm btn-primary rounded-pill px-3 py-1.5 fw-bold d-inline-flex align-items-center gap-1">
-          <i class="ph-bold ph-plus"></i> Tạo bộ thẻ mới
-        </a>
-        {% endif %}
-      </div>
+
 
     </div>
   </div>
@@ -291,12 +276,7 @@
                   {% endif %}
                 </div>
 
-                <!-- Category Mini Tag (Top Left) -->
-                <div class="position-absolute top-0 start-0 m-2.5 z-index-2">
-                  <span class="badge bg-white text-secondary border rounded-pill px-2.5 py-1 small fw-semibold shadow-2xs" style="font-size: 0.7rem; border-color: #e2e8f0 !important;">
-                    {{ course.units_count }} bài học
-                  </span>
-                </div>
+
 
                 <!-- Progress Ring / Star (Top Right) -->
                 {% if course.progress_pct == 100 %}
@@ -429,7 +409,9 @@
                   </li>
                   <li><hr class="dropdown-divider my-1"></li>
                   <li>
-                    <form action="{{ url_for('learning.flashcard_set_delete', set_id=fset.id) }}" method="post" onsubmit="return confirm('Bạn có chắc chắn muốn xóa học phần này không? Toàn bộ thẻ và tiến trình học sẽ bị xóa vĩnh viễn.');">
+                    <form action="{{ url_for('learning.flashcard_set_delete', set_id=fset.id) }}" method="post"
+                          data-confirm="Bạn có chắc chắn muốn xóa học phần \'{{ fset.title }}\'?&#10;Toàn bộ thẻ và tiến trình học sẽ bị xóa vĩnh viễn."
+                          class="delete-set-form">
                       <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                       <button type="submit" class="dropdown-item rounded-2 small fw-semibold text-danger py-1.5">
                         <i class="ph-bold ph-trash me-2"></i> Xóa học phần
@@ -463,10 +445,10 @@
               <span class="text-secondary small fw-medium" style="font-size: 0.78rem;">{{ fset.user.username }}</span>
             </div>
 
-            <span class="btn btn-light btn-sm text-primary fw-bold rounded-pill px-3 py-1 border d-inline-flex align-items-center gap-1" style="font-size: 0.78rem;">
+            <a href="{{ url_for('learning.flashcard_set_view', set_id=fset.id) }}" class="btn btn-light btn-sm text-primary fw-bold rounded-pill px-3 py-1 border d-inline-flex align-items-center gap-1" style="font-size: 0.78rem;" onclick="event.stopPropagation();">
               <span>Học ngay</span>
               <i class="ph-bold ph-arrow-right"></i>
-            </span>
+            </a>
           </div>
 
         </div>
@@ -509,10 +491,12 @@ document.addEventListener("DOMContentLoaded", function() {
   const filterBtns = document.querySelectorAll(".filter-set-btn");
   const searchInput = document.getElementById("searchSetInput");
   const setCards = document.querySelectorAll(".set-item-card");
+  const setsGrid = document.getElementById("setsGrid");
 
   function filterSets() {
     const activeFilter = document.querySelector(".filter-set-btn.active")?.dataset.filter || "all";
     const query = (searchInput?.value || "").toLowerCase().trim();
+    let visibleCount = 0;
 
     setCards.forEach(card => {
       const owner = card.dataset.owner;
@@ -526,10 +510,26 @@ document.addEventListener("DOMContentLoaded", function() {
 
       if (matchFilter && matchSearch) {
         card.classList.remove("d-none");
+        visibleCount++;
       } else {
         card.classList.add("d-none");
       }
     });
+
+    // Show/hide no-results message
+    let noResults = document.getElementById("noResultsMsg");
+    if (visibleCount === 0 && setCards.length > 0) {
+      if (!noResults) {
+        noResults = document.createElement("div");
+        noResults.id = "noResultsMsg";
+        noResults.className = "col-12 text-center py-4 text-muted small";
+        noResults.innerHTML = '<i class="ph-bold ph-magnifying-glass fs-4 mb-2 d-block text-secondary"></i>Không tìm thấy bộ thẻ nào phù hợp.';
+        setsGrid?.appendChild(noResults);
+      }
+      noResults.classList.remove("d-none");
+    } else if (noResults) {
+      noResults.classList.add("d-none");
+    }
   }
 
   filterBtns.forEach(btn => {
@@ -545,6 +545,16 @@ document.addEventListener("DOMContentLoaded", function() {
   });
 
   searchInput?.addEventListener("input", filterSets);
+
+  // Delete confirmation using data-confirm attribute
+  document.querySelectorAll(".delete-set-form").forEach(form => {
+    form.addEventListener("submit", function(e) {
+      const msg = this.dataset.confirm || "Bạn có chắc chắn muốn xóa?";
+      if (!window.confirm(msg)) {
+        e.preventDefault();
+      }
+    });
+  });
 });
 </script>
 {% endblock %}
