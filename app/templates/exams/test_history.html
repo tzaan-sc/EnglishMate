@@ -28,61 +28,91 @@
     </a>
   </div>
 
-  <!-- Header & Top Actions -->
-  <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
-    <div>
-      <h3 class="fw-bold text-dark mb-1">📜 Lịch Sử Kiểm Tra (Test History)</h3>
-      <p class="text-secondary small mb-0">Theo dõi toàn bộ quá trình thực hành, xem lại giải thích và so sánh tiến độ kết quả thi.</p>
-    </div>
+  <!-- ZONE 1: HERO & STATS BANNER -->
+  <div class="hero-brand-card p-4 p-lg-4 mb-4 shadow-sm">
+    <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3 mb-3 position-relative" style="z-index: 2;">
+      <div>
+        <div class="d-inline-flex align-items-center gap-1.5 px-2.5 py-0.5 rounded-pill mb-2" style="background: rgba(255, 255, 255, 0.18); backdrop-filter: blur(8px); font-size: 0.74rem; font-weight: 700; color: #a7f3d0;">
+          <i class="ph-bold ph-clock-counter-clockwise"></i>
+          <span>TEST HISTORY & PERFORMANCE ARCHIVE</span>
+        </div>
+        <h3 class="fw-bold text-white mb-1 d-flex align-items-center gap-2" style="letter-spacing: -0.01em;">
+          Lịch Sử Kiểm Tra (Test History)
+        </h3>
+        <p class="text-white-50 mb-0 small">
+          Theo dõi toàn bộ quá trình thực hành, xem lại giải thích chi tiết và so sánh tiến độ kết quả thi.
+        </p>
+      </div>
 
-    <div class="d-flex gap-2">
-      <!-- Compare Selected Button -->
-      <button type="button" id="btnCompareSelected" class="btn btn-outline-primary rounded-pill px-4 fw-bold shadow-xs">
-        ⚖️ So Sánh Các Bài Đã Chọn
-      </button>
-
-      <!-- Export CSV Button -->
-      <a href="{{ url_for('exams.test_export_csv') }}" class="btn btn-primary rounded-pill px-4 fw-bold shadow-xs">
-        📥 Xuất Lịch Sử (CSV)
-      </a>
-    </div>
-  </div>
-
-  <!-- 4 Summary Stat Cards -->
-  <div class="row g-3 g-lg-4 mb-4">
-    <div class="col-md-3 col-6">
-      <div class="card border-0 shadow-xs rounded-4 p-4 bg-white text-center">
-        <span class="text-muted small d-block mb-1">Tổng lượt làm bài</span>
-        <h3 class="fw-bold text-primary mb-0">{{ summary.total_tests }}</h3>
+      <!-- Action Buttons Hub -->
+      <div class="d-flex gap-2 align-items-center flex-wrap">
+        <button type="button" id="btnCompareSelected" class="btn btn-light rounded-pill px-3.5 py-1.5 fw-bold text-primary shadow-xs d-inline-flex align-items-center gap-1.5" style="font-size: 0.84rem;">
+          <i class="ph-bold ph-scales fs-6"></i>
+          <span>So sánh bài đã chọn</span>
+        </button>
+        <a href="{{ url_for('exams.test_export_csv') }}" class="btn btn-outline-light rounded-pill px-3.5 py-1.5 fw-semibold d-inline-flex align-items-center gap-1.5" style="font-size: 0.84rem; background: rgba(255,255,255,0.06); border-color: rgba(255,255,255,0.25);">
+          <i class="ph-bold ph-download-simple fs-6"></i>
+          <span>Xuất CSV</span>
+        </a>
       </div>
     </div>
-    <div class="col-md-3 col-6">
-      <div class="card border-0 shadow-xs rounded-4 p-4 bg-white text-center">
-        <span class="text-muted small d-block mb-1">Điểm trung bình</span>
-        <h3 class="fw-bold text-success mb-0">{{ summary.avg_score_pct }}%</h3>
+
+    <!-- 4 Clean Stat Pills -->
+    <div class="row g-3 g-lg-4 pt-4 mt-3 border-top" style="border-color: rgba(255, 255, 255, 0.15) !important; position: relative; z-index: 2;">
+      <div class="col-6 col-md-3">
+        <div class="d-flex align-items-center gap-3 p-3 px-3.5 rounded-4" style="background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.12); backdrop-filter: blur(4px);">
+          <div class="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0" style="width: 40px; height: 40px; background: rgba(255, 255, 255, 0.2);">
+            <i class="ph-bold ph-files text-white fs-5"></i>
+          </div>
+          <div>
+            <span class="text-white-50 d-block" style="font-size: 0.74rem;">Tổng lượt làm bài</span>
+            <strong class="text-white fs-6">{{ summary.total_tests }} lượt</strong>
+          </div>
+        </div>
       </div>
-    </div>
-    <div class="col-md-3 col-6">
-      <div class="card border-0 shadow-xs rounded-4 p-4 bg-white text-center">
-        <span class="text-muted small d-block mb-1">Điểm cao nhất</span>
-        <h3 class="fw-bold text-warning-emphasis mb-0">{{ summary.best_score_pct }}%</h3>
+      <div class="col-6 col-md-3">
+        <div class="d-flex align-items-center gap-3 p-3 px-3.5 rounded-4" style="background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.12); backdrop-filter: blur(4px);">
+          <div class="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0" style="width: 40px; height: 40px; background: rgba(255, 255, 255, 0.2);">
+            <i class="ph-bold ph-chart-line-up fs-5" style="color: #6ee7b7;"></i>
+          </div>
+          <div>
+            <span class="text-white-50 d-block" style="font-size: 0.74rem;">Điểm trung bình</span>
+            <strong class="text-white fs-6">{{ summary.avg_score_pct }}%</strong>
+          </div>
+        </div>
       </div>
-    </div>
-    <div class="col-md-3 col-6">
-      <div class="card border-0 shadow-xs rounded-4 p-4 bg-white text-center">
-        <span class="text-muted small d-block mb-1">Tổng thời gian thi</span>
-        <h3 class="fw-bold text-info mb-0">{{ summary.total_time_min }} phút</h3>
+      <div class="col-6 col-md-3">
+        <div class="d-flex align-items-center gap-3 p-3 px-3.5 rounded-4" style="background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.12); backdrop-filter: blur(4px);">
+          <div class="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0" style="width: 40px; height: 40px; background: rgba(255, 255, 255, 0.2);">
+            <i class="ph-bold ph-trophy fs-5" style="color: #fde047;"></i>
+          </div>
+          <div>
+            <span class="text-white-50 d-block" style="font-size: 0.74rem;">Điểm cao nhất</span>
+            <strong class="text-white fs-6">{{ summary.best_score_pct }}%</strong>
+          </div>
+        </div>
+      </div>
+      <div class="col-6 col-md-3">
+        <div class="d-flex align-items-center gap-3 p-3 px-3.5 rounded-4" style="background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.12); backdrop-filter: blur(4px);">
+          <div class="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0" style="width: 40px; height: 40px; background: rgba(255, 255, 255, 0.2);">
+            <i class="ph-bold ph-clock fs-5" style="color: #93c5fd;"></i>
+          </div>
+          <div>
+            <span class="text-white-50 d-block" style="font-size: 0.74rem;">Tổng thời gian</span>
+            <strong class="text-white fs-6">{{ summary.total_time_min }} phút</strong>
+          </div>
+        </div>
       </div>
     </div>
   </div>
 
   <!-- Multi-dimensional Filter & Sorting Toolbar -->
-  <div class="card border-0 shadow-sm rounded-4 p-4 bg-white mb-4">
+  <div class="card-modern p-4 mb-5">
     <form method="GET" action="{{ url_for('exams.test_history') }}" class="row g-3 align-items-end">
       <!-- Filter by Test Type -->
       <div class="col-md-3 col-6">
-        <label class="form-label fw-semibold text-dark small">Loại bài kiểm tra</label>
-        <select name="type" class="form-select rounded-pill">
+        <label class="form-label small fw-bold text-muted mb-1">Loại bài kiểm tra</label>
+        <select name="type" class="form-select border shadow-none" style="border-color: var(--border-light); font-size: 0.9rem;">
           <option value="">-- Tất cả loại --</option>
           <option value="Quiz" {{ 'selected' if filter_type=='Quiz' }}>Quiz</option>
           <option value="TOEIC" {{ 'selected' if filter_type=='TOEIC' }}>TOEIC Simulation</option>
@@ -96,24 +126,24 @@
 
       <!-- Filter by Date Range -->
       <div class="col-md-2 col-6">
-        <label class="form-label fw-semibold text-dark small">Từ ngày</label>
-        <input type="date" name="date_from" class="form-control rounded-pill" value="{{ date_from }}">
+        <label class="form-label small fw-bold text-muted mb-1">Từ ngày</label>
+        <input type="date" name="date_from" class="form-control border shadow-none" value="{{ date_from }}" style="border-color: var(--border-light); font-size: 0.9rem;">
       </div>
       <div class="col-md-2 col-6">
-        <label class="form-label fw-semibold text-dark small">Đến ngày</label>
-        <input type="date" name="date_to" class="form-control rounded-pill" value="{{ date_to }}">
+        <label class="form-label small fw-bold text-muted mb-1">Đến ngày</label>
+        <input type="date" name="date_to" class="form-control border shadow-none" value="{{ date_to }}" style="border-color: var(--border-light); font-size: 0.9rem;">
       </div>
 
       <!-- Filter by Score Range -->
       <div class="col-md-2 col-6">
-        <label class="form-label fw-semibold text-dark small">Điểm từ (%)</label>
-        <input type="number" name="min_score" class="form-control rounded-pill" placeholder="0" min="0" max="100" value="{{ min_score }}">
+        <label class="form-label small fw-bold text-muted mb-1">Điểm từ (%)</label>
+        <input type="number" name="min_score" class="form-control border shadow-none" placeholder="0" min="0" max="100" value="{{ min_score }}" style="border-color: var(--border-light); font-size: 0.9rem;">
       </div>
 
       <!-- Sort by Date/Score -->
       <div class="col-md-2 col-6">
-        <label class="form-label fw-semibold text-dark small">Sắp xếp theo</label>
-        <select name="sort" class="form-select rounded-pill">
+        <label class="form-label small fw-bold text-muted mb-1">Sắp xếp theo</label>
+        <select name="sort" class="form-select border shadow-none" style="border-color: var(--border-light); font-size: 0.9rem;">
           <option value="date_desc" {{ 'selected' if sort_by=='date_desc' }}>Mới nhất</option>
           <option value="date_asc" {{ 'selected' if sort_by=='date_asc' }}>Cũ nhất</option>
           <option value="score_desc" {{ 'selected' if sort_by=='score_desc' }}>Điểm cao nhất</option>
@@ -123,13 +153,13 @@
 
       <!-- Submit & Reset Buttons -->
       <div class="col-md-1 col-12 d-flex gap-1">
-        <button type="submit" class="btn btn-primary rounded-pill w-100 fw-bold">Lọc</button>
+        <button type="submit" class="btn btn-primary w-100 fw-bold rounded-pill" style="height: 38px;">Lọc</button>
       </div>
     </form>
   </div>
 
   <!-- History Records List Table -->
-  <div class="card border-0 shadow-sm rounded-4 bg-white overflow-hidden">
+  <div class="card card-modern p-0 overflow-hidden mb-5">
     <div class="table-responsive">
       <table class="table table-hover align-middle mb-0">
         <thead class="table-light">

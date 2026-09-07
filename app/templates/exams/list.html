@@ -3,61 +3,127 @@
 {% block content %}
 <div class="container-fluid max-w-7xl py-4">
 
-  <!-- Page Header Title -->
-  <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
-    <div>
-      <span class="badge bg-danger-subtle text-danger border border-danger-subtle rounded-pill px-3 py-1 mb-2 font-semibold">
-        HỆ THỐNG LUYỆN ĐỀ THI THỬ
-      </span>
-      <h2 class="fw-bold text-dark mb-1">Thư viện đề thi</h2>
-      <p class="text-secondary small mb-0">Thử sức với các đề thi chứng chỉ TOEIC, IELTS, TOEFL và theo dõi lịch sử làm bài.</p>
+  <!-- ZONE 1: HERO & STATS BANNER -->
+  <div class="hero-brand-card p-4 p-lg-4 mb-4 shadow-sm">
+    <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3 mb-3 position-relative" style="z-index: 2;">
+      <div>
+        <div class="d-inline-flex align-items-center gap-1.5 px-2.5 py-0.5 rounded-pill mb-2" style="background: rgba(255, 255, 255, 0.18); backdrop-filter: blur(8px); font-size: 0.74rem; font-weight: 700; color: #a7f3d0;">
+          <i class="ph-bold ph-certificate"></i>
+          <span>HỆ THỐNG LUYỆN ĐỀ THI THỬ CHUẨN HÓA</span>
+        </div>
+        <h3 class="fw-bold text-white mb-1 d-flex align-items-center gap-2" style="letter-spacing: -0.01em;">
+          Thư viện đề thi
+        </h3>
+        <p class="text-white-50 mb-0 small">
+          Thử sức với các đề thi chứng chỉ TOEIC, IELTS, TOEFL và theo dõi lịch sử làm bài.
+        </p>
+      </div>
+
+      <!-- Action Buttons Hub -->
+      <div class="d-flex gap-2 align-items-center flex-wrap">
+        <a href="{{ url_for('exams.toeic') }}" class="btn btn-light rounded-pill px-3.5 py-1.5 fw-bold text-primary shadow-xs d-inline-flex align-items-center gap-1.5" style="font-size: 0.84rem;">
+          <i class="ph-bold ph-certificate fs-6"></i>
+          <span>Luyện thi TOEIC</span>
+        </a>
+        <a href="{{ url_for('exams.specialized_exams_hub') }}" class="btn btn-outline-light rounded-pill px-3.5 py-1.5 fw-semibold d-inline-flex align-items-center gap-1.5" style="font-size: 0.84rem; background: rgba(255,255,255,0.06); border-color: rgba(255,255,255,0.25);">
+          <i class="ph-bold ph-graduation-cap fs-6"></i>
+          <span>Đề thi chuyên biệt</span>
+        </a>
+        <a href="{{ url_for('exams.exam_settings') }}" class="btn btn-outline-light rounded-pill px-3.5 py-1.5 fw-semibold d-inline-flex align-items-center gap-1.5" style="font-size: 0.84rem; background: rgba(255,255,255,0.06); border-color: rgba(255,255,255,0.25);">
+          <i class="ph-bold ph-gear fs-6"></i>
+          <span>Cài đặt đề thi</span>
+        </a>
+      </div>
     </div>
-    <div>
-      <a href="{{ url_for('exams.exam_settings') }}" class="btn btn-outline-secondary rounded-pill px-3 fw-semibold">
-        <i class="ph-bold ph-gear"></i> Cài đặt đề thi
-      </a>
+
+    <!-- 4 Clean Stat Pills -->
+    <div class="row g-3 g-lg-4 pt-4 mt-3 border-top" style="border-color: rgba(255, 255, 255, 0.15) !important; position: relative; z-index: 2;">
+      <div class="col-6 col-md-3">
+        <div class="d-flex align-items-center gap-3 p-3 px-3.5 rounded-4" style="background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.12); backdrop-filter: blur(4px);">
+          <div class="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0" style="width: 40px; height: 40px; background: rgba(255, 255, 255, 0.2);">
+            <i class="ph-bold ph-files text-white fs-5"></i>
+          </div>
+          <div>
+            <span class="text-white-50 d-block" style="font-size: 0.74rem;">Tổng đề thi</span>
+            <strong class="text-white fs-6">{{ exams|length }} đề</strong>
+          </div>
+        </div>
+      </div>
+      <div class="col-6 col-md-3">
+        <div class="d-flex align-items-center gap-3 p-3 px-3.5 rounded-4" style="background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.12); backdrop-filter: blur(4px);">
+          <div class="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0" style="width: 40px; height: 40px; background: rgba(255, 255, 255, 0.2);">
+            <i class="ph-bold ph-stack fs-5" style="color: #6ee7b7;"></i>
+          </div>
+          <div>
+            <span class="text-white-50 d-block" style="font-size: 0.74rem;">Chứng chỉ</span>
+            <strong class="text-white fs-6">{{ categories|length }} dạng</strong>
+          </div>
+        </div>
+      </div>
+      <div class="col-6 col-md-3">
+        <div class="d-flex align-items-center gap-3 p-3 px-3.5 rounded-4" style="background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.12); backdrop-filter: blur(4px);">
+          <div class="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0" style="width: 40px; height: 40px; background: rgba(255, 255, 255, 0.2);">
+            <i class="ph-bold ph-clock-counter-clockwise fs-5" style="color: #93c5fd;"></i>
+          </div>
+          <div>
+            <span class="text-white-50 d-block" style="font-size: 0.74rem;">Lịch sử làm bài</span>
+            <strong class="text-white fs-6">{{ history|length }} lượt</strong>
+          </div>
+        </div>
+      </div>
+      <div class="col-6 col-md-3">
+        <div class="d-flex align-items-center gap-3 p-3 px-3.5 rounded-4" style="background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.12); backdrop-filter: blur(4px);">
+          <div class="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0" style="width: 40px; height: 40px; background: rgba(255, 255, 255, 0.2);">
+            <i class="ph-bold ph-trophy fs-5" style="color: #fde047;"></i>
+          </div>
+          <div>
+            <span class="text-white-50 d-block" style="font-size: 0.74rem;">Đã hoàn thành</span>
+            <strong class="text-white fs-6">{{ best_scores|length }} bài</strong>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 
-  <!-- Sub-navigation Tabs -->
-  <div class="d-flex flex-wrap gap-2 mb-4">
-    <a href="{{ url_for('exams.exam_list') }}" class="btn btn-primary rounded-pill px-3.5 py-1.5 fw-bold shadow-xs d-inline-flex align-items-center gap-1.5" style="font-size: 0.85rem;">
+  <!-- ZONE 2: SUB-NAVIGATION PILLS -->
+  <div class="d-flex flex-wrap gap-2 mb-4 align-items-center">
+    <a href="{{ url_for('exams.exam_list') }}" class="btn btn-primary rounded-pill px-3.5 py-1.5 fw-bold shadow-xs d-inline-flex align-items-center gap-1.5" style="font-size: 0.82rem;">
       <i class="ph-bold ph-files"></i>
       <span>Tất cả đề thi</span>
     </a>
-    <a href="{{ url_for('exams.toeic') }}" class="btn btn-light border rounded-pill px-3.5 py-1.5 fw-semibold text-secondary d-inline-flex align-items-center gap-1.5" style="font-size: 0.85rem;">
+    <a href="{{ url_for('exams.toeic') }}" class="btn btn-light border rounded-pill px-3.5 py-1.5 fw-semibold text-secondary d-inline-flex align-items-center gap-1.5" style="font-size: 0.82rem;">
       <i class="ph-bold ph-certificate"></i>
       <span>Luyện thi TOEIC</span>
     </a>
-    <a href="{{ url_for('exams.specialized_exams_hub') }}" class="btn btn-light border rounded-pill px-3.5 py-1.5 fw-semibold text-secondary d-inline-flex align-items-center gap-1.5" style="font-size: 0.85rem;">
+    <a href="{{ url_for('exams.specialized_exams_hub') }}" class="btn btn-light border rounded-pill px-3.5 py-1.5 fw-semibold text-secondary d-inline-flex align-items-center gap-1.5" style="font-size: 0.82rem;">
       <i class="ph-bold ph-graduation-cap"></i>
       <span>Đề thi chuyên biệt & Xếp lớp</span>
     </a>
-    <a href="{{ url_for('exams.test_history') }}" class="btn btn-light border rounded-pill px-3.5 py-1.5 fw-semibold text-secondary d-inline-flex align-items-center gap-1.5" style="font-size: 0.85rem;">
+    <a href="{{ url_for('exams.test_history') }}" class="btn btn-light border rounded-pill px-3.5 py-1.5 fw-semibold text-secondary d-inline-flex align-items-center gap-1.5" style="font-size: 0.82rem;">
       <i class="ph-bold ph-clock-counter-clockwise"></i>
       <span>Lịch sử thi & So sánh</span>
     </a>
-    <a href="{{ url_for('exams.exam_settings') }}" class="btn btn-light border rounded-pill px-3.5 py-1.5 fw-semibold text-secondary d-inline-flex align-items-center gap-1.5" style="font-size: 0.85rem;">
+    <a href="{{ url_for('exams.exam_settings') }}" class="btn btn-light border rounded-pill px-3.5 py-1.5 fw-semibold text-secondary d-inline-flex align-items-center gap-1.5" style="font-size: 0.82rem;">
       <i class="ph-bold ph-gear"></i>
       <span>Cài đặt đề thi</span>
     </a>
   </div>
 
-<div class="card border rounded-4 shadow-xs mb-4 bg-white p-2">
-  <div class="card-body">
-    <form method="get" action="{{ url_for('exams.exam_list') }}" class="row g-3">
-      <div class="col-md-4">
-        <label class="form-label fw-bold small text-dark mb-1">Chứng chỉ / Loại đề</label>
-        <select name="category" class="form-select rounded-3" onchange="this.form.submit()">
-          <option value="">-- Tất cả --</option>
+  <!-- ZONE 3: FILTER CONTROLS BAR -->
+  <div class="card-modern p-4 mb-5">
+    <form method="get" action="{{ url_for('exams.exam_list') }}" class="row g-3 align-items-center">
+      <div class="col-md-5">
+        <label class="form-label small fw-bold text-muted mb-1">Chứng chỉ / Loại đề</label>
+        <select name="category" class="form-select border shadow-none" style="border-color: var(--border-light); font-size: 0.9rem;" onchange="this.form.submit()">
+          <option value="">-- Tất cả chứng chỉ --</option>
           {% for cat in categories %}
           <option value="{{ cat }}" {% if category == cat %}selected{% endif %}>{{ cat }}</option>
           {% endfor %}
         </select>
       </div>
-      <div class="col-md-4">
-        <label class="form-label fw-bold small text-dark mb-1">Kỹ năng</label>
-        <select name="skill" class="form-select rounded-3" onchange="this.form.submit()">
+      <div class="col-md-5">
+        <label class="form-label small fw-bold text-muted mb-1">Kỹ năng</label>
+        <select name="skill" class="form-select border shadow-none" style="border-color: var(--border-light); font-size: 0.9rem;" onchange="this.form.submit()">
           <option value="">-- Tất cả kỹ năng --</option>
           <option value="LISTENING" {% if skill == 'LISTENING' %}selected{% endif %}>Listening</option>
           <option value="READING" {% if skill == 'READING' %}selected{% endif %}>Reading</option>
@@ -65,68 +131,82 @@
           <option value="SPEAKING" {% if skill == 'SPEAKING' %}selected{% endif %}>Speaking</option>
         </select>
       </div>
+      <div class="col-md-2 d-flex align-items-end">
+        <a href="{{ url_for('exams.exam_list') }}" class="btn btn-light border w-100 fw-semibold text-secondary d-inline-flex align-items-center justify-content-center gap-1" style="font-size: 0.88rem; height: 38px;">
+          <i class="ph-bold ph-arrow-counter-clockwise"></i>
+          <span>Đặt lại</span>
+        </a>
+      </div>
     </form>
   </div>
-</div>
 
-<div class="row g-4 mb-5">
-  {% for exam in exams %}
-  <div class="col-md-6 col-lg-4">
-    <div class="card h-100 shadow-sm border rounded-4 bg-white">
-      <div class="card-body p-4 d-flex flex-column">
-        <div class="d-flex gap-2 mb-2">
-          <span class="badge bg-primary w-auto align-self-start">{{ exam.category }}</span>
-          {% if 'reading' in exam.title.lower() %}
-            <span class="badge bg-info bg-opacity-10 text-info w-auto align-self-start">Reading</span>
-          {% elif 'listening' in exam.title.lower() %}
-            <span class="badge bg-success bg-opacity-10 text-success w-auto align-self-start">Listening</span>
-          {% elif 'writing' in exam.title.lower() %}
-            <span class="badge bg-warning bg-opacity-10 text-warning w-auto align-self-start">Writing</span>
-          {% elif 'speaking' in exam.title.lower() %}
-            <span class="badge bg-danger bg-opacity-10 text-danger w-auto align-self-start">Speaking</span>
-          {% endif %}
+  <!-- ZONE 4: EXAM CARDS GRID -->
+  <div class="row g-4 mb-5">
+    {% for exam in exams %}
+    <div class="col-md-6 col-lg-4">
+      <div class="card card-modern p-4 h-100 d-flex flex-column justify-content-between position-relative transition-hover">
+        <div>
+          <div class="d-flex gap-1.5 flex-wrap mb-2.5">
+            <span class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill px-2.5 py-1 fw-bold" style="font-size: 0.72rem;">{{ exam.category }}</span>
+            {% if 'reading' in exam.title.lower() %}
+              <span class="badge bg-info-subtle text-info border border-info-subtle rounded-pill px-2.5 py-1 fw-semibold" style="font-size: 0.72rem;">Reading</span>
+            {% elif 'listening' in exam.title.lower() %}
+              <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-2.5 py-1 fw-semibold" style="font-size: 0.72rem;">Listening</span>
+            {% elif 'writing' in exam.title.lower() %}
+              <span class="badge bg-warning-subtle text-warning border border-warning-subtle rounded-pill px-2.5 py-1 fw-semibold" style="font-size: 0.72rem;">Writing</span>
+            {% elif 'speaking' in exam.title.lower() %}
+              <span class="badge bg-danger-subtle text-danger border border-danger-subtle rounded-pill px-2.5 py-1 fw-semibold" style="font-size: 0.72rem;">Speaking</span>
+            {% endif %}
+          </div>
+          <h5 class="fw-bold text-dark mb-2" style="font-size: 1.05rem; line-height: 1.4;">{{ exam.title }}</h5>
+          <p class="text-secondary small mb-3 d-flex align-items-center gap-1.5">
+            <i class="ph-bold ph-clock"></i>
+            <span>Thời gian làm bài: <strong>{{ exam.duration }} phút</strong></span>
+          </p>
         </div>
-        <h5 class="card-title fw-bold">{{ exam.title }}</h5>
-        <p class="card-text text-muted small mb-3">Thời gian: {{ exam.duration }} phút</p>
         
-        <div class="mt-auto">
+        <div class="mt-auto pt-3 border-top" style="border-color: var(--border-light) !important;">
           {% if exam.id in best_scores %}
-            <div class="alert alert-success py-2 mb-3 text-center">
+            <div class="alert alert-success py-1.5 px-3 mb-3 text-center rounded-pill small fw-semibold">
               Điểm cao nhất: <strong>{{ best_scores[exam.id] }}</strong>
             </div>
           {% endif %}
           
-          <form action="{{ url_for('exams.start_exam', exam_id=exam.id) }}" method="post" class="d-flex gap-2">
+          <form action="{{ url_for('exams.start_exam', exam_id=exam.id) }}" method="post" class="m-0">
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-            <button type="submit" name="mode" value="real" class="btn btn-primary flex-fill">Thi thử</button>
+            <button type="submit" name="mode" value="real" class="btn btn-primary w-100 rounded-pill fw-bold py-2 shadow-xs d-inline-flex align-items-center justify-content-center gap-1.5">
+              <i class="ph-bold ph-play"></i>
+              <span>Bắt đầu thi thử</span>
+            </button>
           </form>
         </div>
       </div>
     </div>
+    {% else %}
+    <div class="col-12 text-center py-5">
+      <div class="card-modern p-5 text-muted">
+        <i class="ph-bold ph-magnifying-glass fs-1 opacity-50 mb-2"></i>
+        <p class="mb-0 fw-semibold">Chưa có đề thi nào phù hợp với bộ lọc.</p>
+      </div>
+    </div>
+    {% endfor %}
   </div>
-  {% else %}
-  <div class="col-12 text-center py-5">
-    <p class="text-muted mb-0">Chưa có đề thi nào phù hợp với bộ lọc.</p>
-  </div>
-  {% endfor %}
-</div>
 
 <!-- History panel -->
-<div class="card border-0 shadow-sm rounded-4 mt-5 mb-4" style="background-color: #f8fafc;">
-    <div class="card-body p-4">
-        <h5 class="fw-bold mb-4 d-flex align-items-center gap-2">
-            <div class="bg-purple-subtle text-purple rounded p-2 d-flex align-items-center justify-content-center" style="width: 32px; height: 32px;">
-                <i class="ph ph-calendar-blank"></i>
-            </div>
-            Lịch sử làm bài
-        </h5>
-        
-        <div class="bg-white rounded-4 p-4 border" style="border-color: #e2e8f0 !important;">
-            {% if not history %}
-            <div class="border border-dashed rounded-4 p-5 text-center text-muted" style="border-width: 2px; border-style: dashed; border-color: #cbd5e1;">
-                <span class="small fw-bold opacity-75">Chưa có lịch sử làm bài. Hãy chọn một đề thi và bắt đầu nhé!</span>
-            </div>
-            {% else %}
+<div class="card card-modern p-4 mt-5 mb-4">
+    <div class="d-flex align-items-center gap-2 mb-4 pb-2 border-bottom">
+        <div class="rounded-3 d-inline-flex align-items-center justify-content-center bg-primary-subtle text-primary" style="width: 34px; height: 34px; font-size: 1.1rem; flex-shrink: 0;">
+            <i class="ph-bold ph-clock-counter-clockwise"></i>
+        </div>
+        <h5 class="fw-bold mb-0 text-dark">Lịch sử làm bài gần đây</h5>
+    </div>
+    
+    <div>
+        {% if not history %}
+        <div class="border border-dashed rounded-4 p-5 text-center text-muted" style="border-width: 2px; border-style: dashed; border-color: var(--border-light);">
+            <span class="small fw-bold opacity-75">Chưa có lịch sử làm bài. Hãy chọn một đề thi và bắt đầu nhé!</span>
+        </div>
+        {% else %}
             <div class="table-responsive">
                 <table class="table table-borderless table-hover align-middle mb-0">
                     <thead class="text-muted small fw-bold border-bottom">

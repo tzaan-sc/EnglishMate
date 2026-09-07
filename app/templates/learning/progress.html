@@ -4,87 +4,89 @@
 {% block content %}
 <div class="container-fluid max-w-7xl py-4">
 
-  <!-- Header Banner -->
-  <div class="card border-0 shadow-sm rounded-4 bg-white p-4 p-md-5 mb-4">
-    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
+  <!-- ZONE 1: HERO & STATS BANNER -->
+  <div class="hero-brand-card p-4 p-lg-4 mb-4 shadow-sm">
+    <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3 mb-3 position-relative" style="z-index: 2;">
       <div>
-        <span class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill px-3 py-1 mb-2 font-semibold">
-          <i class="ph-bold ph-chart-line-up me-1"></i> TIẾN ĐỘ HỌC TẬP CÁ NHÂN
-        </span>
-        <h2 class="fw-bold text-dark mb-1">Mỗi con số là một bước tiến</h2>
-        <p class="text-secondary small mb-0">Nhìn lại những gì bạn đã chinh phục và tiếp tục duy trì nhịp học mỗi ngày.</p>
+        <div class="d-inline-flex align-items-center gap-1.5 px-2.5 py-0.5 rounded-pill mb-2" style="background: rgba(255, 255, 255, 0.18); backdrop-filter: blur(8px); font-size: 0.74rem; font-weight: 700; color: #a7f3d0;">
+          <i class="ph-bold ph-chart-line-up"></i>
+          <span>TIẾN ĐỘ HỌC TẬP CÁ NHÂN</span>
+        </div>
+        <h3 class="fw-bold text-white mb-1 d-flex align-items-center gap-2" style="letter-spacing: -0.01em;">
+          Mỗi con số là một bước tiến
+        </h3>
+        <p class="text-white-50 mb-0 small">
+          Nhìn lại những gì bạn đã chinh phục và tiếp tục duy trì nhịp học mỗi ngày.
+        </p>
       </div>
-      <div class="d-flex gap-2">
-        <a href="{{ url_for('learning.lessons') }}" class="btn btn-primary rounded-pill px-4 py-2 fw-bold shadow-xs d-inline-flex align-items-center gap-2">
-          <i class="ph-bold ph-graduation-cap"></i>
+
+      <!-- Action Buttons Hub -->
+      <div class="d-flex gap-2 align-items-center flex-wrap">
+        <a href="{{ url_for('learning.lessons') }}" class="btn btn-light rounded-pill px-3.5 py-1.5 fw-bold text-primary shadow-xs d-inline-flex align-items-center gap-1.5" style="font-size: 0.84rem;">
+          <i class="ph-bold ph-graduation-cap fs-6"></i>
           <span>Học bài mới</span>
         </a>
-        <a href="{{ url_for('learning.vocabulary') }}" class="btn btn-light border rounded-pill px-3.5 py-2 fw-semibold text-secondary d-inline-flex align-items-center gap-2">
-          <i class="ph-bold ph-book-open"></i>
+        <a href="{{ url_for('learning.vocabulary') }}" class="btn btn-outline-light rounded-pill px-3.5 py-1.5 fw-semibold d-inline-flex align-items-center gap-1.5" style="font-size: 0.84rem; background: rgba(255,255,255,0.06); border-color: rgba(255,255,255,0.25);">
+          <i class="ph-bold ph-book-open fs-6"></i>
           <span>Từ vựng</span>
         </a>
       </div>
     </div>
-  </div>
 
-  <!-- 5 Stat Cards Grid -->
-  <div class="row g-3 mb-4">
-    <div class="col-6 col-lg">
-      <div class="card border-0 shadow-xs rounded-4 p-3.5 bg-white text-center h-100">
-        <div class="rounded-circle bg-success-subtle text-success mx-auto d-flex align-items-center justify-content-center mb-2" style="width: 44px; height: 44px;">
-          <i class="ph-bold ph-check-circle fs-5"></i>
+    <!-- 4 Clean Stat Pills -->
+    <div class="row g-3 g-lg-4 pt-4 mt-3 border-top" style="border-color: rgba(255, 255, 255, 0.15) !important; position: relative; z-index: 2;">
+      <div class="col-6 col-md-3">
+        <div class="d-flex align-items-center gap-3 p-3 px-3.5 rounded-4" style="background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.12); backdrop-filter: blur(4px);">
+          <div class="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0" style="width: 40px; height: 40px; background: rgba(255, 255, 255, 0.2);">
+            <i class="ph-bold ph-check-circle text-white fs-5"></i>
+          </div>
+          <div>
+            <span class="text-white-50 d-block" style="font-size: 0.74rem;">Bài đã xong</span>
+            <strong class="text-white fs-6">{{ lessons_done|length }} bài học</strong>
+          </div>
         </div>
-        <h3 class="fw-bold text-dark mb-0">{{ lessons_done|length }}</h3>
-        <span class="text-secondary small">Bài đã hoàn thành</span>
       </div>
-    </div>
-
-    <div class="col-6 col-lg">
-      <div class="card border-0 shadow-xs rounded-4 p-3.5 bg-white text-center h-100">
-        <div class="rounded-circle bg-primary-subtle text-primary mx-auto d-flex align-items-center justify-content-center mb-2" style="width: 44px; height: 44px;">
-          <i class="ph-bold ph-translate fs-5"></i>
+      <div class="col-6 col-md-3">
+        <div class="d-flex align-items-center gap-3 p-3 px-3.5 rounded-4" style="background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.12); backdrop-filter: blur(4px);">
+          <div class="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0" style="width: 40px; height: 40px; background: rgba(255, 255, 255, 0.2);">
+            <i class="ph-bold ph-translate fs-5" style="color: #6ee7b7;"></i>
+          </div>
+          <div>
+            <span class="text-white-50 d-block" style="font-size: 0.74rem;">Từ vựng đã học</span>
+            <strong class="text-white fs-6">{{ words|length }} từ</strong>
+          </div>
         </div>
-        <h3 class="fw-bold text-dark mb-0">{{ words|length }}</h3>
-        <span class="text-secondary small">Từ vựng đã học</span>
       </div>
-    </div>
-
-    <div class="col-6 col-lg">
-      <div class="card border-0 shadow-xs rounded-4 p-3.5 bg-white text-center h-100">
-        <div class="rounded-circle bg-info-subtle text-info mx-auto d-flex align-items-center justify-content-center mb-2" style="width: 44px; height: 44px;">
-          <i class="ph-bold ph-check-square fs-5"></i>
+      <div class="col-6 col-md-3">
+        <div class="d-flex align-items-center gap-3 p-3 px-3.5 rounded-4" style="background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.12); backdrop-filter: blur(4px);">
+          <div class="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0" style="width: 40px; height: 40px; background: rgba(255, 255, 255, 0.2);">
+            <i class="ph-bold ph-trophy fs-5" style="color: #fde047;"></i>
+          </div>
+          <div>
+            <span class="text-white-50 d-block" style="font-size: 0.74rem;">Điểm cao nhất</span>
+            <strong class="text-white fs-6">{{ best }}%</strong>
+          </div>
         </div>
-        <h3 class="fw-bold text-dark mb-0">{{ attempts|length }}</h3>
-        <span class="text-secondary small">Lượt làm quiz</span>
       </div>
-    </div>
-
-    <div class="col-6 col-lg">
-      <div class="card border-0 shadow-xs rounded-4 p-3.5 bg-white text-center h-100">
-        <div class="rounded-circle bg-warning-subtle text-warning mx-auto d-flex align-items-center justify-content-center mb-2" style="width: 44px; height: 44px;">
-          <i class="ph-bold ph-star fs-5"></i>
+      <div class="col-6 col-md-3">
+        <div class="d-flex align-items-center gap-3 p-3 px-3.5 rounded-4" style="background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.12); backdrop-filter: blur(4px);">
+          <div class="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0" style="width: 40px; height: 40px; background: rgba(255, 255, 255, 0.2);">
+            <i class="ph-bold ph-chart-donut fs-5" style="color: #93c5fd;"></i>
+          </div>
+          <div>
+            <span class="text-white-50 d-block" style="font-size: 0.74rem;">Điểm trung bình</span>
+            <strong class="text-white fs-6">{{ average }}% ({{ attempts|length }} quiz)</strong>
+          </div>
         </div>
-        <h3 class="fw-bold text-dark mb-0">{{ best }}%</h3>
-        <span class="text-secondary small">Điểm cao nhất</span>
-      </div>
-    </div>
-
-    <div class="col-12 col-sm-6 col-lg">
-      <div class="card border-0 shadow-xs rounded-4 p-3.5 bg-white text-center h-100">
-        <div class="rounded-circle bg-purple-subtle text-purple mx-auto d-flex align-items-center justify-content-center mb-2" style="width: 44px; height: 44px; background: #f3e8ff; color: #9333ea;">
-          <i class="ph-bold ph-chart-donut fs-5"></i>
-        </div>
-        <h3 class="fw-bold text-dark mb-0">{{ average }}%</h3>
-        <span class="text-secondary small">Điểm trung bình</span>
       </div>
     </div>
   </div>
 
   <!-- Content Sections: Completed Lessons & Quiz Attempts -->
-  <div class="row g-4">
+  <div class="row g-4 mb-5">
     <!-- Completed Lessons Timeline -->
     <div class="col-lg-5">
-      <div class="card border-0 shadow-sm rounded-4 p-4 bg-white h-100">
+      <div class="card card-modern p-4 h-100">
         <div class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom">
           <h5 class="fw-bold text-dark mb-0 d-flex align-items-center gap-2">
             <i class="ph-bold ph-book-bookmark text-primary"></i> Bài học đã hoàn thành
@@ -123,7 +125,7 @@
 
     <!-- Quiz History -->
     <div class="col-lg-7">
-      <div class="card border-0 shadow-sm rounded-4 p-4 bg-white h-100">
+      <div class="card card-modern p-4 h-100">
         <div class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom">
           <h5 class="fw-bold text-dark mb-0 d-flex align-items-center gap-2">
             <i class="ph-bold ph-check-circle text-success"></i> Lịch sử Quiz & Kiểm tra

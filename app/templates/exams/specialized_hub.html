@@ -5,46 +5,102 @@
 <div class="container-fluid max-w-7xl py-4">
 
   <!-- Sub-navigation Tabs -->
-  <div class="d-flex flex-wrap gap-2 mb-4">
-    <a href="{{ url_for('exams.exam_list') }}" class="btn btn-light border rounded-pill px-3.5 py-1.5 fw-semibold text-secondary d-inline-flex align-items-center gap-1.5" style="font-size: 0.85rem;">
+  <div class="d-flex flex-wrap gap-2 mb-4 align-items-center">
+    <a href="{{ url_for('exams.exam_list') }}" class="btn btn-light border rounded-pill px-3.5 py-1.5 fw-semibold text-secondary d-inline-flex align-items-center gap-1.5" style="font-size: 0.82rem;">
       <i class="ph-bold ph-files"></i>
       <span>Tất cả đề thi</span>
     </a>
-    <a href="{{ url_for('exams.toeic') }}" class="btn btn-light border rounded-pill px-3.5 py-1.5 fw-semibold text-secondary d-inline-flex align-items-center gap-1.5" style="font-size: 0.85rem;">
+    <a href="{{ url_for('exams.toeic') }}" class="btn btn-light border rounded-pill px-3.5 py-1.5 fw-semibold text-secondary d-inline-flex align-items-center gap-1.5" style="font-size: 0.82rem;">
       <i class="ph-bold ph-certificate"></i>
       <span>Luyện thi TOEIC</span>
     </a>
-    <a href="{{ url_for('exams.specialized_exams_hub') }}" class="btn btn-primary rounded-pill px-3.5 py-1.5 fw-bold shadow-xs d-inline-flex align-items-center gap-1.5" style="font-size: 0.85rem;">
+    <a href="{{ url_for('exams.specialized_exams_hub') }}" class="btn btn-primary rounded-pill px-3.5 py-1.5 fw-bold shadow-xs d-inline-flex align-items-center gap-1.5" style="font-size: 0.82rem;">
       <i class="ph-bold ph-graduation-cap"></i>
       <span>Đề thi chuyên biệt & Xếp lớp</span>
     </a>
-    <a href="{{ url_for('exams.test_history') }}" class="btn btn-light border rounded-pill px-3.5 py-1.5 fw-semibold text-secondary d-inline-flex align-items-center gap-1.5" style="font-size: 0.85rem;">
+    <a href="{{ url_for('exams.test_history') }}" class="btn btn-light border rounded-pill px-3.5 py-1.5 fw-semibold text-secondary d-inline-flex align-items-center gap-1.5" style="font-size: 0.82rem;">
       <i class="ph-bold ph-clock-counter-clockwise"></i>
       <span>Lịch sử thi & So sánh</span>
     </a>
-    <a href="{{ url_for('exams.exam_settings') }}" class="btn btn-light border rounded-pill px-3.5 py-1.5 fw-semibold text-secondary d-inline-flex align-items-center gap-1.5" style="font-size: 0.85rem;">
+    <a href="{{ url_for('exams.exam_settings') }}" class="btn btn-light border rounded-pill px-3.5 py-1.5 fw-semibold text-secondary d-inline-flex align-items-center gap-1.5" style="font-size: 0.82rem;">
       <i class="ph-bold ph-gear"></i>
       <span>Cài đặt đề thi</span>
     </a>
   </div>
 
-  <!-- Hero Header Banner -->
-  <div class="card border-0 shadow-sm rounded-4 bg-primary text-white p-4 p-md-5 mb-4 position-relative overflow-hidden">
-    <div class="row align-items-center relative-1">
-      <div class="col-lg-8">
-        <span class="badge bg-white text-primary rounded-pill px-3 py-1.5 fw-bold mb-3">
-          🎓 KHỦNG LONG LUYỆN THI · SPECIALIZED EXAMS
-        </span>
-        <h2 class="fw-bold mb-2">Trung Tâm Đề Thi Chuyên Biệt</h2>
-        <p class="text-white-50 mb-4 lh-lg">Mô phỏng áp lực thi thật với TOEIC, IELTS, TOEFL, bài kiểm tra xếp lớp Placement Test, đánh giá tiến độ định kỳ và các phiên luyện tập giới hạn thời gian thực tế.</p>
-        
-        <div class="d-flex flex-wrap gap-2">
-          <a href="{{ url_for('exams.specialized_placement_start') }}" class="btn btn-light rounded-pill px-4 fw-bold text-primary shadow-xs">
-            🎯 Test Xếp Lớp Ngay
-          </a>
-          <a href="{{ url_for('exams.specialized_timed_practice') }}" class="btn btn-outline-light rounded-pill px-4 fw-bold">
-            ⏱️ Phiên Luyện Tập Thời Gian
-          </a>
+  <!-- ZONE 1: HERO & STATS BANNER -->
+  <div class="hero-brand-card p-4 p-lg-4 mb-4 shadow-sm">
+    <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3 mb-3 position-relative" style="z-index: 2;">
+      <div>
+        <div class="d-inline-flex align-items-center gap-1.5 px-2.5 py-0.5 rounded-pill mb-2" style="background: rgba(255, 255, 255, 0.18); backdrop-filter: blur(8px); font-size: 0.74rem; font-weight: 700; color: #a7f3d0;">
+          <i class="ph-bold ph-graduation-cap"></i>
+          <span>SPECIALIZED EXAMS & ASSESSMENT HUB</span>
+        </div>
+        <h3 class="fw-bold text-white mb-1 d-flex align-items-center gap-2" style="letter-spacing: -0.01em;">
+          Trung Tâm Đề Thi Chuyên Biệt
+        </h3>
+        <p class="text-white-50 mb-0 small">
+          Mô phỏng áp lực thi thật với TOEIC, IELTS, TOEFL, bài kiểm tra xếp lớp Placement Test và đánh giá tiến độ định kỳ.
+        </p>
+      </div>
+
+      <!-- Action Buttons Hub -->
+      <div class="d-flex gap-2 align-items-center flex-wrap">
+        <a href="{{ url_for('exams.specialized_placement_start') }}" class="btn btn-light rounded-pill px-3.5 py-1.5 fw-bold text-primary shadow-xs d-inline-flex align-items-center gap-1.5" style="font-size: 0.84rem;">
+          <i class="ph-bold ph-crosshair fs-6"></i>
+          <span>Test xếp lớp ngay</span>
+        </a>
+        <a href="{{ url_for('exams.specialized_timed_practice') }}" class="btn btn-outline-light rounded-pill px-3.5 py-1.5 fw-semibold d-inline-flex align-items-center gap-1.5" style="font-size: 0.84rem; background: rgba(255,255,255,0.06); border-color: rgba(255,255,255,0.25);">
+          <i class="ph-bold ph-timer fs-6"></i>
+          <span>Luyện tập tính giờ</span>
+        </a>
+      </div>
+    </div>
+
+    <!-- 4 Clean Stat Pills -->
+    <div class="row g-3 g-lg-4 pt-4 mt-3 border-top" style="border-color: rgba(255, 255, 255, 0.15) !important; position: relative; z-index: 2;">
+      <div class="col-6 col-md-3">
+        <div class="d-flex align-items-center gap-3 p-3 px-3.5 rounded-4" style="background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.12); backdrop-filter: blur(4px);">
+          <div class="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0" style="width: 40px; height: 40px; background: rgba(255, 255, 255, 0.2);">
+            <i class="ph-bold ph-squares-four text-white fs-5"></i>
+          </div>
+          <div>
+            <span class="text-white-50 d-block" style="font-size: 0.74rem;">Chuyên đề</span>
+            <strong class="text-white fs-6">{{ categories|length }} nhóm đề</strong>
+          </div>
+        </div>
+      </div>
+      <div class="col-6 col-md-3">
+        <div class="d-flex align-items-center gap-3 p-3 px-3.5 rounded-4" style="background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.12); backdrop-filter: blur(4px);">
+          <div class="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0" style="width: 40px; height: 40px; background: rgba(255, 255, 255, 0.2);">
+            <i class="ph-bold ph-files fs-5" style="color: #6ee7b7;"></i>
+          </div>
+          <div>
+            <span class="text-white-50 d-block" style="font-size: 0.74rem;">Đề thi hiện có</span>
+            <strong class="text-white fs-6">{{ exams|length }} bài thi</strong>
+          </div>
+        </div>
+      </div>
+      <div class="col-6 col-md-3">
+        <div class="d-flex align-items-center gap-3 p-3 px-3.5 rounded-4" style="background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.12); backdrop-filter: blur(4px);">
+          <div class="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0" style="width: 40px; height: 40px; background: rgba(255, 255, 255, 0.2);">
+            <i class="ph-bold ph-target fs-5" style="color: #93c5fd;"></i>
+          </div>
+          <div>
+            <span class="text-white-50 d-block" style="font-size: 0.74rem;">Xếp lớp & Đánh giá</span>
+            <strong class="text-white fs-6">Sẵn sàng</strong>
+          </div>
+        </div>
+      </div>
+      <div class="col-6 col-md-3">
+        <div class="d-flex align-items-center gap-3 p-3 px-3.5 rounded-4" style="background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.12); backdrop-filter: blur(4px);">
+          <div class="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0" style="width: 40px; height: 40px; background: rgba(255, 255, 255, 0.2);">
+            <i class="ph-bold ph-clock-countdown fs-5" style="color: #fde047;"></i>
+          </div>
+          <div>
+            <span class="text-white-50 d-block" style="font-size: 0.74rem;">Mô phỏng áp lực</span>
+            <strong class="text-white fs-6">Thời gian thực</strong>
+          </div>
         </div>
       </div>
     </div>
@@ -54,7 +110,7 @@
   <div class="row g-3 g-lg-4 mb-5">
     {% for cat in categories %}
     <div class="col-lg-3 col-md-4 col-sm-6">
-      <div class="card border-0 shadow-xs rounded-4 p-3.5 p-lg-4 bg-white h-100 d-flex flex-column justify-content-between {{ 'border-2 border-primary' if active_cat==cat.id }}">
+      <div class="card card-modern p-4 h-100 d-flex flex-column justify-content-between position-relative transition-hover {{ 'border-2 border-primary' if active_cat==cat.id }}">
         <div>
           <div class="d-flex justify-content-between align-items-start mb-2.5">
             <span class="fs-2">{{ cat.icon }}</span>
@@ -67,11 +123,11 @@
 
         <div>
           {% if cat.id == 'Placement' %}
-          <a href="{{ url_for('exams.specialized_placement_start') }}" class="btn btn-primary btn-sm rounded-pill w-100 fw-bold py-2">Thi Ngay 🎯</a>
+          <a href="{{ url_for('exams.specialized_placement_start') }}" class="btn btn-primary btn-sm rounded-pill w-100 fw-bold py-2 shadow-xs">Thi Ngay 🎯</a>
           {% elif cat.id == 'Progress' %}
-          <a href="{{ url_for('exams.specialized_progress_start') }}" class="btn btn-info text-white btn-sm rounded-pill w-100 fw-bold py-2">Đánh Giá 📈</a>
+          <a href="{{ url_for('exams.specialized_progress_start') }}" class="btn btn-info text-white btn-sm rounded-pill w-100 fw-bold py-2 shadow-xs">Đánh Giá 📈</a>
           {% elif cat.id == 'Timed' %}
-          <a href="{{ url_for('exams.specialized_timed_practice') }}" class="btn btn-warning text-dark btn-sm rounded-pill w-100 fw-bold py-2">Cài Đặt ⏱️</a>
+          <a href="{{ url_for('exams.specialized_timed_practice') }}" class="btn btn-warning text-dark btn-sm rounded-pill w-100 fw-bold py-2 shadow-xs">Cài Đặt ⏱️</a>
           {% else %}
           <a href="{{ url_for('exams.specialized_exams_hub', category=cat.id) }}" class="btn btn-outline-primary btn-sm rounded-pill w-100 fw-bold py-2">Xem Danh Sách</a>
           {% endif %}
@@ -82,17 +138,21 @@
   </div>
 
   <!-- Filter & Search Toolbar -->
-  <div class="card border-0 shadow-sm rounded-4 p-4 bg-white mb-4">
+  <div class="card-modern p-4 mb-5">
     <form method="GET" action="{{ url_for('exams.specialized_exams_hub') }}" class="row g-3 align-items-center">
       <div class="col-md-6">
+        <label class="form-label small fw-bold text-muted mb-1">Tìm kiếm đề thi chuyên biệt</label>
         <div class="input-group">
-          <span class="input-group-text bg-light border-end-0 rounded-start-pill ps-3">🔍</span>
-          <input type="text" name="q" class="form-control bg-light border-start-0 rounded-end-pill ps-0" placeholder="Tìm kiếm đề thi chuyên biệt..." value="{{ search_query }}">
+          <span class="input-group-text bg-white border-end-0 text-muted" style="border-color: var(--border-light);">
+            <i class="ph-bold ph-magnifying-glass fs-5"></i>
+          </span>
+          <input type="text" name="q" class="form-control border-start-0 ps-0 shadow-none" placeholder="Nhập từ khóa tìm kiếm..." value="{{ search_query }}" style="border-color: var(--border-light); font-size: 0.9rem;">
         </div>
       </div>
 
       <div class="col-md-4">
-        <select name="category" class="form-select rounded-pill" onchange="this.form.submit()">
+        <label class="form-label small fw-bold text-muted mb-1">Danh mục chuyên biệt</label>
+        <select name="category" class="form-select border shadow-none" style="border-color: var(--border-light); font-size: 0.9rem;" onchange="this.form.submit()">
           <option value="">-- Tất cả danh mục chuyên biệt --</option>
           <option value="TOEIC" {{ 'selected' if active_cat=='TOEIC' }}>TOEIC Simulation</option>
           <option value="IELTS" {{ 'selected' if active_cat=='IELTS' }}>IELTS Practice</option>
@@ -104,35 +164,46 @@
         </select>
       </div>
 
-      <div class="col-md-2">
-        <a href="{{ url_for('exams.specialized_exams_hub') }}" class="btn btn-light rounded-pill w-100 text-secondary">Làm mới</a>
+      <div class="col-md-2 d-flex align-items-end">
+        <a href="{{ url_for('exams.specialized_exams_hub') }}" class="btn btn-light border w-100 fw-semibold text-secondary d-inline-flex align-items-center justify-content-center gap-1" style="font-size: 0.88rem; height: 38px;">
+          <i class="ph-bold ph-arrow-counter-clockwise"></i>
+          <span>Đặt lại</span>
+        </a>
       </div>
     </form>
   </div>
 
   <!-- Exams List Section -->
-  <h5 class="fw-bold text-dark mb-3">Danh Sách Đề Thi Chuyên Biệt ({{ exams|length }} bài thi)</h5>
+  <div class="d-flex align-items-center justify-content-between mb-4">
+    <h5 class="fw-bold text-dark mb-0">Danh Sách Đề Thi Chuyên Biệt ({{ exams|length }} bài thi)</h5>
+  </div>
 
-  <div class="row g-3">
+  <div class="row g-4 mb-5">
     {% for e in exams %}
     <div class="col-md-6 col-lg-4">
-      <div class="card border-0 shadow-sm rounded-4 p-4 bg-white h-100 d-flex flex-column">
-        <div class="d-flex justify-content-between align-items-center mb-2">
-          <span class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill px-3 py-1 font-semibold">{{ e.category }}</span>
-          <span class="text-muted small">⏱️ {{ e.duration_minutes or e.duration or 15 }} phút</span>
+      <div class="card card-modern p-4 h-100 d-flex flex-column justify-content-between position-relative transition-hover">
+        <div>
+          <div class="d-flex justify-content-between align-items-center mb-2.5">
+            <span class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill px-2.5 py-1 fw-bold" style="font-size: 0.72rem;">{{ e.category }}</span>
+            <span class="text-muted small d-flex align-items-center gap-1">
+              <i class="ph-bold ph-clock"></i>
+              <span>{{ e.duration_minutes or e.duration or 15 }} phút</span>
+            </span>
+          </div>
+
+          <h6 class="fw-bold text-dark lh-base mb-2" style="font-size: 1.05rem;">{{ e.title }}</h6>
         </div>
 
-        <h6 class="fw-bold text-dark lh-base mb-2 mb-grow">{{ e.title }}</h6>
-
-        <div class="d-flex justify-content-between align-items-center mt-3 pt-3 border-top">
+        <div class="d-flex justify-content-between align-items-center mt-3 pt-3 border-top" style="border-color: var(--border-light) !important;">
           <span class="small text-secondary">
             🎯 {{ e.difficulty or 'Medium' }} · ❓ {{ e.question_count or 10 }} câu
           </span>
 
-          <form action="{{ url_for('exams.start_exam', exam_id=e.id) }}" method="POST" class="d-inline">
+          <form action="{{ url_for('exams.start_exam', exam_id=e.id) }}" method="POST" class="d-inline m-0">
             {{ form.hidden_tag() }}
-            <button type="submit" class="btn btn-primary rounded-pill px-3 py-1 font-semibold shadow-xs">
-              Bắt Đầu Thi →
+            <button type="submit" class="btn btn-primary rounded-pill px-3 py-1.5 fw-bold shadow-xs d-inline-flex align-items-center gap-1" style="font-size: 0.82rem;">
+              <span>Bắt Đầu Thi</span>
+              <i class="ph-bold ph-arrow-right"></i>
             </button>
           </form>
         </div>
