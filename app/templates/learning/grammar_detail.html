@@ -42,31 +42,31 @@
   </div>
 
   <!-- SECTION 1: GRAMMAR RULE & FORMULA EXPLANATION -->
-  <div class="card-modern p-4 p-md-4 mb-4">
-    <div class="d-flex align-items-center gap-2.5 mb-3.5 pb-2 border-bottom border-light">
-      <span class="rounded-circle d-flex align-items-center justify-content-center" style="width: 32px; height: 32px; background-color: var(--primary-subtle); color: var(--primary);">
+  <div class="card-modern p-4 p-md-5 mb-4">
+    <div class="d-flex align-items-center gap-3 mb-4 pb-3 border-bottom border-light">
+      <span class="rounded-circle d-flex align-items-center justify-content-center" style="width: 36px; height: 36px; background-color: var(--primary-subtle); color: var(--primary);">
         <i class="ph-bold ph-book-open fs-5"></i>
       </span>
-      <h5 class="fw-bold text-dark mb-0" style="font-size: 1.15rem;">1. Quy tắc & Công thức Ngữ pháp</h5>
+      <h5 class="fw-bold text-dark mb-0" style="font-size: 1.2rem;">1. Quy tắc & Công thức Ngữ pháp</h5>
     </div>
-    <div class="prose text-dark lh-lg" style="font-size: 1rem; line-height: 1.8; color: #334155; white-space: pre-line;">{{ topic.rule_explanation }}</div>
+    <div class="prose text-dark lh-lg" style="font-size: 1rem; line-height: 1.85; color: #334155; white-space: pre-line;">{{ topic.rule_explanation }}</div>
   </div>
 
   <!-- SECTION 2: GRAMMAR EXAMPLES WITH EXPLANATIONS -->
-  <div class="card-modern p-4 p-md-4 mb-4">
-    <div class="d-flex align-items-center gap-2.5 mb-3.5 pb-2 border-bottom border-light">
-      <span class="rounded-circle d-flex align-items-center justify-content-center" style="width: 32px; height: 32px; background-color: var(--success-subtle); color: var(--success);">
+  <div class="card-modern p-4 p-md-5 mb-4">
+    <div class="d-flex align-items-center gap-3 mb-4 pb-3 border-bottom border-light">
+      <span class="rounded-circle d-flex align-items-center justify-content-center" style="width: 36px; height: 36px; background-color: var(--success-subtle); color: var(--success);">
         <i class="ph-bold ph-chat-circle-text fs-5"></i>
       </span>
-      <h5 class="fw-bold text-dark mb-0" style="font-size: 1.15rem;">2. Ví dụ minh họa & Giải thích chi tiết</h5>
+      <h5 class="fw-bold text-dark mb-0" style="font-size: 1.2rem;">2. Ví dụ minh họa & Giải thích chi tiết</h5>
     </div>
     <div class="d-flex flex-column gap-3">
       {% for line in topic.examples_json.splitlines() if line.strip() %}
       {% set parts = line.split('|') %}
       <div class="p-3.5 bg-light-subtle border-start border-4 border-success rounded-3 shadow-2xs">
-        <div class="fw-bold text-dark mb-1" style="font-size: 0.95rem;">🇬🇧 {{ parts[0] }}</div>
+        <div class="fw-bold text-dark mb-1" style="font-size: 0.96rem;">🇬🇧 {{ parts[0] }}</div>
         {% if parts|length > 1 %}
-        <div class="text-secondary small" style="font-size: 0.88rem; line-height: 1.5;">🇻🇳 {{ parts[1] }}</div>
+        <div class="text-secondary small" style="font-size: 0.88rem; line-height: 1.55;">🇻🇳 {{ parts[1] }}</div>
         {% endif %}
       </div>
       {% endfor %}
@@ -75,14 +75,14 @@
 
   <!-- SECTION 3: COMMON MISTAKES ALERT BOX -->
   {% if topic.common_mistakes %}
-  <div class="card-modern p-4 p-md-4 mb-4 border-start border-4 border-danger">
-    <div class="d-flex align-items-center gap-2.5 mb-3">
-      <span class="rounded-circle d-flex align-items-center justify-content-center" style="width: 32px; height: 32px; background-color: #fee2e2; color: #ef4444;">
+  <div class="card-modern p-4 p-md-5 mb-4 border-start border-4 border-danger">
+    <div class="d-flex align-items-center gap-3 mb-3">
+      <span class="rounded-circle d-flex align-items-center justify-content-center" style="width: 36px; height: 36px; background-color: #fee2e2; color: #ef4444;">
         <i class="ph-bold ph-warning-circle fs-5"></i>
       </span>
-      <h5 class="fw-bold text-danger mb-0" style="font-size: 1.15rem;">3. Các Lỗi thường gặp</h5>
+      <h5 class="fw-bold text-danger mb-0" style="font-size: 1.2rem;">3. Các Lỗi thường gặp</h5>
     </div>
-    <div class="p-3.5 bg-danger-subtle text-danger-emphasis rounded-3" style="line-height: 1.7; font-size: 0.92rem; white-space: pre-line;">
+    <div class="p-3.5 bg-danger-subtle text-danger-emphasis rounded-3" style="line-height: 1.75; font-size: 0.94rem; white-space: pre-line;">
       {{ topic.common_mistakes }}
     </div>
   </div>
@@ -90,14 +90,14 @@
 
   <!-- SECTION 4: TIPS AND TRICKS CALLOUT BOX -->
   {% if topic.tips_tricks %}
-  <div class="card-modern p-4 p-md-4 mb-4 border-start border-4 border-warning">
-    <div class="d-flex align-items-center gap-2.5 mb-3">
-      <span class="rounded-circle d-flex align-items-center justify-content-center" style="width: 32px; height: 32px; background-color: #fef3c7; color: #d97706;">
+  <div class="card-modern p-4 p-md-5 mb-4 border-start border-4 border-warning">
+    <div class="d-flex align-items-center gap-3 mb-3">
+      <span class="rounded-circle d-flex align-items-center justify-content-center" style="width: 36px; height: 36px; background-color: #fef3c7; color: #d97706;">
         <i class="ph-bold ph-lightbulb fs-5"></i>
       </span>
-      <h5 class="fw-bold text-warning-emphasis mb-0" style="font-size: 1.15rem;">4. Mẹo ghi nhớ & Thủ thuật</h5>
+      <h5 class="fw-bold text-warning-emphasis mb-0" style="font-size: 1.2rem;">4. Mẹo ghi nhớ & Thủ thuật</h5>
     </div>
-    <div class="p-3.5 bg-warning-subtle text-warning-emphasis rounded-3" style="line-height: 1.7; font-size: 0.92rem; white-space: pre-line;">
+    <div class="p-3.5 bg-warning-subtle text-warning-emphasis rounded-3" style="line-height: 1.75; font-size: 0.94rem; white-space: pre-line;">
       {{ topic.tips_tricks }}
     </div>
   </div>

@@ -151,12 +151,12 @@
 
     {% if words %}
     <!-- 3-Column Clean Card Layout -->
-    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-2.5">
+    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-3">
       {% for word in words %}
       {% set is_learned = word.id in learned_ids %}
       {% set is_favorite = word.id in favorite_ids %}
       <div class="col">
-        <div class="p-3 bg-white rounded-3 border d-flex align-items-center justify-content-between gap-3 hover-bg-light transition-all"
+        <div class="p-3 bg-white rounded-4 border d-flex align-items-center justify-content-between gap-3 hover-bg-light transition-all shadow-2xs"
              style="cursor: pointer;"
              onclick="openWordDetail({{ word.id }})"
              id="word-card-{{ word.id }}">
@@ -164,23 +164,23 @@
           <!-- Left: Simple Status Circle -->
           <div class="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0" 
                id="word-status-ring-{{ word.id }}"
-               style="width: 32px; height: 32px; {% if is_learned %}background: #ecfdf5; color: #059669; border: 1.5px solid #10b981;{% else %}background: #f8fafc; color: #94a3b8; border: 1.5px dashed #cbd5e1;{% endif %}">
+               style="width: 34px; height: 34px; {% if is_learned %}background: #ecfdf5; color: #059669; border: 1.5px solid #10b981;{% else %}background: #f8fafc; color: #94a3b8; border: 1.5px dashed #cbd5e1;{% endif %}">
             {% if is_learned %}
-            <i class="ph-fill ph-check text-success" style="font-size: 0.9rem;"></i>
+            <i class="ph-fill ph-check text-success" style="font-size: 0.95rem;"></i>
             {% else %}
-            <i class="ph-bold ph-circle text-muted" style="font-size: 0.6rem;"></i>
+            <i class="ph-bold ph-circle text-muted" style="font-size: 0.65rem;"></i>
             {% endif %}
           </div>
 
           <!-- Middle: Word & Meaning -->
           <div class="flex-grow-1 overflow-hidden">
-            <div class="d-flex align-items-center gap-1.5">
+            <div class="d-flex align-items-center gap-2">
               <span class="fw-bold text-dark fs-6">{{ word.word }}</span>
               <button type="button" class="btn btn-sm btn-link p-0 text-muted hover-text-primary" onclick="event.stopPropagation(); speakWord('{{ word.word }}', 'en-US')" title="Phát âm">
-                <i class="ph-bold ph-speaker-high" style="font-size: 0.9rem;"></i>
+                <i class="ph-bold ph-speaker-high" style="font-size: 0.95rem;"></i>
               </button>
             </div>
-            <div class="text-truncate text-muted small" style="font-size: 0.8rem;" title="{{ word.part_of_speech }} {{ word.meaning_vi }}">
+            <div class="text-truncate text-muted small" style="font-size: 0.82rem;" title="{{ word.part_of_speech }} {{ word.meaning_vi }}">
               <span class="fst-italic me-1">({{ word.part_of_speech or 'word' }})</span>
               <span class="text-secondary fw-medium">{{ word.meaning_vi }}</span>
             </div>
@@ -191,8 +191,8 @@
             <form method="post" action="{{ url_for('learning.learn_word', word_id=word.id) }}" class="m-0">
               {{ form.hidden_tag() }}
               <button type="submit" class="btn btn-sm rounded-circle p-1.5 d-flex align-items-center justify-content-center {% if is_learned %}text-success bg-success-subtle{% else %}text-muted bg-light{% endif %} border-0" 
-                      title="{% if is_learned %}Đã học{% else %}Đánh dấu đã học{% endif %}" style="width: 30px; height: 30px;">
-                <i class="ph-bold {% if is_learned %}ph-check-circle-fill text-success{% else %}ph-plus{% endif %}" style="font-size: 0.95rem;"></i>
+                      title="{% if is_learned %}Đã học{% else %}Đánh dấu đã học{% endif %}" style="width: 32px; height: 32px;">
+                <i class="ph-bold {% if is_learned %}ph-check-circle-fill text-success{% else %}ph-plus{% endif %}" style="font-size: 1rem;"></i>
               </button>
             </form>
           </div>
@@ -212,23 +212,23 @@
   {% set cur_learned = selected_unit.learned if selected_unit else course_learned_words %}
   {% set cur_total = selected_unit.total if selected_unit else course_total_words %}
 
-  <div class="sticky-bottom py-2 mt-4" style="bottom: 1rem; z-index: 50; pointer-events: none;">
-    <div class="bg-white border rounded-pill shadow-lg p-1.5 mx-auto d-flex justify-content-center gap-2" 
-         style="max-width: 480px; pointer-events: auto;">
+  <div class="sticky-bottom py-2 mt-4" style="bottom: 1.25rem; z-index: 50; pointer-events: none;">
+    <div class="bg-white border rounded-pill shadow-lg p-2 px-3 mx-auto d-flex justify-content-center gap-3" 
+         style="max-width: 500px; pointer-events: auto;">
       
       <!-- Button 1: Học từ mới / Luyện tập -->
       <a href="{{ url_for('learning.study_vocabulary', cat=cat_key, subcat=subcat_key, unit=selected_unit.id if selected_unit else unit_filter) }}" 
-         class="btn btn-primary flex-grow-1 py-2 fw-bold rounded-pill shadow-none d-flex align-items-center justify-content-center gap-2 text-white" 
-         style="font-size: 0.88rem;">
-        <i class="ph-bold {% if cur_learned >= cur_total %}ph-lightning{% else %}ph-book-open{% endif %}"></i>
+         class="btn btn-primary flex-grow-1 py-2.5 fw-bold rounded-pill shadow-none d-flex align-items-center justify-content-center gap-2 text-white" 
+         style="font-size: 0.9rem;">
+        <i class="ph-bold {% if cur_learned >= cur_total %}ph-lightning{% else %}ph-book-open{% endif %} fs-5"></i>
         <span>{% if cur_learned >= cur_total %}Luyện tập{% elif cur_learned > 0 %}Học tiếp{% else %}Học từ mới{% endif %}</span>
       </a>
 
       <!-- Button 2: Thẻ ghi nhớ -->
       <a href="{{ url_for('learning.study_vocabulary', cat=cat_key, subcat=subcat_key, unit=selected_unit.id if selected_unit else unit_filter, mode='flashcard') }}" 
-         class="btn btn-light border flex-grow-1 py-2 fw-bold rounded-pill shadow-none d-flex align-items-center justify-content-center gap-2 text-dark" 
-         style="font-size: 0.88rem;">
-        <i class="ph-bold ph-cards text-primary"></i>
+         class="btn btn-light border flex-grow-1 py-2.5 fw-bold rounded-pill shadow-none d-flex align-items-center justify-content-center gap-2 text-dark" 
+         style="font-size: 0.9rem;">
+        <i class="ph-bold ph-cards text-primary fs-5"></i>
         <span>Thẻ ghi nhớ</span>
       </a>
 

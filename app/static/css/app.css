@@ -118,6 +118,155 @@
 .text-purple { color: var(--purple) !important; }
 .bg-purple-subtle { background-color: var(--purple-subtle) !important; }
 
+/* ==========================================================================
+   UNIFIED CONTAINER & MAX-WIDTH UTILITY SYSTEM
+   ========================================================================== */
+.max-w-7xl { max-width: 1280px !important; margin-left: auto !important; margin-right: auto !important; }
+.max-w-6xl { max-width: 1152px !important; margin-left: auto !important; margin-right: auto !important; }
+.max-w-5xl { max-width: 1024px !important; margin-left: auto !important; margin-right: auto !important; }
+.max-w-4xl { max-width: 896px !important; margin-left: auto !important; margin-right: auto !important; }
+.max-w-3xl { max-width: 768px !important; margin-left: auto !important; margin-right: auto !important; }
+.max-w-2xl { max-width: 672px !important; margin-left: auto !important; margin-right: auto !important; }
+.max-w-xl { max-width: 576px !important; margin-left: auto !important; margin-right: auto !important; }
+.max-w-lg { max-width: 512px !important; margin-left: auto !important; margin-right: auto !important; }
+.max-w-md { max-width: 448px !important; margin-left: auto !important; margin-right: auto !important; }
+
+/* Fractional Spacing Utilities (Support for gap-1.5, gap-2.5, p-2.5, px-3.5, mb-3.5 etc.) */
+.gap-0\.5 { gap: 0.125rem !important; }
+.gap-1\.5 { gap: 0.375rem !important; }
+.gap-2\.5 { gap: 0.625rem !important; }
+.gap-3\.5 { gap: 0.875rem !important; }
+.gap-4\.5 { gap: 1.125rem !important; }
+
+/* Bootstrap Grid Gutters Support for Fractional Sizes */
+.g-0\.5, .gx-0\.5 { --bs-gutter-x: 0.25rem !important; }
+.g-0\.5, .gy-0\.5 { --bs-gutter-y: 0.25rem !important; }
+.g-1\.5, .gx-1\.5 { --bs-gutter-x: 0.5rem !important; }
+.g-1\.5, .gy-1\.5 { --bs-gutter-y: 0.5rem !important; }
+.g-2\.5, .gx-2\.5 { --bs-gutter-x: 0.875rem !important; }
+.g-2\.5, .gy-2\.5 { --bs-gutter-y: 0.875rem !important; }
+.g-3\.5, .gx-3\.5 { --bs-gutter-x: 1.25rem !important; }
+.g-3\.5, .gy-3\.5 { --bs-gutter-y: 1.25rem !important; }
+.g-4\.5, .gx-4\.5 { --bs-gutter-x: 1.75rem !important; }
+.g-4\.5, .gy-4\.5 { --bs-gutter-y: 1.75rem !important; }
+
+.p-0\.5 { padding: 0.125rem !important; }
+.p-1\.5 { padding: 0.375rem !important; }
+.p-2\.5 { padding: 0.625rem !important; }
+.p-3\.5 { padding: 0.875rem !important; }
+.p-4\.5 { padding: 1.125rem !important; }
+
+.px-0\.5 { padding-left: 0.125rem !important; padding-right: 0.125rem !important; }
+.px-1\.5 { padding-left: 0.375rem !important; padding-right: 0.375rem !important; }
+.px-2\.5 { padding-left: 0.625rem !important; padding-right: 0.625rem !important; }
+.px-3\.5 { padding-left: 0.875rem !important; padding-right: 0.875rem !important; }
+.px-4\.5 { padding-left: 1.125rem !important; padding-right: 1.125rem !important; }
+
+.py-0\.5 { padding-top: 0.125rem !important; padding-bottom: 0.125rem !important; }
+.py-1\.5 { padding-top: 0.375rem !important; padding-bottom: 0.375rem !important; }
+.py-2\.5 { padding-top: 0.625rem !important; padding-bottom: 0.625rem !important; }
+.py-3\.5 { padding-top: 0.875rem !important; padding-bottom: 0.875rem !important; }
+.py-4\.5 { padding-top: 1.125rem !important; padding-bottom: 1.125rem !important; }
+
+.m-1\.5 { margin: 0.375rem !important; }
+.m-2\.5 { margin: 0.625rem !important; }
+.m-3\.5 { margin: 0.875rem !important; }
+.m-4\.5 { margin: 1.125rem !important; }
+
+.mb-0\.5 { margin-bottom: 0.125rem !important; }
+.mb-1\.5 { margin-bottom: 0.375rem !important; }
+.mb-2\.5 { margin-bottom: 0.625rem !important; }
+.mb-3\.5 { margin-bottom: 0.875rem !important; }
+.mb-4\.5 { margin-bottom: 1.125rem !important; }
+
+.mt-0\.5 { margin-top: 0.125rem !important; }
+.mt-1\.5 { margin-top: 0.375rem !important; }
+.mt-2\.5 { margin-top: 0.625rem !important; }
+.mt-3\.5 { margin-top: 0.875rem !important; }
+.mt-4\.5 { margin-top: 1.125rem !important; }
+
+.me-1\.5 { margin-right: 0.375rem !important; }
+.me-2\.5 { margin-right: 0.625rem !important; }
+.me-3\.5 { margin-right: 0.875rem !important; }
+
+.ms-1\.5 { margin-left: 0.375rem !important; }
+.ms-2\.5 { margin-left: 0.625rem !important; }
+.ms-3\.5 { margin-left: 0.875rem !important; }
+
+/* Unified Brand Button & Element Overrides */
+.btn-primary {
+    background-color: var(--primary) !important;
+    border-color: var(--primary) !important;
+    color: #ffffff !important;
+}
+.btn-primary:hover, .btn-primary:focus, .btn-primary:active, .btn-primary.active {
+    background-color: var(--primary-hover) !important;
+    border-color: var(--primary-hover) !important;
+    color: #ffffff !important;
+}
+.btn-outline-primary {
+    color: var(--primary) !important;
+    border-color: var(--primary) !important;
+    background-color: transparent !important;
+}
+.btn-outline-primary:hover, .btn-outline-primary:focus, .btn-outline-primary:active, .btn-outline-primary.active {
+    background-color: var(--primary) !important;
+    border-color: var(--primary) !important;
+    color: #ffffff !important;
+}
+.btn-check:checked + .btn-outline-primary,
+.btn-check:checked + .btn-primary {
+    background-color: var(--primary) !important;
+    border-color: var(--primary) !important;
+    color: #ffffff !important;
+}
+
+/* Unified Badge Colors */
+.badge.bg-primary {
+    background-color: var(--primary) !important;
+    color: #ffffff !important;
+}
+.badge.bg-primary-subtle {
+    background-color: var(--primary-subtle) !important;
+    color: var(--primary) !important;
+    border: 1px solid var(--primary-border) !important;
+}
+
+/* Unified Form Controls & Focus States */
+.form-control:focus,
+.form-select:focus {
+    border-color: var(--primary) !important;
+    box-shadow: 0 0 0 0.2rem rgba(5, 150, 105, 0.18) !important;
+}
+
+.form-check-input:checked {
+    background-color: var(--primary) !important;
+    border-color: var(--primary) !important;
+}
+
+.form-check-input:focus {
+    border-color: var(--primary) !important;
+    box-shadow: 0 0 0 0.2rem rgba(5, 150, 105, 0.18) !important;
+}
+
+.text-primary {
+    color: var(--primary) !important;
+}
+
+.border-primary {
+    border-color: var(--primary) !important;
+}
+
+.border-primary-subtle {
+    border-color: var(--primary-border) !important;
+}
+
+.nav-pills .nav-link.active,
+.nav-pills .show > .nav-link {
+    background-color: var(--primary) !important;
+    color: #ffffff !important;
+}
+
 * {
     box-sizing: border-box;
 }

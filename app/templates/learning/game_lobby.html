@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="container py-4" style="max-width: 1100px;">
+<div class="container-fluid max-w-7xl py-4">
     
 
     <form id="gameConfigForm" method="post" action="{{ url_for('learning.game_start') }}">
@@ -302,7 +302,7 @@
         border-radius: 1rem !important;
         transition: border-color 0.2s;
     }
-    .filter-box:hover { border-color: #8b5cf6 !important; }
+    .filter-box:hover { border-color: var(--primary) !important; }
     .filter-box select:focus { outline: none !important; box-shadow: none !important; }
     
     .game-grid {

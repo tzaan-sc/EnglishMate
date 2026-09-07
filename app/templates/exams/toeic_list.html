@@ -1,151 +1,155 @@
 {% extends "base.html" %}
-
-{% block title %}Thi thử TOEIC Reading - EnglishMate{% endblock %}
+{% block title %}Thi thử TOEIC Reading · EnglishMate{% endblock %}
 
 {% block content %}
-<div class="page-section">
-  <div class="container">
-    
-    <div class="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-4">
-      <div class="page-heading mb-0">
-        <span class="eyebrow">Practice Zone</span>
-        <h1>Luyện thi TOEIC Reading</h1>
-        <p class="mb-0">Thử sức với đề thi đầy đủ cấu trúc phần Đọc hiểu TOEIC (Part 5, 6, 7) trong 75 phút.</p>
-      </div>
-      <div>
-        <a href="{{ url_for('exams.exam_settings') }}" class="btn btn-outline-secondary rounded-pill px-3 fw-semibold">
-          <i class="ph-bold ph-gear"></i> Cài đặt đề thi
-        </a>
-      </div>
-    </div>
+<div class="container-fluid max-w-7xl py-4">
 
-    <!-- Sub-navigation Tabs -->
-    <div class="d-flex flex-wrap gap-2 mb-4">
-      <a href="{{ url_for('exams.exam_list') }}" class="btn btn-light border rounded-pill px-3.5 py-1.5 fw-semibold text-secondary d-inline-flex align-items-center gap-1.5" style="font-size: 0.85rem;">
-        <i class="ph-bold ph-files"></i>
-        <span>Tất cả đề thi</span>
-      </a>
-      <a href="{{ url_for('exams.toeic') }}" class="btn btn-primary rounded-pill px-3.5 py-1.5 fw-bold shadow-xs d-inline-flex align-items-center gap-1.5" style="font-size: 0.85rem;">
-        <i class="ph-bold ph-certificate"></i>
-        <span>Luyện thi TOEIC</span>
-      </a>
-      <a href="{{ url_for('exams.specialized_exams_hub') }}" class="btn btn-light border rounded-pill px-3.5 py-1.5 fw-semibold text-secondary d-inline-flex align-items-center gap-1.5" style="font-size: 0.85rem;">
-        <i class="ph-bold ph-graduation-cap"></i>
-        <span>Đề thi chuyên biệt & Xếp lớp</span>
-      </a>
-      <a href="{{ url_for('exams.test_history') }}" class="btn btn-light border rounded-pill px-3.5 py-1.5 fw-semibold text-secondary d-inline-flex align-items-center gap-1.5" style="font-size: 0.85rem;">
-        <i class="ph-bold ph-clock-counter-clockwise"></i>
-        <span>Lịch sử thi & So sánh</span>
-      </a>
-      <a href="{{ url_for('exams.exam_settings') }}" class="btn btn-light border rounded-pill px-3.5 py-1.5 fw-semibold text-secondary d-inline-flex align-items-center gap-1.5" style="font-size: 0.85rem;">
-        <i class="ph-bold ph-gear"></i>
-        <span>Cài đặt đề thi</span>
+  <!-- Header Title -->
+  <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
+    <div>
+      <span class="badge bg-danger-subtle text-danger border border-danger-subtle rounded-pill px-3 py-1 mb-2 font-semibold">
+        <i class="ph-bold ph-certificate me-1"></i> TOEIC PRACTICE ZONE
+      </span>
+      <h2 class="fw-bold text-dark mb-1">Luyện thi TOEIC Reading</h2>
+      <p class="text-secondary small mb-0">Thử sức với đề thi đầy đủ cấu trúc phần Đọc hiểu TOEIC (Part 5, 6, 7) 100 câu trong 75 phút.</p>
+    </div>
+    <div>
+      <a href="{{ url_for('exams.exam_settings') }}" class="btn btn-outline-secondary rounded-pill px-3 fw-semibold shadow-xs">
+        <i class="ph-bold ph-gear"></i> Cài đặt đề thi
       </a>
     </div>
-
-    <div class="row g-4 mb-5">
-      {% for test in tests %}
-      <div class="col-md-6 col-lg-4">
-        <div class="lesson-card d-flex flex-column justify-content-between h-100">
-          <div>
-            <div class="d-flex justify-content-between align-items-center mb-3">
-              <span class="lesson-num">#{{ loop.index }}</span>
-              <span class="topic-chip">TOEIC Reading</span>
-            </div>
-            
-            <h3 class="mb-2">{{ test.title }}</h3>
-            <p class="text-muted small mb-4">Luyện tập đầy đủ 100 câu hỏi từ câu 101 đến câu 200, bao gồm ngữ pháp, điền từ vào đoạn văn và đọc hiểu.</p>
-            
-            <div class="d-flex flex-wrap gap-2 mb-4">
-              <span class="badge-soft">100 Câu hỏi</span>
-              <span class="badge-soft">75 Phút</span>
-              <span class="badge-soft">Cấp độ A1 - B2</span>
-            </div>
-          </div>
-
-          <div>
-            {% if test.id in best_scores %}
-            <div class="alert alert-info py-2 px-3 border-0 rounded-3 mb-3 d-flex justify-content-between align-items-center">
-              <span class="small text-secondary">Điểm cao nhất:</span>
-              <strong class="text-primary">{{ best_scores[test.id] }}/100</strong>
-            </div>
-            {% endif %}
-            
-            <form action="{{ url_for('exams.toeic_start', test_id=test.id) }}" method="post">
-              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-              <button type="submit" class="btn btn-primary w-100 py-3">Bắt đầu làm bài</button>
-            </form>
-          </div>
-        </div>
-      </div>
-      {% else %}
-      <div class="col-12">
-        <div class="empty-state text-center py-5">
-          <span class="fs-1"><i class="ph ph-notebook text-muted"></i></span>
-          <h3 class="mt-3">Chưa có đề thi TOEIC nào được tạo</h3>
-          <p class="text-muted">Vui lòng chạy seed script để tải đề thi mẫu.</p>
-        </div>
-      </div>
-      {% endfor %}
-    </div>
-
-    <!-- History panel -->
-    <div class="card border-0 shadow-sm rounded-4" style="background-color: #f8fafc;">
-        <div class="card-body p-4">
-            <h5 class="fw-bold mb-4 d-flex align-items-center gap-2">
-                <div class="bg-purple-subtle text-purple rounded p-2 d-flex align-items-center justify-content-center" style="width: 32px; height: 32px;">
-                    <i class="ph ph-calendar-blank"></i>
-                </div>
-                Lịch sử làm bài
-            </h5>
-            
-            <div class="bg-white rounded-4 p-4 border" style="border-color: #e2e8f0 !important;">
-                {% if not attempts %}
-                <div class="border border-dashed rounded-4 p-5 text-center text-muted" style="border-width: 2px; border-style: dashed; border-color: #cbd5e1;">
-                    <span class="small fw-bold opacity-75">Chưa có lịch sử làm bài. Hãy chơi thử một đề thi nhé!</span>
-                </div>
-                {% else %}
-                <div class="table-responsive">
-                    <table class="table table-borderless table-hover align-middle mb-0">
-                        <thead class="text-muted small fw-bold border-bottom">
-                            <tr>
-                                <th class="pb-3 ps-0">Đề thi</th>
-                                <th class="pb-3 text-center">Thời gian làm</th>
-                                <th class="pb-3 text-center">Điểm số</th>
-                                <th class="pb-3 text-end">Thời điểm</th>
-                                <th class="pb-3 text-end pe-0"></th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for attempt in attempts %}
-                            <tr class="border-bottom">
-                                <td class="ps-0 py-3">
-                                    <span class="badge bg-secondary-subtle text-dark px-3 py-2 rounded-pill fw-bold">{{ attempt.test.title }}</span>
-                                </td>
-                                <td class="py-3 text-center text-primary fw-bold">
-                                    {{ attempt.time_spent // 60 }}p {{ attempt.time_spent % 60 }}s
-                                </td>
-                                <td class="py-3 text-center">
-                                    <div class="fw-bold {% if attempt.score >= 70 %}text-success{% elif attempt.score >= 50 %}text-warning{% else %}text-danger{% endif %}">
-                                        {{ attempt.score }}/100
-                                    </div>
-                                </td>
-                                <td class="py-3 text-end text-muted small">
-                                    {{ attempt.completed_at.strftime('%d/%m/%Y %H:%M') if attempt.completed_at else attempt.created_at.strftime('%d/%m/%Y %H:%M') }}
-                                </td>
-                                <td class="py-3 text-end pe-0">
-                                    <a href="{{ url_for('exams.toeic_result', attempt_id=attempt.id) }}" class="btn btn-sm btn-outline-primary rounded-pill px-3">Chi tiết</a>
-                                </td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
-                {% endif %}
-            </div>
-        </div>
-    </div>
-
   </div>
+
+  <!-- Sub-navigation Tabs -->
+  <div class="d-flex flex-wrap gap-2 mb-4">
+    <a href="{{ url_for('exams.exam_list') }}" class="btn btn-light border rounded-pill px-3.5 py-1.5 fw-semibold text-secondary d-inline-flex align-items-center gap-1.5" style="font-size: 0.85rem;">
+      <i class="ph-bold ph-files"></i>
+      <span>Tất cả đề thi</span>
+    </a>
+    <a href="{{ url_for('exams.toeic') }}" class="btn btn-primary rounded-pill px-3.5 py-1.5 fw-bold shadow-xs d-inline-flex align-items-center gap-1.5" style="font-size: 0.85rem;">
+      <i class="ph-bold ph-certificate"></i>
+      <span>Luyện thi TOEIC</span>
+    </a>
+    <a href="{{ url_for('exams.specialized_exams_hub') }}" class="btn btn-light border rounded-pill px-3.5 py-1.5 fw-semibold text-secondary d-inline-flex align-items-center gap-1.5" style="font-size: 0.85rem;">
+      <i class="ph-bold ph-graduation-cap"></i>
+      <span>Đề thi chuyên biệt & Xếp lớp</span>
+    </a>
+    <a href="{{ url_for('exams.test_history') }}" class="btn btn-light border rounded-pill px-3.5 py-1.5 fw-semibold text-secondary d-inline-flex align-items-center gap-1.5" style="font-size: 0.85rem;">
+      <i class="ph-bold ph-clock-counter-clockwise"></i>
+      <span>Lịch sử thi & So sánh</span>
+    </a>
+    <a href="{{ url_for('exams.exam_settings') }}" class="btn btn-light border rounded-pill px-3.5 py-1.5 fw-semibold text-secondary d-inline-flex align-items-center gap-1.5" style="font-size: 0.85rem;">
+      <i class="ph-bold ph-gear"></i>
+      <span>Cài đặt đề thi</span>
+    </a>
+  </div>
+
+  <!-- Tests Grid -->
+  <div class="row g-4 mb-5">
+    {% for test in tests %}
+    <div class="col-md-6 col-lg-4">
+      <div class="card border-0 shadow-sm rounded-4 p-4 bg-white d-flex flex-column justify-content-between h-100 transition-hover">
+        <div>
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <span class="badge bg-primary-subtle text-primary border rounded-pill px-2.5 py-1 font-semibold" style="font-size: 0.75rem;">
+              #{{ loop.index }} TOEIC Reading
+            </span>
+            <span class="badge bg-light text-secondary border rounded-pill small">75 Phút</span>
+          </div>
+
+          <h4 class="fw-bold text-dark mb-2" style="font-size: 1.15rem;">{{ test.title }}</h4>
+          <p class="text-secondary small mb-3">Luyện tập đầy đủ 100 câu hỏi từ câu 101 đến câu 200, bao gồm ngữ pháp, điền từ vào đoạn văn và đọc hiểu.</p>
+
+          <div class="d-flex flex-wrap gap-2 mb-4">
+            <span class="badge bg-light text-secondary border rounded-pill px-2.5 py-1 small">100 Câu hỏi</span>
+            <span class="badge bg-light text-secondary border rounded-pill px-2.5 py-1 small">Cấp độ A1 - B2</span>
+          </div>
+        </div>
+
+        <div>
+          {% if test.id in best_scores %}
+          <div class="alert alert-success bg-success-subtle border-0 rounded-3 py-2 px-3 mb-3 d-flex justify-content-between align-items-center">
+            <span class="small text-secondary fw-semibold">Điểm cao nhất:</span>
+            <strong class="text-success fs-6">{{ best_scores[test.id] }}/100</strong>
+          </div>
+          {% endif %}
+
+          <form action="{{ url_for('exams.toeic_start', test_id=test.id) }}" method="post">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <button type="submit" class="btn btn-primary w-100 py-2.5 rounded-pill fw-bold shadow-xs">
+              <i class="ph-bold ph-play me-1"></i> Bắt đầu làm bài
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+    {% else %}
+    <div class="col-12">
+      <div class="card border-0 shadow-sm rounded-4 p-5 text-center bg-white">
+        <i class="ph-bold ph-notebook fs-1 text-muted d-block mb-3"></i>
+        <h4 class="fw-bold text-dark mb-1">Chưa có đề thi TOEIC nào</h4>
+        <p class="text-secondary small mb-0">Hệ thống đang được cập nhật thêm các bộ đề thi TOEIC chuẩn format mới.</p>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+
+  <!-- History Panel -->
+  <div class="card border-0 shadow-sm rounded-4 bg-white p-4">
+    <div class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom">
+      <h5 class="fw-bold text-dark mb-0 d-flex align-items-center gap-2">
+        <i class="ph-bold ph-clock-counter-clockwise text-primary"></i> Lịch sử làm bài TOEIC
+      </h5>
+      <a href="{{ url_for('exams.test_history') }}" class="btn btn-sm btn-light border rounded-pill px-3 text-secondary">
+        Xem toàn bộ lịch sử thi →
+      </a>
+    </div>
+
+    {% if not attempts %}
+    <div class="border border-dashed rounded-4 p-5 text-center text-muted" style="border-color: #cbd5e1 !important;">
+      <span class="small fw-semibold opacity-75">Chưa có lịch sử làm bài. Hãy thử sức với một đề thi nhé!</span>
+    </div>
+    {% else %}
+    <div class="table-responsive">
+      <table class="table table-hover align-middle mb-0">
+        <thead class="table-light">
+          <tr class="small text-secondary">
+            <th>Đề thi</th>
+            <th class="text-center">Thời gian làm</th>
+            <th class="text-center">Điểm số</th>
+            <th class="text-end">Thời điểm</th>
+            <th class="text-end pe-3">Chi tiết</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for attempt in attempts %}
+          <tr>
+            <td>
+              <span class="badge bg-secondary-subtle text-dark px-3 py-1.5 rounded-pill fw-bold">{{ attempt.test.title }}</span>
+            </td>
+            <td class="text-center text-primary fw-bold small">
+              {{ attempt.time_spent // 60 }}p {{ attempt.time_spent % 60 }}s
+            </td>
+            <td class="text-center">
+              <span class="badge {% if attempt.score >= 70 %}bg-success-subtle text-success border-success-subtle{% elif attempt.score >= 50 %}bg-warning-subtle text-warning border-warning-subtle{% else %}bg-danger-subtle text-danger border-danger-subtle{% endif %} border rounded-pill px-2.5 py-1 fw-bold">
+                {{ attempt.score }}/100
+              </span>
+            </td>
+            <td class="text-end text-muted small">
+              {{ attempt.completed_at.strftime('%d/%m/%Y %H:%M') if attempt.completed_at else attempt.created_at.strftime('%d/%m/%Y %H:%M') }}
+            </td>
+            <td class="text-end pe-3">
+              <a href="{{ url_for('exams.toeic_result', attempt_id=attempt.id) }}" class="btn btn-sm btn-light border rounded-pill px-3 text-primary fw-semibold">
+                Xem kết quả
+              </a>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% endif %}
+  </div>
+
 </div>
 {% endblock %}

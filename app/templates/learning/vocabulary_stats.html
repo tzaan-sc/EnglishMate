@@ -245,16 +245,16 @@
         </h5>
         
         {% if mastered_timeline %}
-        <div class="d-flex flex-column gap-2.5 overflow-auto max-h-96 pe-1">
+        <div class="d-flex flex-column gap-3 overflow-auto max-h-96 pe-1">
           {% for mt in mastered_timeline %}
-          <div class="d-flex align-items-center justify-content-between p-2.5 rounded-4 border bg-light-subtle">
+          <div class="d-flex align-items-center justify-content-between p-3 rounded-4 border bg-white shadow-2xs mb-1">
             <div>
-              <strong class="text-dark font-monospace d-block">{{ mt.vocab.word }}</strong>
+              <strong class="text-dark font-monospace d-block fs-6">{{ mt.vocab.word }}</strong>
               <small class="text-muted">{{ mt.vocab.meaning_vi }}</small>
             </div>
             <div class="text-end">
-              <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-2.5 py-1 small fw-bold">Level 7</span>
-              <small class="text-muted d-block mt-0.5" style="font-size: 0.7rem;">{{ mt.date.strftime('%d/%m/%Y') if mt.date else '' }}</small>
+              <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-3 py-1 small fw-bold">Level 7</span>
+              <small class="text-muted d-block mt-0.5" style="font-size: 0.72rem;">{{ mt.date.strftime('%d/%m/%Y') if mt.date else '' }}</small>
             </div>
           </div>
           {% endfor %}

@@ -34,40 +34,48 @@
     </div>
 
     <!-- 4 Clean Stat Pills -->
-    <div class="row g-2 pt-2 border-top" style="border-color: rgba(255, 255, 255, 0.1) !important; position: relative; z-index: 2;">
+    <div class="row g-3 g-lg-4 pt-4 mt-3 border-top" style="border-color: rgba(255, 255, 255, 0.15) !important; position: relative; z-index: 2;">
       <div class="col-6 col-md-3">
-        <div class="d-flex align-items-center gap-2 p-2 rounded-3" style="background: rgba(255, 255, 255, 0.04);">
-          <i class="ph-bold ph-book-open text-primary fs-5"></i>
+        <div class="d-flex align-items-center gap-3 p-3 px-3.5 rounded-4" style="background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.12); backdrop-filter: blur(4px);">
+          <div class="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0" style="width: 40px; height: 40px; background: rgba(255, 255, 255, 0.2);">
+            <i class="ph-bold ph-book-open text-white fs-5"></i>
+          </div>
           <div>
-            <span class="text-white-50 d-block" style="font-size: 0.72rem;">Tổng số chủ đề</span>
-            <strong class="text-white small">{{ total_topics }} chủ đề</strong>
+            <span class="text-white-50 d-block" style="font-size: 0.74rem;">Tổng số chủ đề</span>
+            <strong class="text-white fs-6">{{ total_topics }} chủ đề</strong>
           </div>
         </div>
       </div>
       <div class="col-6 col-md-3">
-        <div class="d-flex align-items-center gap-2 p-2 rounded-3" style="background: rgba(255, 255, 255, 0.04);">
-          <i class="ph-bold ph-check-circle text-success fs-5"></i>
+        <div class="d-flex align-items-center gap-3 p-3 px-3.5 rounded-4" style="background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.12); backdrop-filter: blur(4px);">
+          <div class="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0" style="width: 40px; height: 40px; background: rgba(255, 255, 255, 0.2);">
+            <i class="ph-bold ph-check-circle fs-5" style="color: #6ee7b7;"></i>
+          </div>
           <div>
-            <span class="text-white-50 d-block" style="font-size: 0.72rem;">Đã hoàn thành</span>
-            <strong class="text-white small">{{ completed_count }} chủ đề</strong>
+            <span class="text-white-50 d-block" style="font-size: 0.74rem;">Đã hoàn thành</span>
+            <strong class="text-white fs-6">{{ completed_count }} chủ đề</strong>
           </div>
         </div>
       </div>
       <div class="col-6 col-md-3">
-        <div class="d-flex align-items-center gap-2 p-2 rounded-3" style="background: rgba(255, 255, 255, 0.04);">
-          <i class="ph-bold ph-heart text-danger fs-5"></i>
+        <div class="d-flex align-items-center gap-3 p-3 px-3.5 rounded-4" style="background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.12); backdrop-filter: blur(4px);">
+          <div class="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0" style="width: 40px; height: 40px; background: rgba(255, 255, 255, 0.2);">
+            <i class="ph-bold ph-heart fs-5" style="color: #fca5a5;"></i>
+          </div>
           <div>
-            <span class="text-white-50 d-block" style="font-size: 0.72rem;">Yêu thích</span>
-            <strong class="text-white small">{{ favorite_count }} chủ đề</strong>
+            <span class="text-white-50 d-block" style="font-size: 0.74rem;">Yêu thích</span>
+            <strong class="text-white fs-6">{{ favorite_count }} chủ đề</strong>
           </div>
         </div>
       </div>
       <div class="col-6 col-md-3">
-        <div class="d-flex align-items-center gap-2 p-2 rounded-3" style="background: rgba(255, 255, 255, 0.04);">
-          <i class="ph-bold ph-chart-line-up text-warning fs-5"></i>
+        <div class="d-flex align-items-center gap-3 p-3 px-3.5 rounded-4" style="background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.12); backdrop-filter: blur(4px);">
+          <div class="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0" style="width: 40px; height: 40px; background: rgba(255, 255, 255, 0.2);">
+            <i class="ph-bold ph-chart-line-up fs-5" style="color: #93c5fd;"></i>
+          </div>
           <div>
-            <span class="text-white-50 d-block" style="font-size: 0.72rem;">Tỷ lệ thành thạo</span>
-            <strong class="text-white small">{{ (completed_count / total_topics * 100)|round|int if total_topics > 0 else 0 }}%</strong>
+            <span class="text-white-50 d-block" style="font-size: 0.74rem;">Tỷ lệ thành thạo</span>
+            <strong class="text-white fs-6">{{ (completed_count / total_topics * 100)|round|int if total_topics > 0 else 0 }}%</strong>
           </div>
         </div>
       </div>

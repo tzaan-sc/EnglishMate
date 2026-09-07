@@ -21,17 +21,18 @@
   </div>
 
   <!-- Metric Stat Cards (5 Cards Grid) -->
-  <div class="row g-3 mb-4">
+  <!-- Metric Stat Cards (5 Cards Grid) -->
+  <div class="row g-3 g-lg-4 mb-4">
 
     <!-- Card 1: Overall Score -->
     <div class="col-md-6 col-lg-4">
-      <div class="card border-0 shadow-sm rounded-4 p-3 bg-white h-100">
+      <div class="card border-0 shadow-sm rounded-4 p-4 bg-white h-100">
         <div class="d-flex align-items-center gap-3">
-          <div class="bg-primary-subtle text-primary rounded-circle p-3 d-flex align-items-center justify-content-center" style="width: 52px; height: 52px;">
+          <div class="bg-primary-subtle text-primary rounded-circle p-3 d-flex align-items-center justify-content-center" style="width: 54px; height: 54px;">
             <i class="ph ph-trophy fs-3"></i>
           </div>
           <div>
-            <span class="text-muted small d-block">Tổng điểm Quiz</span>
+            <span class="text-muted small d-block mb-1">Tổng điểm Quiz</span>
             <h3 class="fw-bold text-dark mb-0">
               {{ metrics.overall_score }} <span class="fs-6 text-muted font-normal">/ {{ metrics.total_questions }}</span>
             </h3>
@@ -42,13 +43,13 @@
 
     <!-- Card 2: Quiz Accuracy Rate -->
     <div class="col-md-6 col-lg-4">
-      <div class="card border-0 shadow-sm rounded-4 p-3 bg-white h-100">
+      <div class="card border-0 shadow-sm rounded-4 p-4 bg-white h-100">
         <div class="d-flex align-items-center gap-3">
-          <div class="bg-success-subtle text-success rounded-circle p-3 d-flex align-items-center justify-content-center" style="width: 52px; height: 52px;">
+          <div class="bg-success-subtle text-success rounded-circle p-3 d-flex align-items-center justify-content-center" style="width: 54px; height: 54px;">
             <i class="ph ph-target fs-3"></i>
           </div>
           <div>
-            <span class="text-muted small d-block">Tỷ lệ chính xác %</span>
+            <span class="text-muted small d-block mb-1">Tỷ lệ chính xác %</span>
             <h3 class="fw-bold text-success mb-0">{{ metrics.accuracy_rate }}%</h3>
           </div>
         </div>
@@ -57,13 +58,13 @@
 
     <!-- Card 3: Average Time Per Quiz -->
     <div class="col-md-6 col-lg-4">
-      <div class="card border-0 shadow-sm rounded-4 p-3 bg-white h-100">
+      <div class="card border-0 shadow-sm rounded-4 p-4 bg-white h-100">
         <div class="d-flex align-items-center gap-3">
-          <div class="bg-info-subtle text-info rounded-circle p-3 d-flex align-items-center justify-content-center" style="width: 52px; height: 52px;">
+          <div class="bg-info-subtle text-info rounded-circle p-3 d-flex align-items-center justify-content-center" style="width: 54px; height: 54px;">
             <i class="ph ph-timer fs-3"></i>
           </div>
           <div>
-            <span class="text-muted small d-block">Thời gian TB / Quiz</span>
+            <span class="text-muted small d-block mb-1">Thời gian TB / Quiz</span>
             <h3 class="fw-bold text-info-emphasis mb-0">{{ metrics.avg_time_seconds }} giây</h3>
           </div>
         </div>
@@ -72,13 +73,13 @@
 
     <!-- Card 4: Quiz Practice Streak -->
     <div class="col-md-6 col-lg-6">
-      <div class="card border-0 shadow-sm rounded-4 p-3 bg-white h-100">
+      <div class="card border-0 shadow-sm rounded-4 p-4 bg-white h-100">
         <div class="d-flex align-items-center gap-3">
-          <div class="bg-warning-subtle text-warning rounded-circle p-3 d-flex align-items-center justify-content-center" style="width: 52px; height: 52px;">
+          <div class="bg-warning-subtle text-warning rounded-circle p-3 d-flex align-items-center justify-content-center" style="width: 54px; height: 54px;">
             <i class="ph ph-fire fs-3"></i>
           </div>
           <div>
-            <span class="text-muted small d-block">Chuỗi ngày luyện Quiz</span>
+            <span class="text-muted small d-block mb-1">Chuỗi ngày luyện Quiz</span>
             <h3 class="fw-bold text-warning-emphasis mb-0">🔥 {{ metrics.quiz_streak }} ngày liên tiếp</h3>
           </div>
         </div>
@@ -87,13 +88,13 @@
 
     <!-- Card 5: Total Quizzes Completed -->
     <div class="col-md-12 col-lg-6">
-      <div class="card border-0 shadow-sm rounded-4 p-3 bg-white h-100">
+      <div class="card border-0 shadow-sm rounded-4 p-4 bg-white h-100">
         <div class="d-flex align-items-center gap-3">
-          <div class="bg-purple-subtle text-purple rounded-circle p-3 d-flex align-items-center justify-content-center" style="width: 52px; height: 52px; background-color: #f3e8ff; color: #9333ea;">
+          <div class="bg-purple-subtle text-purple rounded-circle p-3 d-flex align-items-center justify-content-center" style="width: 54px; height: 54px; background-color: #f3e8ff; color: #9333ea;">
             <i class="ph ph-check-circle fs-3"></i>
           </div>
           <div>
-            <span class="text-muted small d-block">Tổng số bài Quiz đã xong</span>
+            <span class="text-muted small d-block mb-1">Tổng số bài Quiz đã xong</span>
             <h3 class="fw-bold text-dark mb-0">{{ metrics.total_quizzes_completed }} bài test</h3>
           </div>
         </div>
@@ -111,10 +112,10 @@
         <h5 class="fw-bold text-dark mb-1">Cảnh báo Danh mục Quiz Yếu (Cần cải thiện)</h5>
         <p class="text-secondary small mb-3">Hệ thống phát hiện bạn có tỷ lệ chính xác dưới 60% ở các danh mục sau. Hãy dành thêm thời gian ôn tập nhé:</p>
         
-        <div class="row g-2">
+        <div class="row g-3">
           {% for w in metrics.weak_categories %}
           <div class="col-md-6">
-            <div class="p-3 bg-light rounded-3 d-flex justify-content-between align-items-center">
+            <div class="p-3 bg-light rounded-4 d-flex justify-content-between align-items-center">
               <div>
                 <span class="fw-bold text-dark d-block">{{ w.name }}</span>
                 <small class="text-muted">Độ chính xác: <strong class="text-danger">{{ w.accuracy_rate }}%</strong> ({{ w.score }}/{{ w.total_q }} câu)</small>

@@ -1,6 +1,7 @@
 {% extends "base.html" %}
 
 {% block content %}
+<div class="container-fluid max-w-7xl py-4">
 <div class="row mb-3">
   <div class="col-12 d-flex justify-content-between align-items-center flex-wrap gap-2">
     <h3 class="mb-0">{{ exam.title }} <span class="badge bg-secondary fs-6">{{ 'Thi Thật' if mode == 'real' else 'Luyện Tập' }}</span></h3>
@@ -110,6 +111,7 @@
     </div>
   </div>
 </form>
+</div>
 
 <!-- Pause / Resume Modal -->
 <div class="modal fade" id="pauseModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-hidden="true">

@@ -94,20 +94,20 @@
 
         <div class="overflow-auto" style="max-height: 480px;">
           {% for item in lessons_done %}
-          <div class="d-flex align-items-center justify-content-between p-2.5 mb-2 rounded-3 border bg-light-subtle">
-            <div class="d-flex align-items-center gap-2.5 text-truncate">
-              <span class="badge bg-success-subtle text-success rounded-circle p-1 d-inline-flex align-items-center justify-content-center" style="width: 26px; height: 26px;">
+          <div class="d-flex align-items-center justify-content-between p-3 mb-2.5 rounded-4 border bg-white shadow-2xs">
+            <div class="d-flex align-items-center gap-3 text-truncate">
+              <span class="badge bg-success-subtle text-success rounded-circle p-1 d-inline-flex align-items-center justify-content-center flex-shrink-0" style="width: 28px; height: 28px;">
                 <i class="ph-bold ph-check"></i>
               </span>
               <div class="text-truncate">
-                <a href="{{ url_for('learning.lesson_detail', lesson_id=item.lesson_id) }}" class="text-dark fw-bold text-decoration-none small text-truncate d-block">
+                <a href="{{ url_for('learning.lesson_detail', lesson_id=item.lesson_id) }}" class="text-dark fw-bold text-decoration-none small text-truncate d-block mb-0.5">
                   {{ item.lesson.title }}
                 </a>
-                <span class="text-muted" style="font-size: 0.75rem;">{{ item.lesson.level }} · {{ item.lesson.skill }}</span>
+                <span class="text-muted" style="font-size: 0.76rem;">{{ item.lesson.level }} · {{ item.lesson.skill }}</span>
               </div>
             </div>
             {% if item.completed_at %}
-            <span class="text-muted small flex-shrink-0 ms-2" style="font-size: 0.72rem;">{{ item.completed_at.strftime('%d/%m') }}</span>
+            <span class="text-muted small flex-shrink-0 ms-2" style="font-size: 0.74rem;">{{ item.completed_at.strftime('%d/%m') }}</span>
             {% endif %}
           </div>
           {% else %}

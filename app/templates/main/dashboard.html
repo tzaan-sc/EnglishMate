@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% block title %}Dashboard · EnglishMate{% endblock %}
 {% block content %}
-<div class="container-fluid py-2">
+<div class="container-fluid max-w-7xl py-4">
 
   
 
@@ -52,31 +52,31 @@
         </div>
 
         <!-- Hero Actions / CTAs -->
-        <div class="d-flex flex-wrap align-items-center gap-2.5 pt-4 mt-2 position-relative" style="z-index: 2;">
+        <div class="d-flex flex-wrap align-items-center gap-3 pt-4 mt-2 position-relative" style="z-index: 2; gap: 14px !important;">
           {% if next_lesson %}
-          <a href="{{ url_for('learning.lesson_detail', lesson_id=next_lesson.id) }}" class="btn btn-light fw-bold px-3.5 py-2 text-primary d-inline-flex align-items-center gap-2 shadow-sm rounded-3">
+          <a href="{{ url_for('learning.lesson_detail', lesson_id=next_lesson.id) }}" class="btn btn-light fw-bold px-4 py-2.5 text-primary d-inline-flex align-items-center gap-2 shadow-sm rounded-3">
             <i class="ph-bold ph-play-circle fs-5"></i>
             <span>Tiếp tục: {{ next_lesson.title|truncate(24) }}</span>
           </a>
           {% else %}
-          <a href="{{ url_for('learning.lessons') }}" class="btn btn-primary fw-bold px-3.5 py-2 d-inline-flex align-items-center gap-2 shadow-sm rounded-3">
+          <a href="{{ url_for('learning.lessons') }}" class="btn btn-primary fw-bold px-4 py-2.5 d-inline-flex align-items-center gap-2 shadow-sm rounded-3">
             <i class="ph-bold ph-play-circle fs-5"></i>
             <span>Khám phá bài học</span>
           </a>
           {% endif %}
           
           {% if srs_due_count > 0 %}
-          <a href="{{ url_for('learning.game_lobby') }}" class="btn btn-warning text-dark fw-bold px-3.5 py-2 d-inline-flex align-items-center gap-2 shadow-sm rounded-3">
+          <a href="{{ url_for('learning.game_lobby') }}" class="btn btn-warning text-dark fw-bold px-4 py-2.5 d-inline-flex align-items-center gap-2 shadow-sm rounded-3">
             <i class="ph-bold ph-lightning fs-5"></i>
             <span>Ôn {{ srs_due_count }} từ đến hạn</span>
           </a>
           {% endif %}
           
-          <a href="{{ url_for('learning.vocabulary') }}" class="btn btn-light text-dark fw-bold px-3 py-2 d-inline-flex align-items-center gap-2 rounded-3 shadow-sm">
+          <a href="{{ url_for('learning.vocabulary') }}" class="btn btn-light text-dark fw-bold px-4 py-2.5 d-inline-flex align-items-center gap-2 rounded-3 shadow-sm">
             <i class="ph-bold ph-book-bookmark fs-5 text-primary"></i>
             <span>Từ vựng</span>
           </a>
-          <a href="{{ url_for('learning.game_lobby') }}" class="btn btn-outline-light fw-semibold px-3 py-2 d-inline-flex align-items-center gap-2 rounded-3" style="border-color: rgba(255, 255, 255, 0.45); backdrop-filter: blur(4px);">
+          <a href="{{ url_for('learning.game_lobby') }}" class="btn btn-outline-light fw-semibold px-4 py-2.5 d-inline-flex align-items-center gap-2 rounded-3" style="border-color: rgba(255, 255, 255, 0.45); backdrop-filter: blur(4px);">
             <i class="ph-bold ph-game-controller fs-5"></i>
             <span>Luyện Game</span>
           </a>
@@ -129,29 +129,29 @@
 
         <!-- 4 Key Metrics 2x2 Grid -->
         <div class="pt-3 border-top border-light">
-          <div class="row g-2">
+          <div class="row g-3">
             <div class="col-6">
-              <div class="p-2.5 rounded-3 text-center" style="background-color: var(--bg-surface-subtle);">
+              <div class="p-3 rounded-4 text-center" style="background-color: var(--bg-surface-subtle);">
                 <div class="fw-800 text-primary mb-0" style="font-size: 1.35rem;">{{ learned }}</div>
-                <small class="text-muted" style="font-size: 0.72rem; font-weight: 600;">Từ vựng đã học</small>
+                <small class="text-muted" style="font-size: 0.74rem; font-weight: 600;">Từ vựng đã học</small>
               </div>
             </div>
             <div class="col-6">
-              <div class="p-2.5 rounded-3 text-center" style="background-color: var(--bg-surface-subtle);">
+              <div class="p-3 rounded-4 text-center" style="background-color: var(--bg-surface-subtle);">
                 <div class="fw-800 text-primary mb-0" style="font-size: 1.35rem;">{{ completed }}</div>
-                <small class="text-muted" style="font-size: 0.72rem; font-weight: 600;">Bài học xong</small>
+                <small class="text-muted" style="font-size: 0.74rem; font-weight: 600;">Bài học xong</small>
               </div>
             </div>
             <div class="col-6">
-              <div class="p-2.5 rounded-3 text-center" style="background-color: var(--bg-surface-subtle);">
+              <div class="p-3 rounded-3 text-center" style="background-color: var(--bg-surface-subtle);">
                 <div class="fw-800 text-info mb-0" style="font-size: 1.35rem;">{{ attempts }}</div>
-                <small class="text-muted" style="font-size: 0.72rem; font-weight: 600;">Quiz đã làm</small>
+                <small class="text-muted" style="font-size: 0.74rem; font-weight: 600;">Quiz đã làm</small>
               </div>
             </div>
             <div class="col-6">
-              <div class="p-2.5 rounded-3 text-center" style="background-color: var(--bg-surface-subtle);">
+              <div class="p-3 rounded-3 text-center" style="background-color: var(--bg-surface-subtle);">
                 <div class="fw-800 text-warning mb-0" style="font-size: 1.35rem;">{{ average }}%</div>
-                <small class="text-muted" style="font-size: 0.72rem; font-weight: 600;">Điểm trung bình</small>
+                <small class="text-muted" style="font-size: 0.74rem; font-weight: 600;">Điểm trung bình</small>
               </div>
             </div>
           </div>
@@ -241,21 +241,21 @@
           </div>
 
           <!-- Time Spent Metrics (3 Chips) -->
-          <div class="row g-2 mb-3 text-center">
+          <div class="row g-3 mb-3 text-center">
             <div class="col-4">
-              <div class="p-2.5 rounded-3 border" style="background-color: var(--bg-surface-subtle); border-color: var(--border-light) !important;">
+              <div class="p-3 rounded-3 border" style="background-color: var(--bg-surface-subtle); border-color: var(--border-light) !important;">
                 <div class="fw-bold text-dark" style="font-size: 1.15rem;">{{ today_time_spent_minutes }}m</div>
                 <div class="text-muted fw-bold" style="font-size: 0.68rem; letter-spacing: 0.04em;">HÔM NAY</div>
               </div>
             </div>
             <div class="col-4">
-              <div class="p-2.5 rounded-3 border" style="background-color: var(--bg-surface-subtle); border-color: var(--border-light) !important;">
+              <div class="p-3 rounded-3 border" style="background-color: var(--bg-surface-subtle); border-color: var(--border-light) !important;">
                 <div class="fw-bold text-primary" style="font-size: 1.15rem;">{{ weekly_time_spent_minutes }}m</div>
                 <div class="text-muted fw-bold" style="font-size: 0.68rem; letter-spacing: 0.04em;">TUẦN NÀY</div>
               </div>
             </div>
             <div class="col-4">
-              <div class="p-2.5 rounded-3 border" style="background-color: var(--bg-surface-subtle); border-color: var(--border-light) !important;">
+              <div class="p-3 rounded-3 border" style="background-color: var(--bg-surface-subtle); border-color: var(--border-light) !important;">
                 <div class="fw-bold text-success" style="font-size: 1.15rem;">{{ total_time_hours }}h</div>
                 <div class="text-muted fw-bold" style="font-size: 0.68rem; letter-spacing: 0.04em;">TẤT CẢ</div>
               </div>
@@ -263,7 +263,7 @@
           </div>
 
           <!-- Skills Progress 2x2 Grid (Fills height gracefully) -->
-          <div class="row g-2.5">
+          <div class="row g-3">
             {% for sk in skills_progress %}
             <div class="col-6">
               <div class="p-3 rounded-3 border h-100 d-flex flex-column justify-content-between transition-hover" 

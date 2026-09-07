@@ -81,35 +81,35 @@
   <!-- ========================================== -->
   <!-- 2. HERO & SKILL STATISTICS BANNER         -->
   <!-- ========================================== -->
-  <div class="p-4 p-lg-4 mb-4 rounded-4 shadow-sm text-white position-relative overflow-hidden" 
+  <div class="p-4 p-lg-5 mb-5 rounded-4 shadow-sm text-white position-relative overflow-hidden" 
        style="background: {{ hero.gradient }}; border: 1px solid rgba(255,255,255,0.1);">
     
-    <!-- Background Watermark Icon -->
-    <div class="position-absolute end-0 bottom-0 mb-n3 me-4 opacity-10 pointer-events-none" style="z-index: 1;">
-      <i class="{{ hero.icon }}" style="font-size: 14rem;"></i>
+    <!-- Background Watermark Icon (Placed at top-right to never overlap bottom stats) -->
+    <div class="position-absolute end-0 top-0 pointer-events-none" style="z-index: 1; opacity: 0.03; right: -20px; top: -30px;">
+      <i class="{{ hero.icon }}" style="font-size: 11rem;"></i>
     </div>
 
     <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3 mb-4 position-relative" style="z-index: 2;">
       <div>
-        <div class="d-inline-flex align-items-center gap-1.5 px-3 py-1 rounded-pill mb-2.5" 
+        <div class="d-inline-flex align-items-center gap-2 px-3 py-1 rounded-pill mb-2.5" 
              style="background: rgba(255, 255, 255, 0.18); backdrop-filter: blur(8px); font-size: 0.74rem; font-weight: 700; letter-spacing: 0.04em;">
           <i class="{{ hero.icon }}"></i>
           <span>{{ hero.badge }}</span>
         </div>
-        <h2 class="fw-bold text-white mb-1.5 d-flex align-items-center gap-2" style="letter-spacing: -0.01em;">
+        <h2 class="fw-bold text-white mb-2 d-flex align-items-center gap-2" style="letter-spacing: -0.01em;">
           {{ hero.title }}
         </h2>
-        <p class="text-white-50 mb-0 small" style="max-width: 680px; font-size: 0.9rem; line-height: 1.55;">
+        <p class="text-white-50 mb-0 small" style="max-width: 680px; font-size: 0.9rem; line-height: 1.6;">
           {{ hero.subtitle }}
         </p>
       </div>
 
       <!-- Quick Recommended Action -->
       {% if recommended_lesson %}
-      <div class="d-flex flex-wrap gap-2 align-items-center">
+      <div class="d-flex flex-wrap gap-2 align-items-center flex-shrink-0">
         <a href="{{ url_for('learning.lesson_detail', lesson_id=recommended_lesson.id) }}" 
-           class="btn btn-light rounded-pill px-4 py-2 fw-bold text-dark shadow-sm d-inline-flex align-items-center gap-2 transition-transform hover-scale" 
-           style="font-size: 0.86rem;">
+           class="btn btn-light rounded-pill px-4 py-2.5 fw-bold text-dark shadow-sm d-inline-flex align-items-center gap-2 transition-transform hover-scale" 
+           style="font-size: 0.88rem;">
           <i class="ph-bold ph-play-circle text-primary fs-5"></i>
           <span>Học tiếp: {{ recommended_lesson.title|truncate(22) }}</span>
         </a>
@@ -118,51 +118,51 @@
     </div>
 
     <!-- 4 Real-time Stat Pills -->
-    <div class="row g-2 pt-3 border-top" style="border-color: rgba(255, 255, 255, 0.15) !important; position: relative; z-index: 2;">
+    <div class="row g-3 g-lg-4 pt-4 mt-3 border-top" style="border-color: rgba(255, 255, 255, 0.15) !important; position: relative; z-index: 2;">
       <div class="col-6 col-md-3">
-        <div class="d-flex align-items-center gap-2.5 p-2.5 rounded-3" style="background: rgba(255, 255, 255, 0.08); backdrop-filter: blur(4px);">
-          <div class="rounded-circle d-flex align-items-center justify-content-center bg-white bg-opacity-20" style="width: 36px; height: 36px;">
+        <div class="d-flex align-items-center gap-3 p-3 px-3.5 rounded-4" style="background: rgba(255, 255, 255, 0.12); border: 1px solid rgba(255, 255, 255, 0.15); backdrop-filter: blur(6px);">
+          <div class="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0" style="width: 42px; height: 42px; background: rgba(255, 255, 255, 0.22);">
             <i class="ph-bold ph-book-open text-white fs-5"></i>
           </div>
           <div>
-            <span class="text-white-50 d-block" style="font-size: 0.72rem;">Tổng bài học</span>
-            <strong class="text-white small fs-6">{{ statistics.total }} bài</strong>
+            <span class="text-white-50 d-block" style="font-size: 0.76rem;">Tổng bài học</span>
+            <strong class="text-white fs-6">{{ statistics.total }} bài</strong>
           </div>
         </div>
       </div>
 
       <div class="col-6 col-md-3">
-        <div class="d-flex align-items-center gap-2.5 p-2.5 rounded-3" style="background: rgba(255, 255, 255, 0.08); backdrop-filter: blur(4px);">
-          <div class="rounded-circle d-flex align-items-center justify-content-center bg-white bg-opacity-20" style="width: 36px; height: 36px;">
-            <i class="ph-bold ph-check-circle text-success fs-5"></i>
+        <div class="d-flex align-items-center gap-3 p-3 px-3.5 rounded-4" style="background: rgba(255, 255, 255, 0.12); border: 1px solid rgba(255, 255, 255, 0.15); backdrop-filter: blur(6px);">
+          <div class="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0" style="width: 42px; height: 42px; background: rgba(255, 255, 255, 0.22);">
+            <i class="ph-bold ph-check-circle fs-5" style="color: #6ee7b7;"></i>
           </div>
           <div>
-            <span class="text-white-50 d-block" style="font-size: 0.72rem;">Đã hoàn thành</span>
-            <strong class="text-white small fs-6">{{ statistics.completed }} bài</strong>
+            <span class="text-white-50 d-block" style="font-size: 0.76rem;">Đã hoàn thành</span>
+            <strong class="text-white fs-6">{{ statistics.completed }} bài</strong>
           </div>
         </div>
       </div>
 
       <div class="col-6 col-md-3">
-        <div class="d-flex align-items-center gap-2.5 p-2.5 rounded-3" style="background: rgba(255, 255, 255, 0.08); backdrop-filter: blur(4px);">
-          <div class="rounded-circle d-flex align-items-center justify-content-center bg-white bg-opacity-20" style="width: 36px; height: 36px;">
-            <i class="{{ hero.stat_icon_3 }} {{ hero.stat_color_3 }} fs-5"></i>
+        <div class="d-flex align-items-center gap-3 p-3 px-3.5 rounded-4" style="background: rgba(255, 255, 255, 0.12); border: 1px solid rgba(255, 255, 255, 0.15); backdrop-filter: blur(6px);">
+          <div class="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0" style="width: 42px; height: 42px; background: rgba(255, 255, 255, 0.22);">
+            <i class="{{ hero.stat_icon_3 }} fs-5" style="color: #93c5fd;"></i>
           </div>
           <div>
-            <span class="text-white-50 d-block" style="font-size: 0.72rem;">{{ hero.stat_label_3 }}</span>
-            <strong class="text-white small fs-6">{{ hero.stat_val_3 }}</strong>
+            <span class="text-white-50 d-block" style="font-size: 0.76rem;">{{ hero.stat_label_3 }}</span>
+            <strong class="text-white fs-6">{{ hero.stat_val_3 }}</strong>
           </div>
         </div>
       </div>
 
       <div class="col-6 col-md-3">
-        <div class="d-flex align-items-center gap-2.5 p-2.5 rounded-3" style="background: rgba(255, 255, 255, 0.08); backdrop-filter: blur(4px);">
-          <div class="rounded-circle d-flex align-items-center justify-content-center bg-white bg-opacity-20" style="width: 36px; height: 36px;">
-            <i class="{{ hero.stat_icon_4 }} {{ hero.stat_color_4 }} fs-5"></i>
+        <div class="d-flex align-items-center gap-3 p-3 px-3.5 rounded-4" style="background: rgba(255, 255, 255, 0.12); border: 1px solid rgba(255, 255, 255, 0.15); backdrop-filter: blur(6px);">
+          <div class="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0" style="width: 42px; height: 42px; background: rgba(255, 255, 255, 0.22);">
+            <i class="{{ hero.stat_icon_4 }} fs-5" style="color: #fca5a5;"></i>
           </div>
           <div>
-            <span class="text-white-50 d-block" style="font-size: 0.72rem;">{{ hero.stat_label_4 }}</span>
-            <strong class="text-white small fs-6">{{ hero.stat_val_4 }}</strong>
+            <span class="text-white-50 d-block" style="font-size: 0.76rem;">{{ hero.stat_label_4 }}</span>
+            <strong class="text-white fs-6">{{ hero.stat_val_4 }}</strong>
           </div>
         </div>
       </div>
