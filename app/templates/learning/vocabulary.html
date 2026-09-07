@@ -10,11 +10,12 @@
 
     <div>
       <h1 class="fw-bold mb-0" style="font-size: 1.35rem; letter-spacing: -0.02em; color: #0f172a;">
-        Từ vựng &amp; Flashcards
+        {{ 'Thư viện Từ vựng & Flashcards'|safe }}
       </h1>
       <p class="text-muted mb-0 mt-1" style="font-size: 0.8rem;">
+        Tổng từ vựng: <strong>{{ total_vocab_count }}</strong> &nbsp;·&nbsp;
         Đã học <strong>{{ overall_progress_pct }}%</strong> &nbsp;·&nbsp;
-        Hôm nay: <strong>{{ today_learned_count + today_reviewed_count }}/{{ daily_goal }}</strong> từ
+        Mục tiêu ngày: <strong>{{ today_learned_count + today_reviewed_count }}/{{ daily_goal }}</strong> từ
       </p>
     </div>
 

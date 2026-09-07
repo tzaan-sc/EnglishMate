@@ -6,7 +6,7 @@ Hierarchical classification: Category -> Subcategory / Course -> Lesson Unit / T
 VOCAB_CATEGORIES = {
     "cefr": {
         "key": "cefr",
-        "title": "Từ vựng Chuẩn CEFR",
+        "title": "Từ vựng Chuẩn CEFR (A0-C2)",
         "subtitle": "Khung tham chiếu Châu Âu (A0 - C2)",
         "badge": "Chuẩn Quốc Tế",
         "icon": "ph-globe-hemisphere-west",
