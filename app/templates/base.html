@@ -57,7 +57,7 @@
           <!-- 2. Streak badge -->
           {% set current_streak_num = current_user.get_current_streak() if current_user.is_authenticated else 0 %}
           <div class="topbar-pill {% if current_streak_num > 0 %}streak-active{% else %}streak-inactive{% endif %}" title="Chuỗi ngày học (Kỷ lục: {{ current_user.longest_streak if current_user.is_authenticated else 0 }} ngày)">
-            <i class="ph ph-flame topbar-pill-icon"></i>
+            <i class="{% if current_streak_num > 0 %}ph-fill ph-flame{% else %}ph ph-flame{% endif %} topbar-pill-icon"></i>
             <span class="topbar-pill-value">{{ current_streak_num }}</span>
           </div>
 

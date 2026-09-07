@@ -98,10 +98,19 @@
           </div>
 
           <div class="d-flex align-items-center gap-3 mb-3">
+            {% if streak_num > 0 %}
             <div class="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0"
-                 style="width: 52px; height: 52px; background-color: var(--accent-streak-subtle); color: var(--accent-streak); font-size: 1.75rem;">
-              🔥
+                 style="width: 54px; height: 54px; background: linear-gradient(135deg, #fff7ed 0%, #ffedd5 50%, #fee2e2 100%); border: 2px solid #fdba74; box-shadow: 0 4px 14px rgba(249, 115, 22, 0.28);">
+              <span class="streak-flame-lit d-flex align-items-center justify-content-center">
+                <i class="ph-fill ph-flame" style="font-size: 2.15rem; color: #ea580c; background: linear-gradient(180deg, #f97316 0%, #dc2626 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;"></i>
+              </span>
             </div>
+            {% else %}
+            <div class="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0"
+                 style="width: 54px; height: 54px; background-color: #f1f5f9; border: 1.5px dashed #cbd5e1;">
+              <i class="ph-bold ph-flame text-muted" style="font-size: 1.85rem; opacity: 0.5;"></i>
+            </div>
+            {% endif %}
             <div>
               <div class="d-flex align-items-baseline gap-1.5">
                 <span class="fs-2 fw-800 text-dark lh-1">{{ streak_num }}</span>

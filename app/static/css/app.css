@@ -62,6 +62,12 @@
     --purple: #8b5cf6;
     --purple-subtle: #f5f3ff;
 
+    /* Fiery Streak Accents */
+    --accent-streak: #ea580c;
+    --accent-streak-subtle: #ffedd5;
+    --accent-streak-border: #fdba74;
+    --accent-streak-glow: rgba(249, 115, 22, 0.35);
+
     /* Elevation & Shadows */
     --shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.08), 0 8px 10px -6px rgba(15, 23, 42, 0.04);
     --shadow-sm: 0 1px 2px 0 rgba(15, 23, 42, 0.05);
@@ -3126,15 +3132,33 @@ a:hover {
 
 /* Streak — Active */
 .topbar-pill.streak-active {
-    background-color: #fef2ec;
-    border-color: #fbbf9a;
+    background: linear-gradient(135deg, #fff7ed 0%, #ffedd5 100%);
+    border-color: #fdba74;
     color: #c2410c;
+    box-shadow: 0 2px 6px rgba(249, 115, 22, 0.15);
 }
 .topbar-pill.streak-active .topbar-pill-icon {
-    color: #ea580c;
+    color: #ea580c !important;
+    filter: drop-shadow(0 1px 3px rgba(234, 88, 12, 0.4));
 }
 .topbar-pill.streak-active .topbar-pill-divider {
     background-color: #fdba74;
+}
+
+@keyframes flame-glow {
+    0%, 100% {
+        transform: scale(1);
+        filter: drop-shadow(0 2px 6px rgba(234, 88, 12, 0.45));
+    }
+    50% {
+        transform: scale(1.06);
+        filter: drop-shadow(0 4px 12px rgba(239, 68, 68, 0.65));
+    }
+}
+
+.streak-flame-lit {
+    display: inline-block;
+    animation: flame-glow 2.4s ease-in-out infinite;
 }
 
 /* Level pill */
