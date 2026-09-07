@@ -37,6 +37,7 @@ class Config:
     SECRET_KEY = os.getenv("SECRET_KEY", "dev-only-change-me")
     SQLALCHEMY_DATABASE_URI = _resolve_db_uri()
     SQLALCHEMY_TRACK_MODIFICATIONS = False
+    TEMPLATES_AUTO_RELOAD = True
 
     # OAuth Credentials
     GOOGLE_CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID", "")

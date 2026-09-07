@@ -44,5 +44,25 @@ def create_app(config_object=Config):
     def not_found(_error):
         return render_template("errors/404.html"), 404
 
+    @app.route("/_dev_live_reload_check")
+    def dev_live_reload_check():
+        import os
+        from flask import jsonify
+        base = Path(__file__).resolve().parent
+        max_mtime = 0
+        for check_dir in [base / "templates", base / "static"]:
+            for root, dirs, files in os.walk(check_dir):
+                if "uploads" in root:
+                    continue
+                for f in files:
+                    fp = os.path.join(root, f)
+                    try:
+                        mt = os.path.getmtime(fp)
+                        if mt > max_mtime:
+                            max_mtime = mt
+                    except OSError:
+                        pass
+        return jsonify({"timestamp": max_mtime})
+
     return app
 

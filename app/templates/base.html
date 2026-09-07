@@ -251,5 +251,31 @@
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
   <script src="{{ url_for('static', filename='js/app.js') }}"></script>
   {% block scripts %}{% endblock %}
+
+  {% if (config.DEBUG or config.TEMPLATES_AUTO_RELOAD) and not config.TESTING %}
+  <!-- Development Auto Live-Reload Script -->
+  <script>
+    (function() {
+      let lastTimestamp = null;
+      let isReloading = false;
+      setInterval(async () => {
+        if (isReloading) return;
+        try {
+          const res = await fetch('/_dev_live_reload_check');
+          if (res.ok) {
+            const data = await res.json();
+            if (lastTimestamp === null) {
+              lastTimestamp = data.timestamp;
+            } else if (data.timestamp > lastTimestamp) {
+              isReloading = true;
+              console.log('[EnglishMate LiveReload] Phát hiện thay đổi file giao diện, đang tự động reload trang...');
+              window.location.reload();
+            }
+          }
+        } catch (e) {}
+      }, 1200);
+    })();
+  </script>
+  {% endif %}
 </body>
 </html>
