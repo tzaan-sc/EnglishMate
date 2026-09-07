@@ -4,197 +4,234 @@
 {% block content %}
 <div class="container-fluid max-w-7xl py-4">
 
-  <!-- TOP HERO: USER LEVEL & PROGRESSION CARD -->
-  <div class="card border-0 rounded-4 shadow-sm mb-4 overflow-hidden" style="background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #4338ca 100%); color: #ffffff;">
-    <div class="card-body p-4 p-md-5 position-relative">
-      <!-- Background Glow Effect -->
-      <div class="position-absolute rounded-circle" style="width: 250px; height: 250px; background: radial-gradient(circle, rgba(168,85,247,0.3) 0%, rgba(0,0,0,0) 70%); top: -50px; right: -50px; pointer-events: none;"></div>
+  <!-- ZONE 1: HERO & STATS BANNER -->
+  <div class="hero-brand-card p-4 p-lg-4 mb-4 shadow-sm">
+    <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3 mb-3 position-relative" style="z-index: 2;">
+      <!-- User Progression Identity -->
+      <div class="d-flex align-items-center gap-3.5 flex-grow-1" style="max-width: 720px;">
+        <div class="position-relative flex-shrink-0">
+          <div class="rounded-circle overflow-hidden shadow-sm d-flex align-items-center justify-content-center bg-white text-primary border border-3 border-white-50"
+               style="width: 82px; height: 82px; font-size: 2.2rem; font-weight: 800; box-shadow: 0 4px 16px rgba(0,0,0,0.15);">
+            {% if current_user.avatar and current_user.avatar != 'default_avatar.png' %}
+            <img src="{{ url_for('static', filename='uploads/avatars/' + current_user.avatar) }}" class="w-100 h-100 object-fit-cover" alt="Avatar">
+            {% else %}
+            {{ current_user.username[0].upper() }}
+            {% endif %}
+          </div>
+          <span class="position-absolute bottom-0 end-0 badge rounded-pill bg-warning text-dark border border-2 border-white fw-bold px-2 py-0.5 shadow-sm" style="font-size: 0.72rem;">
+            Lv.{{ level_info.level }}
+          </span>
+        </div>
 
-      <div class="row align-items-center g-4">
-        <!-- Avatar & Basic Info -->
-        <div class="col-lg-7 d-flex align-items-center gap-3 gap-md-4">
-          <div class="position-relative flex-shrink-0">
-            <div class="rounded-circle d-flex align-items-center justify-content-center fw-800 text-white shadow-lg border border-3 border-white-50"
-                 style="width: 84px; height: 84px; font-size: 2rem; background: linear-gradient(135deg, #ec4899 0%, #8b5cf6 100%);">
-              {% if current_user.avatar and current_user.avatar != 'default_avatar.png' %}
-              <img src="{{ url_for('static', filename='uploads/avatars/' + current_user.avatar) }}" class="w-100 h-100 rounded-circle object-fit-cover" alt="Avatar">
-              {% else %}
-              {{ current_user.username[0].upper() }}
-              {% endif %}
-            </div>
-            <span class="position-absolute bottom-0 end-0 badge rounded-pill bg-warning text-dark border border-2 border-white fw-bold px-2 py-1 shadow-sm" style="font-size: 0.75rem;">
-              Lv.{{ level_info.level }}
+        <div class="flex-grow-1">
+          <div class="d-inline-flex align-items-center gap-1.5 px-2.5 py-0.5 rounded-pill mb-1.5" style="background: rgba(255, 255, 255, 0.18); backdrop-filter: blur(8px); font-size: 0.74rem; font-weight: 700; color: #a7f3d0;">
+            <i class="ph-bold ph-trophy"></i>
+            <span>BẢNG VINH DANH & HỆ THỐNG TRÒ CHƠI HÓA</span>
+          </div>
+          <div class="d-flex align-items-center gap-2 mb-1 flex-wrap">
+            <h3 class="fw-bold text-white mb-0" style="letter-spacing: -0.01em;">
+              {{ current_user.full_name or current_user.username }}
+            </h3>
+            <span class="badge rounded-pill px-2.5 py-0.5 fw-bold" style="background: rgba(255,255,255,0.2); font-size: 0.72rem; color: #fef08a;">
+              Danh hiệu: {{ level_info.title }}
             </span>
           </div>
 
-          <div class="flex-grow-1">
-            <div class="d-flex align-items-center gap-2 mb-1 flex-wrap">
-              <h3 class="fw-800 text-white mb-0">{{ current_user.full_name or current_user.username }}</h3>
-              <span class="badge rounded-pill bg-white-10 text-white border border-white-20 px-3 py-1 fw-bold small">
-                {{ level_info.title }}
-              </span>
+          <!-- Level Progress Bar in Hero -->
+          <div class="mt-2" style="max-width: 480px;">
+            <div class="d-flex justify-content-between text-white small mb-1" style="font-size: 0.75rem;">
+              <span class="fw-semibold">Tiến độ cấp độ {{ level_info.level }}</span>
+              <span class="text-warning fw-bold">{{ level_info.current_xp }} XP {% if level_info.needed_xp > 0 %}<span class="text-white-50 fw-normal">(còn {{ level_info.needed_xp }} XP để lên Lv.{{ level_info.level + 1 }})</span>{% endif %}</span>
             </div>
-            <p class="text-white-50 mb-3 small">
-              Tích lũy kinh nghiệm để mở khóa huy hiệu và thăng hạng trên Bảng vàng!
-            </p>
-
-            <!-- Level Progress Bar -->
-            <div>
-              <div class="d-flex justify-content-between text-white small mb-1 fw-bold">
-                <span>Cấp độ {{ level_info.level }}</span>
-                <span class="text-warning">{{ level_info.current_xp }} XP {% if level_info.needed_xp > 0 %}<span class="text-white-50 fw-normal">(còn {{ level_info.needed_xp }} XP để lên Lv.{{ level_info.level + 1 }})</span>{% endif %}</span>
-              </div>
-              <div class="progress rounded-pill bg-white-20 p-0.5" style="height: 12px;">
-                <div class="progress-bar rounded-pill bg-warning progress-bar-striped progress-bar-animated" role="progressbar"
-                     style="width: {{ level_info.progress_pct }}%;" aria-valuenow="{{ level_info.progress_pct }}" aria-valuemin="0" aria-valuemax="100"></div>
-              </div>
+            <div class="progress rounded-pill bg-white-20 p-0.5" style="height: 8px; background: rgba(255,255,255,0.2);">
+              <div class="progress-bar rounded-pill bg-warning progress-bar-striped progress-bar-animated" role="progressbar"
+                   style="width: {{ level_info.progress_pct }}%;" aria-valuenow="{{ level_info.progress_pct }}" aria-valuemin="0" aria-valuemax="100"></div>
             </div>
           </div>
         </div>
+      </div>
 
-        <!-- Quick Stats Highlights -->
-        <div class="col-lg-5">
-          <div class="row g-3">
-            <div class="col-4">
-              <div class="bg-white-10 border border-white-10 rounded-4 p-3 text-center backdrop-blur">
-                <div class="fs-4 mb-1">⚡</div>
-                <div class="fw-800 text-white fs-5">{{ current_user.xp }}</div>
-                <div class="text-white-50 small" style="font-size: 0.7rem;">Tổng XP</div>
-              </div>
-            </div>
-            <div class="col-4">
-              <div class="bg-white-10 border border-white-10 rounded-4 p-3 text-center backdrop-blur">
-                <div class="fs-4 mb-1">🔥</div>
-                <div class="fw-800 text-warning fs-5">{{ current_user.get_current_streak() }}</div>
-                <div class="text-white-50 small" style="font-size: 0.7rem;">Chuỗi ngày</div>
-              </div>
-            </div>
-            <div class="col-4">
-              <div class="bg-white-10 border border-white-10 rounded-4 p-3 text-center backdrop-blur">
-                <div class="fs-4 mb-1">🎖️</div>
-                <div class="fw-800 text-info fs-5">{{ unlocked_count }}/{{ total_badges_count }}</div>
-                <div class="text-white-50 small" style="font-size: 0.7rem;">Huy hiệu</div>
-              </div>
-            </div>
+      <!-- Action Buttons Hub -->
+      <div class="d-flex gap-2 align-items-center flex-wrap">
+        <a href="{{ url_for('learning.lessons') }}" class="btn btn-light rounded-pill px-3.5 py-1.5 fw-bold text-primary shadow-xs d-inline-flex align-items-center gap-1.5" style="font-size: 0.84rem;">
+          <i class="ph-bold ph-graduation-cap fs-6"></i>
+          <span>Học bài nhận XP</span>
+        </a>
+        <a href="{{ url_for('learning.progress') }}" class="btn btn-outline-light rounded-pill px-3.5 py-1.5 fw-semibold d-inline-flex align-items-center gap-1.5" style="font-size: 0.84rem; background: rgba(255,255,255,0.06); border-color: rgba(255,255,255,0.25);">
+          <i class="ph-bold ph-chart-line-up fs-6"></i>
+          <span>Tiến độ cá nhân</span>
+        </a>
+      </div>
+    </div>
+
+    <!-- 4 Clean Stat Pills -->
+    <div class="row g-3 g-lg-4 pt-4 mt-3 border-top" style="border-color: rgba(255, 255, 255, 0.15) !important; position: relative; z-index: 2;">
+      <div class="col-6 col-md-3">
+        <div class="d-flex align-items-center gap-3 p-3 px-3.5 rounded-4" style="background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.12); backdrop-filter: blur(4px);">
+          <div class="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0" style="width: 40px; height: 40px; background: rgba(255, 255, 255, 0.2);">
+            <i class="ph-bold ph-crown text-white fs-5"></i>
+          </div>
+          <div>
+            <span class="text-white-50 d-block" style="font-size: 0.74rem;">Cấp độ hiện tại</span>
+            <strong class="text-white fs-6">Lv.{{ level_info.level }} · {{ level_info.title }}</strong>
+          </div>
+        </div>
+      </div>
+      <div class="col-6 col-md-3">
+        <div class="d-flex align-items-center gap-3 p-3 px-3.5 rounded-4" style="background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.12); backdrop-filter: blur(4px);">
+          <div class="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0" style="width: 40px; height: 40px; background: rgba(255, 255, 255, 0.2);">
+            <i class="ph-bold ph-lightning fs-5" style="color: #6ee7b7;"></i>
+          </div>
+          <div>
+            <span class="text-white-50 d-block" style="font-size: 0.74rem;">Tổng kinh nghiệm</span>
+            <strong class="text-white fs-6">{{ current_user.xp }} XP</strong>
+          </div>
+        </div>
+      </div>
+      <div class="col-6 col-md-3">
+        <div class="d-flex align-items-center gap-3 p-3 px-3.5 rounded-4" style="background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.12); backdrop-filter: blur(4px);">
+          <div class="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0" style="width: 40px; height: 40px; background: rgba(255, 255, 255, 0.2);">
+            <i class="ph-bold ph-flame fs-5" style="color: #fde047;"></i>
+          </div>
+          <div>
+            <span class="text-white-50 d-block" style="font-size: 0.74rem;">Chuỗi ngày học</span>
+            <strong class="text-white fs-6">{{ current_user.get_current_streak() }} ngày liên tiếp 🔥</strong>
+          </div>
+        </div>
+      </div>
+      <div class="col-6 col-md-3">
+        <div class="d-flex align-items-center gap-3 p-3 px-3.5 rounded-4" style="background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.12); backdrop-filter: blur(4px);">
+          <div class="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0" style="width: 40px; height: 40px; background: rgba(255, 255, 255, 0.2);">
+            <i class="ph-bold ph-medal fs-5" style="color: #93c5fd;"></i>
+          </div>
+          <div>
+            <span class="text-white-50 d-block" style="font-size: 0.74rem;">Huy hiệu đã đạt</span>
+            <strong class="text-white fs-6">{{ unlocked_count }}/{{ total_badges_count }} huy hiệu</strong>
           </div>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- NAVIGATION TABS -->
-  <ul class="nav nav-pills nav-fill bg-white p-2 rounded-4 shadow-sm border mb-4" id="gamificationTabs" role="tablist">
-    <li class="nav-item" role="presentation">
-      <button class="nav-link rounded-pill fw-bold py-2.5 d-flex align-items-center justify-content-center gap-2 {% if active_tab == 'leaderboard' %}active{% endif %}"
-              id="tab-leaderboard" data-bs-toggle="pill" data-bs-target="#content-leaderboard" type="button" role="tab">
-        <i class="ph ph-trophy fs-5"></i> <span>Bảng Xếp Hạng</span>
-      </button>
-    </li>
-    <li class="nav-item" role="presentation">
-      <button class="nav-link rounded-pill fw-bold py-2.5 d-flex align-items-center justify-content-center gap-2 {% if active_tab == 'badges' %}active{% endif %}"
-              id="tab-badges" data-bs-toggle="pill" data-bs-target="#content-badges" type="button" role="tab">
-        <i class="ph ph-medal fs-5"></i> <span>Huy Hiệu Thành Tích</span>
-        <span class="badge bg-secondary-subtle text-dark rounded-pill px-2 py-0.5 ms-1">{{ unlocked_count }}</span>
-      </button>
-    </li>
-    <li class="nav-item" role="presentation">
-      <button class="nav-link rounded-pill fw-bold py-2.5 d-flex align-items-center justify-content-center gap-2 {% if active_tab == 'challenges' %}active{% endif %}"
-              id="tab-challenges" data-bs-toggle="pill" data-bs-target="#content-challenges" type="button" role="tab">
-        <i class="ph ph-target fs-5"></i> <span>Thử Thách & Mục Tiêu</span>
-      </button>
-    </li>
-  </ul>
+  <!-- ZONE 2: PRIMARY NAVIGATION TABS (Pill Style) -->
+  <div class="d-flex gap-2 flex-wrap mb-4 align-items-center" id="gamificationTabNav" role="tablist">
+    <button class="btn {% if active_tab == 'leaderboard' %}btn-primary text-white shadow-xs fw-bold{% else %}btn-light border text-secondary fw-semibold{% endif %} rounded-pill px-3.5 py-1.5 d-inline-flex align-items-center gap-1.5 gamification-tab-btn"
+            id="tab-leaderboard" data-bs-toggle="pill" data-bs-target="#content-leaderboard" type="button" role="tab" style="font-size: 0.84rem;">
+      <i class="ph-bold ph-trophy"></i>
+      <span>Bảng Xếp Hạng</span>
+    </button>
+    <button class="btn {% if active_tab == 'badges' %}btn-primary text-white shadow-xs fw-bold{% else %}btn-light border text-secondary fw-semibold{% endif %} rounded-pill px-3.5 py-1.5 d-inline-flex align-items-center gap-1.5 gamification-tab-btn"
+            id="tab-badges" data-bs-toggle="pill" data-bs-target="#content-badges" type="button" role="tab" style="font-size: 0.84rem;">
+      <i class="ph-bold ph-medal"></i>
+      <span>Huy Hiệu Thành Tích</span>
+      <span class="badge rounded-pill bg-primary-subtle text-primary border border-primary-subtle" style="font-size: 0.7rem;">{{ unlocked_count }}</span>
+    </button>
+    <button class="btn {% if active_tab == 'challenges' %}btn-primary text-white shadow-xs fw-bold{% else %}btn-light border text-secondary fw-semibold{% endif %} rounded-pill px-3.5 py-1.5 d-inline-flex align-items-center gap-1.5 gamification-tab-btn"
+            id="tab-challenges" data-bs-toggle="pill" data-bs-target="#content-challenges" type="button" role="tab" style="font-size: 0.84rem;">
+      <i class="ph-bold ph-target"></i>
+      <span>Thử Thách & Mục Tiêu</span>
+    </button>
+  </div>
 
-  <!-- TABS CONTENT AREA -->
+  <!-- ZONE 3: TAB CONTENT AREAS -->
   <div class="tab-content" id="gamificationTabContent">
 
     <!-- ========================================================================= -->
-    <!-- TAB 1: LEADERBOARDS -->
+    <!-- TAB 1: BẢNG XẾP HẠNG (LEADERBOARDS)                                       -->
     <!-- ========================================================================= -->
     <div class="tab-pane fade {% if active_tab == 'leaderboard' %}show active{% endif %}" id="content-leaderboard" role="tabpanel">
-      
-      <!-- Sub-filter Nav for Leaderboards -->
-      <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
-        <h5 class="fw-bold text-dark mb-0 d-flex align-items-center gap-2">
-          <i class="ph-fill ph-ranking text-warning"></i> Bảng Vinh Danh Học Viên
-        </h5>
-        
-        <ul class="nav nav-pills bg-light p-1 rounded-pill border" id="leaderboardSubTabs" role="tablist">
-          <li class="nav-item" role="presentation">
-            <button class="nav-link active rounded-pill px-3 py-1.5 small fw-bold" id="sub-alltime-tab" data-bs-toggle="pill" data-bs-target="#sub-alltime" type="button">
+
+      <!-- Leaderboard Header & Sub-filter Pills -->
+      <div class="card card-modern p-4 mb-4">
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
+          <div class="d-flex align-items-center gap-2.5">
+            <div class="rounded-3 d-inline-flex align-items-center justify-content-center bg-warning-subtle text-warning-emphasis" style="width: 38px; height: 38px; font-size: 1.2rem;">
+              <i class="ph-bold ph-ranking"></i>
+            </div>
+            <div>
+              <h5 class="fw-bold mb-0 text-dark">Bảng Vinh Danh Học Viên</h5>
+              <span class="text-secondary small">Thi đua học tập, tích lũy điểm kinh nghiệm và giữ vững chuỗi ngày học.</span>
+            </div>
+          </div>
+
+          <!-- Sub-filter Nav Pills -->
+          <div class="d-flex gap-1.5 p-1 bg-light rounded-pill border" id="leaderboardSubTabs" role="tablist">
+            <button class="btn btn-sm btn-primary rounded-pill px-3 py-1.5 fw-bold shadow-xs subtab-btn active" id="sub-alltime-tab" data-bs-toggle="pill" data-bs-target="#sub-alltime" type="button" style="font-size: 0.8rem;">
               Toàn thời gian (XP)
             </button>
-          </li>
-          <li class="nav-item" role="presentation">
-            <button class="nav-link rounded-pill px-3 py-1.5 small fw-bold" id="sub-weekly-tab" data-bs-toggle="pill" data-bs-target="#sub-weekly" type="button">
+            <button class="btn btn-sm btn-light border-0 text-secondary rounded-pill px-3 py-1.5 fw-semibold subtab-btn" id="sub-weekly-tab" data-bs-toggle="pill" data-bs-target="#sub-weekly" type="button" style="font-size: 0.8rem;">
               Tuần này
             </button>
-          </li>
-          <li class="nav-item" role="presentation">
-            <button class="nav-link rounded-pill px-3 py-1.5 small fw-bold" id="sub-streak-tab" data-bs-toggle="pill" data-bs-target="#sub-streak" type="button">
+            <button class="btn btn-sm btn-light border-0 text-secondary rounded-pill px-3 py-1.5 fw-semibold subtab-btn" id="sub-streak-tab" data-bs-toggle="pill" data-bs-target="#sub-streak" type="button" style="font-size: 0.8rem;">
               Chuỗi học (Streak)
             </button>
-          </li>
-        </ul>
+          </div>
+        </div>
       </div>
 
       <div class="tab-content" id="leaderboardSubTabContent">
-        
-        <!-- ALL-TIME LEADERBOARD -->
+
+        <!-- SUB-TAB 1: ALL-TIME LEADERBOARD -->
         <div class="tab-pane fade show active" id="sub-alltime" role="tabpanel">
           {% if all_time_leaders|length >= 3 %}
           <!-- PODIUM TOP 3 -->
-          <div class="row g-3 justify-content-center align-items-end mb-5 text-center pt-4">
+          <div class="row g-3 justify-content-center align-items-end mb-5 text-center pt-3">
             <!-- 2nd Place -->
             <div class="col-4 col-md-3">
-              <div class="podium-card p-3 rounded-4 bg-white border shadow-sm position-relative">
-                <div class="podium-badge bg-secondary text-white position-absolute top-0 start-50 translate-middle rounded-circle shadow-sm fw-bold">2</div>
-                <div class="rounded-circle mx-auto mb-2 d-flex align-items-center justify-content-center text-white fw-bold"
+              <div class="card card-modern p-3 rounded-4 position-relative border">
+                <div class="position-absolute top-0 start-50 translate-middle badge rounded-circle bg-secondary text-white shadow-sm fw-bold d-flex align-items-center justify-content-center" style="width: 32px; height: 32px; font-size: 0.95rem;">
+                  2
+                </div>
+                <div class="rounded-circle mx-auto mt-2 mb-2 d-flex align-items-center justify-content-center text-white fw-bold shadow-xs"
                      style="width: 58px; height: 58px; font-size: 1.3rem; background: #94a3b8;">
                   {{ all_time_leaders[1].username[0].upper() }}
                 </div>
-                <h6 class="fw-bold text-dark text-truncate mb-1">{{ all_time_leaders[1].full_name or all_time_leaders[1].username }}</h6>
-                <span class="badge bg-secondary-subtle text-secondary rounded-pill px-2.5 py-1 small fw-bold mb-2">Lv.{{ all_time_leaders[1].get_level() }}</span>
-                <div class="fw-800 text-primary fs-6">{{ all_time_leaders[1].xp }} XP</div>
+                <h6 class="fw-bold text-dark text-truncate mb-1" style="font-size: 0.92rem;">{{ all_time_leaders[1].full_name or all_time_leaders[1].username }}</h6>
+                <span class="badge bg-secondary-subtle text-secondary rounded-pill px-2.5 py-0.5 small fw-bold mb-2">Lv.{{ all_time_leaders[1].get_level() }}</span>
+                <div class="fw-bold text-primary fs-6">{{ all_time_leaders[1].xp }} XP</div>
               </div>
             </div>
 
             <!-- 1st Place (Winner Gold) -->
             <div class="col-4 col-md-3">
-              <div class="podium-card p-4 rounded-4 bg-white border border-warning shadow position-relative" style="transform: scale(1.08); z-index: 2;">
-                <div class="podium-crown position-absolute start-50 translate-middle-x" style="top: -26px; font-size: 1.8rem;">👑</div>
-                <div class="podium-badge bg-warning text-dark position-absolute top-0 start-50 translate-middle rounded-circle shadow-sm fw-800">1</div>
-                <div class="rounded-circle mx-auto mb-2 d-flex align-items-center justify-content-center text-white fw-bold shadow"
-                     style="width: 70px; height: 70px; font-size: 1.6rem; background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);">
+              <div class="card card-modern p-4 rounded-4 position-relative border border-2 border-warning shadow-sm" style="transform: scale(1.05); z-index: 2;">
+                <div class="position-absolute start-50 translate-middle-x" style="top: -26px; font-size: 1.9rem;">👑</div>
+                <div class="position-absolute top-0 start-50 translate-middle badge rounded-circle bg-warning text-dark shadow-sm fw-bold d-flex align-items-center justify-content-center" style="width: 34px; height: 34px; font-size: 1rem;">
+                  1
+                </div>
+                <div class="rounded-circle mx-auto mt-2 mb-2 d-flex align-items-center justify-content-center text-white fw-bold shadow"
+                     style="width: 68px; height: 68px; font-size: 1.6rem; background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);">
                   {{ all_time_leaders[0].username[0].upper() }}
                 </div>
-                <h6 class="fw-800 text-dark text-truncate mb-1">{{ all_time_leaders[0].full_name or all_time_leaders[0].username }}</h6>
-                <span class="badge bg-warning-subtle text-warning-emphasis rounded-pill px-2.5 py-1 small fw-bold mb-2">Lv.{{ all_time_leaders[0].get_level() }}</span>
-                <div class="fw-800 text-warning-emphasis fs-5">{{ all_time_leaders[0].xp }} XP</div>
+                <h6 class="fw-bold text-dark text-truncate mb-1" style="font-size: 1rem;">{{ all_time_leaders[0].full_name or all_time_leaders[0].username }}</h6>
+                <span class="badge bg-warning-subtle text-warning-emphasis rounded-pill px-2.5 py-0.5 small fw-bold mb-2">Lv.{{ all_time_leaders[0].get_level() }}</span>
+                <div class="fw-bold text-warning-emphasis fs-5">{{ all_time_leaders[0].xp }} XP</div>
               </div>
             </div>
 
             <!-- 3rd Place -->
             <div class="col-4 col-md-3">
-              <div class="podium-card p-3 rounded-4 bg-white border shadow-sm position-relative">
-                <div class="podium-badge bg-amber text-white position-absolute top-0 start-50 translate-middle rounded-circle shadow-sm fw-bold" style="background-color: #b45309;">3</div>
-                <div class="rounded-circle mx-auto mb-2 d-flex align-items-center justify-content-center text-white fw-bold"
+              <div class="card card-modern p-3 rounded-4 position-relative border">
+                <div class="position-absolute top-0 start-50 translate-middle badge rounded-circle text-white shadow-sm fw-bold d-flex align-items-center justify-content-center" style="width: 32px; height: 32px; font-size: 0.95rem; background-color: #b45309;">
+                  3
+                </div>
+                <div class="rounded-circle mx-auto mt-2 mb-2 d-flex align-items-center justify-content-center text-white fw-bold shadow-xs"
                      style="width: 58px; height: 58px; font-size: 1.3rem; background: #b45309;">
                   {{ all_time_leaders[2].username[0].upper() }}
                 </div>
-                <h6 class="fw-bold text-dark text-truncate mb-1">{{ all_time_leaders[2].full_name or all_time_leaders[2].username }}</h6>
-                <span class="badge bg-secondary-subtle text-secondary rounded-pill px-2.5 py-1 small fw-bold mb-2">Lv.{{ all_time_leaders[2].get_level() }}</span>
-                <div class="fw-800 text-primary fs-6">{{ all_time_leaders[2].xp }} XP</div>
+                <h6 class="fw-bold text-dark text-truncate mb-1" style="font-size: 0.92rem;">{{ all_time_leaders[2].full_name or all_time_leaders[2].username }}</h6>
+                <span class="badge bg-secondary-subtle text-secondary rounded-pill px-2.5 py-0.5 small fw-bold mb-2">Lv.{{ all_time_leaders[2].get_level() }}</span>
+                <div class="fw-bold text-primary fs-6">{{ all_time_leaders[2].xp }} XP</div>
               </div>
             </div>
           </div>
           {% endif %}
 
           <!-- Leaderboard Table -->
-          <div class="card border-0 rounded-4 shadow-sm bg-white overflow-hidden">
+          <div class="card card-modern p-0 overflow-hidden mb-5">
             <div class="table-responsive">
               <table class="table table-hover align-middle mb-0">
-                <thead class="bg-light text-muted small fw-bold">
+                <thead class="table-light small fw-bold text-muted border-bottom">
                   <tr>
                     <th class="py-3 px-4" style="width: 80px;">Hạng</th>
                     <th class="py-3">Học viên</th>
@@ -205,8 +242,8 @@
                 </thead>
                 <tbody>
                   {% for user in all_time_leaders %}
-                  <tr class="{% if user.id == current_user.id %}table-primary fw-bold{% endif %}">
-                    <td class="px-4 fw-800 text-muted">
+                  <tr class="{% if user.id == current_user.id %}table-primary-subtle fw-bold{% endif %}">
+                    <td class="px-4 fw-bold text-muted">
                       {% if loop.index == 1 %}🥇 1
                       {% elif loop.index == 2 %}🥈 2
                       {% elif loop.index == 3 %}🥉 3
@@ -216,23 +253,23 @@
                     <td>
                       <div class="d-flex align-items-center gap-3">
                         <div class="rounded-circle d-flex align-items-center justify-content-center text-white fw-bold"
-                             style="width: 40px; height: 40px; font-size: 0.95rem; background: {% if loop.index == 1 %}#f59e0b{% elif loop.index == 2 %}#94a3b8{% elif loop.index == 3 %}#b45309{% else %}#6366f1{% endif %};">
+                             style="width: 40px; height: 40px; font-size: 0.95rem; background: {% if loop.index == 1 %}#f59e0b{% elif loop.index == 2 %}#94a3b8{% elif loop.index == 3 %}#b45309{% else %}#059669{% endif %};">
                           {{ user.username[0].upper() }}
                         </div>
                         <div>
-                          <div class="fw-bold text-dark">{{ user.full_name or user.username }} {% if user.id == current_user.id %}<span class="badge bg-primary text-white ms-1">Bạn</span>{% endif %}</div>
+                          <div class="fw-bold text-dark">{{ user.full_name or user.username }} {% if user.id == current_user.id %}<span class="badge bg-primary text-white ms-1 rounded-pill" style="font-size: 0.68rem;">Bạn</span>{% endif %}</div>
                           <small class="text-muted" style="font-size: 0.74rem;">Tham gia: {{ user.created_at.strftime('%m/%Y') }}</small>
                         </div>
                       </div>
                     </td>
                     <td class="text-center">
-                      <span class="badge bg-purple-subtle text-purple rounded-pill px-2.5 py-1 fw-bold small">Lv.{{ user.get_level() }}</span>
+                      <span class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill px-2.5 py-0.5 fw-bold small">Lv.{{ user.get_level() }}</span>
                     </td>
                     <td class="text-center">
-                      <span class="badge bg-warning-subtle text-warning-emphasis rounded-pill px-2.5 py-1 fw-bold small">🔥 {{ user.current_streak or 0 }}</span>
+                      <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle rounded-pill px-2.5 py-0.5 fw-bold small">🔥 {{ user.current_streak or 0 }}</span>
                     </td>
                     <td class="text-end px-4">
-                      <span class="fw-800 text-primary fs-6">{{ user.xp }} XP</span>
+                      <span class="fw-bold text-primary fs-6">{{ user.xp }} XP</span>
                     </td>
                   </tr>
                   {% endfor %}
@@ -242,12 +279,12 @@
           </div>
         </div>
 
-        <!-- WEEKLY LEADERBOARD -->
+        <!-- SUB-TAB 2: WEEKLY LEADERBOARD -->
         <div class="tab-pane fade" id="sub-weekly" role="tabpanel">
-          <div class="card border-0 rounded-4 shadow-sm bg-white overflow-hidden">
+          <div class="card card-modern p-0 overflow-hidden mb-5">
             <div class="table-responsive">
               <table class="table table-hover align-middle mb-0">
-                <thead class="bg-light text-muted small fw-bold">
+                <thead class="table-light small fw-bold text-muted border-bottom">
                   <tr>
                     <th class="py-3 px-4" style="width: 80px;">Hạng</th>
                     <th class="py-3">Học viên</th>
@@ -258,8 +295,8 @@
                 </thead>
                 <tbody>
                   {% for user in weekly_leaders %}
-                  <tr class="{% if user.id == current_user.id %}table-primary fw-bold{% endif %}">
-                    <td class="px-4 fw-800 text-muted">
+                  <tr class="{% if user.id == current_user.id %}table-primary-subtle fw-bold{% endif %}">
+                    <td class="px-4 fw-bold text-muted">
                       {% if loop.index == 1 %}🥇 1
                       {% elif loop.index == 2 %}🥈 2
                       {% elif loop.index == 3 %}🥉 3
@@ -269,22 +306,22 @@
                     <td>
                       <div class="d-flex align-items-center gap-2.5">
                         <div class="rounded-circle d-flex align-items-center justify-content-center text-white fw-bold"
-                             style="width: 38px; height: 38px; font-size: 0.95rem; background: #6366f1;">
+                             style="width: 38px; height: 38px; font-size: 0.95rem; background: #059669;">
                           {{ user.username[0].upper() }}
                         </div>
                         <div>
-                          <div class="fw-bold text-dark">{{ user.full_name or user.username }} {% if user.id == current_user.id %}<span class="badge bg-primary text-white ms-1">Bạn</span>{% endif %}</div>
+                          <div class="fw-bold text-dark">{{ user.full_name or user.username }} {% if user.id == current_user.id %}<span class="badge bg-primary text-white ms-1 rounded-pill" style="font-size: 0.68rem;">Bạn</span>{% endif %}</div>
                         </div>
                       </div>
                     </td>
                     <td class="text-center">
-                      <span class="badge bg-purple-subtle text-purple rounded-pill px-2.5 py-1 fw-bold small">Lv.{{ user.get_level() }}</span>
+                      <span class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill px-2.5 py-0.5 fw-bold small">Lv.{{ user.get_level() }}</span>
                     </td>
                     <td class="text-center">
-                      <span class="badge bg-warning-subtle text-warning-emphasis rounded-pill px-2.5 py-1 fw-bold small">🔥 {{ user.current_streak or 0 }}</span>
+                      <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle rounded-pill px-2.5 py-0.5 fw-bold small">🔥 {{ user.current_streak or 0 }}</span>
                     </td>
                     <td class="text-end px-4">
-                      <span class="fw-800 text-success fs-6">{{ user.xp }} XP</span>
+                      <span class="fw-bold text-success fs-6">{{ user.xp }} XP</span>
                     </td>
                   </tr>
                   {% endfor %}
@@ -294,12 +331,12 @@
           </div>
         </div>
 
-        <!-- STREAK LEADERBOARD -->
+        <!-- SUB-TAB 3: STREAK LEADERBOARD -->
         <div class="tab-pane fade" id="sub-streak" role="tabpanel">
-          <div class="card border-0 rounded-4 shadow-sm bg-white overflow-hidden">
+          <div class="card card-modern p-0 overflow-hidden mb-5">
             <div class="table-responsive">
               <table class="table table-hover align-middle mb-0">
-                <thead class="bg-light text-muted small fw-bold">
+                <thead class="table-light small fw-bold text-muted border-bottom">
                   <tr>
                     <th class="py-3 px-4" style="width: 80px;">Hạng</th>
                     <th class="py-3">Học viên</th>
@@ -310,8 +347,8 @@
                 </thead>
                 <tbody>
                   {% for user in streak_leaders %}
-                  <tr class="{% if user.id == current_user.id %}table-primary fw-bold{% endif %}">
-                    <td class="px-4 fw-800 text-muted">
+                  <tr class="{% if user.id == current_user.id %}table-primary-subtle fw-bold{% endif %}">
+                    <td class="px-4 fw-bold text-muted">
                       {% if loop.index == 1 %}🥇 1
                       {% elif loop.index == 2 %}🥈 2
                       {% elif loop.index == 3 %}🥉 3
@@ -325,18 +362,18 @@
                           {{ user.username[0].upper() }}
                         </div>
                         <div>
-                          <div class="fw-bold text-dark">{{ user.full_name or user.username }} {% if user.id == current_user.id %}<span class="badge bg-primary text-white ms-1">Bạn</span>{% endif %}</div>
+                          <div class="fw-bold text-dark">{{ user.full_name or user.username }} {% if user.id == current_user.id %}<span class="badge bg-primary text-white ms-1 rounded-pill" style="font-size: 0.68rem;">Bạn</span>{% endif %}</div>
                         </div>
                       </div>
                     </td>
                     <td class="text-center">
-                      <span class="badge bg-purple-subtle text-purple rounded-pill px-2.5 py-1 fw-bold small">Lv.{{ user.get_level() }}</span>
+                      <span class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill px-2.5 py-0.5 fw-bold small">Lv.{{ user.get_level() }}</span>
                     </td>
                     <td class="text-center text-muted small fw-bold">
                       {{ user.longest_streak or 0 }} ngày
                     </td>
                     <td class="text-end px-4">
-                      <span class="badge bg-warning text-dark rounded-pill px-3 py-1.5 fw-800 fs-6">🔥 {{ user.current_streak or 0 }} ngày</span>
+                      <span class="badge bg-warning text-dark rounded-pill px-3 py-1.5 fw-bold fs-6">🔥 {{ user.current_streak or 0 }} ngày</span>
                     </td>
                   </tr>
                   {% endfor %}
@@ -350,45 +387,54 @@
     </div>
 
     <!-- ========================================================================= -->
-    <!-- TAB 2: ACHIEVEMENT BADGES -->
+    <!-- TAB 2: HUY HIỆU THÀNH TÍCH (ACHIEVEMENT BADGES)                           -->
     <!-- ========================================================================= -->
     <div class="tab-pane fade {% if active_tab == 'badges' %}show active{% endif %}" id="content-badges" role="tabpanel">
-      <div class="d-flex justify-content-between align-items-center mb-4">
-        <div>
-          <h5 class="fw-bold text-dark mb-1 d-flex align-items-center gap-2">
-            <i class="ph-fill ph-medal text-primary"></i> Bộ Sưu Tập Huy Hiệu
-          </h5>
-          <p class="text-muted small mb-0">Hoàn thành các mốc học tập để nhận huy hiệu danh giá và thưởng XP!</p>
+      <div class="card card-modern p-4 mb-4">
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
+          <div class="d-flex align-items-center gap-2.5">
+            <div class="rounded-3 d-inline-flex align-items-center justify-content-center bg-primary-subtle text-primary" style="width: 38px; height: 38px; font-size: 1.2rem;">
+              <i class="ph-bold ph-medal"></i>
+            </div>
+            <div>
+              <h5 class="fw-bold text-dark mb-0">Bộ Sưu Tập Huy Hiệu</h5>
+              <span class="text-secondary small">Hoàn thành các mốc bài học, từ vựng và chuỗi ngày để nhận huy hiệu cùng phần thưởng XP!</span>
+            </div>
+          </div>
+          <span class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill px-3.5 py-1.5 fw-bold" style="font-size: 0.82rem;">
+            Đã mở khóa: {{ unlocked_count }} / {{ total_badges_count }} huy hiệu
+          </span>
         </div>
-        <span class="badge bg-primary-subtle text-primary border rounded-pill px-3 py-2 fw-bold">
-          Đã mở: {{ unlocked_count }} / {{ total_badges_count }}
-        </span>
       </div>
 
-      <div class="row g-3 row-cols-1 row-cols-md-2 row-cols-lg-4">
+      <div class="row g-4 row-cols-1 row-cols-md-2 row-cols-lg-4 mb-5">
         {% for item in badges_data %}
         {% set b = item.badge %}
         {% set is_unlocked = item.is_unlocked %}
         <div class="col">
-          <div class="card h-100 border-0 rounded-4 shadow-sm p-4 text-center transition-hover {% if is_unlocked %}bg-white border-2 border-primary-subtle{% else %}bg-light opacity-75{% endif %}">
-            <div class="badge-icon-box rounded-circle mx-auto mb-3 d-flex align-items-center justify-content-center shadow-xs"
-                 style="width: 72px; height: 72px; font-size: 2.2rem; background: {% if is_unlocked %}linear-gradient(135deg, #e0e7ff 0%, #ede9fe 100%){% else %}#e2e8f0; filter: grayscale(100%);{% endif %};">
-              {{ b.icon }}
+          <div class="card card-modern h-100 p-4 text-center d-flex flex-column justify-content-between position-relative transition-hover {% if is_unlocked %}border-primary-subtle{% else %}bg-light opacity-75{% endif %}">
+            <div>
+              <div class="rounded-circle mx-auto mb-3 d-flex align-items-center justify-content-center shadow-xs"
+                   style="width: 68px; height: 68px; font-size: 2.2rem; background: {% if is_unlocked %}linear-gradient(135deg, #e0e7ff 0%, #ede9fe 100%){% else %}#e2e8f0; filter: grayscale(100%);{% endif %};">
+                {{ b.icon }}
+              </div>
+              <h6 class="fw-bold text-dark mb-1" style="font-size: 0.95rem;">{{ b.name }}</h6>
+              <p class="text-secondary small mb-3" style="font-size: 0.8rem; line-height: 1.4;">{{ b.description }}</p>
             </div>
-            <h6 class="fw-800 text-dark mb-1">{{ b.name }}</h6>
-            <p class="text-muted small mb-3 line-clamp-2" style="font-size: 0.78rem;">{{ b.description }}</p>
             
-            <div class="mt-auto pt-2 border-top">
+            <div class="mt-auto pt-2.5 border-top" style="border-color: var(--border-light) !important;">
               {% if is_unlocked %}
               <div class="text-success small fw-bold d-flex align-items-center justify-content-center gap-1">
-                <i class="ph-fill ph-check-circle"></i> Đã mở khóa
+                <i class="ph-bold ph-check-circle"></i>
+                <span>Đã mở khóa</span>
               </div>
               {% if item.unlocked_at %}
-              <small class="text-muted" style="font-size: 0.68rem;">{{ item.unlocked_at.strftime('%d/%m/%Y') }}</small>
+              <small class="text-muted" style="font-size: 0.72rem;">Ngày đạt: {{ item.unlocked_at.strftime('%d/%m/%Y') }}</small>
               {% endif %}
               {% else %}
-              <div class="text-muted small fw-bold d-flex align-items-center justify-content-center gap-1">
-                <i class="ph ph-lock"></i> Chưa mở khóa (+{{ b.xp_reward }} XP)
+              <div class="text-muted small fw-semibold d-flex align-items-center justify-content-center gap-1">
+                <i class="ph-bold ph-lock"></i>
+                <span>Chưa mở (+{{ b.xp_reward }} XP)</span>
               </div>
               {% endif %}
             </div>
@@ -399,37 +445,37 @@
     </div>
 
     <!-- ========================================================================= -->
-    <!-- TAB 3: CHALLENGES & DAILY GOALS -->
+    <!-- TAB 3: THỬ THÁCH & MỤC TIÊU (CHALLENGES & DAILY GOALS)                     -->
     <!-- ========================================================================= -->
     <div class="tab-pane fade {% if active_tab == 'challenges' %}show active{% endif %}" id="content-challenges" role="tabpanel">
-      
+
       <!-- DAILY GOAL REWARD CHEST BANNER -->
-      <div class="card border-0 rounded-4 shadow-sm p-4 mb-4" style="background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%); border: 1px solid #a7f3d0 !important;">
+      <div class="card card-modern p-4 mb-4" style="background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%); border-color: #a7f3d0 !important;">
         <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
           <div class="d-flex align-items-center gap-3">
-            <div class="rounded-circle bg-success text-white d-flex align-items-center justify-content-center flex-shrink-0" style="width: 56px; height: 56px; font-size: 1.8rem;">
+            <div class="rounded-circle bg-success text-white d-flex align-items-center justify-content-center flex-shrink-0 shadow-xs" style="width: 52px; height: 52px; font-size: 1.8rem;">
               🎁
             </div>
             <div>
-              <h5 class="fw-800 text-success-emphasis mb-1">Mục Tiêu Học Tập Hàng Ngày</h5>
+              <h5 class="fw-bold text-success-emphasis mb-1">Mục Tiêu Học Tập Hàng Ngày</h5>
               <p class="text-success-emphasis small mb-0">Hoàn thành bài học để đạt mục tiêu và mở rương nhận thưởng <strong>+50 XP</strong> mỗi ngày!</p>
             </div>
           </div>
 
           <div class="d-flex align-items-center gap-3">
             {% if is_daily_claimed %}
-            <button class="btn btn-secondary rounded-pill px-4 fw-bold shadow-xs" disabled>
+            <button class="btn btn-secondary rounded-pill px-4 py-2 fw-bold shadow-xs" disabled>
               ✓ Đã nhận hôm nay
             </button>
             {% elif is_daily_goal_done %}
             <form method="post" action="{{ url_for('learning.claim_daily_goal_reward') }}" class="m-0">
               <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-              <button type="submit" class="btn btn-success rounded-pill px-4 fw-bold shadow-sm animate-bounce">
-                🎉 Mở Rương (+50 XP)
+              <button type="submit" class="btn btn-success rounded-pill px-4 py-2 fw-bold shadow-sm animate-bounce d-inline-flex align-items-center gap-1.5">
+                <span>🎉 Mở Rương (+50 XP)</span>
               </button>
             </form>
             {% else %}
-            <button class="btn btn-outline-success rounded-pill px-4 fw-bold" disabled>
+            <button class="btn btn-outline-success rounded-pill px-4 py-2 fw-bold" disabled>
               Chưa hoàn thành
             </button>
             {% endif %}
@@ -438,127 +484,131 @@
       </div>
 
       <!-- CHALLENGES GRID -->
-      <div class="row g-4">
+      <div class="row g-4 mb-5">
         <!-- Daily Challenges Column -->
         <div class="col-lg-6">
-          <div class="d-flex justify-content-between align-items-center mb-3">
-            <h6 class="fw-bold text-dark text-uppercase small tracking-wider mb-0 d-flex align-items-center gap-2">
-              <i class="ph-fill ph-sun text-warning fs-5"></i> Thử Thách Hàng Ngày
-            </h6>
-            <span class="badge bg-light text-muted border rounded-pill px-2.5 py-1 small">Làm mới lúc 00:00</span>
-          </div>
-
-          <div class="d-flex flex-column gap-3">
-            {% for uc in daily_challenges %}
-            {% set ch = uc.challenge %}
-            {% set pct = [100, ((uc.current_progress / ch.target) * 100)|int]|min if ch.target > 0 else 0 %}
-            <div class="card border-0 rounded-4 shadow-sm bg-white p-3.5 transition-hover">
-              <div class="d-flex justify-content-between align-items-start mb-2">
-                <div class="d-flex align-items-center gap-3">
-                  <div class="rounded-3 bg-light p-2 text-center" style="width: 44px; height: 44px; font-size: 1.4rem;">
-                    {{ ch.icon }}
-                  </div>
-                  <div>
-                    <h6 class="fw-bold text-dark mb-0.5">{{ ch.title }}</h6>
-                    <small class="text-muted" style="font-size: 0.78rem;">{{ ch.description }}</small>
-                  </div>
-                </div>
-                <span class="badge bg-warning-subtle text-warning-emphasis rounded-pill px-2.5 py-1 fw-bold small flex-shrink-0">
-                  +{{ ch.xp_reward }} XP
-                </span>
-              </div>
-
-              <!-- Progress bar & Action -->
-              <div class="d-flex align-items-center justify-content-between gap-3 mt-2 pt-2 border-top">
-                <div class="flex-grow-1">
-                  <div class="d-flex justify-content-between small text-muted mb-1 fw-bold" style="font-size: 0.72rem;">
-                    <span>Tiến độ</span>
-                    <span>{{ uc.current_progress }} / {{ ch.target }}</span>
-                  </div>
-                  <div class="progress rounded-pill" style="height: 6px;">
-                    <div class="progress-bar {% if uc.is_completed %}bg-success{% else %}bg-primary{% endif %}" role="progressbar"
-                         style="width: {{ pct }}%;"></div>
-                  </div>
-                </div>
-
-                <div>
-                  {% if uc.is_claimed %}
-                  <span class="badge bg-secondary-subtle text-secondary rounded-pill px-3 py-1.5 small fw-bold">Đã nhận</span>
-                  {% elif uc.is_completed %}
-                  <form method="post" action="{{ url_for('learning.claim_challenge_reward', uc_id=uc.id) }}" class="m-0">
-                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                    <button type="submit" class="btn btn-sm btn-success rounded-pill px-3 fw-bold shadow-xs">
-                      Nhận thưởng
-                    </button>
-                  </form>
-                  {% else %}
-                  <span class="badge bg-light text-muted border rounded-pill px-3 py-1.5 small fw-bold">Đang làm</span>
-                  {% endif %}
-                </div>
-              </div>
+          <div class="card card-modern p-4 h-100">
+            <div class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom">
+              <h6 class="fw-bold text-dark text-uppercase small tracking-wider mb-0 d-flex align-items-center gap-2">
+                <i class="ph-bold ph-sun text-warning fs-5"></i> Thử Thách Hàng Ngày
+              </h6>
+              <span class="badge bg-light text-muted border rounded-pill px-2.5 py-1 small">Làm mới lúc 00:00</span>
             </div>
-            {% endfor %}
+
+            <div class="d-flex flex-column gap-3">
+              {% for uc in daily_challenges %}
+              {% set ch = uc.challenge %}
+              {% set pct = [100, ((uc.current_progress / ch.target) * 100)|int]|min if ch.target > 0 else 0 %}
+              <div class="p-3.5 rounded-4 border bg-white shadow-2xs transition-hover">
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                  <div class="d-flex align-items-center gap-3">
+                    <div class="rounded-3 bg-light p-2 text-center d-flex align-items-center justify-content-center" style="width: 44px; height: 44px; font-size: 1.4rem;">
+                      {{ ch.icon }}
+                    </div>
+                    <div>
+                      <h6 class="fw-bold text-dark mb-0.5" style="font-size: 0.92rem;">{{ ch.title }}</h6>
+                      <small class="text-muted" style="font-size: 0.78rem;">{{ ch.description }}</small>
+                    </div>
+                  </div>
+                  <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle rounded-pill px-2.5 py-1 fw-bold small flex-shrink-0">
+                    +{{ ch.xp_reward }} XP
+                  </span>
+                </div>
+
+                <!-- Progress bar & Action -->
+                <div class="d-flex align-items-center justify-content-between gap-3 mt-2 pt-2 border-top">
+                  <div class="flex-grow-1">
+                    <div class="d-flex justify-content-between small text-muted mb-1 fw-semibold" style="font-size: 0.74rem;">
+                      <span>Tiến độ</span>
+                      <span>{{ uc.current_progress }} / {{ ch.target }}</span>
+                    </div>
+                    <div class="progress rounded-pill" style="height: 6px;">
+                      <div class="progress-bar {% if uc.is_completed %}bg-success{% else %}bg-primary{% endif %} rounded-pill" role="progressbar"
+                           style="width: {{ pct }}%;"></div>
+                    </div>
+                  </div>
+
+                  <div>
+                    {% if uc.is_claimed %}
+                    <span class="badge bg-secondary-subtle text-secondary rounded-pill px-3 py-1.5 small fw-bold">Đã nhận</span>
+                    {% elif uc.is_completed %}
+                    <form method="post" action="{{ url_for('learning.claim_challenge_reward', uc_id=uc.id) }}" class="m-0">
+                      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                      <button type="submit" class="btn btn-sm btn-success rounded-pill px-3 py-1 fw-bold shadow-xs">
+                        Nhận thưởng
+                      </button>
+                    </form>
+                    {% else %}
+                    <span class="badge bg-light text-muted border rounded-pill px-3 py-1.5 small fw-semibold">Đang làm</span>
+                    {% endif %}
+                  </div>
+                </div>
+              </div>
+              {% endfor %}
+            </div>
           </div>
         </div>
 
         <!-- Weekly Challenges Column -->
         <div class="col-lg-6">
-          <div class="d-flex justify-content-between align-items-center mb-3">
-            <h6 class="fw-bold text-dark text-uppercase small tracking-wider mb-0 d-flex align-items-center gap-2">
-              <i class="ph-fill ph-calendar-star text-purple fs-5"></i> Thử Thách Hàng Tuần
-            </h6>
-            <span class="badge bg-purple-subtle text-purple border rounded-pill px-2.5 py-1 small">Làm mới mỗi thứ 2</span>
-          </div>
-
-          <div class="d-flex flex-column gap-3">
-            {% for uc in weekly_challenges %}
-            {% set ch = uc.challenge %}
-            {% set pct = [100, ((uc.current_progress / ch.target) * 100)|int]|min if ch.target > 0 else 0 %}
-            <div class="card border-0 rounded-4 shadow-sm bg-white p-3.5 transition-hover">
-              <div class="d-flex justify-content-between align-items-start mb-2">
-                <div class="d-flex align-items-center gap-3">
-                  <div class="rounded-3 bg-purple-subtle p-2 text-center" style="width: 44px; height: 44px; font-size: 1.4rem;">
-                    {{ ch.icon }}
-                  </div>
-                  <div>
-                    <h6 class="fw-bold text-dark mb-0.5">{{ ch.title }}</h6>
-                    <small class="text-muted" style="font-size: 0.78rem;">{{ ch.description }}</small>
-                  </div>
-                </div>
-                <span class="badge bg-purple text-white rounded-pill px-2.5 py-1 fw-bold small flex-shrink-0">
-                  +{{ ch.xp_reward }} XP
-                </span>
-              </div>
-
-              <!-- Progress bar & Action -->
-              <div class="d-flex align-items-center justify-content-between gap-3 mt-2 pt-2 border-top">
-                <div class="flex-grow-1">
-                  <div class="d-flex justify-content-between small text-muted mb-1 fw-bold" style="font-size: 0.72rem;">
-                    <span>Tiến độ</span>
-                    <span>{{ uc.current_progress }} / {{ ch.target }}</span>
-                  </div>
-                  <div class="progress rounded-pill" style="height: 6px;">
-                    <div class="progress-bar bg-purple" role="progressbar" style="width: {{ pct }}%;"></div>
-                  </div>
-                </div>
-
-                <div>
-                  {% if uc.is_claimed %}
-                  <span class="badge bg-secondary-subtle text-secondary rounded-pill px-3 py-1.5 small fw-bold">Đã nhận</span>
-                  {% elif uc.is_completed %}
-                  <form method="post" action="{{ url_for('learning.claim_challenge_reward', uc_id=uc.id) }}" class="m-0">
-                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                    <button type="submit" class="btn btn-sm btn-purple text-white rounded-pill px-3 fw-bold shadow-xs">
-                      Nhận thưởng
-                    </button>
-                  </form>
-                  {% else %}
-                  <span class="badge bg-light text-muted border rounded-pill px-3 py-1.5 small fw-bold">Đang làm</span>
-                  {% endif %}
-                </div>
-              </div>
+          <div class="card card-modern p-4 h-100">
+            <div class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom">
+              <h6 class="fw-bold text-dark text-uppercase small tracking-wider mb-0 d-flex align-items-center gap-2">
+                <i class="ph-bold ph-calendar-star text-primary fs-5"></i> Thử Thách Hàng Tuần
+              </h6>
+              <span class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill px-2.5 py-1 small">Làm mới mỗi thứ Hai</span>
             </div>
-            {% endfor %}
+
+            <div class="d-flex flex-column gap-3">
+              {% for uc in weekly_challenges %}
+              {% set ch = uc.challenge %}
+              {% set pct = [100, ((uc.current_progress / ch.target) * 100)|int]|min if ch.target > 0 else 0 %}
+              <div class="p-3.5 rounded-4 border bg-white shadow-2xs transition-hover">
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                  <div class="d-flex align-items-center gap-3">
+                    <div class="rounded-3 bg-primary-subtle text-primary p-2 text-center d-flex align-items-center justify-content-center" style="width: 44px; height: 44px; font-size: 1.4rem;">
+                      {{ ch.icon }}
+                    </div>
+                    <div>
+                      <h6 class="fw-bold text-dark mb-0.5" style="font-size: 0.92rem;">{{ ch.title }}</h6>
+                      <small class="text-muted" style="font-size: 0.78rem;">{{ ch.description }}</small>
+                    </div>
+                  </div>
+                  <span class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill px-2.5 py-1 fw-bold small flex-shrink-0">
+                    +{{ ch.xp_reward }} XP
+                  </span>
+                </div>
+
+                <!-- Progress bar & Action -->
+                <div class="d-flex align-items-center justify-content-between gap-3 mt-2 pt-2 border-top">
+                  <div class="flex-grow-1">
+                    <div class="d-flex justify-content-between small text-muted mb-1 fw-semibold" style="font-size: 0.74rem;">
+                      <span>Tiến độ</span>
+                      <span>{{ uc.current_progress }} / {{ ch.target }}</span>
+                    </div>
+                    <div class="progress rounded-pill" style="height: 6px;">
+                      <div class="progress-bar bg-primary rounded-pill" role="progressbar" style="width: {{ pct }}%;"></div>
+                    </div>
+                  </div>
+
+                  <div>
+                    {% if uc.is_claimed %}
+                    <span class="badge bg-secondary-subtle text-secondary rounded-pill px-3 py-1.5 small fw-bold">Đã nhận</span>
+                    {% elif uc.is_completed %}
+                    <form method="post" action="{{ url_for('learning.claim_challenge_reward', uc_id=uc.id) }}" class="m-0">
+                      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                      <button type="submit" class="btn btn-sm btn-primary text-white rounded-pill px-3 py-1 fw-bold shadow-xs">
+                        Nhận thưởng
+                      </button>
+                    </form>
+                    {% else %}
+                    <span class="badge bg-light text-muted border rounded-pill px-3 py-1.5 small fw-semibold">Đang làm</span>
+                    {% endif %}
+                  </div>
+                </div>
+              </div>
+              {% endfor %}
+            </div>
           </div>
         </div>
       </div>
@@ -568,35 +618,32 @@
   </div>
 </div>
 
-<style>
-  .backdrop-blur { backdrop-filter: blur(8px); }
-  .bg-white-10 { background-color: rgba(255, 255, 255, 0.12); }
-  .bg-white-20 { background-color: rgba(255, 255, 255, 0.25); }
-  .border-white-10 { border-color: rgba(255, 255, 255, 0.15) !important; }
-  .border-white-20 { border-color: rgba(255, 255, 255, 0.3) !important; }
-  
-  .podium-card {
-    transition: transform 0.2s, box-shadow 0.2s;
-  }
-  .podium-card:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 10px 20px rgba(0,0,0,0.08) !important;
-  }
-  .podium-badge {
-    width: 28px;
-    height: 28px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 0.85rem;
-  }
-  
-  .transition-hover {
-    transition: transform 0.2s, box-shadow 0.2s;
-  }
-  .transition-hover:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 16px rgba(0,0,0,0.06) !important;
-  }
-</style>
+<!-- Script to handle Pill Button active styling for primary tabs & subtabs -->
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  const mainTabButtons = document.querySelectorAll('.gamification-tab-btn');
+  mainTabButtons.forEach(btn => {
+    btn.addEventListener('shown.bs.tab', (e) => {
+      mainTabButtons.forEach(b => {
+        b.classList.remove('btn-primary', 'text-white', 'shadow-xs', 'fw-bold');
+        b.classList.add('btn-light', 'border', 'text-secondary', 'fw-semibold');
+      });
+      e.target.classList.remove('btn-light', 'border', 'text-secondary', 'fw-semibold');
+      e.target.classList.add('btn-primary', 'text-white', 'shadow-xs', 'fw-bold');
+    });
+  });
+
+  const subTabButtons = document.querySelectorAll('.subtab-btn');
+  subTabButtons.forEach(btn => {
+    btn.addEventListener('shown.bs.tab', (e) => {
+      subTabButtons.forEach(b => {
+        b.classList.remove('btn-primary', 'shadow-xs', 'fw-bold');
+        b.classList.add('btn-light', 'border-0', 'text-secondary', 'fw-semibold');
+      });
+      e.target.classList.remove('btn-light', 'border-0', 'text-secondary', 'fw-semibold');
+      e.target.classList.add('btn-primary', 'shadow-xs', 'fw-bold');
+    });
+  });
+});
+</script>
 {% endblock %}
