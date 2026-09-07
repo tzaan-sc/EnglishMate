@@ -36,7 +36,7 @@
                 <form method="post" action="{{ url_for('auth.resend_verification', user_id=user.id) }}">
                     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                     <button type="submit" class="btn btn-link p-0 text-decoration-none small text-success fw-semibold">
-                        <i class="bi bi-arrow-clockwise"></i> Gửi lại mã xác minh
+                        <i class="ph-bold ph-arrows-clockwise me-1"></i> Gửi lại mã xác minh
                     </button>
                 </form>
                 <a href="{{ url_for('auth.login') }}" class="small text-secondary text-decoration-none">Quay lại Đăng nhập</a>

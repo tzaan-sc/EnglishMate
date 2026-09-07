@@ -11,7 +11,7 @@
         
         {% if submission.status == 'PENDING' %}
           <div class="alert alert-warning text-dark d-inline-block px-4 py-3">
-            <i class="bi bi-hourglass-split me-2 fs-5"></i> 
+            <i class="ph-bold ph-hourglass-medium me-2 fs-5"></i> 
             <span class="fs-5">Bài thi của bạn đang được AI chấm điểm (Phần Tự luận). Vui lòng quay lại sau!</span>
           </div>
         {% else %}
@@ -41,12 +41,12 @@
           <strong>Câu {{ loop.index }}</strong>
           {% if q.type == 'SINGLE_CHOICE' %}
             {% if is_correct %}
-              <span class="badge bg-success"><i class="bi bi-check-circle"></i> Đúng</span>
+              <span class="badge bg-success rounded-pill px-2.5 py-1"><i class="ph-bold ph-check-circle me-1"></i> Đúng</span>
             {% else %}
-              <span class="badge bg-danger"><i class="bi bi-x-circle"></i> Sai</span>
+              <span class="badge bg-danger rounded-pill px-2.5 py-1"><i class="ph-bold ph-x-circle me-1"></i> Sai</span>
             {% endif %}
           {% else %}
-            <span class="badge bg-warning text-dark"><i class="bi bi-clock"></i> {{ 'Chờ AI chấm' if submission.status == 'PENDING' else 'Đã chấm' }}</span>
+            <span class="badge bg-warning text-dark rounded-pill px-2.5 py-1"><i class="ph-bold ph-clock me-1"></i> {{ 'Chờ AI chấm' if submission.status == 'PENDING' else 'Đã chấm' }}</span>
           {% endif %}
         </div>
         
@@ -81,7 +81,7 @@
             
             {% if ans and ans.user_response and ans.user_response.get('ai_feedback') %}
             <div class="alert alert-info mt-3 mb-0">
-              <h6 class="alert-heading"><i class="bi bi-robot"></i> AI Feedback:</h6>
+              <h6 class="alert-heading fw-bold d-flex align-items-center gap-1.5"><i class="ph-bold ph-robot fs-5 text-primary"></i> AI Feedback:</h6>
               {{ ans.user_response.get('ai_feedback') }}
             </div>
             {% endif %}

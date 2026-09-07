@@ -1,96 +1,18 @@
 
-const emojiIconMap = {
-  "🎓": "graduation-cap",
-  "🎯": "target",
-  "🎁": "gift",
-  "🎉": "party-popper",
-  "🎲": "dices",
-  "🏆": "trophy",
-  "🏁": "flag",
-  "💡": "lightbulb",
-  "💾": "save",
-  "🔊": "volume-2",
-  "🔄": "refresh-cw",
-  "🔍": "search",
-  "🔗": "link",
-  "🔖": "bookmark",
-  "🔔": "bell",
-  "📊": "chart-column",
-  "📈": "chart-line",
-  "📉": "chart-line",
-  "📄": "file-text",
-  "📥": "download",
-  "📤": "upload",
-  "📚": "library",
-  "📖": "book-open",
-  "📜": "scroll-text",
-  "📝": "notebook-pen",
-  "🛡️": "shield-check",
-  "🛡": "shield-check",
-  "🖨️": "printer",
-  "🖨": "printer",
-  "🚀": "rocket",
-  "🚩": "flag",
-  "👍": "thumbs-up",
-  "👁️": "eye",
-  "🗑️": "trash-2",
-  "🔥": "flame",
-  "💪": "dumbbell",
-  "🎴": "layers-3",
-  "🎖️": "medal",
-  "🎖": "medal",
-  "👁": "eye",
-  "🌅": "sunrise",
-  "🌙": "moon",
-};
-
-
 function replaceSocialIcons() {
   document.querySelectorAll(".btn-google svg, .btn-facebook svg").forEach((icon) => {
     const replacement = document.createElement("i");
-    replacement.dataset.lucide = icon.closest(".btn-google") ? "globe-2" : "message-circle";
-    replacement.className = "icon-social";
+    replacement.className = icon.closest(".btn-google") ? "ph-bold ph-globe icon-social" : "ph-bold ph-chats-circle icon-social";
     icon.replaceWith(replacement);
-  });
-}
-
-function replaceEmojiIcons() {
-  const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
-  const textNodes = [];
-  let node;
-  while ((node = walker.nextNode())) {
-    if (node.parentElement.closest("script, style, textarea")) continue;
-    if (node.parentElement.closest("option")) {
-      Object.keys(emojiIconMap).forEach((emoji) => {
-        node.data = node.data.split(emoji).join("");
-      });
-      continue;
-    }
-    if ([...node.data].some((character) => emojiIconMap[character])) textNodes.push(node);
-  }
-
-  textNodes.forEach((textNode) => {
-    const fragment = document.createDocumentFragment();
-    [...textNode.data].forEach((character) => {
-      if (!emojiIconMap[character]) {
-        fragment.append(character);
-        return;
-      }
-      const icon = document.createElement("i");
-      icon.dataset.lucide = emojiIconMap[character];
-      icon.className = "icon-emoji";
-      icon.setAttribute("aria-hidden", "true");
-      fragment.append(icon);
-    });
-    textNode.replaceWith(fragment);
   });
 }
 
 function initializeIcons() {
   replaceSocialIcons();
-  replaceEmojiIcons();
-  if (window.lucide) {
-    window.lucide.createIcons({ attrs: { "aria-hidden": "true" } });
+  if (window.lucide && typeof window.lucide.createIcons === "function") {
+    try {
+      window.lucide.createIcons({ attrs: { "aria-hidden": "true" } });
+    } catch (e) {}
   }
 }
 
@@ -163,13 +85,13 @@ document.addEventListener("DOMContentLoaded", () => {
       if (targetInput) {
         const isPassword = targetInput.type === "password";
         targetInput.type = isPassword ? "text" : "password";
-        const icon = btn.querySelector(".lucide");
+        const icon = btn.querySelector("i");
         if (icon) {
-          const replacement = document.createElement("i");
-          replacement.dataset.lucide = isPassword ? "eye-off" : "eye";
-          replacement.className = icon.getAttribute("class") || "";
-          icon.replaceWith(replacement);
-          if (window.lucide) window.lucide.createIcons({ attrs: { "aria-hidden": "true" } });
+          if (icon.className.includes("bi-")) {
+            icon.className = isPassword ? "bi bi-eye-slash" : "bi bi-eye";
+          } else {
+            icon.className = isPassword ? "ph-bold ph-eye-slash fs-5" : "ph-bold ph-eye fs-5";
+          }
         }
       }
     });

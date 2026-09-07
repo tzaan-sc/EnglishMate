@@ -30,7 +30,7 @@
                     <div class="input-group">
                         {{ form.password(class="form-control" + (" is-invalid" if form.password.errors else ""), id="password") }}
                         <button class="btn btn-outline-secondary toggle-password-btn" type="button" data-target="password" title="Hiện/Ẩn mật khẩu">
-                            <i class="bi bi-eye"></i>
+                            <i class="ph-bold ph-eye fs-5"></i>
                         </button>
                     </div>
                     {% for error in form.password.errors %}

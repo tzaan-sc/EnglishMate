@@ -289,7 +289,7 @@
 
 <!-- Focus Overlay Wrapper -->
 <div class="focus-overlay" id="focusOverlay">
-    <i class="bi bi-x-lg focus-close" onclick="toggleFocusMode()" title="Thoát chế độ toàn màn hình"></i>
+    <i class="ph-bold ph-x focus-close fs-3" onclick="toggleFocusMode()" title="Thoát chế độ toàn màn hình"></i>
     <!-- Container sẽ được JS move vào đây khi Fullscreen -->
     <div id="focusContainer" style="width: 100%; max-width: 900px; padding: 20px;"></div>
 </div>
@@ -659,8 +659,10 @@
         btn.classList.toggle('text-warning');
         btn.classList.toggle('text-muted');
         const icon = btn.querySelector('i');
-        icon.classList.toggle('bi-star');
-        icon.classList.toggle('bi-star-fill');
+        if (icon) {
+            icon.classList.toggle('ph-fill');
+            icon.classList.toggle('ph-bold');
+        }
         // TODO: Lưu cờ star vào DB
     }
 

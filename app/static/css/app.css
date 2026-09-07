@@ -1,4 +1,26 @@
-/* Lucide is the single icon system used by all interface controls. */
+/* Unified Icon System - Phosphor Icons */
+.ph, [class^="ph-"], [class*=" ph-"] {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    vertical-align: -0.15em;
+    line-height: 1;
+}
+
+.btn > .ph,
+.btn > [class^="ph-"],
+.btn > [class*=" ph-"],
+.nav-link-modern > .ph,
+.nav-link-modern > [class^="ph-"],
+.nav-link-modern > [class*=" ph-"],
+.topbar-pill > .ph,
+.topbar-pill > [class^="ph-"],
+.topbar-pill > [class*=" ph-"] {
+    display: inline-flex;
+    align-items: center;
+    vertical-align: -0.125em;
+}
+
 .lucide {
     width: 1em;
     height: 1em;
@@ -9,12 +31,6 @@
     vertical-align: -0.125em;
 }
 
-.btn > .lucide,
-.nav-link-modern > .lucide,
-.topbar-pill > .lucide,
-.input-group-text > .lucide {
-    display: inline-block;
-}
 
 :root {
     /* Base Neutral Surface & Typography Tokens (Modern Slate Scale) */
