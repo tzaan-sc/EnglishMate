@@ -2,53 +2,137 @@
 {% block title %}Danh Sách Bài Quiz · EnglishMate{% endblock %}
 
 {% block content %}
-<div class="container-fluid max-w-6xl py-4">
+<div class="container-fluid max-w-7xl py-4">
 
-  <!-- Header Banner -->
-  <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
-    <div>
-      <span class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill px-3 py-1 mb-2 font-semibold">
-        THƯ VIỆN BÀI KIỂM TRA CHUẨN
-      </span>
-      <h2 class="fw-bold text-dark mb-1">Danh Sách Bài Quiz</h2>
-      <p class="text-secondary small mb-0">Duyệt và thực hành các bài kiểm tra phân loại theo cấp độ (A1-C2), kỹ năng và danh mục.</p>
+  <!-- ZONE 1: HERO & STATS BANNER -->
+  <div class="hero-brand-card p-4 p-lg-4 mb-4 shadow-sm">
+    <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3 mb-3 position-relative" style="z-index: 2;">
+      <div>
+        <div class="d-inline-flex align-items-center gap-1.5 px-2.5 py-0.5 rounded-pill mb-2" style="background: rgba(255, 255, 255, 0.18); backdrop-filter: blur(8px); font-size: 0.74rem; font-weight: 700; color: #a7f3d0;">
+          <i class="ph-bold ph-notebook"></i>
+          <span>THƯ VIỆN BÀI KIỂM TRA CHUẨN</span>
+        </div>
+        <h3 class="fw-bold text-white mb-1 d-flex align-items-center gap-2" style="letter-spacing: -0.01em;">
+          Danh Sách Bài Quiz
+        </h3>
+        <p class="text-white-50 mb-0 small">
+          Duyệt và thực hành các bài kiểm tra phân loại theo cấp độ (A1-C2), kỹ năng và danh mục.
+        </p>
+      </div>
+
+      <!-- Quick Action Hub -->
+      <div class="d-flex gap-2 align-items-center flex-wrap">
+        <a href="{{ url_for('learning.quiz_dashboard') }}" class="btn btn-light rounded-pill px-3.5 py-1.5 fw-bold text-primary shadow-xs d-inline-flex align-items-center gap-1.5" style="font-size: 0.84rem;">
+          <i class="ph-bold ph-chart-polar fs-6"></i>
+          <span>Bảng Điều Khiển Quiz</span>
+        </a>
+        <a href="{{ url_for('learning.grammar_exercises_setup') }}" class="btn btn-outline-light rounded-pill px-3.5 py-1.5 fw-semibold d-inline-flex align-items-center gap-1.5" style="font-size: 0.84rem; background: rgba(255,255,255,0.06); border-color: rgba(255,255,255,0.25);">
+          <i class="ph-bold ph-pencil-simple-line fs-6"></i>
+          <span>Luyện bài tập ngữ pháp</span>
+        </a>
+      </div>
     </div>
-    <div>
-      <a href="{{ url_for('learning.quiz_dashboard') }}" class="btn btn-outline-primary rounded-pill px-4 fw-bold shadow-xs">
-        📊 Bảng Điều Khiển Quiz
+
+    <!-- 4 Clean Stat Pills -->
+    <div class="row g-3 g-lg-4 pt-4 mt-3 border-top" style="border-color: rgba(255, 255, 255, 0.15) !important; position: relative; z-index: 2;">
+      <div class="col-6 col-md-3">
+        <div class="d-flex align-items-center gap-3 p-3 px-3.5 rounded-4" style="background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.12); backdrop-filter: blur(4px);">
+          <div class="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0" style="width: 40px; height: 40px; background: rgba(255, 255, 255, 0.2);">
+            <i class="ph-bold ph-notebook text-white fs-5"></i>
+          </div>
+          <div>
+            <span class="text-white-50 d-block" style="font-size: 0.74rem;">Tổng số Quiz</span>
+            <strong class="text-white fs-6">{{ quizzes|length }} bài test</strong>
+          </div>
+        </div>
+      </div>
+      <div class="col-6 col-md-3">
+        <div class="d-flex align-items-center gap-3 p-3 px-3.5 rounded-4" style="background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.12); backdrop-filter: blur(4px);">
+          <div class="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0" style="width: 40px; height: 40px; background: rgba(255, 255, 255, 0.2);">
+            <i class="ph-bold ph-squares-four fs-5" style="color: #6ee7b7;"></i>
+          </div>
+          <div>
+            <span class="text-white-50 d-block" style="font-size: 0.74rem;">Danh mục</span>
+            <strong class="text-white fs-6">{{ categories|length }} chủ đề</strong>
+          </div>
+        </div>
+      </div>
+      <div class="col-6 col-md-3">
+        <div class="d-flex align-items-center gap-3 p-3 px-3.5 rounded-4" style="background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.12); backdrop-filter: blur(4px);">
+          <div class="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0" style="width: 40px; height: 40px; background: rgba(255, 255, 255, 0.2);">
+            <i class="ph-bold ph-sparkle fs-5" style="color: #fde047;"></i>
+          </div>
+          <div>
+            <span class="text-white-50 d-block" style="font-size: 0.74rem;">Cấp độ CEFR</span>
+            <strong class="text-white fs-6">{{ levels|length }} trình độ</strong>
+          </div>
+        </div>
+      </div>
+      <div class="col-6 col-md-3">
+        <div class="d-flex align-items-center gap-3 p-3 px-3.5 rounded-4" style="background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.12); backdrop-filter: blur(4px);">
+          <div class="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0" style="width: 40px; height: 40px; background: rgba(255, 255, 255, 0.2);">
+            <i class="ph-bold ph-gauge fs-5" style="color: #93c5fd;"></i>
+          </div>
+          <div>
+            <span class="text-white-50 d-block" style="font-size: 0.74rem;">Độ khó</span>
+            <strong class="text-white fs-6">{{ difficulties|length }} mức độ</strong>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ZONE 2: SUB-NAVIGATION PILLS -->
+  <div class="d-flex flex-wrap gap-2 mb-4 align-items-center">
+    <a href="{{ url_for('learning.quiz_dashboard') }}" class="btn btn-light border rounded-pill px-3.5 py-1.5 fw-semibold text-secondary d-inline-flex align-items-center gap-1.5" style="font-size: 0.82rem;">
+      <i class="ph-bold ph-chart-polar"></i>
+      <span>Bảng điều khiển Quiz</span>
+    </a>
+    <a href="{{ url_for('learning.quiz_list') }}" class="btn btn-primary rounded-pill px-3.5 py-1.5 fw-bold shadow-xs d-inline-flex align-items-center gap-1.5" style="font-size: 0.82rem;">
+      <i class="ph-bold ph-list-dashes"></i>
+      <span>Thư viện bài Quiz</span>
+    </a>
+    <a href="{{ url_for('learning.grammar_exercises_setup') }}" class="btn btn-light border rounded-pill px-3.5 py-1.5 fw-semibold text-secondary d-inline-flex align-items-center gap-1.5" style="font-size: 0.82rem;">
+      <i class="ph-bold ph-pencil-simple-line"></i>
+      <span>Luyện bài tập ngữ pháp</span>
+    </a>
+    <a href="{{ url_for('exams.test_history') }}" class="btn btn-light border rounded-pill px-3.5 py-1.5 fw-semibold text-secondary d-inline-flex align-items-center gap-1.5" style="font-size: 0.82rem;">
+      <i class="ph-bold ph-clock-counter-clockwise"></i>
+      <span>Lịch sử thi & So sánh</span>
+    </a>
+  </div>
+
+  <!-- ZONE 3: CATEGORY PILLS & FILTER TOOLBAR -->
+  <div class="card card-modern p-4 mb-4">
+    <!-- Category Nav Pills -->
+    <div class="d-flex gap-2 flex-wrap align-items-center mb-3 pb-3 border-bottom">
+      <span class="text-muted small fw-bold me-1"><i class="ph-bold ph-tag me-1"></i>Chủ đề:</span>
+      <a href="{{ url_for('learning.quiz_list') }}" class="btn {{ 'btn-primary' if not category else 'btn-light border text-secondary' }} rounded-pill px-3 py-1.5 fw-semibold small">
+        Tất cả danh mục
       </a>
+
+      {% for cat in categories %}
+      <a href="{{ url_for('learning.quiz_list', category=cat) }}" class="btn {{ 'btn-primary' if category==cat else 'btn-light border text-secondary' }} rounded-pill px-3 py-1.5 fw-semibold small">
+        {{ cat }}
+      </a>
+      {% endfor %}
     </div>
-  </div>
 
-  <!-- Category Nav Pills -->
-  <div class="d-flex gap-2 flex-wrap align-items-center mb-4">
-    <a href="{{ url_for('learning.quiz_list') }}" class="btn {{ 'btn-dark' if not category else 'btn-outline-secondary' }} rounded-pill px-3 py-1.5 fw-semibold small">
-      Tất cả danh mục
-    </a>
-
-    {% for cat in categories %}
-    <a href="{{ url_for('learning.quiz_list', category=cat) }}" class="btn {{ 'btn-primary' if category==cat else 'btn-outline-primary' }} rounded-pill px-3 py-1.5 fw-semibold small">
-      {{ cat }}
-    </a>
-    {% endfor %}
-  </div>
-
-  <!-- Filter & Search Toolbar -->
-  <div class="card border-0 shadow-sm rounded-4 p-4 bg-white mb-4">
-    <form method="get" action="{{ url_for('learning.quiz_list') }}" class="row g-3">
+    <!-- Filter Form -->
+    <form method="get" action="{{ url_for('learning.quiz_list') }}" class="row g-3 align-items-center">
       {% if category %}<input type="hidden" name="category" value="{{ category }}">{% endif %}
 
       <!-- Search Input -->
       <div class="col-md-4">
         <div class="input-group">
-          <span class="input-group-text bg-transparent border-end-0"><i class="ph ph-magnifying-glass text-muted fs-5"></i></span>
-          <input class="form-control border-start-0 ps-0" name="q" value="{{ q }}" placeholder="Tìm kiếm quiz theo tiêu đề...">
+          <span class="input-group-text bg-light border-end-0"><i class="ph ph-magnifying-glass text-muted fs-5"></i></span>
+          <input class="form-control bg-light border-start-0 ps-0" name="q" value="{{ q }}" placeholder="Tìm kiếm quiz theo tiêu đề...">
         </div>
       </div>
 
       <!-- Level Filter -->
       <div class="col-md-2 col-6">
-        <select name="level" class="form-select">
+        <select name="level" class="form-select bg-light">
           <option value="">Tất cả Cấp độ</option>
           {% for l in levels %}
           <option value="{{ l }}" {{ 'selected' if level==l }}>{{ l }}</option>
@@ -58,7 +142,7 @@
 
       <!-- Skill Filter -->
       <div class="col-md-2 col-6">
-        <select name="skill" class="form-select">
+        <select name="skill" class="form-select bg-light">
           <option value="">Tất cả Kỹ năng</option>
           {% for s in skills %}
           <option value="{{ s }}" {{ 'selected' if skill==s }}>{{ s }}</option>
@@ -68,7 +152,7 @@
 
       <!-- Difficulty Filter -->
       <div class="col-md-2 col-6">
-        <select name="difficulty" class="form-select">
+        <select name="difficulty" class="form-select bg-light">
           <option value="">Tất cả Độ khó</option>
           {% for d in difficulties %}
           <option value="{{ d }}" {{ 'selected' if difficulty==d }}>{{ d }}</option>
@@ -78,7 +162,7 @@
 
       <!-- Status Filter -->
       <div class="col-md-2 col-6">
-        <select name="status" class="form-select">
+        <select name="status" class="form-select bg-light">
           <option value="">Tất cả Trạng thái</option>
           <option value="new" {{ 'selected' if status=='new' }}>Mới (New)</option>
           <option value="in_progress" {{ 'selected' if status=='in_progress' }}>Đang làm (In Progress)</option>
@@ -86,28 +170,28 @@
         </select>
       </div>
 
-      <!-- Sort Selector -->
-      <div class="col-md-10">
-        <div class="d-flex align-items-center gap-2">
+      <!-- Sort & Submit Row -->
+      <div class="col-12 pt-2 d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
+        <div class="d-flex align-items-center gap-2 flex-wrap">
           <span class="small text-muted fw-bold">Sắp xếp:</span>
-          <a href="{{ url_for('learning.quiz_list', q=q, category=category, level=level, skill=skill, difficulty=difficulty, status=status, sort='recent') }}" class="btn {{ 'btn-dark' if sort=='recent' else 'btn-light' }} btn-sm rounded-pill px-3 fw-bold">
+          <a href="{{ url_for('learning.quiz_list', q=q, category=category, level=level, skill=skill, difficulty=difficulty, status=status, sort='recent') }}" class="btn {{ 'btn-primary' if sort=='recent' else 'btn-light border text-secondary' }} btn-sm rounded-pill px-3 fw-bold">
             Mới nhất
           </a>
-          <a href="{{ url_for('learning.quiz_list', q=q, category=category, level=level, skill=skill, difficulty=difficulty, status=status, sort='popularity') }}" class="btn {{ 'btn-dark' if sort=='popularity' else 'btn-light' }} btn-sm rounded-pill px-3 fw-bold">
+          <a href="{{ url_for('learning.quiz_list', q=q, category=category, level=level, skill=skill, difficulty=difficulty, status=status, sort='popularity') }}" class="btn {{ 'btn-primary' if sort=='popularity' else 'btn-light border text-secondary' }} btn-sm rounded-pill px-3 fw-bold">
             🔥 Phổ biến nhất
           </a>
         </div>
-      </div>
 
-      <div class="col-md-2 text-end">
-        <button type="submit" class="btn btn-dark w-100 rounded-pill fw-bold">
-          Lọc kết quả
-        </button>
+        <div>
+          <button type="submit" class="btn btn-primary rounded-pill px-4 fw-bold shadow-xs">
+            <i class="ph-bold ph-funnel me-1"></i>Lọc kết quả
+          </button>
+        </div>
       </div>
     </form>
   </div>
 
-  <!-- Quiz Cards Grid -->
+  <!-- ZONE 4: QUIZ CARDS GRID -->
   <div class="row g-4 mb-4">
     {% for item in quizzes %}
     {% set quiz = item.model %}
@@ -115,69 +199,79 @@
     {% set last_att_id = item.last_attempt_id %}
 
     <div class="col-md-6 col-lg-4">
-      <article class="card border-0 shadow-xs rounded-4 p-4 h-100 bg-white d-flex flex-column justify-content-between hover-shadow transition">
+      <article class="card card-modern p-4 h-100 d-flex flex-column justify-content-between position-relative transition-hover">
         <div>
           <!-- Badges & Status -->
-          <div class="d-flex justify-content-between align-items-center mb-2">
+          <div class="d-flex justify-content-between align-items-center mb-3">
             <div class="d-flex gap-1.5 flex-wrap">
               <span class="badge bg-primary-subtle text-primary rounded-pill px-2.5 py-1 fw-bold small">{{ quiz.level }}</span>
               <span class="badge bg-secondary-subtle text-secondary rounded-pill px-2.5 py-1 fw-semibold small">{{ quiz.skill }}</span>
-              <span class="badge {{ 'bg-success-subtle text-success' if quiz.difficulty=='Easy' else ('bg-warning-subtle text-warning-emphasis' if quiz.difficulty=='Medium' else 'bg-danger-subtle text-danger') }} rounded-pill px-2.5 py-1 small">
+              <span class="badge {{ 'bg-success-subtle text-success' if quiz.difficulty=='Easy' else ('bg-warning-subtle text-warning-emphasis' if quiz.difficulty=='Medium' else 'bg-danger-subtle text-danger') }} rounded-pill px-2.5 py-1 small fw-semibold">
                 {{ quiz.difficulty }}
               </span>
             </div>
 
             <!-- Status Indicator Badge -->
             {% if q_status == 'completed' %}
-            <span class="badge bg-success text-white rounded-pill px-2.5 py-1 small fw-bold">✓ Đã xong</span>
+            <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-2.5 py-1 small fw-bold">✓ Đã xong</span>
             {% elif q_status == 'in_progress' %}
-            <span class="badge bg-warning text-dark rounded-pill px-2.5 py-1 small fw-bold">⏳ Đang làm</span>
+            <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle rounded-pill px-2.5 py-1 small fw-bold">⏳ Đang làm</span>
             {% else %}
             <span class="badge bg-light text-muted border rounded-pill px-2.5 py-1 small">Mới</span>
             {% endif %}
           </div>
 
-          <h5 class="fw-bold text-dark mb-2 line-clamp-2">{{ quiz.title }}</h5>
-          <p class="text-secondary small mb-3 line-clamp-3">{{ quiz.description }}</p>
+          <h5 class="fw-bold text-dark mb-2 line-clamp-2" style="font-size: 1.05rem; line-height: 1.4;">{{ quiz.title }}</h5>
+          <p class="text-secondary small mb-3 line-clamp-3" style="line-height: 1.5;">{{ quiz.description }}</p>
 
-          <div class="d-flex align-items-center gap-3 text-muted small mb-3">
-            <span><i class="ph ph-question me-1"></i>{{ quiz.question_count }} câu</span>
-            <span><i class="ph ph-clock me-1"></i>{{ quiz.duration_minutes }} phút</span>
-            <span><i class="ph ph-eye me-1"></i>{{ quiz.view_count or 0 }}</span>
+          <div class="d-flex align-items-center gap-3 text-muted small mb-3 pt-2 border-top">
+            <span><i class="ph-bold ph-question me-1 text-primary"></i>{{ quiz.question_count }} câu</span>
+            <span><i class="ph-bold ph-clock me-1 text-primary"></i>{{ quiz.duration_minutes }} phút</span>
+            <span><i class="ph-bold ph-eye me-1 text-primary"></i>{{ quiz.view_count or 0 }}</span>
           </div>
         </div>
 
-        <!-- Action Buttons Grid -->
+        <!-- Action Buttons Footer -->
         <div class="pt-3 border-top d-flex align-items-center justify-content-between gap-2">
           
           <!-- Contextual Start / Continue / View Result Button -->
           {% if q_status == 'completed' and last_att_id %}
-          <a href="{{ url_for('learning.grammar_exercises_summary', attempt_id=last_att_id) }}" class="btn btn-sm btn-outline-success rounded-pill px-3 fw-bold flex-grow-1">
-            📊 Xem kết quả
+          <a href="{{ url_for('learning.grammar_exercises_summary', attempt_id=last_att_id) }}" class="btn btn-sm btn-outline-success rounded-pill px-3.5 py-1.5 fw-bold flex-grow-1 d-inline-flex align-items-center justify-content-center gap-1.5 shadow-xs">
+            <i class="ph-bold ph-chart-line-up"></i>
+            <span>Xem kết quả</span>
           </a>
           {% elif q_status == 'in_progress' %}
-          <a href="{{ url_for('learning.do_grammar_exercise') }}" class="btn btn-sm btn-warning text-dark rounded-pill px-3 fw-bold flex-grow-1">
-            ⏯️ Tiếp tục quiz
+          <a href="{{ url_for('learning.do_grammar_exercise') }}" class="btn btn-sm btn-warning text-dark rounded-pill px-3.5 py-1.5 fw-bold flex-grow-1 d-inline-flex align-items-center justify-content-center gap-1.5 shadow-xs">
+            <i class="ph-bold ph-play"></i>
+            <span>Tiếp tục quiz</span>
           </a>
           {% else %}
-          <a href="{{ url_for('learning.grammar_exercises_setup') }}" class="btn btn-sm btn-primary rounded-pill px-3 fw-bold flex-grow-1">
-            🚀 Bắt đầu quiz
+          <a href="{{ url_for('learning.grammar_exercises_setup') }}" class="btn btn-sm btn-primary rounded-pill px-3.5 py-1.5 fw-bold flex-grow-1 d-inline-flex align-items-center justify-content-center gap-1.5 shadow-xs">
+            <i class="ph-bold ph-rocket-launch"></i>
+            <span>Bắt đầu quiz</span>
           </a>
           {% endif %}
 
           <!-- Quiz Preview Modal Trigger Button -->
-          <button type="button" class="btn btn-sm btn-light rounded-circle p-2 btn-preview-quiz" data-quiz-id="{{ quiz.id }}" title="Xem trước chi tiết quiz">
-            👁️
+          <button type="button" class="btn btn-sm btn-light border rounded-circle p-2 btn-preview-quiz shadow-xs d-flex align-items-center justify-content-center" data-quiz-id="{{ quiz.id }}" title="Xem trước chi tiết quiz" style="width: 36px; height: 36px;">
+            <i class="ph-bold ph-eye text-secondary"></i>
           </button>
         </div>
       </article>
     </div>
     {% else %}
     <div class="col-12">
-      <div class="card border-0 shadow-sm rounded-4 p-5 text-center bg-white">
-        <i class="ph ph-notebook fs-1 text-muted mb-2"></i>
-        <h5 class="fw-bold text-muted mb-1">Chưa tìm thấy bài quiz phù hợp</h5>
-        <p class="text-secondary small mb-0">Hãy thay đổi bộ lọc tìm kiếm hoặc thử lại với danh mục khác.</p>
+      <div class="card card-modern p-5 text-center">
+        <div class="rounded-circle d-inline-flex align-items-center justify-content-center mx-auto mb-3" style="width: 56px; height: 56px; background: rgba(16, 185, 129, 0.1);">
+          <i class="ph-bold ph-notebook fs-3 text-primary"></i>
+        </div>
+        <h5 class="fw-bold text-dark mb-1">Chưa tìm thấy bài quiz phù hợp</h5>
+        <p class="text-secondary small mb-3">Hãy thay đổi bộ lọc tìm kiếm hoặc thử lại với danh mục khác.</p>
+        <div>
+          <a href="{{ url_for('learning.quiz_list') }}" class="btn btn-sm btn-primary rounded-pill px-4 fw-bold">
+            Xem tất cả bài quiz
+          </a>
+        </div>
       </div>
     </div>
     {% endfor %}
@@ -188,7 +282,7 @@
 <!-- Quiz Detail Preview Modal -->
 <div class="modal fade" id="quizPreviewModal" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content border-0 shadow-lg rounded-4 p-3">
+    <div class="modal-content card-modern border-0 shadow-lg rounded-4 p-3">
       <div class="modal-header border-0 pb-0">
         <span class="badge bg-primary-subtle text-primary rounded-pill px-3 py-1 font-semibold" id="modalCategory">Grammar</span>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
@@ -196,13 +290,13 @@
       <div class="modal-body">
         <h4 class="fw-bold text-dark mb-2" id="modalTitle">Tiêu đề Quiz</h4>
         <div class="d-flex gap-2 mb-3">
-          <span class="badge bg-light text-dark border rounded-pill" id="modalLevel">Level: A1</span>
-          <span class="badge bg-light text-dark border rounded-pill" id="modalSkill">Skill: Grammar</span>
-          <span class="badge bg-light text-dark border rounded-pill" id="modalDifficulty">Difficulty: Easy</span>
+          <span class="badge bg-light text-dark border rounded-pill px-2.5 py-1" id="modalLevel">Level: A1</span>
+          <span class="badge bg-light text-dark border rounded-pill px-2.5 py-1" id="modalSkill">Skill: Grammar</span>
+          <span class="badge bg-light text-dark border rounded-pill px-2.5 py-1" id="modalDifficulty">Difficulty: Easy</span>
         </div>
-        <p class="text-secondary mb-4" id="modalDescription">Mô tả bài quiz...</p>
+        <p class="text-secondary mb-4 small" id="modalDescription">Mô tả bài quiz...</p>
 
-        <div class="p-3 bg-light rounded-3 d-flex justify-content-around text-center mb-4">
+        <div class="p-3 bg-light rounded-4 d-flex justify-content-around text-center mb-4 border">
           <div>
             <span class="text-muted small d-block">Số câu hỏi</span>
             <strong class="fs-5 text-dark" id="modalQuestions">10 câu</strong>
@@ -219,7 +313,7 @@
           </div>
         </div>
 
-        <a href="{{ url_for('learning.grammar_exercises_setup') }}" class="btn btn-primary btn-lg w-100 rounded-pill fw-bold">
+        <a href="{{ url_for('learning.grammar_exercises_setup') }}" class="btn btn-primary btn-lg w-100 rounded-pill fw-bold shadow-xs">
           🚀 Bắt đầu bài Quiz ngay
         </a>
       </div>

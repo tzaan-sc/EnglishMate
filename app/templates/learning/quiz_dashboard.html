@@ -2,7 +2,7 @@
 {% block title %}Bảng Điều Khiển Quiz · EnglishMate{% endblock %}
 
 {% block content %}
-<div class="container-fluid max-w-6xl py-4">
+<div class="container-fluid max-w-7xl py-4">
 
   <!-- ZONE 1: HERO & STATS BANNER -->
   <div class="hero-brand-card p-4 p-lg-4 mb-4 shadow-sm">
@@ -22,13 +22,13 @@
 
       <!-- Action Buttons Hub -->
       <div class="d-flex gap-2 align-items-center flex-wrap">
-        <a href="{{ url_for('learning.grammar_exercises_setup') }}" class="btn btn-light rounded-pill px-3.5 py-1.5 fw-bold text-primary shadow-xs d-inline-flex align-items-center gap-1.5" style="font-size: 0.84rem;">
-          <i class="ph-bold ph-pencil-simple-line fs-6"></i>
-          <span>Làm bài Quiz mới</span>
+        <a href="{{ url_for('learning.quiz_list') }}" class="btn btn-light rounded-pill px-3.5 py-1.5 fw-bold text-primary shadow-xs d-inline-flex align-items-center gap-1.5" style="font-size: 0.84rem;">
+          <i class="ph-bold ph-list-magnifying-glass fs-6"></i>
+          <span>Khám phá bài Quiz</span>
         </a>
-        <a href="{{ url_for('exams.test_history') }}" class="btn btn-outline-light rounded-pill px-3.5 py-1.5 fw-semibold d-inline-flex align-items-center gap-1.5" style="font-size: 0.84rem; background: rgba(255,255,255,0.06); border-color: rgba(255,255,255,0.25);">
-          <i class="ph-bold ph-clock-counter-clockwise fs-6"></i>
-          <span>Lịch sử làm bài</span>
+        <a href="{{ url_for('learning.grammar_exercises_setup') }}" class="btn btn-outline-light rounded-pill px-3.5 py-1.5 fw-semibold d-inline-flex align-items-center gap-1.5" style="font-size: 0.84rem; background: rgba(255,255,255,0.06); border-color: rgba(255,255,255,0.25);">
+          <i class="ph-bold ph-pencil-simple-line fs-6"></i>
+          <span>Luyện tập chuyên đề</span>
         </a>
       </div>
     </div>
@@ -42,7 +42,7 @@
           </div>
           <div>
             <span class="text-white-50 d-block" style="font-size: 0.74rem;">Tổng điểm Quiz</span>
-            <strong class="text-white fs-6">{{ metrics.overall_score }}/{{ metrics.total_questions }}</strong>
+            <strong class="text-white fs-6">{{ metrics.overall_score }}/{{ metrics.total_questions }} câu</strong>
           </div>
         </div>
       </div>
@@ -53,7 +53,7 @@
           </div>
           <div>
             <span class="text-white-50 d-block" style="font-size: 0.74rem;">Tỷ lệ chính xác %</span>
-            <strong class="text-white fs-6">{{ metrics.accuracy_rate }}%</strong>
+            <strong class="text-white fs-6">{{ metrics.accuracy_rate }}% thành công</strong>
           </div>
         </div>
       </div>
@@ -64,7 +64,7 @@
           </div>
           <div>
             <span class="text-white-50 d-block" style="font-size: 0.74rem;">Chuỗi ngày luyện Quiz</span>
-            <strong class="text-white fs-6">{{ metrics.quiz_streak }} ngày</strong>
+            <strong class="text-white fs-6">{{ metrics.quiz_streak }} ngày liên tiếp 🔥</strong>
           </div>
         </div>
       </div>
@@ -75,31 +75,53 @@
           </div>
           <div>
             <span class="text-white-50 d-block" style="font-size: 0.74rem;">Đã hoàn thành</span>
-            <strong class="text-white fs-6">{{ metrics.total_quizzes_completed }} bài test</strong>
+            <strong class="text-white fs-6">{{ metrics.total_quizzes_completed }} bài (TB {{ metrics.avg_time_seconds }}s)</strong>
           </div>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- Weak Quiz Categories Alert Box -->
+  <!-- ZONE 2: SUB-NAVIGATION PILLS -->
+  <div class="d-flex flex-wrap gap-2 mb-4 align-items-center">
+    <a href="{{ url_for('learning.quiz_dashboard') }}" class="btn btn-primary rounded-pill px-3.5 py-1.5 fw-bold shadow-xs d-inline-flex align-items-center gap-1.5" style="font-size: 0.82rem;">
+      <i class="ph-bold ph-chart-polar"></i>
+      <span>Bảng điều khiển Quiz</span>
+    </a>
+    <a href="{{ url_for('learning.quiz_list') }}" class="btn btn-light border rounded-pill px-3.5 py-1.5 fw-semibold text-secondary d-inline-flex align-items-center gap-1.5" style="font-size: 0.82rem;">
+      <i class="ph-bold ph-list-dashes"></i>
+      <span>Thư viện bài Quiz</span>
+    </a>
+    <a href="{{ url_for('learning.grammar_exercises_setup') }}" class="btn btn-light border rounded-pill px-3.5 py-1.5 fw-semibold text-secondary d-inline-flex align-items-center gap-1.5" style="font-size: 0.82rem;">
+      <i class="ph-bold ph-pencil-simple-line"></i>
+      <span>Luyện bài tập ngữ pháp</span>
+    </a>
+    <a href="{{ url_for('exams.test_history') }}" class="btn btn-light border rounded-pill px-3.5 py-1.5 fw-semibold text-secondary d-inline-flex align-items-center gap-1.5" style="font-size: 0.82rem;">
+      <i class="ph-bold ph-clock-counter-clockwise"></i>
+      <span>Lịch sử thi & So sánh</span>
+    </a>
+  </div>
+
+  <!-- ZONE 3: WEAK CATEGORIES ALERT BOX -->
   {% if metrics.weak_categories %}
   <div class="card card-modern p-4 mb-4 border-start border-4 border-warning">
     <div class="d-flex align-items-start gap-3">
-      <div class="bg-warning-subtle text-warning rounded-circle p-2 fs-4">⚠️</div>
+      <div class="bg-warning-subtle text-warning-emphasis rounded-circle p-2.5 d-flex align-items-center justify-content-center flex-shrink-0" style="width: 44px; height: 44px; font-size: 1.3rem;">
+        <i class="ph-bold ph-warning"></i>
+      </div>
       <div class="w-100">
         <h5 class="fw-bold text-dark mb-1">Cảnh báo Danh mục Quiz Yếu (Cần cải thiện)</h5>
         <p class="text-secondary small mb-3">Hệ thống phát hiện bạn có tỷ lệ chính xác dưới 60% ở các danh mục sau. Hãy dành thêm thời gian ôn tập nhé:</p>
         
         <div class="row g-3">
           {% for w in metrics.weak_categories %}
-          <div class="col-md-6">
-            <div class="p-3 bg-light rounded-4 d-flex justify-content-between align-items-center">
+          <div class="col-md-6 col-lg-4">
+            <div class="p-3 bg-light rounded-4 border d-flex justify-content-between align-items-center h-100">
               <div>
-                <span class="fw-bold text-dark d-block">{{ w.name }}</span>
-                <small class="text-muted">Độ chính xác: <strong class="text-danger">{{ w.accuracy_rate }}%</strong> ({{ w.score }}/{{ w.total_q }} câu)</small>
+                <span class="fw-bold text-dark d-block mb-0.5" style="font-size: 0.92rem;">{{ w.name }}</span>
+                <small class="text-muted" style="font-size: 0.76rem;">Độ chính xác: <strong class="text-danger">{{ w.accuracy_rate }}%</strong> ({{ w.score }}/{{ w.total_q }} câu)</small>
               </div>
-              <a href="{{ url_for('learning.grammar_exercises_setup') }}" class="btn btn-sm btn-outline-warning text-dark-emphasis rounded-pill px-3 fw-bold">
+              <a href="{{ url_for('learning.grammar_exercises_setup') }}" class="btn btn-sm btn-outline-warning text-dark-emphasis rounded-pill px-3 py-1 fw-bold shadow-2xs ms-2 flex-shrink-0" style="font-size: 0.78rem;">
                 Luyện lại →
               </a>
             </div>
@@ -111,68 +133,111 @@
   </div>
   {% endif %}
 
-  <div class="row g-4 mb-4">
+  <!-- ZONE 4: TWO-COLUMN MAIN ANALYTICS & RECENT LOG -->
+  <div class="row g-4 mb-5">
     <!-- Left Column: Quiz Count by Category -->
     <div class="col-lg-6">
-      <div class="card card-modern p-4 h-100">
-        <h5 class="fw-bold text-dark mb-3 border-bottom pb-2">📊 Thống kê Quiz theo Danh mục</h5>
-
-        <div class="d-flex flex-column gap-3">
-          {% for cat in metrics.category_stats %}
-          <div>
-            <div class="d-flex justify-content-between align-items-center mb-1">
-              <span class="fw-bold text-dark fs-6">{{ cat.name }}</span>
-              <span class="small font-semibold {{ 'text-success' if cat.accuracy_rate>=80 else ('text-warning-emphasis' if cat.accuracy_rate>=60 else 'text-danger') }}">
-                {{ cat.accuracy_rate }}% ({{ cat.count }} bài)
-              </span>
+      <div class="card card-modern p-4 h-100 d-flex flex-column justify-content-between">
+        <div>
+          <div class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom">
+            <div class="d-flex align-items-center gap-2">
+              <div class="rounded-3 d-inline-flex align-items-center justify-content-center bg-primary-subtle text-primary" style="width: 32px; height: 32px; font-size: 1rem;">
+                <i class="ph-bold ph-chart-bar"></i>
+              </div>
+              <h5 class="fw-bold text-dark mb-0">Thống kê Quiz theo Danh mục</h5>
             </div>
-            <div class="progress rounded-pill" style="height: 10px;">
-              <div class="progress-bar {{ 'bg-success' if cat.accuracy_rate>=80 else ('bg-warning' if cat.accuracy_rate>=60 else 'bg-danger') }} rounded-pill" style="width: {{ cat.accuracy_rate }}%;"></div>
-            </div>
-            <small class="text-muted">Đúng {{ cat.score }}/{{ cat.total_q }} câu · TB {{ cat.avg_time }}s/bài</small>
+            <span class="badge bg-light text-secondary border rounded-pill px-2.5 py-1 small">{{ metrics.category_stats|length }} danh mục</span>
           </div>
-          {% else %}
-          <div class="text-center py-4 text-muted">Chưa có dữ liệu danh mục.</div>
-          {% endfor %}
+
+          <div class="d-flex flex-column gap-3.5 my-2">
+            {% for cat in metrics.category_stats %}
+            <div>
+              <div class="d-flex justify-content-between align-items-center mb-1.5">
+                <span class="fw-bold text-dark" style="font-size: 0.92rem;">{{ cat.name }}</span>
+                <span class="small fw-bold {{ 'text-success' if cat.accuracy_rate>=80 else ('text-warning-emphasis' if cat.accuracy_rate>=60 else 'text-danger') }}">
+                  {{ cat.accuracy_rate }}% ({{ cat.count }} bài test)
+                </span>
+              </div>
+              <div class="progress rounded-pill bg-light" style="height: 8px;">
+                <div class="progress-bar {{ 'bg-success' if cat.accuracy_rate>=80 else ('bg-warning' if cat.accuracy_rate>=60 else 'bg-danger') }} rounded-pill" style="width: {{ cat.accuracy_rate }}%;"></div>
+              </div>
+              <div class="d-flex justify-content-between text-muted mt-1" style="font-size: 0.74rem;">
+                <span>Đúng {{ cat.score }}/{{ cat.total_q }} câu</span>
+                <span>Thời gian TB: {{ cat.avg_time }}s/bài</span>
+              </div>
+            </div>
+            {% else %}
+            <div class="text-center py-4 text-muted">Chưa có dữ liệu danh mục bài test.</div>
+            {% endfor %}
+          </div>
+        </div>
+
+        <div class="mt-4 pt-3 border-top d-flex justify-content-between align-items-center" style="border-color: var(--border-light) !important;">
+          <small class="text-muted"><i class="ph-bold ph-lightbulb text-warning me-1"></i> Mục tiêu: Duy trì tỷ lệ chính xác > 80%</small>
+          <a href="{{ url_for('learning.quiz_list') }}" class="btn btn-sm btn-primary rounded-pill px-3 py-1 fw-bold shadow-xs" style="font-size: 0.8rem;">
+            Làm bài mới →
+          </a>
         </div>
       </div>
     </div>
 
     <!-- Right Column: Recent Quiz Attempts History -->
     <div class="col-lg-6">
-      <div class="card card-modern p-4 h-100">
-        <h5 class="fw-bold text-dark mb-3 border-bottom pb-2">🕒 Lịch sử Quiz gần đây</h5>
+      <div class="card card-modern p-4 h-100 d-flex flex-column justify-content-between">
+        <div>
+          <div class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom">
+            <div class="d-flex align-items-center gap-2">
+              <div class="rounded-3 d-inline-flex align-items-center justify-content-center bg-success-subtle text-success" style="width: 32px; height: 32px; font-size: 1rem;">
+                <i class="ph-bold ph-clock-counter-clockwise"></i>
+              </div>
+              <h5 class="fw-bold text-dark mb-0">Lịch sử Quiz gần đây</h5>
+            </div>
+            <a href="{{ url_for('exams.test_history') }}" class="btn btn-sm btn-light border rounded-pill px-3 text-secondary fw-semibold" style="font-size: 0.8rem;">
+              Xem tất cả →
+            </a>
+          </div>
 
-        <div class="table-responsive">
-          <table class="table table-hover align-middle mb-0">
-            <thead class="table-light small">
-              <tr>
-                <th>Chủ đề</th>
-                <th>Cấp độ</th>
-                <th>Điểm số</th>
-                <th>Thời gian</th>
-              </tr>
-            </thead>
-            <tbody>
-              {% for att in metrics.recent_attempts %}
-              {% set pct = ((att.score * 100) // att.total_questions) if att.total_questions > 0 else 0 %}
-              <tr>
-                <td><strong class="text-dark">{{ att.topic }}</strong></td>
-                <td><span class="badge bg-primary-subtle text-primary rounded-pill px-2.5">{{ att.level }}</span></td>
-                <td>
-                  <span class="badge {{ 'bg-success-subtle text-success' if pct>=80 else ('bg-warning-subtle text-warning-emphasis' if pct>=60 else 'bg-danger-subtle text-danger') }} rounded-pill px-2.5 py-1">
-                    {{ att.score }}/{{ att.total_questions }} ({{ pct }}%)
-                  </span>
-                </td>
-                <td class="small text-muted">{{ att.duration_seconds or 0 }}s</td>
-              </tr>
-              {% else %}
-              <tr>
-                <td colspan="4" class="text-center text-muted py-3">Chưa có lịch sử làm bài.</td>
-              </tr>
-              {% endfor %}
-            </tbody>
-          </table>
+          <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+              <thead class="table-light small text-muted">
+                <tr>
+                  <th class="ps-2">Chủ đề</th>
+                  <th class="text-center">Cấp độ</th>
+                  <th class="text-center">Điểm số</th>
+                  <th class="text-end pe-2">Thời gian</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for att in metrics.recent_attempts %}
+                {% set pct = ((att.score * 100) // att.total_questions) if att.total_questions > 0 else 0 %}
+                <tr>
+                  <td class="ps-2">
+                    <strong class="text-dark d-block" style="font-size: 0.9rem;">{{ att.topic }}</strong>
+                  </td>
+                  <td class="text-center">
+                    <span class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill px-2.5 py-0.5 small fw-semibold">{{ att.level }}</span>
+                  </td>
+                  <td class="text-center">
+                    <span class="badge {{ 'bg-success-subtle text-success border border-success-subtle' if pct>=80 else ('bg-warning-subtle text-warning-emphasis border border-warning-subtle' if pct>=60 else 'bg-danger-subtle text-danger border border-danger-subtle') }} rounded-pill px-2.5 py-1 small fw-bold">
+                      {{ att.score }}/{{ att.total_questions }} ({{ pct }}%)
+                    </span>
+                  </td>
+                  <td class="text-end pe-2 small text-muted fw-medium">{{ att.duration_seconds or 0 }}s</td>
+                </tr>
+                {% else %}
+                <tr>
+                  <td colspan="4" class="text-center text-muted py-4">Chưa có lịch sử làm bài. Hãy bắt đầu một bài quiz nhé!</td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="mt-4 pt-3 border-top text-center" style="border-color: var(--border-light) !important;">
+          <a href="{{ url_for('learning.quiz_list') }}" class="btn btn-outline-primary rounded-pill px-4 py-1.5 fw-bold w-100" style="font-size: 0.84rem;">
+            <i class="ph-bold ph-play me-1"></i> Bắt đầu luyện tập trắc nghiệm mới
+          </a>
         </div>
       </div>
     </div>
