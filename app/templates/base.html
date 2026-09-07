@@ -24,8 +24,8 @@
       <header class="app-topbar d-flex justify-content-between align-items-center bg-white px-4 py-2 border-bottom">
         <div class="d-flex align-items-center gap-2">
           <!-- Mobile Sidebar Toggle (visible on mobile only) -->
-          <button class="btn btn-light border p-1.5 d-md-none me-1" type="button" data-bs-toggle="offcanvas" data-bs-target="#mobileSidebar">
-            <i data-lucide="menu" aria-hidden="true"></i>
+          <button class="btn btn-light border p-1.5 d-md-none me-1" type="button" data-bs-toggle="offcanvas" data-bs-target="#mobileSidebar" title="Mở menu">
+            <i class="ph-bold ph-list fs-5"></i>
           </button>
           
           <!-- Logo Brand Text (Keep Original Name EnglishMate with Green accent) -->
@@ -110,7 +110,14 @@
       <!-- Main body split container (Sidebar on left, Content on right) -->
       <div class="d-flex flex-grow-1 overflow-hidden" style="height: calc(100vh - 60px);">
         <!-- Desktop Sidebar -->
-        <aside class="app-sidebar d-none d-md-flex flex-column justify-content-between flex-shrink-0" style="height: 100%; border-right: 1px solid var(--line);">
+        <aside class="app-sidebar d-none d-md-flex flex-column justify-content-between flex-shrink-0" style="height: 100%; border-right: 1px solid var(--line);" title="Nhấp vào khoảng trống để thu gọn / mở rộng thanh bên">
+          <script>
+            try {
+              if (localStorage.getItem('sidebar_collapsed') === 'true') {
+                document.currentScript.parentElement.classList.add('collapsed');
+              }
+            } catch (e) {}
+          </script>
           {% include "_sidebar.html" %}
         </aside>
 

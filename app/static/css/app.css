@@ -2748,6 +2748,68 @@ a:hover {
     height: 100%;
     background: #ffffff;
     border-right: 1px solid var(--border-light);
+    transition: width 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+    overflow-x: hidden;
+    position: relative;
+    z-index: 10;
+    cursor: pointer; /* Click background of the sidebar to collapse / expand */
+}
+
+.app-sidebar a,
+.app-sidebar button {
+    cursor: pointer;
+}
+
+/* Collapsed Sidebar State */
+.app-sidebar.collapsed {
+    width: 72px;
+}
+
+.app-sidebar.collapsed .sidebar-heading {
+    display: none !important;
+}
+
+.app-sidebar.collapsed .sidebar-menu {
+    padding: 0.75rem 0.5rem !important;
+    overflow-x: hidden;
+}
+
+.app-sidebar.collapsed .sidebar-menu .nav-link-modern {
+    justify-content: center;
+    padding: 10px 0;
+    gap: 0;
+    border-radius: var(--radius-md);
+}
+
+.app-sidebar.collapsed .sidebar-menu .nav-link-modern span {
+    display: none !important;
+}
+
+.app-sidebar.collapsed .sidebar-menu .nav-link-modern i {
+    font-size: 1.35rem;
+    margin: 0;
+}
+
+.app-sidebar.collapsed .sidebar-profile {
+    padding: 0.75rem 0.5rem !important;
+}
+
+.app-sidebar.collapsed .sidebar-user-info {
+    display: none !important;
+}
+
+.app-sidebar.collapsed .sidebar-logout-form {
+    display: none !important;
+}
+
+.app-sidebar.collapsed .profile-row {
+    justify-content: center !important;
+}
+
+.app-sidebar.collapsed .profile-avatar-circle {
+    width: 36px;
+    height: 36px;
+    font-size: 0.95rem;
 }
 
 .sidebar-heading {

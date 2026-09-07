@@ -9,49 +9,49 @@
                 </span>
             </li>
             <li class="nav-item">
-                <a class="nav-link-modern {% if request.path == url_for('admin.dashboard') %}active{% endif %}" href="{{ url_for('admin.dashboard') }}">
+                <a class="nav-link-modern {% if request.path == url_for('admin.dashboard') %}active{% endif %}" href="{{ url_for('admin.dashboard') }}" title="Tổng quan Admin">
                     <i class="ph ph-gauge"></i>
                     <span>Tổng quan Admin</span>
                 </a>
             </li>
             <li class="nav-item">
-                <a class="nav-link-modern {% if request.path.startswith('/admin/lessons') %}active{% endif %}" href="{{ url_for('admin.lessons') }}">
+                <a class="nav-link-modern {% if request.path.startswith('/admin/lessons') %}active{% endif %}" href="{{ url_for('admin.lessons') }}" title="Quản lý Bài học">
                     <i class="ph ph-book-open"></i>
                     <span>Quản lý Bài học</span>
                 </a>
             </li>
             <li class="nav-item">
-                <a class="nav-link-modern {% if request.path.startswith('/admin/vocabulary') %}active{% endif %}" href="{{ url_for('admin.vocabulary') }}">
+                <a class="nav-link-modern {% if request.path.startswith('/admin/vocabulary') %}active{% endif %}" href="{{ url_for('admin.vocabulary') }}" title="Quản lý Từ vựng">
                     <i class="ph ph-translate"></i>
                     <span>Quản lý Từ vựng</span>
                 </a>
             </li>
             <li class="nav-item">
-                <a class="nav-link-modern {% if request.path.startswith('/admin/exams') or request.path.startswith('/admin/exam-upload') %}active{% endif %}" href="{{ url_for('admin.exams_list') }}">
+                <a class="nav-link-modern {% if request.path.startswith('/admin/exams') or request.path.startswith('/admin/exam-upload') %}active{% endif %}" href="{{ url_for('admin.exams_list') }}" title="Quản lý Đề thi">
                     <i class="ph ph-certificate"></i>
                     <span>Quản lý Đề thi</span>
                 </a>
             </li>
             <li class="nav-item">
-                <a class="nav-link-modern {% if request.path.startswith('/admin/import') %}active{% endif %}" href="{{ url_for('admin.import_hub') }}">
+                <a class="nav-link-modern {% if request.path.startswith('/admin/import') %}active{% endif %}" href="{{ url_for('admin.import_hub') }}" title="Import Dữ liệu">
                     <i class="ph ph-file-arrow-down text-success"></i>
                     <span>Import Dữ liệu</span>
                 </a>
             </li>
             <li class="nav-item">
-                <a class="nav-link-modern {% if request.path == url_for('admin.users') %}active{% endif %}" href="{{ url_for('admin.users') }}">
+                <a class="nav-link-modern {% if request.path == url_for('admin.users') %}active{% endif %}" href="{{ url_for('admin.users') }}" title="Người dùng">
                     <i class="ph ph-users"></i>
                     <span>Người dùng</span>
                 </a>
             </li>
             <li class="nav-item">
-                <a class="nav-link-modern {% if request.path == url_for('admin.roles') %}active{% endif %}" href="{{ url_for('admin.roles') }}">
+                <a class="nav-link-modern {% if request.path == url_for('admin.roles') %}active{% endif %}" href="{{ url_for('admin.roles') }}" title="Vai trò & Quyền">
                     <i class="ph ph-user-gear"></i>
                     <span>Vai trò & Quyền</span>
                 </a>
             </li>
             <li class="nav-item mb-2">
-                <a class="nav-link-modern {% if request.path == url_for('admin.audit_logs') %}active{% endif %}" href="{{ url_for('admin.audit_logs') }}">
+                <a class="nav-link-modern {% if request.path == url_for('admin.audit_logs') %}active{% endif %}" href="{{ url_for('admin.audit_logs') }}" title="Nhật ký Audit">
                     <i class="ph ph-clock-counter-clockwise"></i>
                     <span>Nhật ký Audit</span>
                 </a>
@@ -67,25 +67,25 @@
                 <span class="sidebar-heading">Học tập</span>
             </li>
             <li class="nav-item">
-                <a class="nav-link-modern {% if request.path == url_for('main.dashboard') %}active{% endif %}" href="{{ url_for('main.dashboard') }}">
+                <a class="nav-link-modern {% if request.path == url_for('main.dashboard') %}active{% endif %}" href="{{ url_for('main.dashboard') }}" title="Trang chủ">
                     <i class="ph ph-house"></i>
                     <span>Trang chủ</span>
                 </a>
             </li>
             <li class="nav-item">
-                <a class="nav-link-modern {% if request.path.startswith(url_for('learning.lessons')) and not request.path.startswith('/admin') %}active{% endif %}" href="{{ url_for('learning.lessons') }}">
+                <a class="nav-link-modern {% if request.path.startswith(url_for('learning.lessons')) and not request.path.startswith('/admin') %}active{% endif %}" href="{{ url_for('learning.lessons') }}" title="Bài học">
                     <i class="ph ph-graduation-cap"></i>
                     <span>Bài học</span>
                 </a>
             </li>
             <li class="nav-item">
-                <a class="nav-link-modern {% if request.path.startswith(url_for('learning.vocabulary')) or request.path.startswith('/flashcard-sets') and not request.path.startswith('/admin') %}active{% endif %}" href="{{ url_for('learning.vocabulary') }}">
+                <a class="nav-link-modern {% if request.path.startswith(url_for('learning.vocabulary')) or request.path.startswith('/flashcard-sets') and not request.path.startswith('/admin') %}active{% endif %}" href="{{ url_for('learning.vocabulary') }}" title="Từ vựng & Flashcards">
                     <i class="ph ph-book-open"></i>
                     <span>Từ vựng & Flashcards</span>
                 </a>
             </li>
             <li class="nav-item">
-                <a class="nav-link-modern {% if request.path.startswith('/grammar') %}active{% endif %}" href="{{ url_for('learning.grammar_overview') }}">
+                <a class="nav-link-modern {% if request.path.startswith('/grammar') %}active{% endif %}" href="{{ url_for('learning.grammar_overview') }}" title="Ngữ pháp">
                     <i class="ph ph-textbox"></i>
                     <span>Ngữ pháp</span>
                 </a>
@@ -96,19 +96,19 @@
                 <span class="sidebar-heading">Luyện tập & Thi</span>
             </li>
             <li class="nav-item">
-                <a class="nav-link-modern {% if request.path.startswith('/games') %}active{% endif %}" href="{{ url_for('learning.game_lobby') }}">
+                <a class="nav-link-modern {% if request.path.startswith('/games') %}active{% endif %}" href="{{ url_for('learning.game_lobby') }}" title="Game phản xạ">
                     <i class="ph ph-game-controller"></i>
                     <span>Game phản xạ</span>
                 </a>
             </li>
             <li class="nav-item">
-                <a class="nav-link-modern {% if request.path.startswith('/quizzes') or request.path == '/quiz' %}active{% endif %}" href="{{ url_for('learning.quiz_dashboard') }}">
+                <a class="nav-link-modern {% if request.path.startswith('/quizzes') or request.path == '/quiz' %}active{% endif %}" href="{{ url_for('learning.quiz_dashboard') }}" title="Quiz ôn tập">
                     <i class="ph ph-check-circle"></i>
                     <span>Quiz ôn tập</span>
                 </a>
             </li>
             <li class="nav-item">
-                <a class="nav-link-modern {% if request.path.startswith('/exam') or request.path.startswith('/toeic') or request.path.startswith('/specialized') or request.path.startswith('/test-history') or request.path == '/settings' %}active{% endif %}" href="{{ url_for('exams.exam_list') }}">
+                <a class="nav-link-modern {% if request.path.startswith('/exam') or request.path.startswith('/toeic') or request.path.startswith('/specialized') or request.path.startswith('/test-history') or request.path == '/settings' %}active{% endif %}" href="{{ url_for('exams.exam_list') }}" title="Luyện thi & Đề thi">
                     <i class="ph ph-certificate"></i>
                     <span>Luyện thi & Đề thi</span>
                 </a>
@@ -119,19 +119,19 @@
                 <span class="sidebar-heading">Cá nhân</span>
             </li>
             <li class="nav-item">
-                <a class="nav-link-modern {% if request.path.startswith('/gamification') or request.path == '/leaderboard' %}active{% endif %}" href="{{ url_for('learning.gamification_hub') }}">
+                <a class="nav-link-modern {% if request.path.startswith('/gamification') or request.path == '/leaderboard' %}active{% endif %}" href="{{ url_for('learning.gamification_hub') }}" title="Xếp hạng & Thưởng">
                     <i class="ph ph-trophy"></i>
                     <span>Xếp hạng & Thưởng</span>
                 </a>
             </li>
             <li class="nav-item">
-                <a class="nav-link-modern {% if request.path.startswith(url_for('learning.progress')) %}active{% endif %}" href="{{ url_for('learning.progress') }}">
+                <a class="nav-link-modern {% if request.path.startswith(url_for('learning.progress')) %}active{% endif %}" href="{{ url_for('learning.progress') }}" title="Tiến độ học tập">
                     <i class="ph ph-chart-line-up"></i>
                     <span>Tiến độ học tập</span>
                 </a>
             </li>
             <li class="nav-item">
-                <a class="nav-link-modern {% if request.path == url_for('main.profile') %}active{% endif %}" href="{{ url_for('main.profile') }}">
+                <a class="nav-link-modern {% if request.path == url_for('main.profile') %}active{% endif %}" href="{{ url_for('main.profile') }}" title="Hồ sơ cá nhân">
                     <i class="ph ph-user-circle"></i>
                     <span>Hồ sơ cá nhân</span>
                 </a>
@@ -142,16 +142,16 @@
     
     <!-- SIDEBAR PROFILE FOOTER -->
     <div class="sidebar-profile p-3 border-top bg-white">
-        <div class="d-flex align-items-center justify-content-between">
+        <div class="d-flex align-items-center justify-content-between profile-row">
             <a href="{{ url_for('main.profile') }}" class="d-flex align-items-center gap-3 text-truncate text-decoration-none" title="Xem hồ sơ cá nhân">
-                <div class="profile-avatar-circle">
+                <div class="profile-avatar-circle flex-shrink-0">
                     {% if current_user.avatar and current_user.avatar != 'default_avatar.png' %}
                     <img src="{{ url_for('static', filename='uploads/avatars/' + current_user.avatar) }}" class="w-100 h-100 rounded-circle object-fit-cover" alt="Avatar">
                     {% else %}
                     {{ current_user.username[0].upper() }}
                     {% endif %}
                 </div>
-                <div class="d-flex flex-column text-truncate" style="max-width: 130px;">
+                <div class="d-flex flex-column text-truncate sidebar-user-info" style="max-width: 120px;">
                     <span class="fw-bold text-dark text-truncate small" title="{{ current_user.full_name or current_user.username }}">{{ current_user.full_name or current_user.username }}</span>
                     {% if current_user.is_admin %}
                     <span class="badge bg-danger-subtle text-danger border border-danger-subtle rounded-pill px-2 py-0.5 mt-0.5" style="font-size: 0.64rem; width: fit-content;">Quản trị viên</span>
@@ -160,7 +160,7 @@
                     {% endif %}
                 </div>
             </a>
-            <form method="post" action="{{ url_for('auth.logout') }}" class="m-0">
+            <form method="post" action="{{ url_for('auth.logout') }}" class="m-0 sidebar-logout-form">
                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                 <button class="btn btn-sm btn-light border-0 text-muted p-2 d-flex align-items-center justify-content-center rounded-3" type="submit" title="Đăng xuất" style="transition: all 0.2s ease;" onmouseover="this.classList.add('text-danger')" onmouseout="this.classList.remove('text-danger')">
                     <i class="ph ph-sign-out fs-5"></i>

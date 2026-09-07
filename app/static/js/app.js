@@ -174,4 +174,30 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     });
   });
+
+  // Sidebar Collapse / Expand on Background Click
+  const sidebar = document.querySelector(".app-sidebar");
+  if (sidebar) {
+    // Sync initial state from localStorage
+    try {
+      if (localStorage.getItem("sidebar_collapsed") === "true") {
+        sidebar.classList.add("collapsed");
+      }
+    } catch (e) {}
+
+    // Toggle when clicking on the sidebar background (not on links, buttons, or forms)
+    sidebar.addEventListener("click", (e) => {
+      const interactive = e.target.closest("a, button, input, select, textarea, form");
+      if (interactive) {
+        // Allow normal navigation and actions when clicking on links/buttons
+        return;
+      }
+
+      // User clicked on the background / empty space of the sidebar
+      const isCollapsed = sidebar.classList.toggle("collapsed");
+      try {
+        localStorage.setItem("sidebar_collapsed", isCollapsed ? "true" : "false");
+      } catch (err) {}
+    });
+  }
 });
