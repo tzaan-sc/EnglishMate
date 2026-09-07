@@ -1,62 +1,3 @@
-const legacyIconMap = {
-  "arrow-clockwise": "refresh-cw",
-  "arrow-left-right": "arrow-left-right",
-  "arrow-u-down-left": "corner-left-down",
-  "arrow-u-up-left": "corner-left-up",
-  "arrows-clockwise": "refresh-cw",
-  "arrows-out-simple": "maximize",
-  "book-bookmark": "book-marked",
-  "book-open": "book-open",
-  "bookmark-simple": "bookmark",
-  "calendar-blank": "calendar-days",
-  "cards": "layers-3",
-  "certificate": "award",
-  "chat-circle-text": "message-circle",
-  "chats-circle": "messages",
-  "check-circle": "circle-check",
-  "check-square": "square-check",
-  "clock-counter-clockwise": "history",
-  "cloud-arrow-up": "cloud-upload",
-  "dots-three-vertical": "ellipsis-vertical",
-  "envelope": "mail",
-  "envelope-simple-open": "mail-open",
-  "file-arrow-down": "file-down",
-  "file-arrow-up": "file-up",
-  "file-code": "file-code-2",
-  "file-xls": "file-spreadsheet",
-  "flame": "flame",
-  "funnel": "funnel",
-  "game-controller": "gamepad-2",
-  "gear": "settings",
-  "gauge": "gauge",
-  "grid-four": "grid-2x2",
-  "hourglass-high": "hourglass",
-  "hourglass-split": "hourglass",
-  "lightning": "zap",
-  "magnifying-glass": "search",
-  "medal": "medal",
-  "note-pencil": "notebook-pen",
-  "notebook": "notebook",
-  "pencil-simple": "pencil",
-  "pencil-simple-line": "pencil-line",
-  "play-circle": "circle-play",
-  "plus-circle": "circle-plus",
-  "plus-lg": "plus",
-  "ranking": "trophy",
-  "share-network": "share-2",
-  "shield-check": "shield-check",
-  "sign-out": "log-out",
-  "speaker-high": "volume-2",
-  "star-fill": "star",
-  "text-box": "text-cursor-input",
-  "textbox": "text-cursor-input",
-  "timer": "timer",
-  "translate": "languages",
-  "user-gear": "user-cog",
-  "warning-circle": "circle-alert",
-  "x-circle": "circle-x",
-  "x-lg": "x",
-};
 
 const emojiIconMap = {
   "🎓": "graduation-cap",
@@ -103,10 +44,6 @@ const emojiIconMap = {
   "🌙": "moon",
 };
 
-function normalizeLegacyIconName(name) {
-  const normalized = name.replace(/^(ph-bold|ph-fill|ph|bi)-/, "");
-  return legacyIconMap[normalized] || normalized;
-}
 
 function replaceSocialIcons() {
   document.querySelectorAll(".btn-google svg, .btn-facebook svg").forEach((icon) => {
@@ -159,42 +96,6 @@ function initializeIcons() {
 
 document.addEventListener("DOMContentLoaded", () => {
   initializeIcons();
-  const cards = [...document.querySelectorAll("[data-card]")];
-  let current = 0;
-  const progress = document.getElementById("deck-progress");
-  const indexLabel = document.getElementById("card-index");
-  const deck = document.querySelector(".card-deck");
-  const done = document.getElementById("deck-done");
-
-  cards.forEach((wrap) => {
-    const card = wrap.querySelector(".flashcard");
-    card?.addEventListener("click", () => card.classList.toggle("flipped"));
-    wrap.querySelectorAll("[data-review-form]").forEach((form) => {
-      form.addEventListener("submit", async (event) => {
-        event.preventDefault();
-        const button = form.querySelector("button");
-        button.disabled = true;
-        try {
-          const response = await fetch(form.action, {method: "POST", body: new FormData(form)});
-          if (!response.ok) throw new Error("request failed");
-          wrap.classList.add("d-none");
-          current += 1;
-          if (current < cards.length) {
-            cards[current].classList.remove("d-none");
-            indexLabel.textContent = current + 1;
-            progress.style.width = `${((current + 1) / cards.length) * 100}%`;
-          } else {
-            deck.classList.add("d-none");
-            document.querySelector(".deck-status")?.classList.add("d-none");
-            done.classList.remove("d-none");
-          }
-        } catch (_error) {
-          button.disabled = false;
-          alert("Không thể lưu kết quả. Vui lòng thử lại.");
-        }
-      });
-    });
-  });
 
   document.querySelectorAll(".alert").forEach((alert) => {
     window.setTimeout(() => {

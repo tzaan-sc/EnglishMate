@@ -1,7 +1,182 @@
-{% extends "base.html" %}{% block title %}Tiến độ · EnglishMate{% endblock %}
-{% block content %}<section class="page-section"><div class="container">
-  <div class="page-heading"><span class="eyebrow">YOUR JOURNEY</span><h1>Mỗi con số là một bước tiến.</h1><p>Nhìn lại những gì bạn đã làm được và giữ vững nhịp học.</p></div>
-  <div class="row g-3 stat-grid">{% for value,label,icon in [(lessons_done|length,'Bài đã hoàn thành','✓'),(words|length,'Từ vựng đã học','Aa'),(attempts|length,'Lượt làm quiz','?'),(best ~ '%','Điểm cao nhất','★'),(average ~ '%','Điểm trung bình','↗')] %}<div class="col-6 col-lg"><div class="stat-card"><span class="stat-icon">{{ icon }}</span><strong>{{ value }}</strong><small>{{ label }}</small></div></div>{% endfor %}</div>
-  <div class="row g-4 mt-3"><div class="col-lg-5"><div class="panel h-100"><h3>Bài học đã hoàn thành</h3>{% for item in lessons_done %}<div class="timeline-item"><span>✓</span><div><b>{{ item.lesson.title }}</b><small>{{ item.lesson.level }} · {{ item.lesson.skill }}</small></div></div>{% else %}<div class="empty-mini">Chưa có bài hoàn thành. <a href="{{ url_for('learning.lessons') }}">Học ngay →</a></div>{% endfor %}</div></div><div class="col-lg-7"><div class="panel h-100"><h3>Lịch sử quiz</h3><div class="table-responsive"><table class="table align-middle"><thead><tr><th>Ngày làm</th><th>Cấp độ</th><th>Chủ đề</th><th>Kết quả</th></tr></thead><tbody>{% for a in attempts %}<tr><td>{{ a.created_at.strftime('%d/%m/%Y') }}</td><td>{{ a.level }}</td><td>{{ a.topic }}</td><td><a class="score-pill" href="{{ url_for('learning.quiz_result', attempt_id=a.id) }}">{{ a.score }}/{{ a.total_questions }}</a></td></tr>{% else %}<tr><td colspan="4" class="text-center text-secondary py-4">Chưa có lượt làm quiz.</td></tr>{% endfor %}</tbody></table></div></div></div></div>
-</div></section>{% endblock %}
+{% extends "base.html" %}
+{% block title %}Tiến độ học tập · EnglishMate{% endblock %}
 
+{% block content %}
+<div class="container-fluid max-w-7xl py-4">
+
+  <!-- Header Banner -->
+  <div class="card border-0 shadow-sm rounded-4 bg-white p-4 p-md-5 mb-4">
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
+      <div>
+        <span class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill px-3 py-1 mb-2 font-semibold">
+          <i class="ph-bold ph-chart-line-up me-1"></i> TIẾN ĐỘ HỌC TẬP CÁ NHÂN
+        </span>
+        <h2 class="fw-bold text-dark mb-1">Mỗi con số là một bước tiến</h2>
+        <p class="text-secondary small mb-0">Nhìn lại những gì bạn đã chinh phục và tiếp tục duy trì nhịp học mỗi ngày.</p>
+      </div>
+      <div class="d-flex gap-2">
+        <a href="{{ url_for('learning.lessons') }}" class="btn btn-primary rounded-pill px-4 py-2 fw-bold shadow-xs d-inline-flex align-items-center gap-2">
+          <i class="ph-bold ph-graduation-cap"></i>
+          <span>Học bài mới</span>
+        </a>
+        <a href="{{ url_for('learning.vocabulary') }}" class="btn btn-light border rounded-pill px-3.5 py-2 fw-semibold text-secondary d-inline-flex align-items-center gap-2">
+          <i class="ph-bold ph-book-open"></i>
+          <span>Từ vựng</span>
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- 5 Stat Cards Grid -->
+  <div class="row g-3 mb-4">
+    <div class="col-6 col-lg">
+      <div class="card border-0 shadow-xs rounded-4 p-3.5 bg-white text-center h-100">
+        <div class="rounded-circle bg-success-subtle text-success mx-auto d-flex align-items-center justify-content-center mb-2" style="width: 44px; height: 44px;">
+          <i class="ph-bold ph-check-circle fs-5"></i>
+        </div>
+        <h3 class="fw-bold text-dark mb-0">{{ lessons_done|length }}</h3>
+        <span class="text-secondary small">Bài đã hoàn thành</span>
+      </div>
+    </div>
+
+    <div class="col-6 col-lg">
+      <div class="card border-0 shadow-xs rounded-4 p-3.5 bg-white text-center h-100">
+        <div class="rounded-circle bg-primary-subtle text-primary mx-auto d-flex align-items-center justify-content-center mb-2" style="width: 44px; height: 44px;">
+          <i class="ph-bold ph-translate fs-5"></i>
+        </div>
+        <h3 class="fw-bold text-dark mb-0">{{ words|length }}</h3>
+        <span class="text-secondary small">Từ vựng đã học</span>
+      </div>
+    </div>
+
+    <div class="col-6 col-lg">
+      <div class="card border-0 shadow-xs rounded-4 p-3.5 bg-white text-center h-100">
+        <div class="rounded-circle bg-info-subtle text-info mx-auto d-flex align-items-center justify-content-center mb-2" style="width: 44px; height: 44px;">
+          <i class="ph-bold ph-check-square fs-5"></i>
+        </div>
+        <h3 class="fw-bold text-dark mb-0">{{ attempts|length }}</h3>
+        <span class="text-secondary small">Lượt làm quiz</span>
+      </div>
+    </div>
+
+    <div class="col-6 col-lg">
+      <div class="card border-0 shadow-xs rounded-4 p-3.5 bg-white text-center h-100">
+        <div class="rounded-circle bg-warning-subtle text-warning mx-auto d-flex align-items-center justify-content-center mb-2" style="width: 44px; height: 44px;">
+          <i class="ph-bold ph-star fs-5"></i>
+        </div>
+        <h3 class="fw-bold text-dark mb-0">{{ best }}%</h3>
+        <span class="text-secondary small">Điểm cao nhất</span>
+      </div>
+    </div>
+
+    <div class="col-12 col-sm-6 col-lg">
+      <div class="card border-0 shadow-xs rounded-4 p-3.5 bg-white text-center h-100">
+        <div class="rounded-circle bg-purple-subtle text-purple mx-auto d-flex align-items-center justify-content-center mb-2" style="width: 44px; height: 44px; background: #f3e8ff; color: #9333ea;">
+          <i class="ph-bold ph-chart-donut fs-5"></i>
+        </div>
+        <h3 class="fw-bold text-dark mb-0">{{ average }}%</h3>
+        <span class="text-secondary small">Điểm trung bình</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Content Sections: Completed Lessons & Quiz Attempts -->
+  <div class="row g-4">
+    <!-- Completed Lessons Timeline -->
+    <div class="col-lg-5">
+      <div class="card border-0 shadow-sm rounded-4 p-4 bg-white h-100">
+        <div class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom">
+          <h5 class="fw-bold text-dark mb-0 d-flex align-items-center gap-2">
+            <i class="ph-bold ph-book-bookmark text-primary"></i> Bài học đã hoàn thành
+          </h5>
+          <span class="badge bg-light text-secondary border rounded-pill">{{ lessons_done|length }} bài</span>
+        </div>
+
+        <div class="overflow-auto" style="max-height: 480px;">
+          {% for item in lessons_done %}
+          <div class="d-flex align-items-center justify-content-between p-2.5 mb-2 rounded-3 border bg-light-subtle">
+            <div class="d-flex align-items-center gap-2.5 text-truncate">
+              <span class="badge bg-success-subtle text-success rounded-circle p-1 d-inline-flex align-items-center justify-content-center" style="width: 26px; height: 26px;">
+                <i class="ph-bold ph-check"></i>
+              </span>
+              <div class="text-truncate">
+                <a href="{{ url_for('learning.lesson_detail', lesson_id=item.lesson_id) }}" class="text-dark fw-bold text-decoration-none small text-truncate d-block">
+                  {{ item.lesson.title }}
+                </a>
+                <span class="text-muted" style="font-size: 0.75rem;">{{ item.lesson.level }} · {{ item.lesson.skill }}</span>
+              </div>
+            </div>
+            {% if item.completed_at %}
+            <span class="text-muted small flex-shrink-0 ms-2" style="font-size: 0.72rem;">{{ item.completed_at.strftime('%d/%m') }}</span>
+            {% endif %}
+          </div>
+          {% else %}
+          <div class="text-center py-5 text-muted">
+            <i class="ph-bold ph-book-open fs-1 d-block mb-2 text-secondary opacity-50"></i>
+            <p class="small mb-2">Chưa có bài học nào được hoàn thành.</p>
+            <a href="{{ url_for('learning.lessons') }}" class="btn btn-sm btn-primary rounded-pill px-3">Khám phá bài học →</a>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+
+    <!-- Quiz History -->
+    <div class="col-lg-7">
+      <div class="card border-0 shadow-sm rounded-4 p-4 bg-white h-100">
+        <div class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom">
+          <h5 class="fw-bold text-dark mb-0 d-flex align-items-center gap-2">
+            <i class="ph-bold ph-check-circle text-success"></i> Lịch sử Quiz & Kiểm tra
+          </h5>
+          <a href="{{ url_for('learning.quiz_dashboard') }}" class="btn btn-sm btn-light border rounded-pill px-3 text-secondary">
+            Xem Dashboard Quiz →
+          </a>
+        </div>
+
+        <div class="table-responsive">
+          <table class="table align-middle table-hover mb-0">
+            <thead class="table-light">
+              <tr class="small text-secondary">
+                <th>Ngày làm</th>
+                <th>Cấp độ</th>
+                <th>Chủ đề</th>
+                <th class="text-center">Kết quả</th>
+                <th class="text-end">Hành động</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for a in attempts %}
+              <tr>
+                <td class="small text-muted">{{ a.created_at.strftime('%d/%m/%Y') }}</td>
+                <td><span class="badge bg-secondary-subtle text-secondary border rounded-pill">{{ a.level }}</span></td>
+                <td class="fw-semibold small text-dark">{{ a.topic }}</td>
+                <td class="text-center">
+                  {% set pct = (a.score / a.total_questions * 100)|round|int if a.total_questions > 0 else 0 %}
+                  <span class="badge {% if pct >= 80 %}bg-success-subtle text-success border-success-subtle{% elif pct >= 50 %}bg-warning-subtle text-warning border-warning-subtle{% else %}bg-danger-subtle text-danger border-danger-subtle{% endif %} border rounded-pill px-2.5 py-1 fw-bold">
+                    {{ a.score }}/{{ a.total_questions }} ({{ pct }}%)
+                  </span>
+                </td>
+                <td class="text-end">
+                  <a class="btn btn-sm btn-light border rounded-pill px-2.5 py-0.5 text-primary fw-semibold" href="{{ url_for('learning.quiz_results', attempt_id=a.id) }}">
+                    Chi tiết
+                  </a>
+                </td>
+              </tr>
+              {% else %}
+              <tr>
+                <td colspan="5" class="text-center text-muted py-5">
+                  <i class="ph-bold ph-clipboard-text fs-1 d-block mb-2 text-secondary opacity-50"></i>
+                  <p class="small mb-2">Chưa có lượt làm quiz nào.</p>
+                  <a href="{{ url_for('learning.quiz_dashboard') }}" class="btn btn-sm btn-primary rounded-pill px-3">Bắt đầu làm Quiz</a>
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+{% endblock %}

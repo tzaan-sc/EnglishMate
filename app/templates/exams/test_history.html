@@ -4,6 +4,30 @@
 {% block content %}
 <div class="container-fluid max-w-7xl py-4">
 
+  <!-- Sub-navigation Tabs -->
+  <div class="d-flex flex-wrap gap-2 mb-4">
+    <a href="{{ url_for('exams.exam_list') }}" class="btn btn-light border rounded-pill px-3.5 py-1.5 fw-semibold text-secondary d-inline-flex align-items-center gap-1.5" style="font-size: 0.85rem;">
+      <i class="ph-bold ph-files"></i>
+      <span>Tất cả đề thi</span>
+    </a>
+    <a href="{{ url_for('exams.toeic') }}" class="btn btn-light border rounded-pill px-3.5 py-1.5 fw-semibold text-secondary d-inline-flex align-items-center gap-1.5" style="font-size: 0.85rem;">
+      <i class="ph-bold ph-certificate"></i>
+      <span>Luyện thi TOEIC</span>
+    </a>
+    <a href="{{ url_for('exams.specialized_exams_hub') }}" class="btn btn-light border rounded-pill px-3.5 py-1.5 fw-semibold text-secondary d-inline-flex align-items-center gap-1.5" style="font-size: 0.85rem;">
+      <i class="ph-bold ph-graduation-cap"></i>
+      <span>Đề thi chuyên biệt & Xếp lớp</span>
+    </a>
+    <a href="{{ url_for('exams.test_history') }}" class="btn btn-primary rounded-pill px-3.5 py-1.5 fw-bold shadow-xs d-inline-flex align-items-center gap-1.5" style="font-size: 0.85rem;">
+      <i class="ph-bold ph-clock-counter-clockwise"></i>
+      <span>Lịch sử thi & So sánh</span>
+    </a>
+    <a href="{{ url_for('exams.exam_settings') }}" class="btn btn-light border rounded-pill px-3.5 py-1.5 fw-semibold text-secondary d-inline-flex align-items-center gap-1.5" style="font-size: 0.85rem;">
+      <i class="ph-bold ph-gear"></i>
+      <span>Cài đặt đề thi</span>
+    </a>
+  </div>
+
   <!-- Header & Top Actions -->
   <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
     <div>

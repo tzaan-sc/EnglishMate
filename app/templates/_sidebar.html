@@ -102,15 +102,15 @@
                 </a>
             </li>
             <li class="nav-item">
-                <a class="nav-link-modern {% if request.path.startswith(url_for('learning.quiz')) %}active{% endif %}" href="{{ url_for('learning.quiz') }}">
+                <a class="nav-link-modern {% if request.path.startswith('/quizzes') or request.path == '/quiz' %}active{% endif %}" href="{{ url_for('learning.quiz_dashboard') }}">
                     <i class="ph ph-check-circle"></i>
                     <span>Quiz ôn tập</span>
                 </a>
             </li>
             <li class="nav-item">
-                <a class="nav-link-modern {% if request.path.startswith(url_for('exams.exam_list')) %}active{% endif %}" href="{{ url_for('exams.exam_list') }}">
+                <a class="nav-link-modern {% if request.path.startswith('/exam') or request.path.startswith('/toeic') or request.path.startswith('/specialized') or request.path.startswith('/test-history') or request.path == '/settings' %}active{% endif %}" href="{{ url_for('exams.exam_list') }}">
                     <i class="ph ph-certificate"></i>
-                    <span>Luyện thi TOEIC</span>
+                    <span>Luyện thi & Đề thi</span>
                 </a>
             </li>
 

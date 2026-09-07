@@ -1097,32 +1097,15 @@ def quiz():
         update_challenge_progress(current_user, "quiz", 1)
         check_user_badges(current_user)
         db.session.commit()
-        return redirect(url_for("learning.quiz_result", attempt_id=attempt.id))
+        return redirect(url_for("learning.quiz_results", attempt_id=attempt.id))
 
-    form = QuizStartForm()
-    topics = [r[0] for r in db.session.query(Question.topic).distinct().order_by(Question.topic).all()]
-    form.topic.choices = [("", "Tất cả chủ đề")] + [(t, t) for t in topics]
-    level, topic = request.args.get("level", ""), request.args.get("topic", "")
-    questions = []
-    if request.args.get("start") == "1":
-        query = Question.query
-        if level:
-            query = query.filter_by(level=level)
-        if topic:
-            query = query.filter_by(topic=topic)
-        pool = query.all()
-        random.shuffle(pool)
-        questions = pool[:10]
-        if not questions:
-            flash("Chưa có câu hỏi phù hợp với bộ lọc này.", "warning")
-    return render_template("learning/quiz.html", form=form, questions=questions, level=level, topic=topic)
+    return redirect(url_for("learning.quiz_dashboard"))
 
 
 @bp.get("/quiz/result/<int:attempt_id>")
 @login_required
 def quiz_result(attempt_id):
-    attempt = QuizAttempt.query.filter_by(id=attempt_id, user_id=current_user.id).first_or_404()
-    return render_template("learning/quiz_result.html", attempt=attempt)
+    return redirect(url_for("learning.quiz_results", attempt_id=attempt_id))
 
 
 @bp.get("/progress")
