@@ -69,7 +69,7 @@
           <a href="{{ url_for('learning.quiz_take', quiz_id=quiz_id, q_idx=i) }}" 
              class="btn btn-sm rounded-circle fw-bold p-0 d-flex align-items-center justify-content-center q-nav-item {{ 'q-marked' if is_marked else '' }}" 
              data-q-idx="{{ i }}"
-             style="width: 38px; height: 38px; position: relative; {{ 'border: 2.5px solid #0d6efd;' if is_curr else '' }} {{ 'background-color: #0d6efd; color: #fff;' if is_ans and not is_curr else ('background-color: #e9ecef; color: #212529;' if not is_curr else '') }}">
+             style="width: 38px; height: 38px; position: relative; {{ 'border: 2.5px solid var(--primary);' if is_curr else '' }} {{ 'background-color: var(--primary); color: #fff;' if is_ans and not is_curr else ('background-color: #f1f5f9; color: #334155;' if not is_curr else '') }}">
             {{ i + 1 }}
             {% if is_marked %}
             <span class="position-absolute top-0 start-100 translate-middle p-1 bg-warning border border-light rounded-circle"></span>

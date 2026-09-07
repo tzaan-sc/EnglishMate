@@ -91,18 +91,41 @@
     --space-5: 24px;
     --space-6: 32px;
 
-    /* Bootstrap Overrides */
+    /* Bootstrap 5 Theme Overrides - Brand Emerald System */
     --bs-primary: var(--primary);
-    --bs-success: var(--success);
-    --bs-warning: var(--warning);
-    --bs-danger: var(--danger);
-    --bs-info: var(--info);
-
+    --bs-primary-rgb: 5, 150, 105;
+    --bs-primary-text-emphasis: #047857;
     --bs-primary-bg-subtle: var(--primary-subtle);
+    --bs-primary-border-subtle: var(--primary-border);
+
+    --bs-success: var(--success);
+    --bs-success-rgb: 16, 185, 129;
+    --bs-success-text-emphasis: #065f46;
     --bs-success-bg-subtle: var(--success-subtle);
+    --bs-success-border-subtle: #a7f3d0;
+
+    --bs-warning: var(--warning);
+    --bs-warning-rgb: 245, 158, 11;
+    --bs-warning-text-emphasis: #78350f;
     --bs-warning-bg-subtle: var(--warning-subtle);
+    --bs-warning-border-subtle: #fde68a;
+
+    --bs-danger: var(--danger);
+    --bs-danger-rgb: 239, 68, 68;
+    --bs-danger-text-emphasis: #7f1d1d;
     --bs-danger-bg-subtle: var(--danger-subtle);
+    --bs-danger-border-subtle: #fecaca;
+
+    --bs-info: var(--info);
+    --bs-info-rgb: 2, 132, 199;
+    --bs-info-text-emphasis: #075985;
     --bs-info-bg-subtle: var(--info-subtle);
+    --bs-info-border-subtle: #bae6fd;
+
+    --bs-link-color: var(--primary);
+    --bs-link-hover-color: var(--primary-hover);
+    --bs-link-color-rgb: 5, 150, 105;
+    --bs-focus-ring-color: rgba(5, 150, 105, 0.25);
 }
 
 /* Custom Semantic Utilities */
@@ -272,6 +295,32 @@
     background-color: var(--primary) !important;
     color: #ffffff !important;
 }
+
+/* Pagination Synchronization */
+.page-item.active .page-link {
+    background-color: var(--primary) !important;
+    border-color: var(--primary) !important;
+    color: #ffffff !important;
+}
+.page-link {
+    color: var(--primary);
+}
+.page-link:hover {
+    color: var(--primary-hover);
+    background-color: var(--primary-subtle);
+}
+.page-link:focus {
+    box-shadow: 0 0 0 0.2rem rgba(5, 150, 105, 0.18);
+    color: var(--primary-hover);
+}
+
+/* Dropdown Synchronization */
+.dropdown-item:active,
+.dropdown-item.active {
+    background-color: var(--primary) !important;
+    color: #ffffff !important;
+}
+
 
 * {
     box-sizing: border-box;
