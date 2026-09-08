@@ -3383,3 +3383,204 @@ a:hover {
 .notif-footer {
     background: var(--bg-surface-subtle);
 }
+
+/* ==========================================================================
+   Grammar Lesson Layout & Components (Ref: MasterGrammar / NguPhap.com)
+   ========================================================================== */
+
+.grammar-prose-content {
+    font-size: 1rem;
+    line-height: 1.85;
+    color: var(--text-primary);
+}
+
+.grammar-prose-content section {
+    scroll-margin-top: 90px;
+}
+
+.grammar-prose-content h2 {
+    letter-spacing: -0.015em;
+}
+
+/* Modern Grammar Tables */
+.grammar-styled-table {
+    width: 100%;
+    margin-bottom: 0;
+    border-collapse: separate;
+    border-spacing: 0;
+    font-size: 0.92rem;
+}
+
+.grammar-styled-table thead th {
+    background-color: var(--primary);
+    color: #ffffff;
+    font-weight: 700;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    padding: 0.75rem 1rem;
+    border: none;
+}
+
+.grammar-styled-table thead th:first-child {
+    border-top-left-radius: 8px;
+}
+
+.grammar-styled-table thead th:last-child {
+    border-top-right-radius: 8px;
+}
+
+.grammar-styled-table tbody tr {
+    transition: background-color 0.15s ease;
+    border-bottom: 1px solid var(--border-light);
+}
+
+.grammar-styled-table tbody tr:nth-child(even) {
+    background-color: rgba(5, 150, 105, 0.03);
+}
+
+.grammar-styled-table tbody tr:hover {
+    background-color: rgba(5, 150, 105, 0.07);
+}
+
+.grammar-styled-table tbody td {
+    padding: 0.75rem 1rem;
+    vertical-align: middle;
+    border-top: 1px solid var(--border-light);
+    color: var(--text-secondary);
+}
+
+/* Bilingual Example Cards */
+.grammar-example-box {
+    padding: 0.875rem 1.15rem;
+    background-color: #f8fafc;
+    border-left: 4px solid var(--primary);
+    border-radius: 0.5rem;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.grammar-example-box:hover {
+    transform: translateX(3px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+}
+
+/* Learning Path Timeline Stepper */
+.learning-path-timeline {
+    position: relative;
+    padding-left: 1.25rem;
+    margin-left: 0.5rem;
+    border-left: 2px solid #e2e8f0;
+}
+
+.learning-path-item {
+    position: relative;
+    padding-bottom: 1rem;
+}
+
+.learning-path-item:last-child {
+    padding-bottom: 0;
+}
+
+.learning-path-dot {
+    position: absolute;
+    left: calc(-1.25rem - 6px);
+    top: 4px;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background-color: #cbd5e1;
+    border: 2px solid #fff;
+    transition: all 0.2s ease;
+}
+
+.learning-path-item.is-completed .learning-path-dot {
+    background-color: var(--primary);
+    box-shadow: 0 0 0 2px rgba(5, 150, 105, 0.2);
+}
+
+.learning-path-item.is-current .learning-path-dot {
+    width: 14px;
+    height: 14px;
+    left: calc(-1.25rem - 8px);
+    top: 2px;
+    background-color: var(--primary);
+    border: 3px solid #fff;
+    box-shadow: 0 0 0 4px rgba(5, 150, 105, 0.25);
+    animation: pulseDot 2s infinite;
+}
+
+@keyframes pulseDot {
+    0% { box-shadow: 0 0 0 2px rgba(5, 150, 105, 0.4); }
+    50% { box-shadow: 0 0 0 6px rgba(5, 150, 105, 0.1); }
+    100% { box-shadow: 0 0 0 2px rgba(5, 150, 105, 0.4); }
+}
+
+.learning-path-item.is-current .learning-path-link {
+    font-weight: 700;
+    color: var(--primary);
+    background-color: var(--primary-subtle);
+    border-radius: 6px;
+    padding: 3px 8px;
+    display: inline-block;
+}
+
+/* TOC Navigation */
+.toc-sticky-nav .nav-link {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    padding: 0.35rem 0.6rem;
+    border-radius: 6px;
+    transition: all 0.15s ease;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+}
+
+.toc-sticky-nav .nav-link:hover {
+    color: var(--primary);
+    background-color: var(--bg-surface-subtle);
+}
+
+.toc-sticky-nav .nav-link.active {
+    color: var(--primary);
+    font-weight: 600;
+    background-color: var(--primary-subtle);
+}
+
+/* Interactive In-Lesson Quiz Cards */
+.quiz-option-card {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem 1rem;
+    background-color: #ffffff;
+    border: 1.5px solid var(--border-light);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.18s ease;
+    user-select: none;
+}
+
+.quiz-option-card:hover {
+    border-color: var(--primary);
+    background-color: rgba(5, 150, 105, 0.02);
+}
+
+.quiz-option-card.selected {
+    border-color: var(--primary);
+    background-color: rgba(5, 150, 105, 0.06);
+    color: var(--primary);
+    font-weight: 600;
+}
+
+.quiz-option-card.is-correct {
+    border-color: #10b981 !important;
+    background-color: #ecfdf5 !important;
+    color: #065f46 !important;
+}
+
+.quiz-option-card.is-wrong {
+    border-color: #ef4444 !important;
+    background-color: #fef2f2 !important;
+    color: #991b1b !important;
+}

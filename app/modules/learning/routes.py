@@ -2249,6 +2249,9 @@ def grammar_overview():
 @bp.route("/grammar/<int:topic_id>")
 @login_required
 def grammar_detail(topic_id):
+    ensure_initial_grammar_topics()
+    ensure_initial_grammar_questions()
+
     topic = GrammarTopic.query.filter_by(id=topic_id, is_active=True).first_or_404()
     prog = GrammarProgress.query.filter_by(user_id=current_user.id, topic_id=topic.id).first()
 
@@ -2264,12 +2267,49 @@ def grammar_detail(topic_id):
     if not related_topics:
         related_topics = GrammarTopic.query.filter(GrammarTopic.category == topic.category, GrammarTopic.id != topic.id, GrammarTopic.is_active.is_(True)).limit(3).all()
 
+    # Learning path topics for the current level
+    level_topics = GrammarTopic.query.filter_by(level=topic.level, is_active=True).order_by(GrammarTopic.id.asc()).all()
+    if not level_topics or len(level_topics) < 2:
+        level_topics = GrammarTopic.query.filter_by(is_active=True).order_by(GrammarTopic.level.asc(), GrammarTopic.id.asc()).all()
+
+    # User's completed topics IDs
+    completed_topic_ids = set(
+        r[0] for r in db.session.query(GrammarProgress.topic_id).filter_by(user_id=current_user.id, is_completed=True).all()
+    )
+
+    # All active topics for Previous / Next lesson navigation
+    all_topics = GrammarTopic.query.filter_by(is_active=True).order_by(GrammarTopic.level.asc(), GrammarTopic.id.asc()).all()
+    prev_topic = None
+    next_topic = None
+    for idx, t in enumerate(all_topics):
+        if t.id == topic.id:
+            if idx > 0:
+                prev_topic = all_topics[idx - 1]
+            if idx < len(all_topics) - 1:
+                next_topic = all_topics[idx + 1]
+            break
+
+    # Practice questions for in-lesson quiz (up to 5 questions)
+    practice_questions = Question.query.filter(
+        Question.topic == "Grammar",
+        Question.level == topic.level
+    ).limit(5).all()
+    if not practice_questions or len(practice_questions) < 3:
+        practice_questions = Question.query.filter_by(topic="Grammar").limit(5).all()
+    if not practice_questions:
+        practice_questions = Question.query.limit(5).all()
+
     return render_template(
         "learning/grammar_detail.html",
         topic=topic,
         is_completed=is_completed,
         is_favorite=is_favorite,
         related_topics=related_topics,
+        level_topics=level_topics,
+        completed_topic_ids=completed_topic_ids,
+        prev_topic=prev_topic,
+        next_topic=next_topic,
+        practice_questions=practice_questions,
         form=ActionForm()
     )
 

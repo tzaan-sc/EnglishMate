@@ -2,157 +2,594 @@
 {% block title %}{{ topic.title }} · Ngữ Pháp EnglishMate{% endblock %}
 
 {% block content %}
-<div class="container-fluid max-w-4xl py-4">
+<div class="container-fluid max-w-7xl py-4 px-3 px-md-4">
 
-  <!-- TOP BACK LINK & ACTION BAR -->
-  <div class="d-flex align-items-center justify-content-between mb-4">
-    <a class="btn btn-light border rounded-3 px-3 py-1.5 fw-bold text-secondary shadow-xs d-inline-flex align-items-center gap-1.5" href="{{ url_for('learning.grammar_overview') }}" style="font-size: 0.88rem;">
-      <i class="ph-bold ph-arrow-left"></i>
-      <span>Thư viện Ngữ pháp</span>
+  <!-- 1. BREADCRUMB NAVIGATION -->
+  <nav class="d-flex align-items-center gap-2 small text-muted mb-3.5 flex-wrap" aria-label="breadcrumb">
+    <a href="{{ url_for('main.dashboard') }}" class="text-decoration-none text-secondary d-inline-flex align-items-center gap-1">
+      <i class="ph ph-house"></i> Trang Chủ
     </a>
-    <div class="d-flex gap-2">
-      <!-- Favorite Button -->
-      <form method="post" action="{{ url_for('learning.favorite_grammar_topic', topic_id=topic.id) }}" class="d-inline m-0">
-        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-        <button type="submit" class="btn btn-light border rounded-circle p-2 shadow-xs d-flex align-items-center justify-content-center" title="Thả tim yêu thích" style="width: 38px; height: 38px;">
-          <i class="ph-bold ph-heart fs-5 {{ 'text-danger' if is_favorite else 'text-muted opacity-50' }}"></i>
-        </button>
-      </form>
-    </div>
-  </div>
+    <i class="ph ph-caret-right text-muted opacity-50 fs-6"></i>
+    <a href="{{ url_for('learning.grammar_overview') }}" class="text-decoration-none text-secondary">
+      Ngữ Pháp
+    </a>
+    <i class="ph ph-caret-right text-muted opacity-50 fs-6"></i>
+    <span class="badge bg-light text-dark border px-2 py-0.5">{{ topic.level }}</span>
+    <i class="ph ph-caret-right text-muted opacity-50 fs-6"></i>
+    <span class="text-secondary fw-semibold">{{ topic.category }}</span>
+    <i class="ph ph-caret-right text-muted opacity-50 fs-6"></i>
+    <span class="text-dark fw-bold text-truncate" style="max-width: 280px;">{{ topic.title }}</span>
+  </nav>
 
-  <!-- HEADER BANNER CARD -->
-  <div class="card-modern p-4 p-md-4 mb-4">
-    <div class="d-flex align-items-center gap-2 mb-2.5 flex-wrap">
-      <span class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill px-3 py-1 fw-bold" style="font-size: 0.76rem;">
-        {{ topic.level }}
-      </span>
-      <span class="badge bg-light text-secondary border rounded-pill px-3 py-1 fw-semibold small">
-        {{ topic.category }}
-      </span>
-      {% if is_completed %}
-      <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-3 py-1 fw-bold ms-auto" style="font-size: 0.76rem;">
-        ✓ Đã hoàn thành
-      </span>
-      {% endif %}
-    </div>
-
-    <h2 class="fw-bold text-dark mb-2" style="font-size: 1.75rem; letter-spacing: -0.02em;">{{ topic.title }}</h2>
-    <p class="text-secondary mb-0" style="font-size: 0.95rem; line-height: 1.6; color: #475569;">{{ topic.summary }}</p>
-  </div>
-
-  <!-- SECTION 1: GRAMMAR RULE & FORMULA EXPLANATION -->
-  <div class="card-modern p-4 p-md-5 mb-4">
-    <div class="d-flex align-items-center gap-3 mb-4 pb-3 border-bottom border-light">
-      <span class="rounded-circle d-flex align-items-center justify-content-center" style="width: 36px; height: 36px; background-color: var(--primary-subtle); color: var(--primary);">
-        <i class="ph-bold ph-book-open fs-5"></i>
-      </span>
-      <h5 class="fw-bold text-dark mb-0" style="font-size: 1.2rem;">1. Quy tắc & Công thức Ngữ pháp</h5>
-    </div>
-    <div class="prose text-dark lh-lg" style="font-size: 1rem; line-height: 1.85; color: #334155; white-space: pre-line;">{{ topic.rule_explanation }}</div>
-  </div>
-
-  <!-- SECTION 2: GRAMMAR EXAMPLES WITH EXPLANATIONS -->
-  <div class="card-modern p-4 p-md-5 mb-4">
-    <div class="d-flex align-items-center gap-3 mb-4 pb-3 border-bottom border-light">
-      <span class="rounded-circle d-flex align-items-center justify-content-center" style="width: 36px; height: 36px; background-color: var(--success-subtle); color: var(--success);">
-        <i class="ph-bold ph-chat-circle-text fs-5"></i>
-      </span>
-      <h5 class="fw-bold text-dark mb-0" style="font-size: 1.2rem;">2. Ví dụ minh họa & Giải thích chi tiết</h5>
-    </div>
-    <div class="d-flex flex-column gap-3">
-      {% for line in topic.examples_json.splitlines() if line.strip() %}
-      {% set parts = line.split('|') %}
-      <div class="p-3.5 bg-light-subtle border-start border-4 border-success rounded-3 shadow-2xs">
-        <div class="fw-bold text-dark mb-1" style="font-size: 0.96rem;">🇬🇧 {{ parts[0] }}</div>
-        {% if parts|length > 1 %}
-        <div class="text-secondary small" style="font-size: 0.88rem; line-height: 1.55;">🇻🇳 {{ parts[1] }}</div>
+  <!-- 2. HEADER TOPIC & SOCIAL SHARE TOOLBAR -->
+  <header class="card-modern p-4 p-md-4 mb-4 border-0 shadow-sm">
+    <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-2.5">
+      <div class="d-flex align-items-center gap-2 flex-wrap">
+        <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-3 py-1 fw-bold" style="font-size: 0.78rem;">
+          {{ topic.level }} · Căn Bản
+        </span>
+        <span class="badge bg-light text-secondary border rounded-pill px-3 py-1 fw-semibold small">
+          {{ topic.category }}
+        </span>
+        {% if is_completed %}
+        <span class="badge bg-success text-white rounded-pill px-3 py-1 fw-bold d-inline-flex align-items-center gap-1" style="font-size: 0.76rem;">
+          <i class="ph-bold ph-check"></i> Đã hoàn thành
+        </span>
         {% endif %}
       </div>
-      {% endfor %}
-    </div>
-  </div>
 
-  <!-- SECTION 3: COMMON MISTAKES ALERT BOX -->
-  {% if topic.common_mistakes %}
-  <div class="card-modern p-4 p-md-5 mb-4 border-start border-4 border-danger">
-    <div class="d-flex align-items-center gap-3 mb-3">
-      <span class="rounded-circle d-flex align-items-center justify-content-center" style="width: 36px; height: 36px; background-color: #fee2e2; color: #ef4444;">
-        <i class="ph-bold ph-warning-circle fs-5"></i>
-      </span>
-      <h5 class="fw-bold text-danger mb-0" style="font-size: 1.2rem;">3. Các Lỗi thường gặp</h5>
-    </div>
-    <div class="p-3.5 bg-danger-subtle text-danger-emphasis rounded-3" style="line-height: 1.75; font-size: 0.94rem; white-space: pre-line;">
-      {{ topic.common_mistakes }}
-    </div>
-  </div>
-  {% endif %}
+      <!-- Quick Action / Share / Favorite Toolbar -->
+      <div class="d-flex align-items-center gap-2">
+        <!-- Favorite Button -->
+        <form method="post" action="{{ url_for('learning.favorite_grammar_topic', topic_id=topic.id) }}" class="m-0">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <button type="submit" class="btn btn-sm btn-light border rounded-pill px-3 py-1.5 d-inline-flex align-items-center gap-1.5 shadow-2xs" title="{{ 'Bỏ thích' if is_favorite else 'Yêu thích chủ đề' }}">
+            <i class="ph-fill ph-heart fs-6 {{ 'text-danger' if is_favorite else 'text-muted opacity-50' }}"></i>
+            <span class="small fw-semibold">{{ 'Đã thích' if is_favorite else 'Yêu thích' }}</span>
+          </button>
+        </form>
 
-  <!-- SECTION 4: TIPS AND TRICKS CALLOUT BOX -->
-  {% if topic.tips_tricks %}
-  <div class="card-modern p-4 p-md-5 mb-4 border-start border-4 border-warning">
-    <div class="d-flex align-items-center gap-3 mb-3">
-      <span class="rounded-circle d-flex align-items-center justify-content-center" style="width: 36px; height: 36px; background-color: #fef3c7; color: #d97706;">
-        <i class="ph-bold ph-lightbulb fs-5"></i>
-      </span>
-      <h5 class="fw-bold text-warning-emphasis mb-0" style="font-size: 1.2rem;">4. Mẹo ghi nhớ & Thủ thuật</h5>
-    </div>
-    <div class="p-3.5 bg-warning-subtle text-warning-emphasis rounded-3" style="line-height: 1.75; font-size: 0.94rem; white-space: pre-line;">
-      {{ topic.tips_tricks }}
-    </div>
-  </div>
-  {% endif %}
-
-  <!-- MARK COMPLETE MILESTONE BAR -->
-  <div class="card-modern p-4 text-center mb-5">
-    <form method="post" action="{{ url_for('learning.complete_grammar_topic', topic_id=topic.id) }}" class="m-0">
-      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-      {% if is_completed %}
-      <div class="mb-3">
-        <div class="rounded-circle bg-success text-white d-inline-flex align-items-center justify-content-center mb-2 shadow-xs" style="width: 44px; height: 44px;">
-          <i class="ph-bold ph-check fs-4"></i>
+        <!-- Share dropdown / Copy link -->
+        <div class="dropdown">
+          <button class="btn btn-sm btn-light border rounded-pill px-3 py-1.5 d-inline-flex align-items-center gap-1.5 shadow-2xs dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+            <i class="ph-bold ph-share-network fs-6"></i>
+            <span class="small fw-semibold">Chia sẻ</span>
+          </button>
+          <ul class="dropdown-menu dropdown-menu-end shadow-sm border rounded-3 p-1.5" style="min-width: 180px;">
+            <li>
+              <button type="button" class="dropdown-item rounded-2 small d-flex align-items-center gap-2 py-2" onclick="shareFacebook()">
+                <i class="ph-fill ph-facebook-logo text-primary fs-5"></i> Facebook
+              </button>
+            </li>
+            <li>
+              <button type="button" class="dropdown-item rounded-2 small d-flex align-items-center gap-2 py-2" onclick="shareZalo()">
+                <i class="ph-bold ph-chat-circle-dots text-info fs-5"></i> Zalo
+              </button>
+            </li>
+            <li><hr class="dropdown-divider my-1"></li>
+            <li>
+              <button type="button" class="dropdown-item rounded-2 small d-flex align-items-center gap-2 py-2" onclick="copyTopicLink()">
+                <i class="ph-bold ph-link-simple fs-5"></i> <span id="copyLinkText">Sao chép liên kết</span>
+              </button>
+            </li>
+          </ul>
         </div>
-        <h5 class="fw-bold text-success mb-1">Bạn đã hoàn thành chủ đề ngữ pháp này!</h5>
-        <p class="text-secondary small mb-0">Tiến độ đã được ghi nhận. Bạn có thể bỏ đánh dấu bất cứ lúc nào.</p>
       </div>
-      <button type="submit" class="btn btn-light border rounded-3 px-4 py-2 fw-semibold text-secondary" style="font-size: 0.88rem;">
-        Bỏ đánh dấu hoàn thành
-      </button>
-      {% else %}
-      <div class="mb-3">
-        <h5 class="fw-bold text-dark mb-1">Đã hiểu rõ các quy tắc ngữ pháp trên?</h5>
-        <p class="text-secondary small mb-0">Đánh dấu hoàn thành để ghi nhận vào tiến độ học tập cá nhân của bạn.</p>
-      </div>
-      <button type="submit" class="btn btn-primary rounded-3 px-5 py-2.5 fw-bold shadow-sm d-inline-flex align-items-center gap-2" style="font-size: 0.95rem;">
-        <i class="ph-bold ph-check-circle fs-5"></i>
-        <span>Đánh dấu hoàn thành chủ đề</span>
-      </button>
-      {% endif %}
-    </form>
-  </div>
-
-  <!-- RELATED TOPICS SECTION -->
-  {% if related_topics %}
-  <div class="mb-5">
-    <h5 class="fw-bold text-dark mb-3.5 d-flex align-items-center gap-2">
-      <i class="ph-bold ph-link text-primary fs-5"></i>
-      <span>Các Chủ đề Ngữ pháp Liên quan</span>
-    </h5>
-    <div class="row g-3">
-      {% for rel in related_topics %}
-      <div class="col-md-4">
-        <a href="{{ url_for('learning.grammar_detail', topic_id=rel.id) }}" class="text-decoration-none">
-          <div class="card-modern p-3.5 h-100 transition-hover">
-            <span class="badge bg-primary-subtle text-primary rounded-pill px-2.5 py-1 fw-bold align-self-start mb-2" style="font-size: 0.74rem;">{{ rel.level }}</span>
-            <h6 class="fw-bold text-dark mb-1" style="font-size: 0.95rem; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">{{ rel.title }}</h6>
-            <p class="text-secondary small mb-0" style="font-size: 0.82rem; line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">{{ rel.summary }}</p>
-          </div>
-        </a>
-      </div>
-      {% endfor %}
     </div>
-  </div>
-  {% endif %}
 
+    <!-- Title & Subtitle -->
+    <h1 class="fw-extrabold text-dark mb-2" style="font-size: 1.85rem; letter-spacing: -0.025em; line-height: 1.3;">{{ topic.title }}</h1>
+    <p class="text-secondary mb-0" style="font-size: 1rem; line-height: 1.65; color: #475569;">{{ topic.summary }}</p>
+  </header>
+
+  <!-- 3. MAIN 2-COLUMN ASYMMETRIC LAYOUT -->
+  <div class="row g-4 items-start">
+    
+    <!-- LEFT MAIN COLUMN: ARTICLE & INTERACTIVE QUIZ (col-lg-8) -->
+    <main class="col-lg-8">
+      
+      <!-- ARTICLE PROSE CONTENT -->
+      <article class="card-modern p-4 p-md-5 mb-4 border-0 shadow-sm grammar-prose-content">
+        
+        <!-- SECTION 1: KHÁI NIỆM & BẢN CHẤT -->
+        <section id="khai-niem" class="mb-5">
+          <div class="d-flex align-items-center gap-2.5 mb-3 pb-2 border-bottom">
+            <span class="rounded-circle d-flex align-items-center justify-content-center bg-primary-subtle text-primary" style="width: 34px; height: 34px;">
+              <i class="ph-bold ph-info fs-5"></i>
+            </span>
+            <h2 class="h5 fw-bold text-dark mb-0">1. Khái niệm & Bản chất Ngữ pháp</h2>
+          </div>
+          <div class="text-dark lh-lg" style="white-space: pre-line; font-size: 1rem; color: #334155;">{{ topic.rule_explanation }}</div>
+        </section>
+
+        <!-- SECTION 2: CẤU TRÚC, CÔNG THỨC & BẢNG QUY TẮC -->
+        <section id="cong-thuc" class="mb-5">
+          <div class="d-flex align-items-center gap-2.5 mb-3 pb-2 border-bottom">
+            <span class="rounded-circle d-flex align-items-center justify-content-center bg-primary-subtle text-primary" style="width: 34px; height: 34px;">
+              <i class="ph-bold ph-table fs-5"></i>
+            </span>
+            <h2 class="h5 fw-bold text-dark mb-0">2. Cấu trúc & Bảng Quy tắc Chi tiết</h2>
+          </div>
+          
+          <p class="text-secondary small mb-3">Bảng phân loại dạng đầy đủ và dạng viết tắt (rút gọn) thường dùng trong văn nói và văn viết:</p>
+          
+          <div class="table-responsive rounded-3 border mb-4 shadow-2xs">
+            <table class="grammar-styled-table mb-0">
+              <thead>
+                <tr>
+                  <th scope="col" style="width: 25%;">Chủ ngữ (Subject)</th>
+                  <th scope="col" style="width: 35%;">Dạng Khẳng định</th>
+                  <th scope="col" style="width: 40%;">Dạng Phủ định (Rút gọn)</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><strong>I</strong></td>
+                  <td>am <em>(I'm)</em></td>
+                  <td>am not <em>(I'm not)</em></td>
+                </tr>
+                <tr>
+                  <td><strong>He / She / It</strong></td>
+                  <td>is <em>(He's / She's / It's)</em></td>
+                  <td>is not <em>(isn't)</em></td>
+                </tr>
+                <tr>
+                  <td><strong>You / We / They</strong></td>
+                  <td>are <em>(You're / We're / They're)</em></td>
+                  <td>are not <em>(aren't)</em></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Highlight box ghi chú công thức -->
+          <div class="p-3 bg-light rounded-3 border-start border-4 border-primary">
+            <div class="fw-bold text-dark small mb-1">
+              <i class="ph-bold ph-lightbulb text-primary me-1"></i> Ghi nhớ dạng câu hỏi & trả lời ngắn:
+            </div>
+            <ul class="mb-0 small text-secondary ps-3" style="line-height: 1.6;">
+              <li><strong>Câu hỏi Yes/No:</strong> <code>Am / Is / Are + S + Complement?</code></li>
+              <li><strong>Trả lời ngắn:</strong> <code>Yes, S + be.</code> (Không bao giờ rút gọn trong câu trả lời khẳng định: <em>Yes, I am</em> — <strong>không</strong> dùng <em>Yes, I'm</em>).</li>
+            </ul>
+          </div>
+        </section>
+
+        <!-- SECTION 3: VÍ DỤ MINH HỌA SONG NGỮ -->
+        <section id="vi-du" class="mb-5">
+          <div class="d-flex align-items-center gap-2.5 mb-3 pb-2 border-bottom">
+            <span class="rounded-circle d-flex align-items-center justify-content-center bg-success-subtle text-success" style="width: 34px; height: 34px;">
+              <i class="ph-bold ph-chat-circle-text fs-5"></i>
+            </span>
+            <h2 class="h5 fw-bold text-dark mb-0">3. Ví dụ Minh họa & Ngữ cảnh Giao tiếp</h2>
+          </div>
+          
+          <div class="d-flex flex-column gap-3">
+            {% for line in topic.examples_json.splitlines() if line.strip() %}
+            {% set parts = line.split('|') %}
+            <div class="grammar-example-box">
+              <div class="fw-bold text-dark mb-1" style="font-size: 0.98rem;">🇬🇧 {{ parts[0] }}</div>
+              {% if parts|length > 1 %}
+              <div class="text-secondary small" style="font-size: 0.88rem;">🇻🇳 {{ parts[1] }}</div>
+              {% endif %}
+            </div>
+            {% endfor %}
+          </div>
+        </section>
+
+        <!-- SECTION 4: CÁC LỖI THƯỜNG GẶP -->
+        {% if topic.common_mistakes %}
+        <section id="loi-thuong-gap" class="mb-5">
+          <div class="d-flex align-items-center gap-2.5 mb-3 pb-2 border-bottom border-danger-subtle">
+            <span class="rounded-circle d-flex align-items-center justify-content-center bg-danger-subtle text-danger" style="width: 34px; height: 34px;">
+              <i class="ph-bold ph-warning-octagon fs-5"></i>
+            </span>
+            <h2 class="h5 fw-bold text-danger mb-0">4. Các Lỗi Thường Gặp Cần Tránh</h2>
+          </div>
+          <div class="p-3.5 bg-danger-subtle text-danger-emphasis rounded-3 border-start border-4 border-danger lh-lg" style="white-space: pre-line; font-size: 0.94rem;">
+            {{ topic.common_mistakes }}
+          </div>
+        </section>
+        {% endif %}
+
+        <!-- SECTION 5: MẸO GHI NHỚ & THỦ THUẬT -->
+        {% if topic.tips_tricks %}
+        <section id="meo-ghi-nho" class="mb-4">
+          <div class="d-flex align-items-center gap-2.5 mb-3 pb-2 border-bottom border-warning-subtle">
+            <span class="rounded-circle d-flex align-items-center justify-content-center bg-warning-subtle text-warning-emphasis" style="width: 34px; height: 34px;">
+              <i class="ph-bold ph-lightbulb fs-5"></i>
+            </span>
+            <h2 class="h5 fw-bold text-warning-emphasis mb-0">5. Mẹo Ghi Nhớ & Thủ Thuật</h2>
+          </div>
+          <div class="p-3.5 bg-warning-subtle text-warning-emphasis rounded-3 border-start border-4 border-warning lh-lg" style="white-space: pre-line; font-size: 0.94rem;">
+            {{ topic.tips_tricks }}
+          </div>
+        </section>
+        {% endif %}
+
+        <!-- MARK COMPLETED ACTION CARD -->
+        <div class="p-4 bg-light rounded-4 border text-center mt-5">
+          <form method="post" action="{{ url_for('learning.complete_grammar_topic', topic_id=topic.id) }}" class="m-0">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            {% if is_completed %}
+            <div class="mb-3">
+              <div class="rounded-circle bg-success text-white d-inline-flex align-items-center justify-content-center mb-2 shadow-xs" style="width: 44px; height: 44px;">
+                <i class="ph-bold ph-check fs-4"></i>
+              </div>
+              <h5 class="fw-bold text-success mb-1">Bạn đã hoàn thành chủ đề ngữ pháp này!</h5>
+              <p class="text-secondary small mb-0">Tiến độ đã được ghi nhận. Bạn có thể ôn lại bất kỳ lúc nào.</p>
+            </div>
+            <button type="submit" class="btn btn-sm btn-outline-secondary rounded-pill px-4 py-1.5 fw-semibold">
+              Bỏ đánh dấu hoàn thành
+            </button>
+            {% else %}
+            <div class="mb-3">
+              <h5 class="fw-bold text-dark mb-1">Đã nắm vững các quy tắc trên?</h5>
+              <p class="text-secondary small mb-0">Đánh dấu hoàn thành để ghi nhận điểm tích lũy vào hồ sơ cá nhân.</p>
+            </div>
+            <button type="submit" class="btn btn-primary rounded-pill px-5 py-2.5 fw-bold shadow-sm d-inline-flex align-items-center gap-2">
+              <i class="ph-bold ph-check-circle fs-5"></i>
+              <span>Đánh dấu hoàn thành chủ đề</span>
+            </button>
+            {% endif %}
+          </form>
+        </div>
+
+      </article>
+
+      <!-- 4. EMBEDDED IN-LESSON INTERACTIVE QUIZ -->
+      {% if practice_questions %}
+      <section class="card-modern p-4 p-md-5 mb-4 border-0 shadow-sm" id="bai-tap-nhanh">
+        <div class="d-flex align-items-center justify-content-between mb-3 flex-wrap gap-2">
+          <div>
+            <h2 class="h5 fw-bold text-dark mb-1 d-flex align-items-center gap-2">
+              <i class="ph-bold ph-pencil-simple text-primary"></i>
+              <span>Bài Tập Luyện Tập Trực Tiếp ({{ practice_questions|length }} Câu)</span>
+            </h2>
+            <p class="text-secondary small mb-0">
+              Luyện tập ngữ pháp ngay tại bài học để ghi nhớ bền vững. Đạt tối thiểu <strong>70%</strong> để vượt qua.
+            </p>
+          </div>
+          <span class="badge bg-primary-subtle text-primary rounded-pill px-3 py-1.5 fw-bold small">
+            Điểm đạt: 70%
+          </span>
+        </div>
+
+        <!-- Real-time Progress Bar -->
+        <div class="d-flex align-items-center justify-content-between small text-muted mb-2">
+          <span>Tiến độ làm bài:</span>
+          <span class="fw-bold text-primary" id="quizCounterDisplay">0 / {{ practice_questions|length }} đã trả lời</span>
+        </div>
+        <div class="progress mb-4 rounded-pill" style="height: 6px; background-color: #e2e8f0;">
+          <div class="progress-bar bg-primary" id="quizProgressFill" style="width: 0%; border-radius: 999px; transition: width 0.3s ease;"></div>
+        </div>
+
+        <!-- Question Cards List -->
+        <form id="inLessonQuizForm" onsubmit="event.preventDefault(); evaluateQuiz();">
+          <div class="d-flex flex-column gap-3.5 mb-4">
+            {% for q in practice_questions %}
+            <div class="card p-3.5 rounded-3 border bg-white shadow-2xs quiz-question-item" data-q-id="{{ q.id }}" data-correct="{{ q.correct_option }}">
+              <div class="d-flex align-items-start justify-content-between gap-3 mb-2.5">
+                <span class="badge bg-primary-subtle text-primary rounded-pill px-2.5 py-1 fw-bold small">
+                  Câu {{ loop.index }}
+                </span>
+                <span class="quiz-result-badge badge rounded-pill px-2 py-0.5 d-none"></span>
+              </div>
+
+              <p class="fw-semibold text-dark mb-3" style="font-size: 0.96rem;">{{ q.question_text }}</p>
+
+              <div class="d-flex flex-column gap-2">
+                {% for key, val in [('A', q.option_a), ('B', q.option_b), ('C', q.option_c), ('D', q.option_d)] if val %}
+                <label class="quiz-option-card" onclick="selectQuizOption(this, '{{ q.id }}', '{{ key }}')">
+                  <input type="radio" name="q_{{ q.id }}" value="{{ key }}" class="form-check-input mt-0 d-none">
+                  <span class="badge bg-light text-secondary border rounded-circle d-flex align-items-center justify-content-center option-label-badge" style="width: 24px; height: 24px; font-size: 0.75rem;">
+                    {{ key }}
+                  </span>
+                  <span class="small text-dark fw-medium">{{ val }}</span>
+                </label>
+                {% endfor %}
+              </div>
+
+              <!-- Explanation Box revealed after submission -->
+              <div class="quiz-explanation-box mt-3 p-3 bg-light rounded-2 border small text-secondary d-none">
+                <strong class="text-dark d-block mb-1">
+                  <i class="ph-bold ph-lightbulb text-warning me-1"></i> Giải thích chi tiết:
+                </strong>
+                <span>{{ q.explanation }}</span>
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+
+          <!-- Submit Button & Feedback -->
+          <div class="d-flex flex-column flex-sm-row align-items-center justify-content-between gap-3 pt-2">
+            <div id="quizScoreResult" class="small fw-bold text-secondary"></div>
+            <button type="submit" class="btn btn-primary rounded-pill px-5 py-2.5 fw-bold shadow-sm d-inline-flex align-items-center gap-2">
+              <i class="ph-bold ph-check"></i>
+              <span>Nộp bài & Xem giải thích</span>
+            </button>
+          </div>
+        </form>
+      </section>
+      {% endif %}
+
+      <!-- 5. RELATED TOPICS SECTION -->
+      {% if related_topics %}
+      <section class="mb-4">
+        <h5 class="fw-bold text-dark mb-3 d-flex align-items-center gap-2">
+          <i class="ph-bold ph-link text-primary fs-5"></i>
+          <span>Chủ đề Ngữ pháp Liên quan</span>
+        </h5>
+        <div class="row g-3">
+          {% for rel in related_topics %}
+          <div class="col-md-4">
+            <a href="{{ url_for('learning.grammar_detail', topic_id=rel.id) }}" class="text-decoration-none">
+              <div class="card-modern p-3.5 h-100 transition-hover border-0 shadow-2xs">
+                <span class="badge bg-primary-subtle text-primary rounded-pill px-2.5 py-0.5 fw-bold align-self-start mb-2" style="font-size: 0.72rem;">{{ rel.level }}</span>
+                <h6 class="fw-bold text-dark mb-1" style="font-size: 0.92rem; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">{{ rel.title }}</h6>
+                <p class="text-secondary small mb-0" style="font-size: 0.8rem; line-height: 1.45; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">{{ rel.summary }}</p>
+              </div>
+            </a>
+          </div>
+          {% endfor %}
+        </div>
+      </section>
+      {% endif %}
+
+      <!-- 6. PREVIOUS / NEXT NAVIGATION BAR -->
+      <nav class="row g-3 pt-2 mb-4" aria-label="Lesson navigation">
+        <div class="col-6">
+          {% if prev_topic %}
+          <a href="{{ url_for('learning.grammar_detail', topic_id=prev_topic.id) }}" class="card-modern p-3 text-decoration-none text-dark h-100 d-flex flex-column justify-content-center transition-hover border-0 shadow-2xs">
+            <span class="text-muted small d-inline-flex align-items-center gap-1 mb-1">
+              <i class="ph-bold ph-arrow-left"></i> Bài trước
+            </span>
+            <span class="fw-bold small text-truncate text-primary">{{ prev_topic.title }}</span>
+          </a>
+          {% else %}
+          <div class="card-modern p-3 h-100 d-flex flex-column justify-content-center opacity-50 border-0 bg-light">
+            <span class="text-muted small">Đây là bài học đầu tiên</span>
+          </div>
+          {% endif %}
+        </div>
+
+        <div class="col-6 text-end">
+          {% if next_topic %}
+          <a href="{{ url_for('learning.grammar_detail', topic_id=next_topic.id) }}" class="card-modern p-3 text-decoration-none text-dark h-100 d-flex flex-column justify-content-center transition-hover border-0 shadow-2xs">
+            <span class="text-muted small d-inline-flex align-items-center justify-content-end gap-1 mb-1">
+              Bài tiếp theo <i class="ph-bold ph-arrow-right"></i>
+            </span>
+            <span class="fw-bold small text-truncate text-primary">{{ next_topic.title }}</span>
+          </a>
+          {% else %}
+          <div class="card-modern p-3 h-100 d-flex flex-column justify-content-center opacity-50 border-0 bg-light">
+            <span class="text-muted small">Đã hết bài trong lộ trình</span>
+          </div>
+          {% endif %}
+        </div>
+      </nav>
+
+    </main>
+
+    <!-- RIGHT STICKY SIDEBAR (col-lg-4) -->
+    <aside class="col-lg-4">
+      <div class="sticky-top" style="top: 80px; z-index: 10;">
+        
+        <!-- SIDEBAR CARD 1: KIỂM TRA KIẾN THỨC CTA -->
+        <div class="card-modern p-4 mb-3.5 bg-primary-subtle border-primary-subtle shadow-xs text-center">
+          <span class="badge bg-white text-primary fw-bold px-2.5 py-1 mb-2 rounded-pill shadow-2xs small">Luyện thi trắc nghiệm</span>
+          <h6 class="fw-bold text-dark mb-1">Kiểm Tra Trình Độ</h6>
+          <p class="small text-secondary mb-3" style="line-height: 1.5;">Làm bài kiểm tra đầy đủ với đa dạng chủ đề để nhận XP và củng cố ngữ pháp.</p>
+          <a href="{{ url_for('learning.grammar_exercises_setup') }}" class="btn btn-primary w-100 rounded-pill py-2 fw-bold shadow-sm d-inline-flex align-items-center justify-content-center gap-2">
+            <i class="ph-bold ph-pencil-simple-line"></i>
+            <span>Làm bài kiểm tra đầy đủ</span>
+          </a>
+        </div>
+
+        <!-- SIDEBAR CARD 2: LỘ TRÌNH HỌC TẬP (LEARNING PATH TIMELINE STEPPER) -->
+        <div class="card-modern p-3.5 mb-3.5 border-0 shadow-sm">
+          <div class="d-flex align-items-center justify-content-between mb-2 pb-2 border-bottom">
+            <div class="d-flex align-items-center gap-2">
+              <i class="ph-bold ph-map-trifold text-primary"></i>
+              <span class="fw-bold text-dark small">Lộ trình học {{ topic.level }}</span>
+            </div>
+            <span class="badge bg-light text-muted border rounded-pill small">
+              {{ level_topics|length }} bài học
+            </span>
+          </div>
+
+          <!-- Stepper Timeline List -->
+          <div class="learning-path-timeline py-2">
+            {% for lt in level_topics %}
+            {% set is_curr = (lt.id == topic.id) %}
+            {% set is_done = (lt.id in completed_topic_ids) %}
+            <div class="learning-path-item {{ 'is-current' if is_curr else ('is-completed' if is_done else '') }}">
+              <div class="learning-path-dot"></div>
+              {% if is_curr %}
+              <span class="learning-path-link small text-truncate d-block" title="{{ lt.title }}">
+                {{ loop.index }}. {{ lt.title }}
+              </span>
+              {% else %}
+              <a href="{{ url_for('learning.grammar_detail', topic_id=lt.id) }}" class="text-decoration-none small text-truncate d-block {{ 'text-dark fw-semibold' if is_done else 'text-muted' }}" title="{{ lt.title }}">
+                {{ loop.index }}. {{ lt.title }}
+                {% if is_done %}
+                <i class="ph-bold ph-check text-success ms-1 small"></i>
+                {% endif %}
+              </a>
+              {% endif %}
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+
+        <!-- SIDEBAR CARD 3: MỤC LỤC TRÊN TRANG NÀY (TABLE OF CONTENTS) -->
+        <div class="card-modern p-3.5 mb-3.5 border-0 shadow-sm">
+          <h6 class="fw-bold text-dark small mb-2.5 d-flex align-items-center gap-1.5 pb-2 border-bottom">
+            <i class="ph-bold ph-list-bullets text-primary"></i>
+            <span>Trên trang này</span>
+          </h6>
+          <nav class="nav flex-column small gap-1 toc-sticky-nav">
+            <a class="nav-link" href="#khai-niem">
+              <i class="ph ph-dot-outline"></i> 1. Khái niệm & Bản chất
+            </a>
+            <a class="nav-link" href="#cong-thuc">
+              <i class="ph ph-dot-outline"></i> 2. Cấu trúc & Bảng công thức
+            </a>
+            <a class="nav-link" href="#vi-du">
+              <i class="ph ph-dot-outline"></i> 3. Ví dụ minh họa thực tế
+            </a>
+            {% if topic.common_mistakes %}
+            <a class="nav-link" href="#loi-thuong-gap">
+              <i class="ph ph-dot-outline"></i> 4. Lỗi thường gặp cần tránh
+            </a>
+            {% endif %}
+            {% if topic.tips_tricks %}
+            <a class="nav-link" href="#meo-ghi-nho">
+              <i class="ph ph-dot-outline"></i> 5. Mẹo ghi nhớ nhanh
+            </a>
+            {% endif %}
+            {% if practice_questions %}
+            <a class="nav-link text-primary fw-semibold" href="#bai-tap-nhanh">
+              <i class="ph-bold ph-pencil-simple"></i> 6. Bài tập luyện tập
+            </a>
+            {% endif %}
+          </nav>
+        </div>
+
+        <!-- SIDEBAR CARD 4: RETURN TO GRAMMAR OVERVIEW -->
+        <a href="{{ url_for('learning.grammar_overview') }}" class="btn btn-light border w-100 rounded-3 py-2 small fw-semibold text-secondary d-flex align-items-center justify-content-center gap-2 shadow-2xs">
+          <i class="ph-bold ph-squares-four"></i>
+          <span>Tất cả chủ đề ngữ pháp</span>
+        </a>
+
+      </div>
+    </aside>
+
+  </div>
 </div>
+
+<!-- JAVASCRIPT LOGIC -->
+<script>
+// 1. Social Sharing Handlers
+function copyTopicLink() {
+  const currentUrl = window.location.href;
+  navigator.clipboard.writeText(currentUrl).then(() => {
+    const txt = document.getElementById('copyLinkText');
+    txt.innerText = 'Đã sao chép liên kết!';
+    setTimeout(() => { txt.innerText = 'Sao chép liên kết'; }, 2200);
+  }).catch(() => {
+    alert('Đã xảy ra lỗi khi sao chép liên kết.');
+  });
+}
+
+function shareFacebook() {
+  const url = encodeURIComponent(window.location.href);
+  window.open(`https://www.facebook.com/sharer/sharer.php?u=${url}`, '_blank', 'width=600,height=500');
+}
+
+function shareZalo() {
+  const url = encodeURIComponent(window.location.href);
+  window.open(`https://sp.zalo.me/plugins/share?url=${url}`, '_blank', 'width=600,height=500');
+}
+
+// 2. Interactive In-Lesson Quiz Logic
+function selectQuizOption(labelEl, qId, key) {
+  const parentCard = labelEl.closest('.quiz-question-item');
+  const allLabels = parentCard.querySelectorAll('.quiz-option-card');
+  
+  allLabels.forEach(lbl => {
+    lbl.classList.remove('selected');
+    const radio = lbl.querySelector('input[type="radio"]');
+    if (radio) radio.checked = false;
+  });
+
+  labelEl.classList.add('selected');
+  const radio = labelEl.querySelector('input[type="radio"]');
+  if (radio) radio.checked = true;
+
+  updateQuizProgress();
+}
+
+function updateQuizProgress() {
+  const total = document.querySelectorAll('.quiz-question-item').length;
+  const answered = document.querySelectorAll('.quiz-option-card.selected').length;
+  const pct = total > 0 ? Math.round((answered / total) * 100) : 0;
+
+  const countDisplay = document.getElementById('quizCounterDisplay');
+  const fillDisplay = document.getElementById('quizProgressFill');
+
+  if (countDisplay) countDisplay.innerText = `${answered} / ${total} đã trả lời`;
+  if (fillDisplay) fillDisplay.style.width = `${pct}%`;
+}
+
+function evaluateQuiz() {
+  const items = document.querySelectorAll('.quiz-question-item');
+  let correctCount = 0;
+  let answeredCount = 0;
+
+  items.forEach(item => {
+    const correctOpt = item.getAttribute('data-correct').trim().toUpperCase();
+    const selectedRadio = item.querySelector('input[type="radio"]:checked');
+    const badge = item.querySelector('.quiz-result-badge');
+    const explBox = item.querySelector('.quiz-explanation-box');
+
+    // Reset visual classes
+    item.querySelectorAll('.quiz-option-card').forEach(opt => {
+      opt.classList.remove('is-correct', 'is-wrong');
+    });
+
+    if (selectedRadio) {
+      answeredCount++;
+      const userChoice = selectedRadio.value.trim().toUpperCase();
+      const chosenCard = selectedRadio.closest('.quiz-option-card');
+
+      if (userChoice === correctOpt) {
+        correctCount++;
+        chosenCard.classList.add('is-correct');
+        if (badge) {
+          badge.className = 'quiz-result-badge badge bg-success text-white rounded-pill px-2 py-0.5';
+          badge.innerHTML = '<i class="ph-bold ph-check"></i> Chính xác';
+          badge.classList.remove('d-none');
+        }
+      } else {
+        chosenCard.classList.add('is-wrong');
+        // highlight the correct one
+        const correctRadio = item.querySelector(`input[value="${correctOpt}"]`);
+        if (correctRadio) {
+          correctRadio.closest('.quiz-option-card').classList.add('is-correct');
+        }
+        if (badge) {
+          badge.className = 'quiz-result-badge badge bg-danger text-white rounded-pill px-2 py-0.5';
+          badge.innerHTML = '<i class="ph-bold ph-x"></i> Chưa đúng';
+          badge.classList.remove('d-none');
+        }
+      }
+    } else {
+      // not answered, highlight correct
+      const correctRadio = item.querySelector(`input[value="${correctOpt}"]`);
+      if (correctRadio) {
+        correctRadio.closest('.quiz-option-card').classList.add('is-correct');
+      }
+      if (badge) {
+        badge.className = 'quiz-result-badge badge bg-secondary text-white rounded-pill px-2 py-0.5';
+        badge.innerHTML = 'Chưa chọn';
+        badge.classList.remove('d-none');
+      }
+    }
+
+    if (explBox) {
+      explBox.classList.remove('d-none');
+    }
+  });
+
+  const scoreDiv = document.getElementById('quizScoreResult');
+  const pctScore = items.length > 0 ? Math.round((correctCount / items.length) * 100) : 0;
+  if (scoreDiv) {
+    if (pctScore >= 70) {
+      scoreDiv.innerHTML = `<span class="text-success"><i class="ph-bold ph-check-circle fs-5 me-1"></i> Xuất sắc! Bạn đúng ${correctCount}/${items.length} câu (${pctScore}%).</span>`;
+    } else {
+      scoreDiv.innerHTML = `<span class="text-warning-emphasis"><i class="ph-bold ph-info fs-5 me-1"></i> Bạn đúng ${correctCount}/${items.length} câu (${pctScore}%). Đọc lại giải thích để ôn tập nhé!</span>`;
+    }
+  }
+}
+</script>
 {% endblock %}
