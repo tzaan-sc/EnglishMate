@@ -911,12 +911,14 @@ def rate_word_study(word_id):
     progress.last_reviewed_at = now_utc
     record_daily_activity(current_user)
     db.session.commit()
+    streak_event = session.pop("streak_activated_popup", None)
     return jsonify({
         "success": True,
         "word_id": word.id,
         "rating": rating,
         "earned_xp": earned_xp,
-        "srs_level": progress.srs_level
+        "srs_level": progress.srs_level,
+        "streak_event": streak_event
     })
 
 

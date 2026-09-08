@@ -408,6 +408,9 @@ function submitAssessment(rating) {
   .then(res => res.json())
   .then(data => {
     if (data.earned_xp) sessionEarnedXP += data.earned_xp;
+    if (data.streak_event && window.showStreakModal) {
+      window.showStreakModal(data.streak_event);
+    }
   });
 
   if (rating === 'mastered') sessionMasteredCount++;

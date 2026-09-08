@@ -155,3 +155,29 @@ def test_streak_status_four_states(app):
         assert status["is_learned_today"] is False
         assert "Chuỗi đã kết thúc" in status["status_badge"]
 
+
+def test_streak_activation_popup_event(client, app):
+    from app.modules.auth.models import DailyActivity
+    from app.extensions import db
+    login(client)
+    today = date.today()
+    with app.app_context():
+        user = User.query.first()
+        DailyActivity.query.filter_by(user_id=user.id, activity_date=today).delete()
+        user.last_activity_date = today - timedelta(days=1)
+        user.current_streak = 3
+        db.session.commit()
+
+    # Complete a lesson
+    with app.app_context():
+        lesson_id = Lesson.query.first().id
+
+    response = client.post(f"/lessons/{lesson_id}/complete", follow_redirects=True)
+    assert response.status_code == 200
+    html = response.get_data(as_text=True)
+
+    # Modal HTML exists in page and was automatically triggered
+    assert "streakActivatedModal" in html
+    assert "CHUỖI HỌC TẬP ĐÃ KÍCH HOẠT" in html
+
+

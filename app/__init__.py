@@ -36,6 +36,11 @@ def create_app(config_object=Config):
     app.register_blueprint(admin_bp)
     app.register_blueprint(exams_bp)
 
+    @app.context_processor
+    def inject_streak_event():
+        from flask import session
+        return {"streak_activated_event": session.pop("streak_activated_popup", None)}
+
     @app.errorhandler(403)
     def forbidden(_error):
         return render_template("errors/403.html"), 403

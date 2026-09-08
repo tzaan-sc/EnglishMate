@@ -371,11 +371,13 @@ def record_daily_activity(user, lessons_count=1):
     activity.completed_lessons += lessons_count
     activity.goal_completed = True
 
+    is_streak_activated = False
     # Kiểm tra hôm nay đã được ghi nhận chưa
     if user.last_activity_date == today:
         # Quy tắc 2: Đã ghi nhận hôm nay -> Không tăng Streak
         pass
     else:
+        is_streak_activated = True
         # Quy tắc 3: Nếu ngày hiện tại ngay sau ngày học trước -> current_streak + 1
         if user.last_activity_date == yesterday:
             user.current_streak = (user.current_streak or 0) + 1
@@ -385,9 +387,21 @@ def record_daily_activity(user, lessons_count=1):
 
         user.last_activity_date = today
 
+        is_new_record = False
         # Cập nhật kỷ lục chuỗi dài nhất
         if (user.current_streak or 0) > (user.longest_streak or 0):
             user.longest_streak = user.current_streak
+            is_new_record = True
+
+        try:
+            from flask import session
+            session["streak_activated_popup"] = {
+                "streak": user.current_streak,
+                "longest_streak": user.longest_streak,
+                "is_record": is_new_record
+            }
+        except Exception:
+            pass
 
     user.add_xp(lessons_count * 20, reason="Hoàn thành bài học / Hoạt động học tập")
     try:
