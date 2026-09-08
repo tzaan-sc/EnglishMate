@@ -4,6 +4,24 @@
 {% block content %}
 <div class="container-fluid max-w-5xl py-4">
 
+  <!-- Breadcrumb Navigation -->
+  <nav class="app-breadcrumb mb-3" aria-label="breadcrumb">
+    <ol class="breadcrumb mb-0 align-items-center flex-wrap">
+      <li class="breadcrumb-item">
+        <a href="{{ url_for('main.dashboard') }}" class="d-inline-flex align-items-center gap-1">
+          <i class="ph ph-house"></i>
+          <span>Trang Chủ</span>
+        </a>
+      </li>
+      <li class="breadcrumb-item">
+        <a href="{{ url_for('learning.quiz_dashboard') }}">Quiz</a>
+      </li>
+      <li class="breadcrumb-item active" aria-current="page">
+        <span>Kết Quả Đánh Giá</span>
+      </li>
+    </ol>
+  </nav>
+
   <!-- Action Toolbar Header -->
   <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
     <a href="{{ url_for('learning.quiz_dashboard') }}" class="btn btn-light rounded-pill px-3 py-1.5 fw-semibold text-secondary shadow-xs">

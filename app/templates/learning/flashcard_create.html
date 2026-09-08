@@ -2,6 +2,25 @@
 
 {% block content %}
 <div class="container-fluid max-w-5xl py-4">
+
+    <!-- Breadcrumb Navigation -->
+    <nav class="app-breadcrumb mb-3" aria-label="breadcrumb">
+      <ol class="breadcrumb mb-0 align-items-center flex-wrap">
+        <li class="breadcrumb-item">
+          <a href="{{ url_for('main.dashboard') }}" class="d-inline-flex align-items-center gap-1">
+            <i class="ph ph-house"></i>
+            <span>Trang Chủ</span>
+          </a>
+        </li>
+        <li class="breadcrumb-item">
+          <a href="{{ url_for('learning.vocabulary', tab='flashcards') }}">Flashcards</a>
+        </li>
+        <li class="breadcrumb-item active" aria-current="page">
+          <span>{% if fset %}Sửa Học Phần{% else %}Tạo Học Phần Mới{% endif %}</span>
+        </li>
+      </ol>
+    </nav>
+
     <form method="post" action="{% if fset %}{{ url_for('learning.flashcard_set_edit', set_id=fset.id) }}{% else %}{{ url_for('learning.flashcard_set_create') }}{% endif %}" id="flashcardForm">
         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
         

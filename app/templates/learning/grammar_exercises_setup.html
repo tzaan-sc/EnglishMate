@@ -4,6 +4,24 @@
 {% block content %}
 <div class="container-fluid max-w-5xl py-4">
 
+  <!-- Breadcrumb Navigation -->
+  <nav class="app-breadcrumb mb-3" aria-label="breadcrumb">
+    <ol class="breadcrumb mb-0 align-items-center flex-wrap">
+      <li class="breadcrumb-item">
+        <a href="{{ url_for('main.dashboard') }}" class="d-inline-flex align-items-center gap-1">
+          <i class="ph ph-house"></i>
+          <span>Trang Chủ</span>
+        </a>
+      </li>
+      <li class="breadcrumb-item">
+        <a href="{{ url_for('learning.grammar_overview') }}">Ngữ Pháp</a>
+      </li>
+      <li class="breadcrumb-item active" aria-current="page">
+        <span>Luyện Bài Tập Ngữ Pháp</span>
+      </li>
+    </ol>
+  </nav>
+
   <!-- Header -->
   <div class="d-flex align-items-center justify-content-between mb-4">
     <div>

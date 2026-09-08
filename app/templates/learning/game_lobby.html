@@ -2,7 +2,24 @@
 
 {% block content %}
 <div class="container-fluid max-w-7xl py-4">
-    
+
+    <!-- Breadcrumb Navigation -->
+    <nav class="app-breadcrumb mb-3" aria-label="breadcrumb">
+      <ol class="breadcrumb mb-0 align-items-center flex-wrap">
+        <li class="breadcrumb-item">
+          <a href="{{ url_for('main.dashboard') }}" class="d-inline-flex align-items-center gap-1">
+            <i class="ph ph-house"></i>
+            <span>Trang Chủ</span>
+          </a>
+        </li>
+        <li class="breadcrumb-item">
+          <a href="{{ url_for('learning.gamification_hub') }}">Gamification</a>
+        </li>
+        <li class="breadcrumb-item active" aria-current="page">
+          <span>Phòng Đấu Trực Tiếp</span>
+        </li>
+      </ol>
+    </nav>
 
     <form id="gameConfigForm" method="post" action="{{ url_for('learning.game_start') }}">
         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">

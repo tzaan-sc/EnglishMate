@@ -4,6 +4,24 @@
 {% block content %}
 <div class="container-fluid max-w-7xl py-4">
 
+  <!-- Breadcrumb Navigation -->
+  <nav class="app-breadcrumb mb-3" aria-label="breadcrumb">
+    <ol class="breadcrumb mb-0 align-items-center flex-wrap">
+      <li class="breadcrumb-item">
+        <a href="{{ url_for('main.dashboard') }}" class="d-inline-flex align-items-center gap-1">
+          <i class="ph ph-house"></i>
+          <span>Trang Chủ</span>
+        </a>
+      </li>
+      <li class="breadcrumb-item">
+        <a href="{{ url_for('exams.exam_list') }}">Luyện Thi</a>
+      </li>
+      <li class="breadcrumb-item active" aria-current="page">
+        <span>Lịch Sử Làm Bài & So Sánh</span>
+      </li>
+    </ol>
+  </nav>
+
   <!-- Sub-navigation Tabs -->
   <div class="d-flex flex-wrap gap-2 mb-4">
     <a href="{{ url_for('exams.exam_list') }}" class="btn btn-light border rounded-pill px-3.5 py-1.5 fw-semibold text-secondary d-inline-flex align-items-center gap-1.5" style="font-size: 0.85rem;">

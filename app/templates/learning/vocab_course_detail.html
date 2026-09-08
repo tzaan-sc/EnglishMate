@@ -4,6 +4,33 @@
 {% block content %}
 <div class="container-fluid max-w-6xl py-3 pb-5 mb-5">
 
+  <!-- Breadcrumb Navigation -->
+  <nav class="app-breadcrumb mb-3" aria-label="breadcrumb">
+    <ol class="breadcrumb mb-0 align-items-center flex-wrap">
+      <li class="breadcrumb-item">
+        <a href="{{ url_for('main.dashboard') }}" class="d-inline-flex align-items-center gap-1">
+          <i class="ph ph-house"></i>
+          <span>Trang Chủ</span>
+        </a>
+      </li>
+      <li class="breadcrumb-item">
+        <a href="{{ url_for('learning.vocabulary') }}">Từ Vựng</a>
+      </li>
+      {% if selected_unit %}
+      <li class="breadcrumb-item">
+        <a href="{{ url_for('learning.vocab_course_detail', cat_key=cat_key, subcat_key=subcat_key) }}">{{ subcategory.title }}</a>
+      </li>
+      <li class="breadcrumb-item active text-truncate" aria-current="page" style="max-width: 260px;" title="{{ selected_unit.name }}">
+        <span>{{ selected_unit.name }}</span>
+      </li>
+      {% else %}
+      <li class="breadcrumb-item active text-truncate" aria-current="page" style="max-width: 280px;" title="{{ subcategory.title }}">
+        <span>{{ subcategory.title }}</span>
+      </li>
+      {% endif %}
+    </ol>
+  </nav>
+
   <!-- ========================================== -->
   <!-- 1. HEADER (TỐI GIẢN & GỌN GÀNG)           -->
   <!-- ========================================== -->

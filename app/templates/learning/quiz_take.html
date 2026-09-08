@@ -4,6 +4,27 @@
 {% block content %}
 <div class="container-fluid max-w-6xl py-4" id="quizContainer">
 
+  <!-- Breadcrumb Navigation -->
+  <nav class="app-breadcrumb mb-3" aria-label="breadcrumb">
+    <ol class="breadcrumb mb-0 align-items-center flex-wrap">
+      <li class="breadcrumb-item">
+        <a href="{{ url_for('main.dashboard') }}" class="d-inline-flex align-items-center gap-1">
+          <i class="ph ph-house"></i>
+          <span>Trang Chủ</span>
+        </a>
+      </li>
+      <li class="breadcrumb-item">
+        <a href="{{ url_for('learning.quiz_dashboard') }}">Quiz</a>
+      </li>
+      <li class="breadcrumb-item">
+        <a href="{{ url_for('learning.quiz_list') }}">Danh Sách</a>
+      </li>
+      <li class="breadcrumb-item active text-truncate" aria-current="page" style="max-width: 260px;" title="{{ quiz_session.title }}">
+        <span>{{ quiz_session.title }}</span>
+      </li>
+    </ol>
+  </nav>
+
   <!-- Top Header Bar -->
   <div class="card border-0 shadow-sm rounded-4 p-3 bg-white mb-4">
     <div class="d-flex flex-wrap align-items-center justify-content-between gap-3">

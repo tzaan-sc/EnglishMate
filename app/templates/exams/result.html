@@ -2,6 +2,25 @@
 
 {% block content %}
 <div class="container-fluid max-w-5xl py-4">
+
+  <!-- Breadcrumb Navigation -->
+  <nav class="app-breadcrumb mb-3" aria-label="breadcrumb">
+    <ol class="breadcrumb mb-0 align-items-center flex-wrap">
+      <li class="breadcrumb-item">
+        <a href="{{ url_for('main.dashboard') }}" class="d-inline-flex align-items-center gap-1">
+          <i class="ph ph-house"></i>
+          <span>Trang Chủ</span>
+        </a>
+      </li>
+      <li class="breadcrumb-item">
+        <a href="{{ url_for('exams.exam_list') }}">Đề Thi</a>
+      </li>
+      <li class="breadcrumb-item active text-truncate" aria-current="page" style="max-width: 280px;" title="{{ exam.title }}">
+        <span>Kết Quả: {{ exam.title }}</span>
+      </li>
+    </ol>
+  </nav>
+
 <div class="row justify-content-center">
   <div class="col-12">
     

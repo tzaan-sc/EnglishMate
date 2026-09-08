@@ -7,3 +7,42 @@
   </div>
 {% endmacro %}
 
+{% macro breadcrumb(items) %}
+<nav class="app-breadcrumb mb-3" aria-label="breadcrumb">
+  <ol class="breadcrumb mb-0 align-items-center flex-wrap">
+    <li class="breadcrumb-item">
+      <a href="{{ url_for('main.dashboard') if current_user.is_authenticated else url_for('main.index') }}" class="d-inline-flex align-items-center gap-1 text-decoration-none">
+        <i class="ph ph-house"></i>
+        <span>Trang Chủ</span>
+      </a>
+    </li>
+    {% for item in items %}
+      {% if loop.last %}
+        <li class="breadcrumb-item active text-truncate" aria-current="page" style="max-width: 340px;" title="{{ item[0] }}">
+          {% if item|length > 2 and item[2] %}
+            <span class="badge bg-light text-dark border me-1 px-2 py-0.5">{{ item[2] }}</span>
+          {% endif %}
+          <span>{{ item[0] }}</span>
+        </li>
+      {% else %}
+        <li class="breadcrumb-item">
+          {% if item[1] %}
+            <a href="{{ item[1] }}" class="text-decoration-none">
+              {% if item|length > 2 and item[2] %}
+                <span class="badge bg-light text-secondary border me-1 px-2 py-0.5">{{ item[2] }}</span>
+              {% endif %}
+              <span>{{ item[0] }}</span>
+            </a>
+          {% else %}
+            {% if item|length > 2 and item[2] %}
+              <span class="badge bg-light text-secondary border me-1 px-2 py-0.5">{{ item[2] }}</span>
+            {% endif %}
+            <span class="text-secondary fw-medium">{{ item[0] }}</span>
+          {% endif %}
+        </li>
+      {% endif %}
+    {% endfor %}
+  </ol>
+</nav>
+{% endmacro %}
+
