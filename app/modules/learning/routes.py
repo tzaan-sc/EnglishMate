@@ -909,6 +909,7 @@ def rate_word_study(word_id):
         progress.next_review_at = now_utc + timedelta(hours=4)
     
     progress.last_reviewed_at = now_utc
+    record_daily_activity(current_user)
     db.session.commit()
     return jsonify({
         "success": True,
@@ -3312,6 +3313,7 @@ def quiz_submit_session(quiz_id):
         ))
 
     attempt.score = score
+    record_daily_activity(current_user)
     db.session.commit()
 
     in_prog = session.get("in_progress_quizzes", [])

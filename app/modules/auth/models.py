@@ -239,8 +239,10 @@ class User(UserMixin, db.Model):
 
     def get_current_streak(self):
         """
-        Returns active streak count.
-        Resets current_streak to 0 if last_activity_date was before yesterday.
+        Returns active streak count based on calendar days:
+        - If user learned today: returns current_streak
+        - If user learned yesterday: returns current_streak (waiting for today's lesson)
+        - If user missed yesterday or earlier: streak is broken, resets to 0 and returns 0.
         """
         if not self.last_activity_date:
             return 0
@@ -249,9 +251,90 @@ class User(UserMixin, db.Model):
         if self.last_activity_date < yesterday:
             if self.current_streak != 0:
                 self.current_streak = 0
-                db.session.commit()
+                try:
+                    db.session.commit()
+                except Exception:
+                    pass
             return 0
-        return self.current_streak
+        return self.current_streak or 0
+
+    def get_streak_status(self):
+        """
+        Returns detailed streak status dictionary for frontend UI according to specification:
+        - state: 'not_started' | 'active_today' | 'pending_today' | 'broken'
+        - current_streak: int
+        - previous_streak: int
+        - longest_streak: int
+        - is_learned_today: bool
+        - status_badge: str
+        - status_title: str
+        - status_message: str
+        - btn_text: str
+        """
+        today = date.today()
+        yesterday = today - timedelta(days=1)
+
+        if not self.last_activity_date:
+            return {
+                "state": "not_started",
+                "current_streak": 0,
+                "previous_streak": 0,
+                "longest_streak": self.longest_streak or 0,
+                "is_learned_today": False,
+                "status_badge": "Chưa có chuỗi",
+                "status_title": "0 ngày streak",
+                "status_message": "Hãy hoàn thành một bài học ngay hôm nay để thắp sáng ngọn lửa chuỗi học!",
+                "btn_text": "Bắt đầu học ngay",
+            }
+
+        # Trạng thái 2: Đã học hôm nay
+        if self.last_activity_date == today:
+            return {
+                "state": "active_today",
+                "current_streak": self.current_streak or 1,
+                "previous_streak": 0,
+                "longest_streak": max(self.longest_streak or 0, self.current_streak or 1),
+                "is_learned_today": True,
+                "status_badge": "Đã duy trì hôm nay ✓",
+                "status_title": f"{self.current_streak or 1} ngày liên tiếp",
+                "status_message": "Tuyệt vời! Bạn đã duy trì Streak học tập thành công hôm nay.",
+                "btn_text": "Tiếp tục học thêm",
+            }
+
+        # Trạng thái 3: Chưa học hôm nay (ngày học gần nhất là hôm qua - chuỗi vẫn còn hiệu lực)
+        elif self.last_activity_date == yesterday:
+            return {
+                "state": "pending_today",
+                "current_streak": self.current_streak or 0,
+                "previous_streak": 0,
+                "longest_streak": self.longest_streak or 0,
+                "is_learned_today": False,
+                "status_badge": "Chưa học hôm nay ⚠️",
+                "status_title": f"{self.current_streak or 0} ngày liên tiếp",
+                "status_message": "Hôm nay bạn chưa học. Hãy hoàn thành một bài học để duy trì chuỗi!",
+                "btn_text": "Học ngay để giữ chuỗi",
+            }
+
+        # Trạng thái 4: Streak đã bị phá (lần học gần nhất trước hôm qua)
+        else:
+            prev = self.current_streak or 0
+            if self.current_streak != 0:
+                self.current_streak = 0
+                try:
+                    db.session.commit()
+                except Exception:
+                    pass
+            return {
+                "state": "broken",
+                "current_streak": 0,
+                "previous_streak": prev or (self.longest_streak or 0),
+                "longest_streak": self.longest_streak or 0,
+                "is_learned_today": False,
+                "status_badge": "Chuỗi đã kết thúc",
+                "status_title": "0 ngày streak",
+                "status_message": f"Chuỗi trước đó: {prev or self.longest_streak or 0} ngày. Hãy bắt đầu lại hôm nay!",
+                "btn_text": "Bắt đầu chuỗi mới",
+            }
 
 
 class DailyActivity(db.Model):
@@ -269,12 +352,13 @@ class DailyActivity(db.Model):
 def record_daily_activity(user, lessons_count=1):
     """
     Records lesson completion activity for the user today.
-    Enforces streak business rules:
-    - 1 lesson completed -> goal_completed = True
-    - Multiple lessons same day -> streak increments only once
-    - Consecutive day -> streak += 1
-    - Missed day -> streak = 1
-    - longest_streak tracks max record
+    Enforces streak business rules (Phần 1 - Quy tắc cơ bản):
+    - Quy tắc 1: Có hoạt động học hợp lệ mới được ghi nhận ngày học
+    - Quy tắc 2: Một ngày chỉ tính Streak một lần (học nhiều lần cùng ngày không cộng thêm streak)
+    - Quy tắc 3: Học liên tiếp (hôm qua có học) -> streak += 1
+    - Quy tắc 4: Bỏ qua ngày (hôm qua không học) -> streak reset về 1
+    - Quy tắc 5: Tính theo ngày lịch (calendar date)
+    - Cập nhật kỷ lục longest_streak
     """
     today = date.today()
     yesterday = today - timedelta(days=1)
@@ -285,22 +369,27 @@ def record_daily_activity(user, lessons_count=1):
         db.session.add(activity)
 
     activity.completed_lessons += lessons_count
+    activity.goal_completed = True
 
-    if activity.completed_lessons >= 1 and not activity.goal_completed:
-        activity.goal_completed = True
-
+    # Kiểm tra hôm nay đã được ghi nhận chưa
+    if user.last_activity_date == today:
+        # Quy tắc 2: Đã ghi nhận hôm nay -> Không tăng Streak
+        pass
+    else:
+        # Quy tắc 3: Nếu ngày hiện tại ngay sau ngày học trước -> current_streak + 1
         if user.last_activity_date == yesterday:
             user.current_streak = (user.current_streak or 0) + 1
-        elif user.last_activity_date == today:
-            pass  # Already counted today
+        # Quy tắc 4: Bỏ qua ngày hoặc chuỗi mới -> reset về 1
         else:
             user.current_streak = 1
 
         user.last_activity_date = today
-        if user.current_streak > (user.longest_streak or 0):
+
+        # Cập nhật kỷ lục chuỗi dài nhất
+        if (user.current_streak or 0) > (user.longest_streak or 0):
             user.longest_streak = user.current_streak
 
-    user.add_xp(lessons_count * 20, reason="Hoàn thành bài học / Luyện tập")
+    user.add_xp(lessons_count * 20, reason="Hoàn thành bài học / Hoạt động học tập")
     try:
         from ..learning.routes import update_challenge_progress
         update_challenge_progress(user, "lesson", lessons_count)
@@ -310,6 +399,7 @@ def record_daily_activity(user, lessons_count=1):
 
     db.session.commit()
     return activity
+
 
 
 class UserSession(db.Model):

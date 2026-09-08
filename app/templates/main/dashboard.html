@@ -89,46 +89,105 @@
       <div class="card-modern p-4 h-100 d-flex flex-column justify-content-between">
         <!-- Streak Header & Counter -->
         <div>
-          {% set streak_num = current_user.get_current_streak() %}
+          {% set streak_stat = current_user.get_streak_status() %}
           <div class="d-flex justify-content-between align-items-center mb-3">
             <span class="text-muted small fw-bold text-uppercase" style="letter-spacing: 0.05em;">Chuỗi học tập</span>
             <span class="badge bg-light text-muted border rounded-pill px-2.5 py-1" style="font-size: 0.72rem; font-weight: 700;">
-              Kỷ lục: {{ current_user.longest_streak }} ngày
+              Kỷ lục: {{ streak_stat.longest_streak }} ngày
             </span>
           </div>
 
-          <div class="d-flex align-items-center gap-3 mb-3">
-            {% if streak_num > 0 %}
-            <div class="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0"
-                 style="width: 54px; height: 54px; background: linear-gradient(135deg, #fff7ed 0%, #ffedd5 50%, #fee2e2 100%); border: 2px solid #fdba74; box-shadow: 0 4px 14px rgba(249, 115, 22, 0.28);">
-              <span class="streak-flame-lit d-flex align-items-center justify-content-center">
-                <i class="ph-fill ph-flame" style="font-size: 2.15rem; color: #ea580c; background: linear-gradient(180deg, #f97316 0%, #dc2626 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;"></i>
-              </span>
-            </div>
-            {% else %}
-            <div class="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0"
-                 style="width: 54px; height: 54px; background-color: #f1f5f9; border: 1.5px dashed #cbd5e1;">
-              <i class="ph-bold ph-flame text-muted" style="font-size: 1.85rem; opacity: 0.5;"></i>
-            </div>
-            {% endif %}
-            <div>
-              <div class="d-flex align-items-baseline gap-1.5">
-                <span class="fs-2 fw-800 text-dark lh-1">{{ streak_num }}</span>
-                <span class="text-muted fw-bold small">ngày liên tiếp</span>
+          <!-- Streak Main Box: Gray when not completed today, Orange when completed today -->
+          {% if streak_stat.is_learned_today %}
+          <!-- State: Đã học hôm nay (Màu cam / Hoàn thành) -->
+          <div class="streak-card-state p-3 rounded-4 mb-3" style="background: linear-gradient(135deg, #fff7ed 0%, #ffedd5 60%, #fee2e2 100%); border: 1.5px solid #fdba74;">
+            <div class="d-flex align-items-center gap-3">
+              <div class="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0"
+                   style="width: 52px; height: 52px; background: #ffffff; border: 2px solid #ea580c; box-shadow: 0 4px 14px rgba(249, 115, 22, 0.3);">
+                <span class="streak-flame-lit d-flex align-items-center justify-content-center">
+                  <i class="ph-fill ph-flame" style="font-size: 2.2rem; color: #ea580c; background: linear-gradient(180deg, #f97316 0%, #dc2626 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;"></i>
+                </span>
               </div>
-              <small class="text-muted" style="font-size: 0.76rem;">
-                {% if streak_num > 0 %}Học hôm nay để duy trì chuỗi!{% else %}Bắt đầu chuỗi học ngay hôm nay!{% endif %}
-              </small>
+              <div class="flex-grow-1">
+                <div class="d-flex align-items-baseline gap-1.5">
+                  <span class="fs-2 fw-800 text-dark lh-1">{{ streak_stat.current_streak }}</span>
+                  <span class="text-muted fw-bold small">ngày streak</span>
+                </div>
+                <div class="d-flex align-items-center gap-1 mt-1">
+                  <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-2 py-0.5" style="font-size: 0.72rem; font-weight: 700;">
+                    ✓ Đã học hôm nay
+                  </span>
+                </div>
+              </div>
+            </div>
+            <div class="mt-2.5 pt-2 border-top border-warning-subtle d-flex justify-content-between align-items-center">
+              <small class="text-secondary fw-semibold" style="font-size: 0.76rem;">Học liên tục để duy trì!</small>
+              <a href="{{ url_for('learning.lessons') }}" class="btn btn-sm btn-outline-warning rounded-pill text-nowrap fw-bold" style="font-size: 0.72rem; border-color: #ea580c; color: #ea580c;">Học thêm bài mới</a>
             </div>
           </div>
 
-          <!-- Weekly Streak Dots -->
-          <div class="d-flex justify-content-between align-items-center pt-2.5 pb-3 border-top border-light">
-            {% for day, active in week_days %}
+          {% else %}
+          <!-- State: Chưa học hôm nay (Toàn bộ màu xám / Inactive) -->
+          <div class="streak-card-state p-3 rounded-4 mb-3" style="background: #f8fafc; border: 1.5px solid #e2e8f0;">
+            <div class="d-flex align-items-center gap-3">
+              <div class="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0"
+                   style="width: 52px; height: 52px; background-color: #f1f5f9; border: 1.5px solid #cbd5e1;">
+                <i class="ph-bold ph-flame text-muted" style="font-size: 2.1rem; opacity: 0.5;"></i>
+              </div>
+              <div class="flex-grow-1">
+                <div class="d-flex align-items-baseline gap-1.5">
+                  <span class="fs-2 fw-800 text-dark lh-1">{{ streak_stat.current_streak }}</span>
+                  <span class="text-muted fw-bold small">ngày streak</span>
+                </div>
+                <div class="d-flex align-items-center gap-1 mt-1">
+                  {% if streak_stat.state == 'broken' %}
+                  <span class="badge bg-secondary-subtle text-secondary rounded-pill px-2 py-0.5" style="font-size: 0.72rem; font-weight: 700;">
+                    Chuỗi trước: {{ streak_stat.previous_streak }} ngày
+                  </span>
+                  {% elif streak_stat.state == 'not_started' %}
+                  <span class="badge bg-secondary-subtle text-secondary rounded-pill px-2 py-0.5" style="font-size: 0.72rem; font-weight: 700;">
+                    Chưa có chuỗi
+                  </span>
+                  {% else %}
+                  <span class="badge bg-secondary-subtle text-secondary rounded-pill px-2 py-0.5" style="font-size: 0.72rem; font-weight: 700;">
+                    Chưa học hôm nay
+                  </span>
+                  {% endif %}
+                </div>
+              </div>
+            </div>
+            <div class="mt-2.5 pt-2 border-top border-light d-flex justify-content-between align-items-center">
+              {% if streak_stat.state == 'broken' %}
+              <small class="text-muted fw-semibold" style="font-size: 0.76rem;">Bắt đầu lại chuỗi mới hôm nay!</small>
+              <a href="{{ url_for('learning.lessons') }}" class="btn btn-sm btn-outline-secondary rounded-pill px-3 py-1 fw-bold text-nowrap" style="font-size: 0.76rem;">Bắt đầu lại</a>
+              {% elif streak_stat.state == 'not_started' %}
+              <small class="text-muted fw-semibold" style="font-size: 0.76rem;">Bắt đầu thói quen học mỗi ngày!</small>
+              <a href="{{ url_for('learning.lessons') }}" class="btn btn-sm btn-outline-secondary rounded-pill px-3 py-1 fw-bold text-nowrap" style="font-size: 0.76rem;">Học ngay</a>
+              {% else %}
+              <small class="text-muted fw-semibold" style="font-size: 0.76rem;">Hoàn thành 1 bài để giữ chuỗi!</small>
+              <a href="{{ url_for('learning.lessons') }}" class="btn btn-sm btn-outline-secondary rounded-pill px-3 py-1 fw-bold text-nowrap" style="font-size: 0.76rem;">Học ngay</a>
+              {% endif %}
+            </div>
+          </div>
+          {% endif %}
+
+          <!-- Weekly Streak Dots: Inactive (gray) before today's completion, Orange once completed -->
+          <div class="d-flex justify-content-between align-items-center pt-2 pb-2">
+            {% for day, active, is_today in week_days %}
             <div class="d-flex flex-column align-items-center gap-1">
-              <span class="text-muted" style="font-size: 0.72rem; font-weight: 600;">{{ day }}</span>
+              <span class="{% if is_today and active %}fw-bold text-dark{% else %}text-muted{% endif %}" style="font-size: 0.72rem; font-weight: {% if is_today %}700{% else %}600{% endif %};">
+                {{ day }}
+              </span>
               <div class="rounded-circle d-flex align-items-center justify-content-center"
-                style="width: 22px; height: 22px; background-color: {% if active %}var(--primary){% else %}var(--border-light){% endif %}; color: #ffffff; font-size: 0.68rem; font-weight: bold;">
+                style="width: 22px; height: 22px;
+                {% if active %}
+                  background: linear-gradient(135deg, #f97316 0%, #ea580c 100%); color: #ffffff; box-shadow: 0 2px 6px rgba(234, 88, 12, 0.35);
+                {% elif is_today %}
+                  background-color: #f1f5f9; border: 1.5px dashed #94a3b8; color: #94a3b8;
+                {% else %}
+                  background-color: #e2e8f0; color: #94a3b8;
+                {% endif %};
+                font-size: 0.68rem; font-weight: bold;">
                 {% if active %}✓{% endif %}
               </div>
             </div>

@@ -48,7 +48,9 @@ def dashboard():
     week_days = []
     for i in range(7):
         day_date = start_of_week + timedelta(days=i)
-        week_days.append((labels[i], day_date in completed_dates))
+        is_completed = (day_date in completed_dates)
+        is_today = (day_date == today)
+        week_days.append((labels[i], is_completed, is_today))
 
     # 1. Skill-specific progress
     total_vocab = Vocabulary.query.count() or 1

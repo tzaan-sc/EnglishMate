@@ -3,6 +3,7 @@ from flask_login import current_user, login_required
 from sqlalchemy import func
 
 from app.extensions import db
+from app.modules.auth.models import record_daily_activity
 from app.modules.exams.models import ToeicTest, ToeicPassage, ToeicQuestion, ToeicAttempt, ToeicAttemptAnswer
 from . import bp
 from .forms import ActionForm
@@ -97,6 +98,7 @@ def toeic_submit(attempt_id):
     attempt.is_submitted = True
     
     current_user.add_xp(50, reason="Hoàn thành đề thi TOEIC")
+    record_daily_activity(current_user)
     try:
         from app.modules.learning.routes import update_challenge_progress, check_user_badges
         update_challenge_progress(current_user, "exam", 1)
@@ -299,6 +301,7 @@ def submit_exam(submission_id):
     submission.status = 'PENDING' if needs_grading else 'COMPLETED'
     
     current_user.add_xp(50, reason="Hoàn thành bài thi")
+    record_daily_activity(current_user)
     try:
         from app.modules.learning.routes import update_challenge_progress, check_user_badges
         update_challenge_progress(current_user, "exam", 1)

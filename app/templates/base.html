@@ -57,11 +57,14 @@
           </a>
 
           <!-- 2. Streak badge -->
-          {% set current_streak_num = current_user.get_current_streak() if current_user.is_authenticated else 0 %}
-          <div class="topbar-pill {% if current_streak_num > 0 %}streak-active{% else %}streak-inactive{% endif %}" title="Chuỗi ngày học (Kỷ lục: {{ current_user.longest_streak if current_user.is_authenticated else 0 }} ngày)">
-            <i class="{% if current_streak_num > 0 %}ph-fill ph-flame{% else %}ph ph-flame{% endif %} topbar-pill-icon"></i>
-            <span class="topbar-pill-value">{{ current_streak_num }}</span>
-          </div>
+          {% if current_user.is_authenticated %}
+            {% set streak_stat = current_user.get_streak_status() %}
+            <div class="topbar-pill {% if streak_stat.is_learned_today %}streak-active{% else %}streak-inactive{% endif %}"
+                 title="{{ streak_stat.status_badge }}: {{ streak_stat.status_message }} (Kỷ lục: {{ streak_stat.longest_streak }} ngày)">
+              <i class="{% if streak_stat.is_learned_today %}ph-fill ph-flame streak-flame-lit{% else %}ph ph-flame{% endif %} topbar-pill-icon"></i>
+              <span class="topbar-pill-value">{{ streak_stat.current_streak }}</span>
+            </div>
+          {% endif %}
 
           <!-- 3. Notification bell -->
           <div class="dropdown">

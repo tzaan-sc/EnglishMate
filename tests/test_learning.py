@@ -1,4 +1,6 @@
+from datetime import date, timedelta
 from app.modules.learning.models import Lesson, LessonProgress, QuizAttempt, Question
+from app.modules.auth.models import User
 from tests.conftest import login
 
 
@@ -100,3 +102,56 @@ def test_streak_mechanics(app):
         assert user.current_streak == 1
         # Longest streak preserves record
         assert user.longest_streak == 2
+
+
+def test_streak_status_four_states(app):
+    from app.extensions import db
+    with app.app_context():
+        user = User.query.first()
+        today = date.today()
+        yesterday = today - timedelta(days=1)
+
+        # 1. State: not_started
+        user.last_activity_date = None
+        user.current_streak = 0
+        user.longest_streak = 0
+        db.session.commit()
+        status = user.get_streak_status()
+        assert status["state"] == "not_started"
+        assert status["current_streak"] == 0
+        assert status["is_learned_today"] is False
+
+        # 2. State: active_today
+        user.last_activity_date = today
+        user.current_streak = 5
+        user.longest_streak = 5
+        db.session.commit()
+        status = user.get_streak_status()
+        assert status["state"] == "active_today"
+        assert status["current_streak"] == 5
+        assert status["is_learned_today"] is True
+        assert "Đã duy trì" in status["status_badge"]
+
+        # 3. State: pending_today (studied yesterday, haven't studied today)
+        user.last_activity_date = yesterday
+        user.current_streak = 5
+        db.session.commit()
+        status = user.get_streak_status()
+        assert status["state"] == "pending_today"
+        assert status["current_streak"] == 5
+        assert status["is_learned_today"] is False
+        assert "Chưa học hôm nay" in status["status_badge"]
+
+        # 4. State: broken (missed yesterday or earlier)
+        user.last_activity_date = today - timedelta(days=3)
+        user.current_streak = 5
+        user.longest_streak = 10
+        db.session.commit()
+        status = user.get_streak_status()
+        assert status["state"] == "broken"
+        assert status["current_streak"] == 0
+        assert status["previous_streak"] == 5
+        assert status["longest_streak"] == 10
+        assert status["is_learned_today"] is False
+        assert "Chuỗi đã kết thúc" in status["status_badge"]
+
