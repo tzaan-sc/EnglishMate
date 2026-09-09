@@ -314,6 +314,7 @@ def preview_lesson(lesson_id):
         "title": lesson.title,
         "level": lesson.level,
         "skill": lesson.skill,
+        "url": lesson.url,
         "short_description": lesson.short_description,
         "examples": lesson.examples,
         "content_preview": (lesson.content[:200] + "...") if lesson.content and len(lesson.content) > 200 else lesson.content,
@@ -323,10 +324,7 @@ def preview_lesson(lesson_id):
     })
 
 
-@bp.get("/lessons/<int:lesson_id>")
-@login_required
-def lesson_detail(lesson_id):
-    lesson = Lesson.query.filter_by(id=lesson_id, is_active=True).first_or_404()
+def _render_lesson_page(lesson):
     lesson.view_count = (lesson.view_count or 0) + 1
     db.session.commit()
 
@@ -374,13 +372,63 @@ def lesson_detail(lesson_id):
 @bp.get("/listening/<int:lesson_id>")
 @login_required
 def listening_detail(lesson_id):
-    return lesson_detail(lesson_id)
+    lesson = Lesson.query.filter_by(id=lesson_id, is_active=True).first_or_404()
+    return _render_lesson_page(lesson)
+
+
+@bp.get("/reading/<int:lesson_id>")
+@login_required
+def reading_detail(lesson_id):
+    lesson = Lesson.query.filter_by(id=lesson_id, is_active=True).first_or_404()
+    return _render_lesson_page(lesson)
+
+
+@bp.get("/speaking/<int:lesson_id>")
+@login_required
+def speaking_detail(lesson_id):
+    lesson = Lesson.query.filter_by(id=lesson_id, is_active=True).first_or_404()
+    return _render_lesson_page(lesson)
+
+
+@bp.get("/writing/<int:lesson_id>")
+@login_required
+def writing_detail(lesson_id):
+    lesson = Lesson.query.filter_by(id=lesson_id, is_active=True).first_or_404()
+    return _render_lesson_page(lesson)
+
+
+@bp.get("/lessons/<int:lesson_id>")
+@login_required
+def lesson_detail(lesson_id):
+    lesson = Lesson.query.filter_by(id=lesson_id, is_active=True).first_or_404()
+    skill_slug = (lesson.skill or "").lower()
+    if skill_slug in ["listening", "reading", "speaking", "writing"]:
+        return redirect(f"/{skill_slug}/{lesson.id}")
+    return _render_lesson_page(lesson)
 
 
 @bp.get("/listening")
 @login_required
 def listening_hub():
     return redirect(url_for("learning.lessons", skill="Listening"))
+
+
+@bp.get("/reading")
+@login_required
+def reading_hub():
+    return redirect(url_for("learning.lessons", skill="Reading"))
+
+
+@bp.get("/speaking")
+@login_required
+def speaking_hub():
+    return redirect(url_for("learning.lessons", skill="Speaking"))
+
+
+@bp.get("/writing")
+@login_required
+def writing_hub():
+    return redirect(url_for("learning.lessons", skill="Writing"))
 
 
 @bp.post("/lessons/<int:lesson_id>/notes")
@@ -405,7 +453,7 @@ def save_lesson_note(lesson_id):
         return jsonify({"success": True, "message": "Đã lưu ghi chú bài học thành công!"})
 
     flash("Đã lưu ghi chú bài học thành công!", "success")
-    return redirect(url_for("learning.lesson_detail", lesson_id=lesson.id))
+    return redirect(lesson.url)
 
 
 @bp.post("/lessons/<int:lesson_id>/bookmark")
@@ -434,7 +482,7 @@ def toggle_lesson_bookmark(lesson_id):
         return jsonify({"success": True, "is_bookmarked": is_bm, "message": msg})
 
     flash(msg, "success" if is_bm else "info")
-    return redirect(url_for("learning.lesson_detail", lesson_id=lesson.id))
+    return redirect(lesson.url)
 
 
 @bp.post("/lessons/<int:lesson_id>/report")
@@ -462,7 +510,7 @@ def report_lesson(lesson_id):
         return jsonify({"success": True, "message": msg})
 
     flash(msg, "success")
-    return redirect(url_for("learning.lesson_detail", lesson_id=lesson.id))
+    return redirect(lesson.url)
 
 
 @bp.post("/lessons/<int:lesson_id>/complete")
@@ -478,7 +526,7 @@ def complete_lesson(lesson_id):
         flash("Tuyệt vời! Bài học đã được đánh dấu hoàn thành.", "success")
     else:
         record_daily_activity(current_user)
-    return redirect(url_for("learning.lesson_detail", lesson_id=lesson.id))
+    return redirect(lesson.url)
 
 
 @bp.get("/vocabulary")

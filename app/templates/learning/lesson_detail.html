@@ -13,16 +13,25 @@
           <span>Trang Chủ</span>
         </a>
       </li>
-      <li class="breadcrumb-item">
-        <a href="{{ url_for('learning.lessons') }}">Bài Học</a>
-      </li>
       {% if lesson.skill == 'Listening' %}
       <li class="breadcrumb-item">
-        <a href="{{ url_for('learning.lessons', skill='Listening') }}">Luyện Nghe</a>
+        <a href="/listening">Luyện Nghe</a>
       </li>
-      {% elif lesson.skill %}
+      {% elif lesson.skill == 'Reading' %}
       <li class="breadcrumb-item">
-        <a href="{{ url_for('learning.lessons', skill=lesson.skill) }}">{{ lesson.skill }}</a>
+        <a href="/reading">Đọc Hiểu</a>
+      </li>
+      {% elif lesson.skill == 'Speaking' %}
+      <li class="breadcrumb-item">
+        <a href="/speaking">Luyện Nói</a>
+      </li>
+      {% elif lesson.skill == 'Writing' %}
+      <li class="breadcrumb-item">
+        <a href="/writing">Luyện Viết</a>
+      </li>
+      {% else %}
+      <li class="breadcrumb-item">
+        <a href="{{ url_for('learning.lessons') }}">{{ lesson.skill or 'Bài Học' }}</a>
       </li>
       {% endif %}
       <li class="breadcrumb-item">
@@ -37,14 +46,29 @@
   <!-- Top Navigation & Action Bar -->
   <div class="d-flex align-items-center justify-content-between mb-3.5">
     {% if lesson.skill == 'Listening' %}
-    <a class="btn btn-light border rounded-3 px-3 py-1.5 fw-semibold text-secondary d-inline-flex align-items-center gap-2 shadow-xs transition-hover" href="{{ url_for('learning.lessons', skill='Listening') }}" style="font-size: 0.84rem;">
+    <a class="btn btn-light border rounded-3 px-3 py-1.5 fw-semibold text-secondary d-inline-flex align-items-center gap-2 shadow-xs transition-hover" href="/listening" style="font-size: 0.84rem;">
       <i class="ph-bold ph-arrow-left"></i>
       <span>Quay lại Luyện Nghe</span>
     </a>
-    {% else %}
-    <a class="btn btn-light border rounded-3 px-3 py-1.5 fw-semibold text-secondary d-inline-flex align-items-center gap-2 shadow-xs transition-hover" href="{{ url_for('learning.lessons', skill=lesson.skill) if lesson.skill else url_for('learning.lessons') }}" style="font-size: 0.84rem;">
+    {% elif lesson.skill == 'Reading' %}
+    <a class="btn btn-light border rounded-3 px-3 py-1.5 fw-semibold text-secondary d-inline-flex align-items-center gap-2 shadow-xs transition-hover" href="/reading" style="font-size: 0.84rem;">
       <i class="ph-bold ph-arrow-left"></i>
-      <span>Quay lại {{ lesson.skill if lesson.skill else 'Thư viện bài học' }}</span>
+      <span>Quay lại Đọc Hiểu</span>
+    </a>
+    {% elif lesson.skill == 'Speaking' %}
+    <a class="btn btn-light border rounded-3 px-3 py-1.5 fw-semibold text-secondary d-inline-flex align-items-center gap-2 shadow-xs transition-hover" href="/speaking" style="font-size: 0.84rem;">
+      <i class="ph-bold ph-arrow-left"></i>
+      <span>Quay lại Luyện Nói</span>
+    </a>
+    {% elif lesson.skill == 'Writing' %}
+    <a class="btn btn-light border rounded-3 px-3 py-1.5 fw-semibold text-secondary d-inline-flex align-items-center gap-2 shadow-xs transition-hover" href="/writing" style="font-size: 0.84rem;">
+      <i class="ph-bold ph-arrow-left"></i>
+      <span>Quay lại Luyện Viết</span>
+    </a>
+    {% else %}
+    <a class="btn btn-light border rounded-3 px-3 py-1.5 fw-semibold text-secondary d-inline-flex align-items-center gap-2 shadow-xs transition-hover" href="{{ url_for('learning.lessons') }}" style="font-size: 0.84rem;">
+      <i class="ph-bold ph-arrow-left"></i>
+      <span>Quay lại Thư viện bài học</span>
     </a>
     {% endif %}
     
@@ -324,7 +348,7 @@
             <p class="text-secondary small mb-3" style="max-width: 460px;">
               Hệ thống đã ghi nhận tiến độ học tập tích lũy cho tài khoản của bạn. Hãy tiếp tục học các bài tiếp theo để duy trì chuỗi học tập!
             </p>
-            <a class="btn btn-primary rounded-3 px-4 py-2 fw-bold shadow-sm d-inline-flex align-items-center gap-2" href="{{ url_for('learning.lessons', skill='Listening') }}">
+            <a class="btn btn-primary rounded-3 px-4 py-2 fw-bold shadow-sm d-inline-flex align-items-center gap-2" href="/listening">
               <i class="ph-bold ph-arrow-left"></i>
               <span>Quay lại Thư viện Luyện Nghe</span>
             </a>
@@ -535,9 +559,9 @@
             <p class="text-secondary small mb-3" style="max-width: 460px;">
               Hệ thống đã ghi nhận tiến độ học tập tích lũy cho tài khoản của bạn. Hãy tiếp tục học các bài tiếp theo để duy trì chuỗi học tập!
             </p>
-            <a class="btn btn-primary rounded-3 px-4 py-2 fw-bold shadow-sm d-inline-flex align-items-center gap-2" href="{{ url_for('learning.lessons', skill=lesson.skill) if lesson.skill else url_for('learning.lessons') }}">
+            <a class="btn btn-primary rounded-3 px-4 py-2 fw-bold shadow-sm d-inline-flex align-items-center gap-2" href="{{ lesson.skill_hub_url }}">
               <i class="ph-bold ph-arrow-left"></i>
-              <span>Quay lại {{ lesson.skill if lesson.skill else 'Thư viện bài học' }}</span>
+              <span>Quay lại {{ 'Đọc Hiểu' if lesson.skill == 'Reading' else ('Luyện Nói' if lesson.skill == 'Speaking' else ('Luyện Viết' if lesson.skill == 'Writing' else (lesson.skill or 'Thư viện bài học'))) }}</span>
             </a>
           </div>
           {% else %}

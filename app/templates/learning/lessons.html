@@ -55,7 +55,7 @@
       <!-- Quick Recommended Action -->
       {% if recommended_lesson %}
       <div class="d-flex flex-wrap gap-2 align-items-center flex-shrink-0">
-        <a href="{{ url_for('learning.lesson_detail', lesson_id=recommended_lesson.id) }}" 
+        <a href="{{ recommended_lesson.url }}" 
            class="btn btn-light rounded-pill px-3.5 py-1.5 fw-bold text-primary shadow-xs d-inline-flex align-items-center gap-1.5" 
            style="font-size: 0.84rem;">
           <i class="ph-bold ph-play-circle text-primary fs-5"></i>
@@ -275,7 +275,7 @@
     <div class="col-12 col-md-6 col-lg-4">
       <article class="card-modern card-lesson-clickable p-3.5 h-100 d-flex flex-column justify-content-between position-relative transition-hover" 
                id="lessonCard-{{ lesson.id }}" 
-               data-detail-url="{{ url_for('learning.lesson_detail', lesson_id=lesson.id) }}"
+               data-detail-url="{{ lesson.url }}"
                style="cursor: pointer;">
         <div>
           <!-- Top Row: Level, Accent & Favorite -->
@@ -305,7 +305,7 @@
                     data-lesson-title="{{ lesson.title }}"
                     data-lesson-accent="{{ lesson.accent or ('US' if loop.index % 2 == 1 else 'UK') }}"
                     data-lesson-duration="{{ lesson.audio_duration or '02:45' }}"
-                    data-lesson-url="{{ url_for('learning.lesson_detail', lesson_id=lesson.id) }}"
+                    data-lesson-url="{{ lesson.url }}"
                     data-lesson-text="{{ (lesson.examples or lesson.content or lesson.short_description)|striptags|replace('\"', '&quot;') }}"
                     title="Nghe nhanh bài này">
               <i class="ph-fill ph-play text-white fs-6 play-icon"></i>
@@ -316,7 +316,7 @@
 
             <div class="overflow-hidden">
               <h6 class="fw-bold text-dark mb-0.5 text-truncate" style="font-size: 1rem; line-height: 1.35;">
-                <a href="{{ url_for('learning.lesson_detail', lesson_id=lesson.id) }}" class="text-dark text-decoration-none hover-primary">
+                <a href="{{ lesson.url }}" class="text-dark text-decoration-none hover-primary">
                   {{ lesson.title }}
                 </a>
               </h6>
@@ -351,7 +351,7 @@
               <span>Xem trước</span>
             </button>
 
-            <a href="{{ url_for('learning.lesson_detail', lesson_id=lesson.id) }}" 
+            <a href="{{ lesson.url }}" 
                class="btn btn-primary btn-sm rounded-pill px-3 py-1 fw-bold shadow-xs d-inline-flex align-items-center gap-1"
                style="font-size: 0.8rem;">
               <span>{{ 'Ôn tập' if is_done else 'Vào học' }}</span>
@@ -366,7 +366,7 @@
     <!-- STANDARD LESSON CARD (READING / SPEAKING / WRITING) -->
     <div class="col-12 col-md-6 col-lg-4">
       <article class="card-modern card-lesson-clickable p-4 h-100 d-flex flex-column justify-content-between position-relative transition-hover"
-               data-detail-url="{{ url_for('learning.lesson_detail', lesson_id=lesson.id) }}"
+               data-detail-url="{{ lesson.url }}"
                style="cursor: pointer;">
         <div>
           <!-- Top Row Badges & Favorite Button -->
@@ -390,7 +390,7 @@
 
           <!-- Title & Description -->
           <h5 class="fw-bold text-dark mb-2" style="font-size: 1.15rem; letter-spacing: -0.01em; line-height: 1.4;">
-            <a href="{{ url_for('learning.lesson_detail', lesson_id=lesson.id) }}" class="text-dark text-decoration-none hover-primary">
+            <a href="{{ lesson.url }}" class="text-dark text-decoration-none hover-primary">
               {{ lesson.title }}
             </a>
           </h5>
@@ -418,7 +418,7 @@
               <span>Xem trước</span>
             </button>
 
-            <a href="{{ url_for('learning.lesson_detail', lesson_id=lesson.id) }}" 
+            <a href="{{ lesson.url }}" 
                class="btn btn-primary btn-sm rounded-3 px-3 py-1.5 fw-bold shadow-xs d-inline-flex align-items-center gap-1"
                style="font-size: 0.82rem;">
               <span>{{ 'Ôn tập' if is_done else 'Học ngay' }}</span>
@@ -597,7 +597,7 @@ document.addEventListener("DOMContentLoaded", function() {
           document.getElementById("prevDesc").innerText = data.short_description;
           document.getElementById("prevExamples").innerText = data.examples || "Không có ví dụ";
           document.getElementById("prevContent").innerText = data.content_preview || "";
-          document.getElementById("prevStartBtn").href = `/lessons/${data.id}`;
+          document.getElementById("prevStartBtn").href = data.url || `/lessons/${data.id}`;
           document.getElementById("prevStartBtn").innerHTML = `<span>${data.is_done ? "Xem lại bài học" : "Bắt đầu học ngay"}</span> <i class="ph-bold ph-arrow-right"></i>`;
           previewModal.show();
         })

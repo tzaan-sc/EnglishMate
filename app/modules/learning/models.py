@@ -17,6 +17,27 @@ class Lesson(db.Model):
     created_at = db.Column(db.DateTime(timezone=True), default=now, nullable=False)
     updated_at = db.Column(db.DateTime(timezone=True), default=now, onupdate=now, nullable=False)
 
+    @property
+    def skill_slug(self):
+        sk = (self.skill or "").lower()
+        if sk in ["listening", "reading", "speaking", "writing"]:
+            return sk
+        return "lessons"
+
+    @property
+    def url(self):
+        sk = (self.skill or "").lower()
+        if sk in ["listening", "reading", "speaking", "writing"]:
+            return f"/{sk}/{self.id}"
+        return f"/lessons/{self.id}"
+
+    @property
+    def skill_hub_url(self):
+        sk = (self.skill or "").lower()
+        if sk in ["listening", "reading", "speaking", "writing"]:
+            return f"/{sk}"
+        return "/lessons"
+
 
 class LessonFavorite(db.Model):
     id = db.Column(db.Integer, primary_key=True)

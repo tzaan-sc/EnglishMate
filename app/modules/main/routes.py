@@ -197,7 +197,7 @@ def dashboard():
             "icon": "ph-graduation-cap",
             "status": "Hoàn thành" if (today_act and today_act.completed_lessons > 0) else "Cần học",
             "is_done": bool(today_act and today_act.completed_lessons > 0),
-            "url": url_for("learning.lesson_detail", lesson_id=next_lesson.id) if next_lesson else url_for("learning.lessons")
+            "url": next_lesson.url if next_lesson else url_for("learning.lessons")
         },
         {
             "title": f"Ôn tập từ vựng ({srs_due_count} thẻ đến hạn)",
