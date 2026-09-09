@@ -115,14 +115,14 @@ def lessons():
             "icon": "ph-bold ph-book-open-text",
             "gradient": "linear-gradient(135deg, #0f766e 0%, #0d9488 50%, #14b8a6 100%)",
             "card_class": "hero-reading",
-            "stat_label_3": "Số bài đang học",
-            "stat_val_3": f"{scoped_in_progress} bài",
-            "stat_icon_3": "ph-bold ph-hourglass-high",
-            "stat_color_3": "text-warning",
-            "stat_label_4": "Tỷ lệ hoàn thành",
-            "stat_val_4": f"{scoped_completion_rate}%",
-            "stat_icon_4": "ph-bold ph-chart-donut",
-            "stat_color_4": "text-info"
+            "stat_label_3": "Tỷ lệ hoàn thành",
+            "stat_val_3": f"{scoped_completion_rate}%",
+            "stat_icon_3": "ph-bold ph-chart-line-up",
+            "stat_color_3": "text-info",
+            "stat_label_4": "Thời gian đọc tích lũy",
+            "stat_val_4": f"{scoped_completed * 4} phút",
+            "stat_icon_4": "ph-bold ph-clock",
+            "stat_color_4": "text-warning"
         },
         "Speaking": {
             "title": "Luyện Nói",
@@ -352,6 +352,158 @@ def _render_lesson_page(lesson):
                 "full_line": line
             })
 
+    # Reading specific properties
+    reading_passage = ""
+    reading_guideline = ""
+    reading_paragraphs = []
+    reading_vocab = []
+    reading_questions = []
+
+    if lesson.skill == "Reading":
+        if lesson.examples and len(lesson.examples.strip()) > 30:
+            reading_passage = lesson.examples.strip()
+            reading_guideline = lesson.content.strip() if lesson.content else ""
+        else:
+            reading_passage = lesson.content.strip() if lesson.content else ""
+            reading_guideline = ""
+
+        reading_paragraphs = [p.strip() for p in reading_passage.split("\n\n") if p.strip()]
+        if not reading_paragraphs:
+            reading_paragraphs = [p.strip() for p in reading_passage.split("\n") if p.strip()]
+        if not reading_paragraphs:
+            reading_paragraphs = [reading_passage]
+
+        READING_DATA = {
+            18: {
+                "genre": "Bưu thiếp (Postcard)",
+                "est_minutes": 2,
+                "vocab": [
+                    {"word": "postcard", "ipa": "/ˈpoʊst.kɑːrd/", "pos": "noun", "vi": "bưu thiếp", "ex": "She sent me a postcard from Paris."},
+                    {"word": "weather", "ipa": "/ˈweð.ɚ/", "pos": "noun", "vi": "thời tiết", "ex": "The weather is sunny and warm today."},
+                    {"word": "visit", "ipa": "/ˈvɪz.ɪt/", "pos": "verb", "vi": "thăm quan, ghé thăm", "ex": "We visited the museum yesterday."},
+                    {"word": "lovely", "ipa": "/ˈlʌv.li/", "pos": "adjective", "vi": "dễ thương, tuyệt vời", "ex": "They had a lovely time in London."}
+                ],
+                "questions": [
+                    {
+                        "id": 1,
+                        "question": "Where is the sender writing the postcard from?",
+                        "options": ["Paris", "London", "Tokyo", "New York"],
+                        "answer": 1,
+                        "explanation": "Trong bài viết: 'Greetings from London!' cho biết người gửi đang ở London."
+                    },
+                    {
+                        "id": 2,
+                        "question": "Which famous landmark did the author visit?",
+                        "options": ["Eiffel Tower", "Big Ben", "Statue of Liberty", "Colosseum"],
+                        "answer": 1,
+                        "explanation": "Đoạn trích: 'We visited Big Ben and rode the London Eye'."
+                    }
+                ]
+            },
+            19: {
+                "genre": "Thông tin khách sạn (Brochure)",
+                "est_minutes": 3,
+                "vocab": [
+                    {"word": "breakfast", "ipa": "/ˈbrek.fəst/", "pos": "noun", "vi": "bữa sáng", "ex": "Breakfast is served from 6:30 to 10:00 AM on the 2nd floor."},
+                    {"word": "available", "ipa": "/əˈveɪ.lə.bəl/", "pos": "adjective", "vi": "có sẵn, sử dụng được", "ex": "Free Wi-Fi is available across all rooms."},
+                    {"word": "check-out", "ipa": "/ˈtʃek.aʊt/", "pos": "noun", "vi": "thời gian trả phòng", "ex": "Check-out time is before 11:00 AM."},
+                    {"word": "floor", "ipa": "/flɔːr/", "pos": "noun", "vi": "tầng lầu", "ex": "The dining room is on the 2nd floor."}
+                ],
+                "questions": [
+                    {
+                        "id": 1,
+                        "question": "Where is breakfast served in the hotel?",
+                        "options": ["In the lobby", "On the 2nd floor", "On the rooftop", "In room service only"],
+                        "answer": 1,
+                        "explanation": "Nội dung chỉ rõ: 'Breakfast is served from 6:30 to 10:00 AM on the 2nd floor'."
+                    },
+                    {
+                        "id": 2,
+                        "question": "Is Wi-Fi free for all guests in their rooms?",
+                        "options": ["Yes, it is free across all rooms", "No, it costs $10/day", "Only in the lobby", "Only for VIP guests"],
+                        "answer": 0,
+                        "explanation": "Nội dung: 'Free Wi-Fi is available across all rooms'."
+                    }
+                ]
+            },
+            20: {
+                "genre": "Bài viết lối sống (Lifestyle Essay)",
+                "est_minutes": 3,
+                "vocab": [
+                    {"word": "minimalism", "ipa": "/ˈmɪn.ə.məl.ɪ.zəm/", "pos": "noun", "vi": "chủ nghĩa tối giản", "ex": "Minimalism helps reduce daily stress."},
+                    {"word": "matter", "ipa": "/ˈmæt̬.ɚ/", "pos": "verb", "vi": "có ý nghĩa, quan trọng", "ex": "Family is what truly matters."},
+                    {"word": "skimming", "ipa": "/ˈskɪm.ɪŋ/", "pos": "noun", "vi": "kỹ năng đọc lướt", "ex": "Skimming allows you to find key ideas fast."}
+                ],
+                "questions": [
+                    {
+                        "id": 1,
+                        "question": "What is the core philosophy of minimalism according to the text?",
+                        "options": ["Owning absolutely nothing", "Making room for what truly matters", "Selling all possessions", "Living without technology"],
+                        "answer": 1,
+                        "explanation": "Bài đọc nêu rõ: 'Minimalism is not about owning nothing; it is about making room for what truly matters'."
+                    }
+                ]
+            },
+            21: {
+                "genre": "Email công việc (Workplace Email)",
+                "est_minutes": 4,
+                "vocab": [
+                    {"word": "schedule", "ipa": "/ˈskedʒ.uːl/", "pos": "noun", "vi": "tiến độ, lịch trình", "ex": "The release schedule is on track."},
+                    {"word": "milestone", "ipa": "/ˈmaɪl.stoʊn/", "pos": "noun", "vi": "cột mốc dự án", "ex": "Please find the revised milestones attached."},
+                    {"word": "attachment", "ipa": "/əˈtætʃ.mənt/", "pos": "noun", "vi": "tệp đính kèm", "ex": "Please review the attachment."}
+                ],
+                "questions": [
+                    {
+                        "id": 1,
+                        "question": "What is the primary purpose of the email?",
+                        "options": ["Requesting vacation leave", "Providing an update on the product release schedule", "Complaining about customer service", "Announcing office relocation"],
+                        "answer": 1,
+                        "explanation": "Câu mở đầu: 'I am writing to provide an update regarding the Q3 product release schedule'."
+                    }
+                ]
+            },
+            22: {
+                "genre": "Bài báo học thuật (Academic Article)",
+                "est_minutes": 5,
+                "vocab": [
+                    {"word": "circular economy", "ipa": "/ˌsɝː.kjə.lɚ iˈkɑː.nə.mi/", "pos": "noun", "vi": "kinh tế tuần hoàn", "ex": "The circular economy reduces industrial waste."},
+                    {"word": "paradigm", "ipa": "/ˈper.ə.daɪm/", "pos": "noun", "vi": "mô hình, khuôn mẫu tư duy", "ex": "A major paradigm shift is taking place."},
+                    {"word": "cross-sectoral", "ipa": "/ˌkrɑːs.sekˈtɔːr.i.əl/", "pos": "adj", "vi": "liên ngành, đa lĩnh vực", "ex": "Cross-sectoral cooperation is vital."}
+                ],
+                "questions": [
+                    {
+                        "id": 1,
+                        "question": "What is required to transition towards a circular economy paradigm?",
+                        "options": ["Individual effort only", "Cross-sectoral collaboration between policymakers and municipalities", "Stopping all technological development", "Increasing fossil fuel usage"],
+                        "answer": 1,
+                        "explanation": "Văn bản nêu: 'Transitioning towards circular economy paradigms requires cross-sectoral collaboration'."
+                    }
+                ]
+            }
+        }
+
+        reading_info = READING_DATA.get(lesson.id, {
+            "genre": "Bài đọc thực hành",
+            "est_minutes": max(1, len(reading_passage) // 250 + 1),
+            "vocab": [
+                {"word": "comprehension", "ipa": "/ˌkɑːm.prəˈhen.ʃən/", "pos": "noun", "vi": "sự đọc hiểu", "ex": "Reading daily improves language comprehension."},
+                {"word": "context", "ipa": "/ˈkɑːn.tekst/", "pos": "noun", "vi": "ngữ cảnh", "ex": "Always observe words in their natural context."}
+            ],
+            "questions": [
+                {
+                    "id": 1,
+                    "question": f"What is the main topic of '{lesson.title}'?",
+                    "options": [lesson.title, "Grammar review", "Speaking dialogue", "Listening audio"],
+                    "answer": 0,
+                    "explanation": f"Nội dung bài học hướng dẫn trọng tâm về: {lesson.title}."
+                }
+            ]
+        })
+        reading_vocab = reading_info.get("vocab", [])
+        reading_questions = reading_info.get("questions", [])
+        lesson.reading_genre = reading_info.get("genre", "Bài đọc")
+        lesson.est_minutes = reading_info.get("est_minutes", 3)
+
     completed = LessonProgress.query.filter_by(user_id=current_user.id, lesson_id=lesson.id).first()
     note_record = LessonNote.query.filter_by(user_id=current_user.id, lesson_id=lesson.id).first()
     bookmarks = [b.section_index for b in LessonBookmark.query.filter_by(user_id=current_user.id, lesson_id=lesson.id).all()]
@@ -361,6 +513,11 @@ def _render_lesson_page(lesson):
         "learning/lesson_detail.html",
         lesson=lesson,
         transcript_lines=transcript_lines,
+        reading_passage=reading_passage,
+        reading_guideline=reading_guideline,
+        reading_paragraphs=reading_paragraphs,
+        reading_vocab=reading_vocab,
+        reading_questions=reading_questions,
         completed=completed,
         user_note=note_record.content if note_record else "",
         bookmarks=bookmarks,

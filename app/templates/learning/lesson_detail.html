@@ -377,6 +377,296 @@
 
   </div>
 
+{% elif lesson.skill == 'Reading' %}
+  <!-- READING STUDIO & INTERACTIVE READER CARD -->
+  <div class="card-modern p-4 p-md-4 mb-4">
+    <!-- Badges & Status -->
+    <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-2.5">
+      <div class="d-flex align-items-center gap-2">
+        <span class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill px-3 py-1 fw-bold" style="font-size: 0.74rem;">
+          {{ lesson.level }}
+        </span>
+        <span class="badge rounded-pill px-3 py-1 fw-semibold d-inline-flex align-items-center gap-1.5" style="font-size: 0.74rem; background-color: rgba(13, 148, 136, 0.1); color: #0f766e; border: 1px solid rgba(13, 148, 136, 0.2);">
+          <i class="ph-bold ph-book-open-text"></i>
+          <span>Đọc Hiểu</span>
+        </span>
+        <span class="badge bg-light text-secondary border rounded-pill px-2.5 py-1 fw-semibold" style="font-size: 0.74rem;">
+          <i class="ph-bold ph-file-text me-1"></i>{{ lesson.reading_genre or 'Bài đọc thực hành' }}
+        </span>
+        <span class="badge bg-light text-secondary border rounded-pill px-2.5 py-1 fw-semibold" style="font-size: 0.74rem;">
+          <i class="ph-bold ph-timer me-1" style="color: #0d9488;"></i>~{{ lesson.est_minutes or 3 }} phút đọc
+        </span>
+        <small class="text-muted d-inline-flex align-items-center gap-1 ms-1" style="font-size: 0.74rem;">
+          <i class="ph-bold ph-eye"></i> {{ lesson.view_count or 1 }} lượt đọc
+        </small>
+      </div>
+
+      {% if completed %}
+      <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-3 py-1 fw-bold d-inline-flex align-items-center gap-1" style="font-size: 0.74rem;">
+        <i class="ph-fill ph-check-circle"></i> ✓ Đã hoàn thành
+      </span>
+      {% else %}
+      <span class="badge rounded-pill px-3 py-1 fw-semibold" style="font-size: 0.74rem; background-color: rgba(13, 148, 136, 0.12); color: #0f766e;">
+        Đang đọc
+      </span>
+      {% endif %}
+    </div>
+
+    <!-- Title & Description -->
+    <h2 class="fw-bold text-dark mb-2" style="font-size: 1.55rem; letter-spacing: -0.02em;">
+      {{ lesson.title }}
+    </h2>
+    <p class="text-secondary mb-3" style="font-size: 0.92rem; line-height: 1.6;">
+      {{ lesson.short_description }}
+    </p>
+
+    <!-- SMART READING TOOLBAR -->
+    <div class="reading-smart-toolbar p-2.5 px-3 rounded-3 border d-flex flex-wrap align-items-center justify-content-between gap-2 mb-2 bg-light-subtle" style="border-color: var(--border-light) !important;">
+      <div class="d-flex align-items-center gap-2">
+        <span class="text-muted fw-semibold small d-none d-sm-inline" style="font-size: 0.78rem;">Cỡ chữ:</span>
+        <div class="btn-group btn-group-sm rounded-pill border p-0.5 bg-white shadow-2xs">
+          <button type="button" class="btn btn-sm btn-light border-0 rounded-pill px-2.5 py-0.5 text-secondary" id="btnFontSmaller" title="Cỡ chữ nhỏ">
+            <i class="ph-bold ph-text-aa" style="font-size: 0.74rem;"></i>
+          </button>
+          <button type="button" class="btn btn-sm btn-light border-0 rounded-pill px-2.5 py-0.5 text-primary fw-bold" id="btnFontNormal" title="Cỡ chữ chuẩn">
+            100%
+          </button>
+          <button type="button" class="btn btn-sm btn-light border-0 rounded-pill px-2.5 py-0.5 text-secondary" id="btnFontBigger" title="Cỡ chữ lớn">
+            <i class="ph-bold ph-text-aa" style="font-size: 1.05rem;"></i>
+          </button>
+        </div>
+
+        <button type="button" id="btnToggleVocabHighlight" class="btn btn-sm btn-light border rounded-pill px-3 py-1 text-secondary d-inline-flex align-items-center gap-1.5 shadow-2xs" style="font-size: 0.8rem;">
+          <i class="ph-bold ph-highlighter" style="color: #0d9488;"></i>
+          <span class="d-none d-sm-inline">Làm nổi từ vựng</span>
+        </button>
+      </div>
+
+      <div class="d-flex align-items-center gap-2">
+        <button type="button" id="btnReadAloud" class="btn btn-sm btn-primary rounded-pill px-3.5 py-1.5 fw-bold shadow-xs d-inline-flex align-items-center gap-1.5" style="font-size: 0.82rem;">
+          <i class="ph-bold ph-speaker-high" id="readAloudIcon"></i>
+          <span id="readAloudText">Nghe đọc bài văn</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 2-COLUMN READER & INTERACTIVE STUDIO -->
+  <div class="row g-4 mb-4">
+    <!-- LEFT COLUMN: READER CANVAS (60%) -->
+    <div class="col-12 col-lg-7 col-xl-7">
+      <div class="card-modern p-4 p-md-5 h-100 bg-white reader-paper-canvas position-relative" style="border: 1px solid var(--border-light); border-radius: 16px;">
+        <!-- Paper Header Decorative Ribbon -->
+        <div class="d-flex align-items-center justify-content-between pb-3 mb-4 border-bottom border-light">
+          <div class="d-flex align-items-center gap-2">
+            <span class="badge rounded-circle p-1.5 d-inline-flex align-items-center justify-content-center" style="background-color: rgba(13, 148, 136, 0.12); color: #0f766e; width: 32px; height: 32px;">
+              <i class="ph-bold ph-article fs-6"></i>
+            </span>
+            <div>
+              <span class="text-uppercase fw-bold small" style="font-size: 0.72rem; letter-spacing: 0.04em; color: #0d9488;">Văn bản bài đọc</span>
+              <div class="fw-bold text-dark small">{{ lesson.title }}</div>
+            </div>
+          </div>
+          <span class="badge bg-light text-secondary border rounded-pill px-2.5 py-0.5 small fw-semibold">
+            {{ lesson.reading_genre or 'Tài liệu đọc' }}
+          </span>
+        </div>
+
+        <!-- Main Reading Content Body -->
+        <div id="readerContentBody" class="reader-content-body text-dark" style="font-size: 1.05rem; line-height: 1.85; letter-spacing: -0.01em;">
+          {% for p in reading_paragraphs %}
+          <p class="mb-3.5 reader-paragraph">{{ p }}</p>
+          {% endfor %}
+        </div>
+
+        {% if reading_guideline %}
+        <!-- Reading Strategy Tip Box -->
+        <div class="mt-4 p-3.5 rounded-3 border-start border-4 bg-light" style="border-left-color: #0d9488 !important;">
+          <div class="fw-bold text-dark small mb-1 d-flex align-items-center gap-1.5">
+            <i class="ph-bold ph-lightbulb text-warning"></i>
+            <span>Mục tiêu & Hướng dẫn đọc hiểu:</span>
+          </div>
+          <div class="text-secondary small" style="line-height: 1.6;">
+            {{ reading_guideline }}
+          </div>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- RIGHT COLUMN: INTERACTIVE TABS & STUDIO (40%) -->
+    <div class="col-12 col-lg-5 col-xl-5">
+      <div class="card-modern p-3.5 p-md-4 h-100 d-flex flex-column justify-content-between" style="border: 1px solid var(--border-light); border-radius: 16px;">
+        <div>
+          <!-- Tab Navigation Pills -->
+          <ul class="nav nav-pills nav-fill bg-light p-1 rounded-pill mb-3.5 border" role="tablist" style="border-color: var(--border-light) !important;">
+            <li class="nav-item" role="presentation">
+              <button class="nav-link active rounded-pill py-1.5 fw-bold small d-inline-flex align-items-center justify-content-center gap-1 w-100" 
+                      id="tab-read-vocab-btn" data-bs-toggle="tab" data-bs-target="#tab-read-vocab" type="button" role="tab">
+                <i class="ph-bold ph-translate"></i>
+                <span>Từ vựng</span>
+              </button>
+            </li>
+            <li class="nav-item" role="presentation">
+              <button class="nav-link rounded-pill py-1.5 fw-bold small d-inline-flex align-items-center justify-content-center gap-1 w-100" 
+                      id="tab-read-quiz-btn" data-bs-toggle="tab" data-bs-target="#tab-read-quiz" type="button" role="tab">
+                <i class="ph-bold ph-question"></i>
+                <span>Câu hỏi</span>
+              </button>
+            </li>
+            <li class="nav-item" role="presentation">
+              <button class="nav-link rounded-pill py-1.5 fw-bold small d-inline-flex align-items-center justify-content-center gap-1 w-100" 
+                      id="tab-read-notes-btn" data-bs-toggle="tab" data-bs-target="#tab-read-notes" type="button" role="tab">
+                <i class="ph-bold ph-notepad"></i>
+                <span>Ghi chú</span>
+              </button>
+            </li>
+          </ul>
+
+          <!-- Tab Content Panels -->
+          <div class="tab-content">
+            <!-- TAB 1: KEY VOCABULARY -->
+            <div class="tab-pane fade show active" id="tab-read-vocab" role="tabpanel">
+              <div class="d-flex align-items-center justify-content-between mb-2.5">
+                <span class="fw-bold text-dark small d-flex align-items-center gap-1.5">
+                  <i class="ph-bold ph-cards" style="color: #0d9488;"></i>
+                  <span>Từ vựng trọng tâm trong bài</span>
+                </span>
+                <span class="badge bg-light text-secondary border rounded-pill">{{ reading_vocab|length }} từ</span>
+              </div>
+
+              <div class="overflow-auto pe-1" style="max-height: 440px;">
+                {% for v in reading_vocab %}
+                <div class="p-3 mb-2.5 rounded-3 border bg-light-subtle reading-vocab-card transition-hover" style="border-color: var(--border-light) !important;">
+                  <div class="d-flex align-items-start justify-content-between gap-2 mb-1">
+                    <div>
+                      <span class="fw-bold text-dark" style="font-size: 1rem;">{{ v.word }}</span>
+                      <span class="badge bg-light text-secondary border rounded-pill px-2 py-0.5 ms-1" style="font-size: 0.68rem;">{{ v.pos }}</span>
+                      <div class="text-muted small" style="font-size: 0.78rem;">{{ v.ipa }}</div>
+                    </div>
+                    <button type="button" class="btn btn-sm btn-light border rounded-circle p-0 d-flex align-items-center justify-content-center btn-speak-word flex-shrink-0" 
+                            style="width: 32px; height: 32px;" data-word="{{ v.word }}" title="Nghe phát âm từ này">
+                      <i class="ph-bold ph-speaker-high text-primary fs-6"></i>
+                    </button>
+                  </div>
+                  <div class="fw-semibold small mb-1" style="color: #0f766e; font-size: 0.86rem;">
+                    ➔ {{ v.vi }}
+                  </div>
+                  {% if v.ex %}
+                  <div class="text-muted small fst-italic" style="font-size: 0.78rem; line-height: 1.4;">
+                    "{{ v.ex }}"
+                  </div>
+                  {% endif %}
+                </div>
+                {% endfor %}
+              </div>
+            </div>
+
+            <!-- TAB 2: COMPREHENSION QUIZ -->
+            <div class="tab-pane fade" id="tab-read-quiz" role="tabpanel">
+              <div class="d-flex align-items-center justify-content-between mb-2.5">
+                <span class="fw-bold text-dark small d-flex align-items-center gap-1.5">
+                  <i class="ph-bold ph-check-square-offset text-primary"></i>
+                  <span>Kiểm tra mức độ đọc hiểu</span>
+                </span>
+                <span class="badge bg-primary-subtle text-primary rounded-pill">{{ reading_questions|length }} câu</span>
+              </div>
+
+              <div class="overflow-auto pe-1" style="max-height: 440px;">
+                {% for q in reading_questions %}
+                <div class="p-3.5 mb-3 rounded-3 border bg-light-subtle reading-quiz-item" data-q-id="{{ q.id }}" data-answer="{{ q.answer }}" style="border-color: var(--border-light) !important;">
+                  <div class="fw-bold text-dark small mb-2.5 d-flex gap-1.5">
+                    <span class="badge bg-primary text-white rounded-circle d-inline-flex align-items-center justify-content-center flex-shrink-0" style="width: 20px; height: 20px; font-size: 0.72rem;">{{ loop.index }}</span>
+                    <span>{{ q.question }}</span>
+                  </div>
+
+                  <div class="d-flex flex-column gap-2 mb-2">
+                    {% for opt in q.options %}
+                    <button type="button" class="btn btn-sm btn-light border text-start rounded-3 px-3 py-2 reading-quiz-opt d-flex align-items-center justify-content-between transition-hover" 
+                            data-opt-idx="{{ loop.index0 }}" style="font-size: 0.84rem;">
+                      <span>{{ opt }}</span>
+                      <i class="ph-bold ph-circle text-muted opt-indicator"></i>
+                    </button>
+                    {% endfor %}
+                  </div>
+
+                  <div class="quiz-feedback-box d-none p-2.5 rounded-3 small" data-explanation="{{ q.explanation }}"></div>
+                </div>
+                {% endfor %}
+              </div>
+            </div>
+
+            <!-- TAB 3: NOTES & MILESTONE -->
+            <div class="tab-pane fade" id="tab-read-notes" role="tabpanel">
+              <!-- Lesson Note Form -->
+              <form id="readingNoteForm" action="{{ url_for('learning.save_lesson_note', lesson_id=lesson.id) }}" method="post" class="mb-3">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <div class="mb-2">
+                  <label class="form-label fw-bold text-dark small">Ghi chép mẹo đọc / từ mới của bạn:</label>
+                  <textarea class="form-control rounded-3 p-2.5 shadow-none" 
+                            name="note" id="readingNoteInput" rows="3" 
+                            placeholder="Ghi chú cấu trúc ngữ pháp, từ mới hoặc cảm nghĩ về bài đọc..."
+                            style="border-color: var(--border-light); font-size: 0.88rem; line-height: 1.5;">{{ user_note }}</textarea>
+                </div>
+                <div class="d-flex justify-content-between align-items-center">
+                  <small class="text-muted" style="font-size: 0.74rem;">Gõ để lưu hoặc bấm Lưu</small>
+                  <button type="submit" class="btn btn-sm btn-primary rounded-pill px-3 py-1 fw-bold shadow-xs">
+                    Lưu ghi chú
+                  </button>
+                </div>
+              </form>
+
+              <!-- Milestone Complete Box -->
+              <div class="p-3 rounded-4 text-center border" style="background: linear-gradient(135deg, #f0fdfa 0%, #ccfbf1 100%); border-color: #99f6e4 !important;">
+                {% if completed %}
+                <div class="py-1">
+                  <div class="rounded-circle bg-success text-white d-inline-flex align-items-center justify-content-center mb-2 shadow-2xs" style="width: 44px; height: 44px;">
+                    <i class="ph-bold ph-check fs-4"></i>
+                  </div>
+                  <h6 class="fw-bold text-success mb-1">Đã hoàn thành bài đọc!</h6>
+                  <p class="text-secondary small mb-2.5" style="font-size: 0.8rem;">
+                    Hệ thống đã ghi nhận tiến độ học tập và tích lũy điểm kinh nghiệm (+20 XP).
+                  </p>
+                  <a class="btn btn-primary btn-sm rounded-pill px-3.5 py-1.5 fw-bold shadow-xs d-inline-flex align-items-center gap-1.5" href="/reading">
+                    <i class="ph-bold ph-arrow-left"></i>
+                    <span>Quay lại Đọc Hiểu</span>
+                  </a>
+                </div>
+                {% else %}
+                <div class="py-1">
+                  <div class="rounded-circle d-inline-flex align-items-center justify-content-center mb-2 shadow-2xs" style="width: 44px; height: 44px; background-color: var(--primary); color: white;">
+                    <i class="ph-bold ph-trophy fs-4"></i>
+                  </div>
+                  <h6 class="fw-bold text-dark mb-1">Đọc xong bài viết này?</h6>
+                  <p class="text-secondary small mb-2.5" style="font-size: 0.8rem;">
+                    Đánh dấu hoàn thành để ghi nhận vào chuỗi Streak và nhận +20 XP nhé!
+                  </p>
+                  <form method="post" action="{{ url_for('learning.complete_lesson', lesson_id=lesson.id) }}">
+                    {{ form.hidden_tag() }}
+                    <button class="btn btn-primary btn-sm rounded-pill px-4 py-2 fw-bold shadow-xs d-inline-flex align-items-center gap-1.5">
+                      <i class="ph-bold ph-check-circle fs-6"></i>
+                      <span>Hoàn thành bài đọc (+20 XP)</span>
+                    </button>
+                  </form>
+                </div>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Footer Back Link -->
+        <div class="pt-3 border-top border-light d-flex align-items-center justify-content-between mt-3">
+          <a href="/reading" class="text-secondary text-decoration-none small fw-semibold d-inline-flex align-items-center gap-1 hover-primary">
+            <i class="ph-bold ph-arrow-left"></i>
+            <span>Thư viện Đọc Hiểu</span>
+          </a>
+          <span class="text-muted small" style="font-size: 0.74rem;">Kỹ năng Đọc Hiểu · CEFR {{ lesson.level }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
 {% else %}
   <!-- UNIFIED LESSON HEADER & LEARNING STEPPER CARD (READING / SPEAKING / WRITING) -->
   <div class="card-modern p-4 p-md-4 mb-4">
@@ -1085,6 +1375,187 @@ document.addEventListener("DOMContentLoaded", function() {
   if (dictTabBtn) {
     dictTabBtn.addEventListener("shown.bs.tab", function() {
       loadDictationSentence(0);
+    });
+  }
+  {% endif %}
+
+  {% if lesson.skill == 'Reading' %}
+  // --- READING STUDIO JAVASCRIPT ---
+  const readerBody = document.getElementById("readerContentBody");
+  const btnFontSmaller = document.getElementById("btnFontSmaller");
+  const btnFontNormal = document.getElementById("btnFontNormal");
+  const btnFontBigger = document.getElementById("btnFontBigger");
+
+  const fontSizes = ["0.92rem", "1.05rem", "1.24rem"];
+  let curFontIdx = 1;
+
+  function setFontSize(idx) {
+    curFontIdx = idx;
+    if (readerBody) readerBody.style.fontSize = fontSizes[idx];
+    if (btnFontSmaller) btnFontSmaller.classList.toggle("text-primary", idx === 0);
+    if (btnFontNormal) btnFontNormal.classList.toggle("text-primary", idx === 1);
+    if (btnFontBigger) btnFontBigger.classList.toggle("text-primary", idx === 2);
+  }
+
+  if (btnFontSmaller) btnFontSmaller.addEventListener("click", () => setFontSize(0));
+  if (btnFontNormal) btnFontNormal.addEventListener("click", () => setFontSize(1));
+  if (btnFontBigger) btnFontBigger.addEventListener("click", () => setFontSize(2));
+
+  // Vocab Highlight Toggle
+  const btnToggleVocab = document.getElementById("btnToggleVocabHighlight");
+  let vocabHighlighted = false;
+  const readingVocabList = {{ reading_vocab|tojson|safe }};
+
+  if (btnToggleVocab && readingVocabList && readingVocabList.length > 0) {
+    btnToggleVocab.addEventListener("click", function() {
+      vocabHighlighted = !vocabHighlighted;
+      this.classList.toggle("bg-teal-subtle", vocabHighlighted);
+
+      if (!readerBody) return;
+
+      if (vocabHighlighted) {
+        let html = readerBody.innerHTML;
+        readingVocabList.forEach(v => {
+          const regex = new RegExp(`\\b(${v.word})\\b`, "gi");
+          html = html.replace(regex, `<mark class="reading-highlight-word px-1 py-0.5 rounded" style="background-color: rgba(13, 148, 136, 0.18); color: #0f766e; cursor: pointer; font-weight: 600;" title="${v.word} (${v.pos}): ${v.vi}">$1</mark>`);
+        });
+        readerBody.innerHTML = html;
+      } else {
+        readerBody.querySelectorAll(".reading-highlight-word").forEach(el => {
+          el.replaceWith(document.createTextNode(el.textContent));
+        });
+      }
+    });
+  }
+
+  // Web Speech API Text-to-Speech (Read Aloud)
+  const btnReadAloud = document.getElementById("btnReadAloud");
+  const readAloudIcon = document.getElementById("readAloudIcon");
+  const readAloudText = document.getElementById("readAloudText");
+  let isReadingAloud = false;
+
+  if (btnReadAloud && readerBody) {
+    btnReadAloud.addEventListener("click", function() {
+      if (!('speechSynthesis' in window)) {
+        alert("Trình duyệt không hỗ trợ phát âm tự động (Web Speech API).");
+        return;
+      }
+
+      if (isReadingAloud) {
+        window.speechSynthesis.cancel();
+        isReadingAloud = false;
+        if (readAloudIcon) readAloudIcon.className = "ph-bold ph-speaker-high";
+        if (readAloudText) readAloudText.innerText = "Nghe đọc bài văn";
+        this.classList.remove("btn-danger");
+        this.classList.add("btn-primary");
+      } else {
+        window.speechSynthesis.cancel();
+        const textToRead = readerBody.innerText || "";
+        const utterance = new SpeechSynthesisUtterance(textToRead);
+        utterance.lang = "en-US";
+        utterance.rate = 0.9;
+
+        utterance.onend = function() {
+          isReadingAloud = false;
+          if (readAloudIcon) readAloudIcon.className = "ph-bold ph-speaker-high";
+          if (readAloudText) readAloudText.innerText = "Nghe đọc bài văn";
+          btnReadAloud.classList.remove("btn-danger");
+          btnReadAloud.classList.add("btn-primary");
+        };
+
+        utterance.onerror = function() {
+          isReadingAloud = false;
+          if (readAloudIcon) readAloudIcon.className = "ph-bold ph-speaker-high";
+          if (readAloudText) readAloudText.innerText = "Nghe đọc bài văn";
+          btnReadAloud.classList.remove("btn-danger");
+          btnReadAloud.classList.add("btn-primary");
+        };
+
+        window.speechSynthesis.speak(utterance);
+        isReadingAloud = true;
+        if (readAloudIcon) readAloudIcon.className = "ph-bold ph-stop";
+        if (readAloudText) readAloudText.innerText = "Dừng đọc";
+        this.classList.remove("btn-primary");
+        this.classList.add("btn-danger");
+      }
+    });
+  }
+
+  // Speak single word in vocabulary tab
+  document.querySelectorAll(".btn-speak-word").forEach(btn => {
+    btn.addEventListener("click", function(e) {
+      e.stopPropagation();
+      const word = this.dataset.word;
+      if (!word || !('speechSynthesis' in window)) return;
+      window.speechSynthesis.cancel();
+      const u = new SpeechSynthesisUtterance(word);
+      u.lang = "en-US";
+      u.rate = 0.85;
+      window.speechSynthesis.speak(u);
+    });
+  });
+
+  // Comprehension Quiz Interactivity
+  document.querySelectorAll(".reading-quiz-item").forEach(item => {
+    const correctIdx = parseInt(item.dataset.answer, 10);
+    const feedbackBox = item.querySelector(".quiz-feedback-box");
+    const explanation = feedbackBox ? feedbackBox.dataset.explanation : "";
+    const options = item.querySelectorAll(".reading-quiz-opt");
+
+    options.forEach(opt => {
+      opt.addEventListener("click", function() {
+        const selectedIdx = parseInt(this.dataset.optIdx, 10);
+        const isCorrect = (selectedIdx === correctIdx);
+
+        // Reset all options in this question
+        options.forEach(o => {
+          o.classList.remove("bg-success-subtle", "text-success", "border-success", "bg-danger-subtle", "text-danger", "border-danger", "fw-bold");
+          const ind = o.querySelector(".opt-indicator");
+          if (ind) ind.className = "ph-bold ph-circle text-muted opt-indicator";
+        });
+
+        // Highlight selected
+        const indicator = this.querySelector(".opt-indicator");
+        if (isCorrect) {
+          this.classList.add("bg-success-subtle", "text-success", "border-success", "fw-bold");
+          if (indicator) indicator.className = "ph-bold ph-check-circle text-success opt-indicator";
+          if (feedbackBox) {
+            feedbackBox.className = "quiz-feedback-box p-2.5 rounded-3 small bg-success-subtle text-success border border-success-subtle d-block";
+            feedbackBox.innerHTML = `<strong>✓ Chính xác!</strong> ${explanation || ''}`;
+          }
+        } else {
+          this.classList.add("bg-danger-subtle", "text-danger", "border-danger", "fw-bold");
+          if (indicator) indicator.className = "ph-bold ph-x-circle text-danger opt-indicator";
+          // Also highlight correct answer
+          if (options[correctIdx]) {
+            options[correctIdx].classList.add("bg-success-subtle", "text-success", "border-success");
+            const corrInd = options[correctIdx].querySelector(".opt-indicator");
+            if (corrInd) corrInd.className = "ph-bold ph-check-circle text-success opt-indicator";
+          }
+          if (feedbackBox) {
+            feedbackBox.className = "quiz-feedback-box p-2.5 rounded-3 small bg-danger-subtle text-danger border border-danger-subtle d-block";
+            feedbackBox.innerHTML = `<strong>Chưa đúng!</strong> ${explanation || ''}`;
+          }
+        }
+      });
+    });
+  });
+
+  // Reading notes auto save
+  const readingNoteInput = document.getElementById("readingNoteInput");
+  let readingNoteTimer = null;
+  if (readingNoteInput) {
+    readingNoteInput.addEventListener("input", function() {
+      clearTimeout(readingNoteTimer);
+      readingNoteTimer = setTimeout(() => {
+        const formData = new FormData();
+        formData.append("note", readingNoteInput.value);
+        formData.append("csrf_token", "{{ csrf_token() }}");
+        fetch(`/lessons/{{ lesson.id }}/notes`, {
+          method: "POST",
+          body: formData
+        }).catch(err => console.error(err));
+      }, 1500);
     });
   }
   {% endif %}
