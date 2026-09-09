@@ -131,14 +131,14 @@ def lessons():
             "icon": "ph-bold ph-chats-circle",
             "gradient": "linear-gradient(135deg, #9a3412 0%, #c2410c 50%, #ea580c 100%)",
             "card_class": "hero-speaking",
-            "stat_label_3": "Số bài đang học",
-            "stat_val_3": f"{scoped_in_progress} bài",
-            "stat_icon_3": "ph-bold ph-hourglass-high",
-            "stat_color_3": "text-warning",
-            "stat_label_4": "Tỷ lệ hoàn thành",
-            "stat_val_4": f"{scoped_completion_rate}%",
-            "stat_icon_4": "ph-bold ph-chart-donut",
-            "stat_color_4": "text-info"
+            "stat_label_3": "Tỷ lệ hoàn thành",
+            "stat_val_3": f"{scoped_completion_rate}%",
+            "stat_icon_3": "ph-bold ph-chart-line-up",
+            "stat_color_3": "text-info",
+            "stat_label_4": "Thời lượng luyện nói",
+            "stat_val_4": f"{scoped_completed * 5} phút",
+            "stat_icon_4": "ph-bold ph-microphone",
+            "stat_color_4": "text-warning"
         },
         "Writing": {
             "title": "Luyện Viết",
@@ -591,6 +591,98 @@ def _render_lesson_page(lesson):
         writing_target_max = lesson.target_max
         writing_templates = writing_info.get("templates", [])
 
+    # Speaking specific properties
+    speaking_context = ""
+    speaking_sentences = []
+    speaking_tips = []
+
+    if lesson.skill == "Speaking":
+        speaking_context = lesson.content.strip() if lesson.content else ""
+
+        SPEAKING_DATA = {
+            23: {
+                "genre": "Giới thiệu bản thân (Self-Introduction)",
+                "sentences": [
+                    {"idx": 1, "text": "Hi everyone, my name is Alex.", "ipa": "/haɪ ˈev.ri.wʌn maɪ neɪm ɪz ˈæl.ɪks/", "vi": "Xin chào mọi người, mình tên là Alex."},
+                    {"idx": 2, "text": "I am from Da Nang and I work as a web developer.", "ipa": "/aɪ æm frɑːm đà nẵng ænd aɪ wɜːrk æz ə web dɪˈvel.ə.pɚ/", "vi": "Mình đến từ Đà Nẵng và mình làm lập trình viên web."},
+                    {"idx": 3, "text": "In my free time, I love playing badminton.", "ipa": "/ɪn maɪ friː taɪm aɪ lʌv ˈpleɪ.ɪŋ ˈbæd.mɪn.tən/", "vi": "Vào thời gian rảnh, mình rất thích chơi cầu lông."},
+                    {"idx": 4, "text": "I am excited to learn English with all of you.", "ipa": "/aɪ æm ɪkˈsaɪ.tɪd tuː lɜːrn ˈɪŋ.ɡlɪʃ wɪð ɔːl əv juː/", "vi": "Mình rất hào hứng được học tiếng Anh cùng các bạn."}
+                ],
+                "tips": [
+                    "Cười nhẹ và giữ ánh mắt tự tin (Eye contact) khi bắt đầu câu chào.",
+                    "Lên giọng nhẹ ở cuối tên của bạn và hạ giọng ở cuối câu khẳng định.",
+                    "Chú ý phát âm rõ âm cuối: /ks/ trong 'Alex', /mz/ trong 'everyone's'."
+                ]
+            },
+            24: {
+                "genre": "Hỏi & Chỉ đường (Directions)",
+                "sentences": [
+                    {"idx": 1, "text": "Excuse me, could you tell me where the nearest station is?", "ipa": "/ɪkˈskjuːz miː kʊd juː tel miː wer ðə ˈnɪr.ɪst ˈsteɪ.ʃən ɪz/", "vi": "Xin lỗi, bạn có thể chỉ giúp tôi nhà ga gần nhất ở đâu không?"},
+                    {"idx": 2, "text": "Go straight for two blocks, then turn left at the traffic light.", "ipa": "/ɡoʊ streɪt fɔːr tuː blɑːks ðen tɜːrn left æt ðə ˈtræf.ɪk laɪt/", "vi": "Hãy đi thẳng hai dãy nhà, sau đó rẽ trái ở cột đèn giao thông."},
+                    {"idx": 3, "text": "It is right opposite the supermarket on your right.", "ipa": "/ɪt ɪz raɪt ˈɑː.pə.zɪt ðə ˈsuː.pɚˌmɑːr.kɪt ɑːn jɔːr raɪt/", "vi": "Nó nằm ngay đối diện siêu thị ở phía bên tay phải của bạn."},
+                    {"idx": 4, "text": "Thank you so much for your help! Have a great day.", "ipa": "/θæŋk juː soʊ mʌtʃ fɔːr jɔːr help hæv ə ɡreɪt deɪ/", "vi": "Cảm ơn bạn rất nhiều vì sự giúp đỡ! Chúc bạn một ngày tốt lành."}
+                ],
+                "tips": [
+                    "Dùng ngữ điệu lịch sự (Polite tone) khi mở đầu bằng 'Excuse me'.",
+                    "Nhấn mạnh các động từ chỉ phương hướng: 'Go straight', 'Turn left', 'Opposite'."
+                ]
+            },
+            25: {
+                "genre": "Bày tỏ quan điểm (Opinions)",
+                "sentences": [
+                    {"idx": 1, "text": "In my view, remote working offers better work-life balance.", "ipa": "/ɪn maɪ vjuː rɪˈmoʊt ˈwɜːr.kɪŋ ˈɑː.fɚz ˈbet̬.ɚ wɜːrk laɪf ˈbæl.əns/", "vi": "Theo quan điểm của tôi, làm việc từ xa đem lại sự cân bằng công việc - cuộc sống tốt hơn."},
+                    {"idx": 2, "text": "For instance, employees save two hours of commuting daily.", "ipa": "/fɔːr ˈɪn.stəns ɪmˈplɔɪ.iːz seɪv tuː ˈaʊ.ɚz əv kəˈmjuː.tɪŋ ˈdeɪ.li/", "vi": "Chẳng hạn, nhân viên tiết kiệm được hai tiếng đi lại mỗi ngày."},
+                    {"idx": 3, "text": "However, maintaining team connection requires deliberate effort.", "ipa": "/haʊˈev.ɚ meɪnˈteɪ.nɪŋ tiːm kəˈnek.ʃən rɪˈkwaɪ.ɚz dɪˈlɪb.ɚ.ət ˈef.ɚt/", "vi": "Tuy nhiên, việc duy trì gắn kết nhóm đòi hỏi nỗ lực có chủ đích."},
+                    {"idx": 4, "text": "Overall, a hybrid model seems to be the most ideal solution.", "ipa": "/ˌoʊ.vɚˈɔːl ə ˈhaɪ.brɪd ˈmɑː.dəl siːmz tuː biː ðə moʊst aɪˈdiː.əl səˈluː.ʃən/", "vi": "Nhìn chung, mô hình làm việc kết hợp dường như là giải pháp lý tưởng nhất."}
+                ],
+                "tips": [
+                    "Tạm dừng (Pause) 0.5s sau các cụm liên từ như 'In my view', 'For instance', 'However'.",
+                    "Nhấn mạnh từ khóa trọng tâm: 'better balance', 'ideal solution'."
+                ]
+            },
+            26: {
+                "genre": "Phỏng vấn xin việc (Job Interview)",
+                "sentences": [
+                    {"idx": 1, "text": "I have over four years of experience leading product teams.", "ipa": "/aɪ hæv ˈoʊ.vɚ fɔːr jɪrz əv ɪkˈspɪr.i.əns ˈliː.dɪŋ ˈprɑː.dʌkt tiːmz/", "vi": "Tôi có hơn bốn năm kinh nghiệm dẫn dắt các đội ngũ sản phẩm."},
+                    {"idx": 2, "text": "One of my greatest strengths is solving complex technical bottlenecks.", "ipa": "/wʌn əv maɪ ˈɡreɪ.tɪst streŋθs ɪz ˈsɑːl.vɪŋ kəmˈpleks ˈtek.nɪ.kəl ˈbɑː.t̬əl.neks/", "vi": "Một trong những thế mạnh lớn nhất của tôi là giải quyết các nút thắt kỹ thuật phức tạp."},
+                    {"idx": 3, "text": "In my previous project, we increased user retention by twenty-five percent.", "ipa": "/ɪn maɪ ˈpriː.vi.əs ˈprɑː.dʒekt wiː ɪnˈkriːst ˈjuː.zɚ rɪˈten.ʃən baɪ ˈtwen.ti faɪv pɚˈsent/", "vi": "Trong dự án trước, chúng tôi đã tăng tỷ lệ giữ chân người dùng thêm 25%."},
+                    {"idx": 4, "text": "I am passionate about contributing to your company's mission.", "ipa": "/aɪ æm ˈpæʃ.ən.ət əˈbaʊt kənˈtrɪb.juː.tɪŋ tuː jɔːr ˈkʌm.pə.niz ˈmɪʃ.ən/", "vi": "Tôi rất nhiệt huyết được đóng góp vào sứ mệnh của công ty bạn."}
+                ],
+                "tips": [
+                    "Sử dụng kỹ thuật STAR: Trình bày súc tích, tự tin, không ngập ngừng.",
+                    "Phát âm chuẩn xác các số liệu phần trăm: 'twenty-five percent'."
+                ]
+            },
+            27: {
+                "genre": "Đàm phán thương mại (Negotiation)",
+                "sentences": [
+                    {"idx": 1, "text": "While we appreciate your proposal, we require greater payment flexibility.", "ipa": "/waɪl wiː əˈpriː.ʃi.eɪt jɔːr prəˈpoʊ.zəl wiː rɪˈkwaɪ.ɚ ˈɡreɪ.t̬ɚ ˈpeɪ.mənt ˌflek.səˈbɪl.ə.t̬i/", "vi": "Dù đánh giá cao đề xuất của quý bên, chúng tôi cần sự linh hoạt hơn về tiến độ thanh toán."},
+                    {"idx": 2, "text": "Could you consider adjusting the delivery milestones to Q3?", "ipa": "/kʊd juː kənˈsɪd.ɚ əˈdʒʌs.tɪŋ ðə dɪˈlɪv.ɚ.i ˈmaɪl.stoʊnz tuː kjuː θriː/", "vi": "Quý bên có thể cân nhắc điều chỉnh các mốc bàn giao sang quý 3 được không?"},
+                    {"idx": 3, "text": "If you can meet us on the pricing, we are ready to commit today.", "ipa": "/ɪf juː kæn miːt ʌs ɑːn ðə ˈpraɪ.sɪŋ wiː ɑːr ˈred.i tuː kəˈmɪt təˈdeɪ/", "vi": "Nếu quý bên có thể đáp ứng về mức giá, chúng tôi sẵn sàng ký cam kết ngay hôm nay."}
+                ],
+                "tips": [
+                    "Sử dụng ngôn ngữ giảm nhẹ (Hedging language) để giữ hòa khí đàm phán.",
+                    "Giữ âm điệu vững chãi, nhả chữ dứt khoát ở các cam kết quan trọng."
+                ]
+            }
+        }
+
+        speaking_info = SPEAKING_DATA.get(lesson.id, {
+            "genre": "Giao tiếp thực hành",
+            "sentences": [
+                {"idx": 1, "text": lesson.title, "ipa": "/prəˌnʌn.siˈeɪ.ʃən ˈpræk.tɪs/", "vi": f"Luyện tập phát âm chủ đề: {lesson.title}."},
+                {"idx": 2, "text": (lesson.examples or "Practice speaking clearly and naturally every day.").splitlines()[0], "ipa": "/ˈpræk.tɪs ˈspiː.kɪŋ ˈklɪr.li ænd ˈnætʃ.ɚ.əl.i/", "vi": "Luyện nói rõ ràng và tự nhiên mỗi ngày."}
+            ],
+            "tips": [
+                "Giữ hơi thở đều đặn và thả lỏng cơ miệng khi phát âm.",
+                "Nghe mẫu nhiều lần trước khi bấm thu âm để bắt chước ngữ điệu chuẩn."
+            ]
+        })
+
+        lesson.speaking_genre = speaking_info.get("genre", "Luyện nói")
+        speaking_sentences = speaking_info.get("sentences", [])
+        speaking_tips = speaking_info.get("tips", [])
+
     completed = LessonProgress.query.filter_by(user_id=current_user.id, lesson_id=lesson.id).first()
     note_record = LessonNote.query.filter_by(user_id=current_user.id, lesson_id=lesson.id).first()
     bookmarks = [b.section_index for b in LessonBookmark.query.filter_by(user_id=current_user.id, lesson_id=lesson.id).all()]
@@ -610,6 +702,9 @@ def _render_lesson_page(lesson):
         writing_templates=writing_templates,
         writing_target_min=writing_target_min,
         writing_target_max=writing_target_max,
+        speaking_context=speaking_context,
+        speaking_sentences=speaking_sentences,
+        speaking_tips=speaking_tips,
         completed=completed,
         user_note=note_record.content if note_record else "",
         bookmarks=bookmarks,

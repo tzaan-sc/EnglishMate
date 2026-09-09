@@ -972,6 +972,335 @@
     </div>
   </div>
 
+{% elif lesson.skill == 'Speaking' %}
+  <!-- SPEAKING STUDIO & INTERACTIVE VOICE RECORDER CARD -->
+  <div class="card-modern p-4 p-md-4 mb-4">
+    <!-- Badges & Status -->
+    <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-2.5">
+      <div class="d-flex align-items-center gap-2">
+        <span class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill px-3 py-1 fw-bold" style="font-size: 0.74rem;">
+          {{ lesson.level }}
+        </span>
+        <span class="badge rounded-pill px-3 py-1 fw-semibold d-inline-flex align-items-center gap-1.5" style="font-size: 0.74rem; background-color: rgba(234, 88, 12, 0.1); color: #ea580c; border: 1px solid rgba(234, 88, 12, 0.2);">
+          <i class="ph-bold ph-chats-circle"></i>
+          <span>Luyện Nói</span>
+        </span>
+        <span class="badge bg-light text-secondary border rounded-pill px-2.5 py-1 fw-semibold" style="font-size: 0.74rem;">
+          <i class="ph-bold ph-waveform me-1" style="color: #ea580c;"></i>{{ lesson.speaking_genre or 'Giao tiếp thực hành' }}
+        </span>
+        <span class="badge bg-light text-secondary border rounded-pill px-2.5 py-1 fw-semibold" style="font-size: 0.74rem;">
+          <i class="ph-bold ph-microphone me-1" style="color: #ea580c;"></i>{{ speaking_sentences|length }} câu mẫu
+        </span>
+        <small class="text-muted d-inline-flex align-items-center gap-1 ms-1" style="font-size: 0.74rem;">
+          <i class="ph-bold ph-eye"></i> {{ lesson.view_count or 1 }} lượt học
+        </small>
+      </div>
+
+      {% if completed %}
+      <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-3 py-1 fw-bold d-inline-flex align-items-center gap-1" style="font-size: 0.74rem;">
+        <i class="ph-fill ph-check-circle"></i> ✓ Đã hoàn thành
+      </span>
+      {% else %}
+      <span class="badge rounded-pill px-3 py-1 fw-semibold" style="font-size: 0.74rem; background-color: rgba(234, 88, 12, 0.12); color: #ea580c;">
+        Đang luyện nói
+      </span>
+      {% endif %}
+    </div>
+
+    <!-- Title & Description -->
+    <h2 class="fw-bold text-dark mb-2" style="font-size: 1.55rem; letter-spacing: -0.02em;">
+      {{ lesson.title }}
+    </h2>
+    <p class="text-secondary mb-0" style="font-size: 0.92rem; line-height: 1.6;">
+      {{ lesson.short_description or lesson.description or 'Luyện phản xạ phát âm, ngữ điệu và độ lưu loát qua từng câu giao tiếp thực tế với công nghệ chấm điểm AI.' }}
+    </p>
+  </div>
+
+  <!-- 2-COLUMN SPEAKING STUDIO & ASSISTANT -->
+  <div class="row g-4 mb-4">
+    <!-- LEFT COLUMN: VOICE RECORDING & PRACTICE CANVAS (60%) -->
+    <div class="col-12 col-lg-7 col-xl-7">
+      <div class="card-modern p-4 p-md-4 h-100 bg-white d-flex flex-column justify-content-between" style="border: 1px solid var(--border-light); border-radius: 16px;">
+        <div>
+          <!-- Studio Header & Speed Controls -->
+          <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 pb-3 mb-3 border-bottom border-light">
+            <div class="d-flex align-items-center gap-2">
+              <span class="badge bg-primary text-white rounded-pill px-2.5 py-1 fw-bold" style="font-size: 0.74rem;">
+                Câu <span id="currentSentenceNum">1</span> / <span id="totalSentencesNum">{{ speaking_sentences|length }}</span>
+              </span>
+              <span class="text-muted small" style="font-size: 0.8rem;" id="sentenceStatusLabel">
+                Sẵn sàng luyện phát âm
+              </span>
+            </div>
+
+            <!-- Audio Reference Speed -->
+            <div class="d-flex align-items-center gap-1.5">
+              <span class="text-muted small me-1" style="font-size: 0.74rem;">Tốc độ:</span>
+              <div class="btn-group btn-group-sm" role="group" aria-label="Speech Speed">
+                <button type="button" class="btn btn-light border btn-speed-select py-0.5 px-2" data-speed="0.75" style="font-size: 0.74rem;">0.75x</button>
+                <button type="button" class="btn btn-primary border btn-speed-select py-0.5 px-2 active" data-speed="1.0" style="font-size: 0.74rem;">1.0x</button>
+                <button type="button" class="btn btn-light border btn-speed-select py-0.5 px-2" data-speed="1.25" style="font-size: 0.74rem;">1.25x</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Sentence Completion Progress Bar -->
+          <div class="progress mb-4" style="height: 6px; border-radius: 4px; background-color: #f1f5f9;">
+            <div id="speakingProgressFill" class="progress-bar" role="progressbar" style="width: 0%; background-color: #ea580c;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+          </div>
+
+          <!-- Main Sentence Card -->
+          <div class="p-4 rounded-4 mb-4 text-center position-relative" style="background: linear-gradient(135deg, rgba(234, 88, 12, 0.03) 0%, rgba(249, 115, 22, 0.07) 100%); border: 1.5px dashed rgba(234, 88, 12, 0.3);">
+            <div class="text-muted small mb-2 text-uppercase tracking-wider fw-bold" style="font-size: 0.7rem; color: #ea580c !important;">
+              <i class="ph-bold ph-sparkle me-1"></i>Câu cần luyện nói
+            </div>
+            
+            <h3 id="targetSentenceText" class="fw-bold text-dark mb-2.5" style="font-size: 1.35rem; line-height: 1.55; letter-spacing: -0.01em;">
+              {% if speaking_sentences|length > 0 %}{{ speaking_sentences[0].text }}{% else %}Practice speaking clearly and naturally every day.{% endif %}
+            </h3>
+
+            <div id="targetSentenceIPA" class="font-monospace text-muted small mb-2" style="font-size: 0.88rem; color: #c2410c !important;">
+              {% if speaking_sentences|length > 0 %}{{ speaking_sentences[0].ipa }}{% else %}/ˈpræk.tɪs ˈspiː.kɪŋ ˈklɪr.li ænd ˈnætʃ.ɚ.əl.i/{% endif %}
+            </div>
+
+            <p id="targetSentenceVI" class="text-secondary small mb-0 fst-italic" style="font-size: 0.86rem;">
+              {% if speaking_sentences|length > 0 %}{{ speaking_sentences[0].vi }}{% else %}Luyện nói rõ ràng và tự nhiên mỗi ngày.{% endif %}
+            </p>
+          </div>
+
+          <!-- Audio Waveform / Pulsing when recording -->
+          <div id="recordingWaveAnimation" class="d-none text-center py-2 mb-3">
+            <span class="badge rounded-pill px-3.5 py-1.5 fw-bold text-white shadow-sm d-inline-flex align-items-center gap-2" style="background-color: #ea580c;">
+              <span class="spinner-grow spinner-grow-sm" role="status" aria-hidden="true"></span>
+              <span>Đang lắng nghe... Hãy đọc to câu tiếng Anh</span>
+            </span>
+          </div>
+
+          <!-- Voice Interaction Action Bar -->
+          <div class="d-flex flex-wrap align-items-center justify-content-center gap-2.5 mb-3">
+            <!-- Play Reference Audio -->
+            <button id="btnPlayRefSpeech" type="button" class="btn btn-outline-primary rounded-pill px-3.5 py-2 fw-semibold d-inline-flex align-items-center gap-2" title="Nghe người bản xứ phát âm mẫu">
+              <i class="ph-bold ph-speaker-high fs-5"></i>
+              <span>Nghe mẫu</span>
+            </button>
+
+            <!-- Big Record Button -->
+            <button id="btnRecordSpeech" type="button" class="btn rounded-pill px-4 py-2.5 fw-bold shadow-sm d-inline-flex align-items-center gap-2 text-white transition-all" style="background-color: #ea580c; border: none;">
+              <i class="ph-bold ph-microphone fs-5" id="micButtonIcon"></i>
+              <span id="micButtonText">Bấm để thu âm</span>
+            </button>
+
+            <!-- Reset / Retry Button -->
+            <button id="btnResetSpeaking" type="button" class="btn btn-light border rounded-pill px-3 py-2 fw-semibold text-secondary d-inline-flex align-items-center gap-1.5" title="Thử lại câu này">
+              <i class="ph-bold ph-arrow-counter-clockwise"></i>
+              <span>Thử lại</span>
+            </button>
+          </div>
+
+          <!-- Live Recognition & Evaluation Feedback Box -->
+          <div id="speechFeedbackBox" class="p-3.5 rounded-4 border bg-light-subtle mt-3.5 d-none">
+            <div class="d-flex align-items-center justify-content-between mb-2">
+              <span class="small fw-bold text-dark d-inline-flex align-items-center gap-1.5">
+                <i class="ph-bold ph-waveform" style="color: #ea580c;"></i>
+                <span>Kết quả nhận diện giọng nói:</span>
+              </span>
+              <span id="matchScoreBadge" class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-2.5 py-0.5 fw-bold" style="font-size: 0.74rem;">
+                100% Chính xác
+              </span>
+            </div>
+
+            <div class="p-2.5 rounded-3 bg-white border small mb-2" id="recognizedTranscriptBox" style="font-size: 0.88rem; line-height: 1.6;">
+              <span class="text-muted fst-italic">Chưa có bản ghi âm...</span>
+            </div>
+
+            <div id="speechAdviceText" class="text-secondary small" style="font-size: 0.8rem; line-height: 1.5;">
+              Nhận xét đánh giá phát âm sẽ hiển thị tại đây sau khi bạn thu âm.
+            </div>
+          </div>
+        </div>
+
+        <!-- Stepper Navigation Controls (Prev / Next) -->
+        <div class="pt-3 border-top border-light d-flex align-items-center justify-content-between mt-4">
+          <button id="btnPrevSentence" type="button" class="btn btn-light border rounded-pill px-3.5 py-1.5 fw-semibold text-secondary d-inline-flex align-items-center gap-1.5 shadow-2xs" disabled>
+            <i class="ph-bold ph-arrow-left"></i>
+            <span>Câu trước</span>
+          </button>
+
+          <span class="text-muted small" style="font-size: 0.78rem;">
+            Tự tin phát âm rõ từng từ & nối âm
+          </span>
+
+          <button id="btnNextSentence" type="button" class="btn btn-primary rounded-pill px-4 py-1.5 fw-semibold d-inline-flex align-items-center gap-1.5 shadow-2xs">
+            <span>Câu tiếp theo</span>
+            <i class="ph-bold ph-arrow-right"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT COLUMN: SENTENCES PLAYLIST, GUIDANCE & NOTES (40%) -->
+    <div class="col-12 col-lg-5 col-xl-5">
+      <div class="card-modern p-4 p-md-4 h-100 bg-white d-flex flex-column justify-content-between" style="border: 1px solid var(--border-light); border-radius: 16px;">
+        <div>
+          <!-- Nav Tabs -->
+          <ul class="nav nav-pills nav-fill bg-light p-1 rounded-3 mb-3" id="speakingNavTabs" role="tablist">
+            <li class="nav-item" role="presentation">
+              <button class="nav-link active py-1.5 px-2 fw-semibold small" id="tab-playlist-tab" data-bs-toggle="pill" data-bs-target="#tab-playlist" type="button" role="tab" style="font-size: 0.8rem;">
+                <i class="ph-bold ph-list-numbers me-1"></i>Danh sách câu
+              </button>
+            </li>
+            <li class="nav-item" role="presentation">
+              <button class="nav-link py-1.5 px-2 fw-semibold small" id="tab-tips-tab" data-bs-toggle="pill" data-bs-target="#tab-tips" type="button" role="tab" style="font-size: 0.8rem;">
+                <i class="ph-bold ph-lightbulb me-1"></i>Hướng dẫn & Tips
+              </button>
+            </li>
+            <li class="nav-item" role="presentation">
+              <button class="nav-link py-1.5 px-2 fw-semibold small" id="tab-notes-tab" data-bs-toggle="pill" data-bs-target="#tab-notes" type="button" role="tab" style="font-size: 0.8rem;">
+                <i class="ph-bold ph-notepad me-1"></i>Ghi chú
+              </button>
+            </li>
+          </ul>
+
+          <!-- Tab Content -->
+          <div class="tab-content" id="speakingTabContent">
+            <!-- TAB 1: SENTENCES PLAYLIST -->
+            <div class="tab-pane fade show active" id="tab-playlist" role="tabpanel">
+              <div class="d-flex align-items-center justify-content-between mb-2">
+                <span class="small fw-bold text-dark">Các câu cần chinh phục:</span>
+                <span class="text-muted small" style="font-size: 0.74rem;">Bấm vào câu để chuyển nhanh</span>
+              </div>
+              <div class="list-group list-group-flush border rounded-3 overflow-hidden mb-3" style="max-height: 380px; overflow-y: auto;">
+                {% for sent in speaking_sentences %}
+                <button type="button" class="list-group-item list-group-item-action p-2.5 d-flex align-items-start gap-2.5 sentence-list-item {% if loop.first %}active-sentence{% endif %}" data-idx="{{ loop.index0 }}" id="sentence-item-{{ loop.index0 }}">
+                  <span class="badge rounded-circle p-0 d-flex align-items-center justify-content-center mt-0.5 sentence-idx-badge {% if loop.first %}bg-primary text-white{% else %}bg-light text-secondary border{% endif %}" style="width: 22px; height: 22px; font-size: 0.7rem; flex-shrink: 0;">
+                    {{ loop.index }}
+                  </span>
+                  <div class="flex-grow-1 text-start">
+                    <div class="fw-semibold text-dark text-truncate small sentence-preview-text" style="max-width: 230px; font-size: 0.82rem;">
+                      {{ sent.text }}
+                    </div>
+                    <div class="text-muted small text-truncate" style="max-width: 230px; font-size: 0.74rem;">
+                      {{ sent.vi }}
+                    </div>
+                  </div>
+                  <span class="sentence-status-icon ms-auto text-muted" style="font-size: 0.85rem;" id="sent-check-{{ loop.index0 }}">
+                    <i class="ph-bold ph-circle"></i>
+                  </span>
+                </button>
+                {% endfor %}
+              </div>
+            </div>
+
+            <!-- TAB 2: GUIDANCE & EXPERT TIPS -->
+            <div class="tab-pane fade" id="tab-tips" role="tabpanel">
+              {% if speaking_context %}
+              <div class="p-3 rounded-3 mb-3 bg-light border-start border-3" style="border-left-color: #ea580c !important;">
+                <div class="fw-bold text-dark small mb-1 d-flex align-items-center gap-1.5">
+                  <i class="ph-bold ph-chat-centered-text" style="color: #ea580c;"></i>
+                  <span>Ngữ cảnh tình huống:</span>
+                </div>
+                <div class="text-secondary small" style="line-height: 1.5; font-size: 0.82rem;">
+                  {{ speaking_context }}
+                </div>
+              </div>
+              {% endif %}
+
+              <div class="p-3 rounded-3 mb-3 bg-light-subtle border">
+                <div class="fw-bold text-dark small mb-2 d-flex align-items-center gap-1.5">
+                  <i class="ph-bold ph-lightbulb text-warning"></i>
+                  <span>Lưu ý phát âm & Ngữ điệu:</span>
+                </div>
+                <ul class="list-unstyled mb-0 d-flex flex-column gap-2 small text-secondary" style="font-size: 0.82rem;">
+                  {% for tip in speaking_tips %}
+                  <li class="d-flex align-items-start gap-2">
+                    <i class="ph-bold ph-check text-success mt-0.5" style="flex-shrink: 0;"></i>
+                    <span>{{ tip }}</span>
+                  </li>
+                  {% else %}
+                  <li class="d-flex align-items-start gap-2">
+                    <i class="ph-bold ph-check text-success mt-0.5"></i>
+                    <span>Giữ hơi thở đều đặn và tự tin khi phát âm từng âm tiết.</span>
+                  </li>
+                  <li class="d-flex align-items-start gap-2">
+                    <i class="ph-bold ph-check text-success mt-0.5"></i>
+                    <span>Nhấn mạnh vào từ khóa trọng tâm (Keywords) và hạ giọng cuối câu khẳng định.</span>
+                  </li>
+                  {% endfor %}
+                </ul>
+              </div>
+
+              <!-- Shadowing Technique Card -->
+              <div class="p-3 rounded-3 bg-white border border-dashed text-center">
+                <div class="small fw-bold text-dark mb-1 d-flex align-items-center justify-content-center gap-1.5">
+                  <i class="ph-bold ph-headphones" style="color: #ea580c;"></i>
+                  <span>Phương pháp Shadowing 3 bước:</span>
+                </div>
+                <div class="text-muted small" style="font-size: 0.78rem; line-height: 1.5;">
+                  <strong>1. Nghe mẫu</strong> để bắt nhịp & âm điệu ➔ <strong>2. Nhại lại</strong> theo tốc độ tự nhiên ➔ <strong>3. Thu âm</strong> để AI chấm điểm đối chiếu.
+                </div>
+              </div>
+            </div>
+
+            <!-- TAB 3: NOTES & COMPLETION -->
+            <div class="tab-pane fade" id="tab-notes" role="tabpanel">
+              <div class="mb-3">
+                <label for="speakingNoteInput" class="form-label small fw-bold text-dark d-flex align-items-center justify-content-between">
+                  <span>Ghi chú từ vựng & âm cần nhớ:</span>
+                  <span class="text-muted fw-normal" style="font-size: 0.72rem;">Tự động lưu</span>
+                </label>
+                <textarea id="speakingNoteInput" class="form-control form-control-sm rounded-3" rows="4" placeholder="Ghi lại các âm khó, từ nối âm cần chú ý..." style="font-size: 0.82rem;">{{ user_note }}</textarea>
+              </div>
+
+              <div class="p-3 rounded-3 bg-light border text-center">
+                {% if completed %}
+                <div class="py-1">
+                  <div class="rounded-circle d-inline-flex align-items-center justify-content-center mb-2 shadow-2xs" style="width: 44px; height: 44px; background-color: var(--success); color: white;">
+                    <i class="ph-bold ph-check fs-4"></i>
+                  </div>
+                  <h6 class="fw-bold text-success mb-1">Đã hoàn thành bài nói!</h6>
+                  <p class="text-secondary small mb-2.5" style="font-size: 0.8rem;">
+                    Bạn đã hoàn thành các câu luyện phát âm và nhận +20 XP kinh nghiệm.
+                  </p>
+                  <a class="btn btn-primary btn-sm rounded-pill px-3.5 py-1.5 fw-bold shadow-xs d-inline-flex align-items-center gap-1.5" href="/speaking">
+                    <i class="ph-bold ph-arrow-left"></i>
+                    <span>Quay lại Luyện Nói</span>
+                  </a>
+                </div>
+                {% else %}
+                <div class="py-1">
+                  <div class="rounded-circle d-inline-flex align-items-center justify-content-center mb-2 shadow-2xs" style="width: 44px; height: 44px; background-color: var(--primary); color: white;">
+                    <i class="ph-bold ph-trophy fs-4"></i>
+                  </div>
+                  <h6 class="fw-bold text-dark mb-1">Đã luyện tập xong bài này?</h6>
+                  <p class="text-secondary small mb-2.5" style="font-size: 0.8rem;">
+                    Đánh dấu hoàn thành để ghi nhận vào chuỗi Streak và nhận +20 XP nhé!
+                  </p>
+                  <form method="post" action="{{ url_for('learning.complete_lesson', lesson_id=lesson.id) }}">
+                    {{ form.hidden_tag() }}
+                    <button class="btn btn-primary btn-sm rounded-pill px-4 py-2 fw-bold shadow-xs d-inline-flex align-items-center gap-1.5">
+                      <i class="ph-bold ph-check-circle fs-6"></i>
+                      <span>Hoàn thành bài nói (+20 XP)</span>
+                    </button>
+                  </form>
+                </div>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Footer Back Link -->
+        <div class="pt-3 border-top border-light d-flex align-items-center justify-content-between mt-3">
+          <a href="/speaking" class="text-secondary text-decoration-none small fw-semibold d-inline-flex align-items-center gap-1 hover-primary">
+            <i class="ph-bold ph-arrow-left"></i>
+            <span>Thư viện Luyện Nói</span>
+          </a>
+          <span class="text-muted small" style="font-size: 0.74rem;">Kỹ năng Luyện Nói · CEFR {{ lesson.level }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
 {% else %}
   <!-- UNIFIED LESSON HEADER & LEARNING STEPPER CARD (READING / SPEAKING / WRITING) -->
   <div class="card-modern p-4 p-md-4 mb-4">
@@ -2042,6 +2371,378 @@ document.addEventListener("DOMContentLoaded", function() {
       }, 1500);
     });
   }
+  {% endif %}
+
+  /* ==========================================================================
+     SPEAKING STUDIO & VOICE RECOGNITION LOGIC
+     ========================================================================== */
+  {% if lesson.skill == 'Speaking' %}
+  const speakingSentences = {{ speaking_sentences|tojson|safe }};
+  let curSentIdx = 0;
+  let speakingSpeed = 1.0;
+  let isRecording = false;
+  let recognitionInstance = null;
+  const recordedSentences = {};
+
+  // Elements
+  const targetSentenceText = document.getElementById("targetSentenceText");
+  const targetSentenceIPA = document.getElementById("targetSentenceIPA");
+  const targetSentenceVI = document.getElementById("targetSentenceVI");
+  const currentSentenceNum = document.getElementById("currentSentenceNum");
+  const sentenceStatusLabel = document.getElementById("sentenceStatusLabel");
+  const speakingProgressFill = document.getElementById("speakingProgressFill");
+
+  const btnPlayRefSpeech = document.getElementById("btnPlayRefSpeech");
+  const btnRecordSpeech = document.getElementById("btnRecordSpeech");
+  const micButtonIcon = document.getElementById("micButtonIcon");
+  const micButtonText = document.getElementById("micButtonText");
+  const btnResetSpeaking = document.getElementById("btnResetSpeaking");
+
+  const recordingWaveAnimation = document.getElementById("recordingWaveAnimation");
+  const speechFeedbackBox = document.getElementById("speechFeedbackBox");
+  const matchScoreBadge = document.getElementById("matchScoreBadge");
+  const recognizedTranscriptBox = document.getElementById("recognizedTranscriptBox");
+  const speechAdviceText = document.getElementById("speechAdviceText");
+
+  const btnPrevSentence = document.getElementById("btnPrevSentence");
+  const btnNextSentence = document.getElementById("btnNextSentence");
+  const speedButtons = document.querySelectorAll(".btn-speed-select");
+
+  // Speed selection
+  speedButtons.forEach(btn => {
+    btn.addEventListener("click", function() {
+      speedButtons.forEach(b => {
+        b.classList.remove("btn-primary", "active");
+        b.classList.add("btn-light");
+      });
+      this.classList.remove("btn-light");
+      this.classList.add("btn-primary", "active");
+      speakingSpeed = parseFloat(this.getAttribute("data-speed")) || 1.0;
+    });
+  });
+
+  // Reference Text-To-Speech
+  function playReferenceSpeech() {
+    if (!speakingSentences || speakingSentences.length === 0) return;
+    const current = speakingSentences[curSentIdx];
+    if (!current || !current.text) return;
+
+    if ('speechSynthesis' in window) {
+      window.speechSynthesis.cancel();
+      const utter = new SpeechSynthesisUtterance(current.text);
+      utter.lang = 'en-US';
+      utter.rate = speakingSpeed;
+      utter.pitch = 1.0;
+
+      if (btnPlayRefSpeech) {
+        btnPlayRefSpeech.classList.add("active");
+        utter.onend = function() {
+          btnPlayRefSpeech.classList.remove("active");
+        };
+        utter.onerror = function() {
+          btnPlayRefSpeech.classList.remove("active");
+        };
+      }
+      window.speechSynthesis.speak(utter);
+    } else {
+      alert("Trình duyệt của bạn chưa hỗ trợ chức năng phát âm mẫu SpeechSynthesis.");
+    }
+  }
+
+  if (btnPlayRefSpeech) {
+    btnPlayRefSpeech.addEventListener("click", playReferenceSpeech);
+  }
+
+  // Render active sentence
+  function updateSpeakingView(idx) {
+    if (!speakingSentences || speakingSentences.length === 0) return;
+    if (idx < 0) idx = 0;
+    if (idx >= speakingSentences.length) idx = speakingSentences.length - 1;
+    curSentIdx = idx;
+
+    const sent = speakingSentences[curSentIdx];
+    if (targetSentenceText) targetSentenceText.innerText = sent.text;
+    if (targetSentenceIPA) targetSentenceIPA.innerText = sent.ipa || "";
+    if (targetSentenceVI) targetSentenceVI.innerText = sent.vi || "";
+    if (currentSentenceNum) currentSentenceNum.innerText = curSentIdx + 1;
+
+    // Prev / Next button state
+    if (btnPrevSentence) btnPrevSentence.disabled = (curSentIdx === 0);
+    if (btnNextSentence) {
+      if (curSentIdx === speakingSentences.length - 1) {
+        btnNextSentence.innerHTML = '<span>Luyện lại câu đầu</span><i class="ph-bold ph-arrow-counter-clockwise"></i>';
+      } else {
+        btnNextSentence.innerHTML = '<span>Câu tiếp theo</span><i class="ph-bold ph-arrow-right"></i>';
+      }
+    }
+
+    // Update playlist highlight
+    document.querySelectorAll(".sentence-list-item").forEach((item, i) => {
+      const badge = item.querySelector(".sentence-idx-badge");
+      if (i === curSentIdx) {
+        item.classList.add("active-sentence", "bg-light");
+        if (badge) {
+          badge.className = "badge rounded-circle p-0 d-flex align-items-center justify-content-center mt-0.5 sentence-idx-badge bg-primary text-white";
+        }
+      } else {
+        item.classList.remove("active-sentence", "bg-light");
+        if (badge) {
+          badge.className = "badge rounded-circle p-0 d-flex align-items-center justify-content-center mt-0.5 sentence-idx-badge bg-light text-secondary border";
+        }
+      }
+    });
+
+    // Restore previous recording result if exists
+    if (recordedSentences[curSentIdx]) {
+      const rec = recordedSentences[curSentIdx];
+      showEvaluationFeedback(rec.transcript, rec.score);
+      if (sentenceStatusLabel) {
+        sentenceStatusLabel.innerHTML = `<span class="text-success fw-semibold">✓ Đã đạt ${rec.score}% chính xác</span>`;
+      }
+    } else {
+      if (speechFeedbackBox) speechFeedbackBox.classList.add("d-none");
+      if (sentenceStatusLabel) sentenceStatusLabel.innerText = "Sẵn sàng luyện phát âm";
+    }
+
+    stopRecording();
+  }
+
+  // Playlist item click
+  document.querySelectorAll(".sentence-list-item").forEach(item => {
+    item.addEventListener("click", function() {
+      const idx = parseInt(this.getAttribute("data-idx"), 10);
+      if (!isNaN(idx)) {
+        updateSpeakingView(idx);
+      }
+    });
+  });
+
+  // Prev / Next buttons
+  if (btnPrevSentence) {
+    btnPrevSentence.addEventListener("click", function() {
+      if (curSentIdx > 0) {
+        updateSpeakingView(curSentIdx - 1);
+      }
+    });
+  }
+
+  if (btnNextSentence) {
+    btnNextSentence.addEventListener("click", function() {
+      if (curSentIdx < speakingSentences.length - 1) {
+        updateSpeakingView(curSentIdx + 1);
+      } else {
+        updateSpeakingView(0);
+      }
+    });
+  }
+
+  // Similarity evaluation algorithm
+  function cleanToken(s) {
+    return (s || "").toLowerCase().replace(/[^a-z0-9]/g, "");
+  }
+
+  function calculateAccuracy(target, actual) {
+    const targetWords = (target || "").toLowerCase().split(/\s+/).map(cleanToken).filter(Boolean);
+    const actualWords = (actual || "").toLowerCase().split(/\s+/).map(cleanToken).filter(Boolean);
+
+    if (targetWords.length === 0) return 100;
+    if (actualWords.length === 0) return 0;
+
+    let matched = 0;
+    const actualSet = [...actualWords];
+    targetWords.forEach(tw => {
+      const idx = actualSet.indexOf(tw);
+      if (idx !== -1) {
+        matched++;
+        actualSet.splice(idx, 1);
+      }
+    });
+
+    const ratio = matched / targetWords.length;
+    return Math.min(100, Math.max(15, Math.round(ratio * 100)));
+  }
+
+  function showEvaluationFeedback(transcript, score) {
+    if (!speechFeedbackBox) return;
+
+    speechFeedbackBox.classList.remove("d-none");
+    if (recognizedTranscriptBox) {
+      const targetWords = (speakingSentences[curSentIdx]?.text || "").split(/\s+/);
+      const spokenWords = (transcript || "").toLowerCase().split(/\s+/).map(cleanToken);
+
+      const highlighted = targetWords.map(w => {
+        const cleanW = cleanToken(w);
+        if (spokenWords.includes(cleanW)) {
+          return `<span class="text-success fw-bold">${w}</span>`;
+        } else {
+          return `<span class="text-danger text-decoration-underline" title="Cần phát âm rõ hơn">${w}</span>`;
+        }
+      }).join(" ");
+
+      recognizedTranscriptBox.innerHTML = `
+        <div class="mb-1"><span class="text-muted small">Giọng của bạn đọc được:</span> <strong>"${transcript}"</strong></div>
+        <div class="pt-1 border-top"><span class="text-muted small">Đối chiếu câu mẫu:</span> ${highlighted}</div>
+      `;
+    }
+
+    if (matchScoreBadge) {
+      if (score >= 85) {
+        matchScoreBadge.className = "badge bg-success text-white rounded-pill px-3 py-1 fw-bold";
+        matchScoreBadge.innerText = `${score}% · Phát âm Xuất sắc!`;
+        if (speechAdviceText) speechAdviceText.innerText = "Tuyệt vời! Bạn phát âm rất rõ ràng và chuẩn xác từng từ khóa.";
+      } else if (score >= 60) {
+        matchScoreBadge.className = "badge bg-info text-white rounded-pill px-3 py-1 fw-bold";
+        matchScoreBadge.innerText = `${score}% · Khá tốt`;
+        if (speechAdviceText) speechAdviceText.innerText = "Khá tốt! Hãy chú ý phát âm rõ hơn các từ được gạch chân đỏ và nối âm mượt mà hơn.";
+      } else {
+        matchScoreBadge.className = "badge bg-warning text-dark rounded-pill px-3 py-1 fw-bold";
+        matchScoreBadge.innerText = `${score}% · Cần thử lại`;
+        if (speechAdviceText) speechAdviceText.innerText = "Hãy bấm 'Nghe mẫu' một lần nữa để bắt nhịp ngữ điệu, sau đó bấm thu âm lại nhé!";
+      }
+    }
+  }
+
+  function refreshSpeakingProgress() {
+    const total = speakingSentences.length;
+    if (total === 0) return;
+    const completedCount = Object.keys(recordedSentences).length;
+    const percent = Math.round((completedCount / total) * 100);
+    if (speakingProgressFill) {
+      speakingProgressFill.style.width = percent + "%";
+    }
+  }
+
+  const SpeechRecognitionAPI = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+  function startRecording() {
+    if (!SpeechRecognitionAPI) {
+      const simulatedText = prompt(
+        "Trình duyệt của bạn không hỗ trợ Web Speech Recognition API tự động.\n\nNhập câu bạn vừa nói để hệ thống chấm điểm:",
+        speakingSentences[curSentIdx]?.text || ""
+      );
+      if (simulatedText) {
+        handleSpeechResult(simulatedText);
+      }
+      return;
+    }
+
+    try {
+      recognitionInstance = new SpeechRecognitionAPI();
+      recognitionInstance.lang = 'en-US';
+      recognitionInstance.continuous = false;
+      recognitionInstance.interimResults = false;
+      recognitionInstance.maxAlternatives = 1;
+
+      recognitionInstance.onstart = function() {
+        isRecording = true;
+        if (recordingWaveAnimation) recordingWaveAnimation.classList.remove("d-none");
+        if (micButtonIcon) micButtonIcon.className = "ph-bold ph-stop-circle fs-5 animate-pulse";
+        if (micButtonText) micButtonText.innerText = "Đang thu âm (Bấm dừng)";
+        if (btnRecordSpeech) btnRecordSpeech.style.backgroundColor = "#dc2626";
+      };
+
+      recognitionInstance.onresult = function(event) {
+        const transcript = event.results[0][0].transcript;
+        handleSpeechResult(transcript);
+      };
+
+      recognitionInstance.onerror = function(event) {
+        console.warn("Speech recognition error:", event.error);
+        stopRecording();
+        if (event.error === "not-allowed") {
+          alert("Vui lòng cấp quyền truy cập Microphone trong trình duyệt để luyện nói.");
+        }
+      };
+
+      recognitionInstance.onend = function() {
+        stopRecording();
+      };
+
+      recognitionInstance.start();
+    } catch (e) {
+      console.error("Speech recognition error:", e);
+      stopRecording();
+    }
+  }
+
+  function stopRecording() {
+    isRecording = false;
+    if (recordingWaveAnimation) recordingWaveAnimation.classList.add("d-none");
+    if (micButtonIcon) micButtonIcon.className = "ph-bold ph-microphone fs-5";
+    if (micButtonText) micButtonText.innerText = "Bấm để thu âm";
+    if (btnRecordSpeech) btnRecordSpeech.style.backgroundColor = "#ea580c";
+    if (recognitionInstance) {
+      try { recognitionInstance.stop(); } catch(err) {}
+      recognitionInstance = null;
+    }
+  }
+
+  function handleSpeechResult(transcript) {
+    stopRecording();
+    if (!transcript) return;
+    const targetText = speakingSentences[curSentIdx]?.text || "";
+    const score = calculateAccuracy(targetText, transcript);
+
+    recordedSentences[curSentIdx] = { transcript, score };
+    showEvaluationFeedback(transcript, score);
+
+    const checkIcon = document.getElementById(`sent-check-${curSentIdx}`);
+    if (checkIcon) {
+      checkIcon.className = "sentence-status-icon ms-auto text-success";
+      checkIcon.innerHTML = '<i class="ph-bold ph-check-circle fs-6"></i>';
+    }
+
+    if (sentenceStatusLabel) {
+      sentenceStatusLabel.innerHTML = `<span class="text-success fw-semibold">✓ Đã đạt ${score}% chính xác</span>`;
+    }
+
+    refreshSpeakingProgress();
+  }
+
+  if (btnRecordSpeech) {
+    btnRecordSpeech.addEventListener("click", function() {
+      if (isRecording) {
+        stopRecording();
+      } else {
+        startRecording();
+      }
+    });
+  }
+
+  if (btnResetSpeaking) {
+    btnResetSpeaking.addEventListener("click", function() {
+      delete recordedSentences[curSentIdx];
+      if (speechFeedbackBox) speechFeedbackBox.classList.add("d-none");
+      if (sentenceStatusLabel) sentenceStatusLabel.innerText = "Sẵn sàng luyện phát âm";
+      const checkIcon = document.getElementById(`sent-check-${curSentIdx}`);
+      if (checkIcon) {
+        checkIcon.className = "sentence-status-icon ms-auto text-muted";
+        checkIcon.innerHTML = '<i class="ph-bold ph-circle"></i>';
+      }
+      refreshSpeakingProgress();
+    });
+  }
+
+  // Speaking notes auto save
+  const speakingNoteInput = document.getElementById("speakingNoteInput");
+  let speakingNoteTimer = null;
+  if (speakingNoteInput) {
+    speakingNoteInput.addEventListener("input", function() {
+      clearTimeout(speakingNoteTimer);
+      speakingNoteTimer = setTimeout(() => {
+        const formData = new FormData();
+        formData.append("note", speakingNoteInput.value);
+        formData.append("csrf_token", "{{ csrf_token() }}");
+        fetch(`/lessons/{{ lesson.id }}/notes`, {
+          method: "POST",
+          body: formData
+        }).catch(err => console.error(err));
+      }, 1500);
+    });
+  }
+
+  // Initialize view
+  updateSpeakingView(0);
   {% endif %}
 });
 </script>
