@@ -147,14 +147,14 @@ def lessons():
             "icon": "ph-bold ph-pen-nib",
             "gradient": "linear-gradient(135deg, #881337 0%, #be123c 50%, #e11d48 100%)",
             "card_class": "hero-writing",
-            "stat_label_3": "Số bài đang học",
-            "stat_val_3": f"{scoped_in_progress} bài",
-            "stat_icon_3": "ph-bold ph-hourglass-high",
-            "stat_color_3": "text-warning",
-            "stat_label_4": "Tỷ lệ hoàn thành",
-            "stat_val_4": f"{scoped_completion_rate}%",
-            "stat_icon_4": "ph-bold ph-chart-donut",
-            "stat_color_4": "text-info"
+            "stat_label_3": "Tỷ lệ hoàn thành",
+            "stat_val_3": f"{scoped_completion_rate}%",
+            "stat_icon_3": "ph-bold ph-chart-line-up",
+            "stat_color_3": "text-info",
+            "stat_label_4": "Số từ đã thực hành",
+            "stat_val_4": f"{scoped_completed * 120} từ",
+            "stat_icon_4": "ph-bold ph-pencil-line",
+            "stat_color_4": "text-warning"
         }
     }
     hero = hero_configs.get(current_skill, hero_configs["All"])
@@ -504,6 +504,93 @@ def _render_lesson_page(lesson):
         lesson.reading_genre = reading_info.get("genre", "Bài đọc")
         lesson.est_minutes = reading_info.get("est_minutes", 3)
 
+    # Writing specific properties
+    writing_prompt = ""
+    writing_target_min = 40
+    writing_target_max = 80
+    writing_templates = []
+    writing_model = ""
+
+    if lesson.skill == "Writing":
+        writing_prompt = lesson.content.strip() if lesson.content else ""
+        writing_model = lesson.examples.strip() if lesson.examples else ""
+
+        WRITING_DATA = {
+            28: {
+                "genre": "Ghi chú thường ngày (Routine Note)",
+                "target_min": 30,
+                "target_max": 60,
+                "templates": [
+                    {"label": "Bắt đầu ngày mới", "text": "First, I wake up at 7:00 AM and wash my face.", "vi": "Đầu tiên, tôi thức dậy lúc 7:00 sáng và rửa mặt."},
+                    {"label": "Hoạt động tiếp theo", "text": "Then, I have breakfast with my family.", "vi": "Sau đó, tôi ăn sáng cùng gia đình."},
+                    {"label": "Buổi chiều", "text": "After that, I study English on EnglishMate.", "vi": "Sau đó, tôi học tiếng Anh trên EnglishMate."},
+                    {"label": "Kết thúc ngày", "text": "Finally, I go to bed at 10:30 PM.", "vi": "Cuối cùng, tôi đi ngủ lúc 10:30 tối."}
+                ]
+            },
+            29: {
+                "genre": "Tin nhắn mời dự tiệc (Invitation)",
+                "target_min": 40,
+                "target_max": 75,
+                "templates": [
+                    {"label": "Lời chào & Lý do", "text": "I would like to invite you to my birthday party.", "vi": "Mình muốn mời bạn đến dự tiệc sinh nhật của mình."},
+                    {"label": "Thời gian & Địa điểm", "text": "The party is this Saturday at 7:00 PM at Bistro Garden.", "vi": "Bữa tiệc diễn ra vào tối thứ Bảy này lúc 7:00 tại Bistro Garden."},
+                    {"label": "Xác nhận tham gia", "text": "Please let me know by Friday if you can come.", "vi": "Vui lòng báo lại cho mình trước thứ Sáu nếu bạn có thể tham gia nhé."},
+                    {"label": "Lời kết thân mật", "text": "Hope to see you there! Best regards.", "vi": "Rất mong gặp bạn ở đó! Thân ái."}
+                ]
+            },
+            30: {
+                "genre": "Email du lịch thân mật (Holiday Email)",
+                "target_min": 60,
+                "target_max": 110,
+                "templates": [
+                    {"label": "Mở đầu email", "text": "I hope you are doing well! I'm writing to tell you about my trip.", "vi": "Hy vọng bạn vẫn khỏe! Mình viết thư để kể về chuyến đi của mình."},
+                    {"label": "Kể lại trải nghiệm", "text": "While we were walking along the beach, we witnessed a stunning sunset.", "vi": "Khi chúng tôi đang đi dạo dọc bờ biển, chúng tôi đã ngắm một hoàng hôn tuyệt đẹp."},
+                    {"label": "Cảm xúc chung", "text": "We had an amazing time exploring the local cuisine and night market.", "vi": "Chúng tôi đã có khoảng thời gian tuyệt vời khám phá ẩm thực và chợ đêm."},
+                    {"label": "Hẹn gặp lại", "text": "I can't wait to catch up soon and show you all the photos!", "vi": "Mình rất nóng lòng sớm gặp bạn để khoe các bức ảnh!"}
+                ]
+            },
+            31: {
+                "genre": "Thư khiếu nại / Yêu cầu trang trọng (Business Letter)",
+                "target_min": 80,
+                "target_max": 150,
+                "templates": [
+                    {"label": "Mục đích thư", "text": "I am writing to formally request an expedited review of application reference #89412.", "vi": "Tôi viết thư này để chính thức yêu cầu đẩy nhanh tiến độ xem xét hồ sơ số #89412."},
+                    {"label": "Nêu nguyên nhân", "text": "Due to urgent project deadlines, timely approval is critical for our operations.", "vi": "Do thời hạn dự án khẩn cấp, việc phê duyệt kịp thời mang tính quyết định cho hoạt động của chúng tôi."},
+                    {"label": "Yêu cầu hành động", "text": "I would greatly appreciate it if you could confirm receipt of this request.", "vi": "Tôi rất cảm kích nếu quý bên có thể xác nhận đã tiếp nhận yêu cầu này."},
+                    {"label": "Lời chào trang trọng", "text": "Thank you for your prompt attention to this matter. Sincerely yours.", "vi": "Cảm ơn quý bên đã nhanh chóng chú ý đến vấn đề này. Trân trọng."}
+                ]
+            },
+            32: {
+                "genre": "Bài luận học thuật (Persuasive Essay)",
+                "target_min": 120,
+                "target_max": 200,
+                "templates": [
+                    {"label": "Luận điểm chính (Thesis)", "text": "It is widely acknowledged that technological innovation reshapes modern workforce dynamics.", "vi": "Một điều được công nhận rộng rãi là sự đổi mới công nghệ đang định hình lại lực lượng lao động hiện đại."},
+                    {"label": "Phản biện (Counter-argument)", "text": "Proponents argue that automation increases efficiency; however, this overlooks displacement issues.", "vi": "Những người ủng hộ cho rằng tự động hóa nâng cao hiệu quả; tuy nhiên, điều này bỏ qua vấn đề sa thải lao động."},
+                    {"label": "Dẫn chứng phân tích", "text": "Recent empirical studies substantiate the necessity of proactive retraining programs.", "vi": "Các nghiên cứu thực nghiệm gần đây chứng minh tính cần thiết của các chương trình đào tạo lại chủ động."},
+                    {"label": "Kết luận đúc kết", "text": "In conclusion, a nuanced policy balance is essential for long-term sustainable growth.", "vi": "Tóm lại, sự cân bằng chính sách tinh tế là điều thiết yếu cho sự tăng trưởng bền vững lâu dài."}
+                ]
+            }
+        }
+
+        writing_info = WRITING_DATA.get(lesson.id, {
+            "genre": "Bài viết thực hành",
+            "target_min": 40,
+            "target_max": 80,
+            "templates": [
+                {"label": "Mở đầu", "text": "First, I would like to express my thoughts on this topic.", "vi": "Đầu tiên, tôi muốn chia sẻ suy nghĩ về chủ đề này."},
+                {"label": "Phát triển ý", "text": "Furthermore, there are several key reasons to consider.", "vi": "Hơn nữa, có một số lý do quan trọng cần xem xét."},
+                {"label": "Kết bài", "text": "In conclusion, practicing writing regularly brings noticeable progress.", "vi": "Tóm lại, luyện viết thường xuyên đem lại tiến bộ rõ rệt."}
+            ]
+        })
+
+        lesson.writing_genre = writing_info.get("genre", "Bài viết")
+        lesson.target_min = writing_info.get("target_min", 40)
+        lesson.target_max = writing_info.get("target_max", 80)
+        writing_target_min = lesson.target_min
+        writing_target_max = lesson.target_max
+        writing_templates = writing_info.get("templates", [])
+
     completed = LessonProgress.query.filter_by(user_id=current_user.id, lesson_id=lesson.id).first()
     note_record = LessonNote.query.filter_by(user_id=current_user.id, lesson_id=lesson.id).first()
     bookmarks = [b.section_index for b in LessonBookmark.query.filter_by(user_id=current_user.id, lesson_id=lesson.id).all()]
@@ -518,6 +605,11 @@ def _render_lesson_page(lesson):
         reading_paragraphs=reading_paragraphs,
         reading_vocab=reading_vocab,
         reading_questions=reading_questions,
+        writing_prompt=writing_prompt,
+        writing_model=writing_model,
+        writing_templates=writing_templates,
+        writing_target_min=writing_target_min,
+        writing_target_max=writing_target_max,
         completed=completed,
         user_note=note_record.content if note_record else "",
         bookmarks=bookmarks,

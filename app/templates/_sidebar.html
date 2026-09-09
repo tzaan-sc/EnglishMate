@@ -73,7 +73,7 @@
                 </a>
             </li>
             <li class="nav-item">
-                <a class="nav-link-modern {% if request.path.startswith(url_for('learning.lessons')) and request.args.get('skill') not in ['Listening', 'Reading'] and not request.path.startswith('/admin') %}active{% endif %}" href="{{ url_for('learning.lessons') }}" title="Bài học">
+                <a class="nav-link-modern {% if request.path.startswith(url_for('learning.lessons')) and request.args.get('skill') not in ['Listening', 'Reading', 'Writing'] and not request.path.startswith('/admin') %}active{% endif %}" href="{{ url_for('learning.lessons') }}" title="Bài học">
                     <i class="ph ph-graduation-cap"></i>
                     <span>Bài học</span>
                 </a>
@@ -88,6 +88,12 @@
                 <a class="nav-link-modern {% if request.path.startswith('/reading') or (request.path == url_for('learning.lessons') and request.args.get('skill') == 'Reading') %}active{% endif %}" href="/reading" title="Đọc Hiểu">
                     <i class="ph-bold ph-book-open-text" style="color: #0d9488;"></i>
                     <span>Đọc Hiểu</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link-modern {% if request.path.startswith('/writing') or (request.path == url_for('learning.lessons') and request.args.get('skill') == 'Writing') %}active{% endif %}" href="/writing" title="Luyện Viết">
+                    <i class="ph-bold ph-pen-nib" style="color: #be123c;"></i>
+                    <span>Luyện Viết</span>
                 </a>
             </li>
             <li class="nav-item">

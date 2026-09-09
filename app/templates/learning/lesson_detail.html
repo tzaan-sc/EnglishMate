@@ -667,6 +667,311 @@
     </div>
   </div>
 
+{% elif lesson.skill == 'Writing' %}
+  <!-- WRITING STUDIO & INTERACTIVE WRITER CARD -->
+  <div class="card-modern p-4 p-md-4 mb-4">
+    <!-- Badges & Status -->
+    <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-2.5">
+      <div class="d-flex align-items-center gap-2">
+        <span class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill px-3 py-1 fw-bold" style="font-size: 0.74rem;">
+          {{ lesson.level }}
+        </span>
+        <span class="badge rounded-pill px-3 py-1 fw-semibold d-inline-flex align-items-center gap-1.5" style="font-size: 0.74rem; background-color: rgba(190, 18, 60, 0.1); color: #9f1239; border: 1px solid rgba(190, 18, 60, 0.2);">
+          <i class="ph-bold ph-pen-nib"></i>
+          <span>Luyện Viết</span>
+        </span>
+        <span class="badge bg-light text-secondary border rounded-pill px-2.5 py-1 fw-semibold" style="font-size: 0.74rem;">
+          <i class="ph-bold ph-file-text me-1"></i>{{ lesson.writing_genre or 'Bài viết thực hành' }}
+        </span>
+        <span class="badge bg-light text-secondary border rounded-pill px-2.5 py-1 fw-semibold" style="font-size: 0.74rem;">
+          <i class="ph-bold ph-pencil-line me-1" style="color: #be123c;"></i>Mục tiêu: {{ writing_target_min }}-{{ writing_target_max }} từ
+        </span>
+        <small class="text-muted d-inline-flex align-items-center gap-1 ms-1" style="font-size: 0.74rem;">
+          <i class="ph-bold ph-eye"></i> {{ lesson.view_count or 1 }} lượt học
+        </small>
+      </div>
+
+      {% if completed %}
+      <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-3 py-1 fw-bold d-inline-flex align-items-center gap-1" style="font-size: 0.74rem;">
+        <i class="ph-fill ph-check-circle"></i> ✓ Đã hoàn thành
+      </span>
+      {% else %}
+      <span class="badge rounded-pill px-3 py-1 fw-semibold" style="font-size: 0.74rem; background-color: rgba(190, 18, 60, 0.12); color: #9f1239;">
+        Đang viết
+      </span>
+      {% endif %}
+    </div>
+
+    <!-- Title & Description -->
+    <h2 class="fw-bold text-dark mb-2" style="font-size: 1.55rem; letter-spacing: -0.02em;">
+      {{ lesson.title }}
+    </h2>
+    <p class="text-secondary mb-0" style="font-size: 0.92rem; line-height: 1.6;">
+      {{ lesson.short_description }}
+    </p>
+  </div>
+
+  <!-- 2-COLUMN WRITING CANVAS & ASSISTANT -->
+  <div class="row g-4 mb-4">
+    <!-- LEFT COLUMN: WRITING CANVAS (60%) -->
+    <div class="col-12 col-lg-7 col-xl-7">
+      <div class="card-modern p-4 p-md-4 h-100 bg-white d-flex flex-column justify-content-between" style="border: 1px solid var(--border-light); border-radius: 16px;">
+        <div>
+          <!-- Prompt & Assignment Box -->
+          <div class="p-3.5 rounded-3 mb-3 border-start border-4 bg-light" style="border-left-color: #be123c !important;">
+            <div class="fw-bold text-dark small mb-1 d-flex align-items-center gap-1.5">
+              <i class="ph-bold ph-lightbulb" style="color: #be123c;"></i>
+              <span>Đề bài & Yêu cầu trọng tâm:</span>
+            </div>
+            <div class="text-secondary small" style="line-height: 1.6;">
+              {{ writing_prompt or 'Thực hành viết bài theo chủ đề được giao, áp dụng từ vựng và mẫu câu phù hợp với trình độ.' }}
+            </div>
+          </div>
+
+          <!-- Main Writing Textarea -->
+          <div class="mb-2 position-relative">
+            <textarea id="writingInput" 
+                      class="form-control p-3.5 rounded-3 shadow-none text-dark" 
+                      rows="8" 
+                      placeholder="Bắt đầu soạn thảo bài viết của bạn tại đây... (Nội dung tự động lưu nháp)" 
+                      style="border-color: var(--border-light); font-size: 1rem; line-height: 1.7; resize: vertical; min-height: 200px;"></textarea>
+          </div>
+
+          <!-- Live Status Bar: Word count & Actions -->
+          <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 p-2.5 rounded-3 bg-light-subtle border mb-3" style="border-color: var(--border-light) !important;">
+            <div class="d-flex align-items-center gap-2">
+              <span class="badge bg-white border text-dark fw-bold px-2.5 py-1" style="font-size: 0.78rem;">
+                <span id="currentWordsCount">0</span> / {{ writing_target_min }}-{{ writing_target_max }} từ
+              </span>
+              <span id="targetStatusBadge" class="badge bg-secondary-subtle text-secondary rounded-pill px-2.5 py-0.5" style="font-size: 0.72rem;">
+                Chưa đạt mục tiêu
+              </span>
+            </div>
+
+            <div class="d-flex align-items-center gap-1.5">
+              <button type="button" id="btnClearWriting" class="btn btn-sm btn-light border rounded-pill px-2.5 py-1 text-secondary shadow-2xs" title="Xóa nội dung viết lại">
+                <i class="ph-bold ph-arrow-counter-clockwise"></i>
+                <span class="small d-none d-sm-inline">Làm lại</span>
+              </button>
+              <button type="button" id="btnAnalyzeWriting" class="btn btn-sm btn-primary rounded-pill px-3.5 py-1 fw-bold shadow-xs d-inline-flex align-items-center gap-1.5" style="font-size: 0.82rem;">
+                <i class="ph-bold ph-magic-wand"></i>
+                <span>Kiểm tra bài viết</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Live Analysis Feedback Box -->
+          <div id="writingFeedbackBox" class="d-none p-3.5 rounded-3 border bg-light-subtle" style="border-color: var(--border-light) !important;">
+            <div class="d-flex align-items-center justify-content-between mb-2">
+              <span class="fw-bold text-dark small d-flex align-items-center gap-1.5">
+                <i class="ph-bold ph-sparkle text-primary"></i>
+                <span>Kết quả phân tích bài viết</span>
+              </span>
+              <span id="writingGradeBadge" class="badge bg-success-subtle text-success rounded-pill px-2.5 py-0.5 fw-bold">Rất tốt</span>
+            </div>
+            <div class="row g-2 mb-2 text-center" style="font-size: 0.78rem;">
+              <div class="col-4">
+                <div class="p-2 rounded-2 bg-white border">
+                  <div class="text-muted">Tổng số từ</div>
+                  <strong id="statWords" class="text-dark fs-6">0</strong>
+                </div>
+              </div>
+              <div class="col-4">
+                <div class="p-2 rounded-2 bg-white border">
+                  <div class="text-muted">Số câu hoàn chỉnh</div>
+                  <strong id="statSentences" class="text-dark fs-6">0</strong>
+                </div>
+              </div>
+              <div class="col-4">
+                <div class="p-2 rounded-2 bg-white border">
+                  <div class="text-muted">Từ nối phát hiện</div>
+                  <strong id="statConnectors" class="text-dark fs-6">0</strong>
+                </div>
+              </div>
+            </div>
+            <div id="writingAdviceText" class="text-secondary small" style="line-height: 1.5;"></div>
+          </div>
+        </div>
+
+        <!-- Canvas bottom tip -->
+        <div class="pt-2 text-muted small text-end" style="font-size: 0.74rem;">
+          <i class="ph-bold ph-floppy-disk text-success me-0.5"></i> Bản nháp được tự động lưu trên máy của bạn
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT COLUMN: TEMPLATES & MODEL STUDIO (40%) -->
+    <div class="col-12 col-lg-5 col-xl-5">
+      <div class="card-modern p-3.5 p-md-4 h-100 d-flex flex-column justify-content-between" style="border: 1px solid var(--border-light); border-radius: 16px;">
+        <div>
+          <!-- Tab Navigation Pills -->
+          <ul class="nav nav-pills nav-fill bg-light p-1 rounded-pill mb-3.5 border" role="tablist" style="border-color: var(--border-light) !important;">
+            <li class="nav-item" role="presentation">
+              <button class="nav-link active rounded-pill py-1.5 fw-bold small d-inline-flex align-items-center justify-content-center gap-1 w-100" 
+                      id="tab-write-tpl-btn" data-bs-toggle="tab" data-bs-target="#tab-write-tpl" type="button" role="tab">
+                <i class="ph-bold ph-lightbulb"></i>
+                <span>Mẫu câu</span>
+              </button>
+            </li>
+            <li class="nav-item" role="presentation">
+              <button class="nav-link rounded-pill py-1.5 fw-bold small d-inline-flex align-items-center justify-content-center gap-1 w-100" 
+                      id="tab-write-model-btn" data-bs-toggle="tab" data-bs-target="#tab-write-model" type="button" role="tab">
+                <i class="ph-bold ph-article"></i>
+                <span>Bài mẫu</span>
+              </button>
+            </li>
+            <li class="nav-item" role="presentation">
+              <button class="nav-link rounded-pill py-1.5 fw-bold small d-inline-flex align-items-center justify-content-center gap-1 w-100" 
+                      id="tab-write-notes-btn" data-bs-toggle="tab" data-bs-target="#tab-write-notes" type="button" role="tab">
+                <i class="ph-bold ph-check-circle"></i>
+                <span>Nộp bài</span>
+              </button>
+            </li>
+          </ul>
+
+          <!-- Tab Content Panels -->
+          <div class="tab-content">
+            <!-- TAB 1: USEFUL TEMPLATES -->
+            <div class="tab-pane fade show active" id="tab-write-tpl" role="tabpanel">
+              <div class="d-flex align-items-center justify-content-between mb-2.5">
+                <span class="fw-bold text-dark small d-flex align-items-center gap-1.5">
+                  <i class="ph-bold ph-cards" style="color: #be123c;"></i>
+                  <span>Gợi ý mẫu câu thực hành</span>
+                </span>
+                <span class="badge bg-light text-secondary border rounded-pill">{{ writing_templates|length }} mẫu</span>
+              </div>
+
+              <div class="overflow-auto pe-1" style="max-height: 440px;">
+                {% for tpl in writing_templates %}
+                <div class="p-3 mb-2.5 rounded-3 border bg-light-subtle writing-template-card transition-hover" style="border-color: var(--border-light) !important;">
+                  <div class="d-flex align-items-center justify-content-between mb-1.5">
+                    <span class="badge rounded-pill px-2.5 py-0.5 fw-bold" style="font-size: 0.68rem; background-color: rgba(190, 18, 60, 0.1); color: #9f1239;">
+                      {{ tpl.label }}
+                    </span>
+                    <button type="button" class="btn btn-sm btn-light border rounded-pill px-2 py-0.5 text-primary btn-insert-template d-inline-flex align-items-center gap-1 shadow-2xs" 
+                            data-text="{{ tpl.text }}" style="font-size: 0.74rem;" title="Chèn câu này vào bài viết">
+                      <i class="ph-bold ph-plus"></i>
+                      <span>Chèn</span>
+                    </button>
+                  </div>
+                  <div class="fw-semibold text-dark small mb-1" style="font-size: 0.88rem; line-height: 1.5;">
+                    "{{ tpl.text }}"
+                  </div>
+                  <div class="text-muted small fst-italic" style="font-size: 0.78rem;">
+                    ➔ {{ tpl.vi }}
+                  </div>
+                </div>
+                {% endfor %}
+              </div>
+            </div>
+
+            <!-- TAB 2: MODEL ANSWER -->
+            <div class="tab-pane fade" id="tab-write-model" role="tabpanel">
+              <div class="d-flex align-items-center justify-content-between mb-2.5">
+                <span class="fw-bold text-dark small d-flex align-items-center gap-1.5">
+                  <i class="ph-bold ph-file-text text-primary"></i>
+                  <span>Bài viết mẫu tham khảo chuẩn CEFR</span>
+                </span>
+                <span class="badge bg-primary-subtle text-primary rounded-pill">{{ lesson.level }}</span>
+              </div>
+
+              <div class="overflow-auto pe-1" style="max-height: 440px;">
+                <div class="p-3.5 rounded-3 border bg-light-subtle mb-3" style="border-color: var(--border-light) !important;">
+                  <div class="d-flex align-items-center justify-content-between mb-2">
+                    <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-2.5 py-0.5 small fw-bold">
+                      Bài mẫu chuẩn
+                    </span>
+                    <button type="button" class="btn btn-sm btn-light border rounded-pill px-2.5 py-0.5 text-secondary shadow-2xs btn-copy-model" 
+                            data-model="{{ writing_model }}" style="font-size: 0.74rem;" title="Sao chép bài mẫu">
+                      <i class="ph-bold ph-copy"></i>
+                      <span>Sao chép</span>
+                    </button>
+                  </div>
+                  <div class="text-dark small" style="font-size: 0.92rem; line-height: 1.8; font-style: italic;">
+                    "{{ writing_model or 'Chưa có bài mẫu cho bài học này.' }}"
+                  </div>
+                </div>
+
+                <div class="p-3 rounded-3 border bg-white small text-secondary" style="border-color: var(--border-light) !important; font-size: 0.82rem; line-height: 1.6;">
+                  <strong class="text-dark d-block mb-1">Mẹo viết hay:</strong>
+                  • Chú ý chia động từ đúng thì (Past Simple / Present Simple).<br>
+                  • Sử dụng các từ nối ý (Sequencers) để bài viết mượt mà.<br>
+                  • Luôn kiểm tra lại lỗi chính tả trước khi hoàn thành.
+                </div>
+              </div>
+            </div>
+
+            <!-- TAB 3: NOTES & SUBMISSION -->
+            <div class="tab-pane fade" id="tab-write-notes" role="tabpanel">
+              <!-- Lesson Note Form -->
+              <form id="writingNoteForm" action="{{ url_for('learning.save_lesson_note', lesson_id=lesson.id) }}" method="post" class="mb-3">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <div class="mb-2">
+                  <label class="form-label fw-bold text-dark small">Ghi chép lưu ý viết / cấu trúc ngữ pháp:</label>
+                  <textarea class="form-control rounded-3 p-2.5 shadow-none" 
+                            name="note" id="writingNoteInput" rows="3" 
+                            placeholder="Ghi chú cấu trúc câu hay từ mới muốn nhớ lâu..."
+                            style="border-color: var(--border-light); font-size: 0.88rem; line-height: 1.5;">{{ user_note }}</textarea>
+                </div>
+                <div class="d-flex justify-content-between align-items-center">
+                  <small class="text-muted" style="font-size: 0.74rem;">Tự động lưu khi gõ</small>
+                  <button type="submit" class="btn btn-sm btn-primary rounded-pill px-3 py-1 fw-bold shadow-xs">
+                    Lưu ghi chú
+                  </button>
+                </div>
+              </form>
+
+              <!-- Milestone Complete Box -->
+              <div class="p-3 rounded-4 text-center border" style="background: linear-gradient(135deg, #fff1f2 0%, #ffe4e6 100%); border-color: #fecdd3 !important;">
+                {% if completed %}
+                <div class="py-1">
+                  <div class="rounded-circle bg-success text-white d-inline-flex align-items-center justify-content-center mb-2 shadow-2xs" style="width: 44px; height: 44px;">
+                    <i class="ph-bold ph-check fs-4"></i>
+                  </div>
+                  <h6 class="fw-bold text-success mb-1">Đã hoàn thành bài viết!</h6>
+                  <p class="text-secondary small mb-2.5" style="font-size: 0.8rem;">
+                    Hệ thống đã ghi nhận bài viết và cộng điểm tích lũy kinh nghiệm (+20 XP).
+                  </p>
+                  <a class="btn btn-primary btn-sm rounded-pill px-3.5 py-1.5 fw-bold shadow-xs d-inline-flex align-items-center gap-1.5" href="/writing">
+                    <i class="ph-bold ph-arrow-left"></i>
+                    <span>Quay lại Luyện Viết</span>
+                  </a>
+                </div>
+                {% else %}
+                <div class="py-1">
+                  <div class="rounded-circle d-inline-flex align-items-center justify-content-center mb-2 shadow-2xs" style="width: 44px; height: 44px; background-color: var(--primary); color: white;">
+                    <i class="ph-bold ph-trophy fs-4"></i>
+                  </div>
+                  <h6 class="fw-bold text-dark mb-1">Đã viết xong bài này?</h6>
+                  <p class="text-secondary small mb-2.5" style="font-size: 0.8rem;">
+                    Đánh dấu hoàn thành để ghi nhận vào chuỗi Streak và nhận +20 XP nhé!
+                  </p>
+                  <form method="post" action="{{ url_for('learning.complete_lesson', lesson_id=lesson.id) }}">
+                    {{ form.hidden_tag() }}
+                    <button class="btn btn-primary btn-sm rounded-pill px-4 py-2 fw-bold shadow-xs d-inline-flex align-items-center gap-1.5">
+                      <i class="ph-bold ph-check-circle fs-6"></i>
+                      <span>Hoàn thành bài viết (+20 XP)</span>
+                    </button>
+                  </form>
+                </div>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Footer Back Link -->
+        <div class="pt-3 border-top border-light d-flex align-items-center justify-content-between mt-3">
+          <a href="/writing" class="text-secondary text-decoration-none small fw-semibold d-inline-flex align-items-center gap-1 hover-primary">
+            <i class="ph-bold ph-arrow-left"></i>
+            <span>Thư viện Luyện Viết</span>
+          </a>
+          <span class="text-muted small" style="font-size: 0.74rem;">Kỹ năng Luyện Viết · CEFR {{ lesson.level }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
 {% else %}
   <!-- UNIFIED LESSON HEADER & LEARNING STEPPER CARD (READING / SPEAKING / WRITING) -->
   <div class="card-modern p-4 p-md-4 mb-4">
@@ -1550,6 +1855,185 @@ document.addEventListener("DOMContentLoaded", function() {
       readingNoteTimer = setTimeout(() => {
         const formData = new FormData();
         formData.append("note", readingNoteInput.value);
+        formData.append("csrf_token", "{{ csrf_token() }}");
+        fetch(`/lessons/{{ lesson.id }}/notes`, {
+          method: "POST",
+          body: formData
+        }).catch(err => console.error(err));
+      }, 1500);
+    });
+  }
+  {% endif %}
+
+  {% if lesson.skill == 'Writing' %}
+  // --- WRITING STUDIO JAVASCRIPT ---
+  const writingInput = document.getElementById("writingInput");
+  const currentWordsCount = document.getElementById("currentWordsCount");
+  const targetStatusBadge = document.getElementById("targetStatusBadge");
+  const btnClearWriting = document.getElementById("btnClearWriting");
+  const btnAnalyzeWriting = document.getElementById("btnAnalyzeWriting");
+  const writingFeedbackBox = document.getElementById("writingFeedbackBox");
+  const statWords = document.getElementById("statWords");
+  const statSentences = document.getElementById("statSentences");
+  const statConnectors = document.getElementById("statConnectors");
+  const writingAdviceText = document.getElementById("writingAdviceText");
+  const writingGradeBadge = document.getElementById("writingGradeBadge");
+
+  const targetMin = {{ writing_target_min or 40 }};
+  const targetMax = {{ writing_target_max or 80 }};
+  const draftKey = "writing_draft_{{ lesson.id }}";
+
+  // Load saved draft from localStorage
+  if (writingInput) {
+    const savedDraft = localStorage.getItem(draftKey);
+    if (savedDraft && !writingInput.value) {
+      writingInput.value = savedDraft;
+    }
+    updateWritingStats();
+
+    writingInput.addEventListener("input", function() {
+      updateWritingStats();
+      localStorage.setItem(draftKey, writingInput.value);
+    });
+  }
+
+  function countWords(str) {
+    const trimmed = str.trim();
+    if (!trimmed) return 0;
+    return trimmed.split(/\s+/).filter(Boolean).length;
+  }
+
+  function updateWritingStats() {
+    if (!writingInput || !currentWordsCount) return;
+    const words = countWords(writingInput.value);
+    currentWordsCount.innerText = words;
+
+    if (targetStatusBadge) {
+      if (words === 0) {
+        targetStatusBadge.className = "badge bg-secondary-subtle text-secondary rounded-pill px-2.5 py-0.5";
+        targetStatusBadge.innerText = "Chưa viết bài";
+      } else if (words < targetMin) {
+        targetStatusBadge.className = "badge bg-warning-subtle text-dark border border-warning-subtle rounded-pill px-2.5 py-0.5";
+        targetStatusBadge.innerText = `Cần thêm ${targetMin - words} từ nữa`;
+      } else if (words <= targetMax) {
+        targetStatusBadge.className = "badge bg-success-subtle text-success border border-success-subtle rounded-pill px-2.5 py-0.5 fw-bold";
+        targetStatusBadge.innerText = "✓ Đạt độ dài chuẩn";
+      } else {
+        targetStatusBadge.className = "badge bg-info-subtle text-info border border-info-subtle rounded-pill px-2.5 py-0.5";
+        targetStatusBadge.innerText = "Bài viết đầy đủ, chi tiết";
+      }
+    }
+  }
+
+  // Clear editor button
+  if (btnClearWriting && writingInput) {
+    btnClearWriting.addEventListener("click", function() {
+      if (!writingInput.value.trim() || confirm("Bạn có chắc muốn xóa nội dung đang viết để làm lại?")) {
+        writingInput.value = "";
+        localStorage.removeItem(draftKey);
+        updateWritingStats();
+        if (writingFeedbackBox) writingFeedbackBox.classList.add("d-none");
+      }
+    });
+  }
+
+  // Insert template into editor
+  document.querySelectorAll(".btn-insert-template").forEach(btn => {
+    btn.addEventListener("click", function() {
+      const textToInsert = this.dataset.text;
+      if (!writingInput || !textToInsert) return;
+      const cur = writingInput.value.trim();
+      if (!cur) {
+        writingInput.value = textToInsert + " ";
+      } else {
+        writingInput.value = cur + " " + textToInsert + " ";
+      }
+      writingInput.focus();
+      updateWritingStats();
+      localStorage.setItem(draftKey, writingInput.value);
+    });
+  });
+
+  // Copy model answer
+  document.querySelectorAll(".btn-copy-model").forEach(btn => {
+    btn.addEventListener("click", function() {
+      const model = this.dataset.model;
+      if (!model) return;
+      navigator.clipboard.writeText(model).then(() => {
+        this.innerHTML = `<i class="ph-bold ph-check text-success"></i> <span class="text-success">Đã sao chép!</span>`;
+        setTimeout(() => {
+          this.innerHTML = `<i class="ph-bold ph-copy"></i> <span>Sao chép</span>`;
+        }, 2500);
+      });
+    });
+  });
+
+  // Analyze Writing Assistant
+  if (btnAnalyzeWriting && writingInput) {
+    btnAnalyzeWriting.addEventListener("click", function() {
+      const text = writingInput.value.trim();
+      if (!text) {
+        alert("Vui lòng viết ít nhất 1 câu trước khi kiểm tra!");
+        writingInput.focus();
+        return;
+      }
+
+      const words = countWords(text);
+      const sentences = text.split(/[.!?]+/).filter(s => s.trim().length > 0).length;
+
+      // Common cohesive devices & connectors
+      const connectorsList = [
+        "first", "then", "after that", "finally", "because", "however", "although", 
+        "furthermore", "moreover", "in addition", "on the other hand", "therefore", 
+        "in conclusion", "to sum up", "for example", "for instance", "so", "but", "and"
+      ];
+      let detectedConnectors = 0;
+      const lower = text.toLowerCase();
+      connectorsList.forEach(c => {
+        if (lower.includes(c)) detectedConnectors++;
+      });
+
+      if (statWords) statWords.innerText = words;
+      if (statSentences) statSentences.innerText = sentences;
+      if (statConnectors) statConnectors.innerText = detectedConnectors;
+
+      // Construct constructive advice
+      let grade = "Rất tốt";
+      let gradeClass = "bg-success-subtle text-success";
+      let advice = "";
+
+      if (words < targetMin) {
+        grade = "Cần mở rộng thêm";
+        gradeClass = "bg-warning-subtle text-dark";
+        advice = `Bài viết hiện có <strong>${words} từ</strong> (chưa đạt mức tối thiểu <strong>${targetMin} từ</strong>). Bạn hãy bổ sung thêm các chi tiết như thời gian, địa điểm hoặc cảm nghĩ cá nhân.`;
+      } else if (detectedConnectors === 0) {
+        grade = "Khá tốt";
+        gradeClass = "bg-info-subtle text-info";
+        advice = `Bạn đã đạt độ dài yêu cầu (${words} từ, ${sentences} câu)! Để bài viết mạch lạc hơn, hãy thử sử dụng các từ liên kết như <em>First, Then, However, Because</em>.`;
+      } else {
+        grade = "Xuất sắc";
+        gradeClass = "bg-success-subtle text-success";
+        advice = `Bài viết rất ấn tượng! Độ dài đạt chuẩn (${words} từ) với ${sentences} câu hoàn chỉnh và ${detectedConnectors} từ nối chuyển ý tự nhiên. Bạn có thể sẵn sàng nộp bài!`;
+      }
+
+      if (writingGradeBadge) {
+        writingGradeBadge.className = `badge rounded-pill px-2.5 py-0.5 fw-bold ${gradeClass}`;
+        writingGradeBadge.innerText = grade;
+      }
+      if (writingAdviceText) writingAdviceText.innerHTML = advice;
+      if (writingFeedbackBox) writingFeedbackBox.classList.remove("d-none");
+    });
+  }
+
+  // Writing notes auto save
+  const writingNoteInput = document.getElementById("writingNoteInput");
+  let writingNoteTimer = null;
+  if (writingNoteInput) {
+    writingNoteInput.addEventListener("input", function() {
+      clearTimeout(writingNoteTimer);
+      writingNoteTimer = setTimeout(() => {
+        const formData = new FormData();
+        formData.append("note", writingNoteInput.value);
         formData.append("csrf_token", "{{ csrf_token() }}");
         fetch(`/lessons/{{ lesson.id }}/notes`, {
           method: "POST",
