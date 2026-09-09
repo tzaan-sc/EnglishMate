@@ -16,11 +16,17 @@
       <li class="breadcrumb-item">
         <a href="{{ url_for('learning.lessons') }}">Bài Học</a>
       </li>
+      {% if lesson.skill == 'Listening' %}
+      <li class="breadcrumb-item">
+        <a href="{{ url_for('learning.lessons', skill='Listening') }}">Luyện Nghe</a>
+      </li>
+      {% elif lesson.skill %}
+      <li class="breadcrumb-item">
+        <a href="{{ url_for('learning.lessons', skill=lesson.skill) }}">{{ lesson.skill }}</a>
+      </li>
+      {% endif %}
       <li class="breadcrumb-item">
         <span class="badge bg-light text-secondary border px-2 py-0.5">{{ lesson.level }}</span>
-      </li>
-      <li class="breadcrumb-item">
-        <span class="text-secondary">{{ lesson.skill }}</span>
       </li>
       <li class="breadcrumb-item active text-truncate" aria-current="page" style="max-width: 280px;" title="{{ lesson.title }}">
         {{ lesson.title }}
@@ -30,10 +36,17 @@
 
   <!-- Top Navigation & Action Bar -->
   <div class="d-flex align-items-center justify-content-between mb-3.5">
-    <a class="btn btn-light border rounded-3 px-3 py-1.5 fw-semibold text-secondary d-inline-flex align-items-center gap-2 shadow-xs transition-hover" href="{{ url_for('learning.lessons') }}" style="font-size: 0.84rem;">
+    {% if lesson.skill == 'Listening' %}
+    <a class="btn btn-light border rounded-3 px-3 py-1.5 fw-semibold text-secondary d-inline-flex align-items-center gap-2 shadow-xs transition-hover" href="{{ url_for('learning.lessons', skill='Listening') }}" style="font-size: 0.84rem;">
       <i class="ph-bold ph-arrow-left"></i>
-      <span>Thư viện bài học</span>
+      <span>Quay lại Luyện Nghe</span>
     </a>
+    {% else %}
+    <a class="btn btn-light border rounded-3 px-3 py-1.5 fw-semibold text-secondary d-inline-flex align-items-center gap-2 shadow-xs transition-hover" href="{{ url_for('learning.lessons', skill=lesson.skill) if lesson.skill else url_for('learning.lessons') }}" style="font-size: 0.84rem;">
+      <i class="ph-bold ph-arrow-left"></i>
+      <span>Quay lại {{ lesson.skill if lesson.skill else 'Thư viện bài học' }}</span>
+    </a>
+    {% endif %}
     
     <div class="d-flex align-items-center gap-2">
       <!-- Favorite Button -->
@@ -52,7 +65,296 @@
     </div>
   </div>
 
-  <!-- UNIFIED LESSON HEADER & LEARNING STEPPER CARD -->
+{% if lesson.skill == 'Listening' %}
+  <!-- LISTENING AUDIO STUDIO & STEPPER CARD -->
+  <div class="card-modern p-4 p-md-4 mb-4">
+    <!-- Badges & Status -->
+    <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-2.5">
+      <div class="d-flex align-items-center gap-2">
+        <span class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill px-3 py-1 fw-bold" style="font-size: 0.74rem;">
+          {{ lesson.level }}
+        </span>
+        <span class="badge bg-warning-subtle text-dark border border-warning-subtle rounded-pill px-3 py-1 fw-semibold d-inline-flex align-items-center gap-1" style="font-size: 0.74rem;">
+          <i class="ph-bold ph-headphones text-warning"></i>
+          <span>Luyện Nghe</span>
+        </span>
+        <span class="badge bg-light text-secondary border rounded-pill px-2.5 py-1 fw-semibold" style="font-size: 0.74rem;">
+          <i class="ph-bold ph-waveform me-1"></i>{{ lesson.accent or 'US' }} Accent
+        </span>
+        <small class="text-muted d-inline-flex align-items-center gap-1 ms-2" style="font-size: 0.74rem;">
+          <i class="ph-bold ph-eye"></i> {{ lesson.view_count or 1 }} lượt học
+        </small>
+      </div>
+
+      {% if completed %}
+      <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-3 py-1 fw-bold d-inline-flex align-items-center gap-1" style="font-size: 0.74rem;">
+        <i class="ph-fill ph-check-circle"></i> ✓ Đã hoàn thành
+      </span>
+      {% else %}
+      <span class="badge bg-primary-subtle text-primary rounded-pill px-3 py-1 fw-semibold" style="font-size: 0.74rem;">
+        Đang học
+      </span>
+      {% endif %}
+    </div>
+
+    <!-- Title & Description -->
+    <h2 class="fw-bold text-dark mb-2" style="font-size: 1.55rem; letter-spacing: -0.02em;">
+      {{ lesson.title }}
+    </h2>
+    <p class="text-secondary mb-3.5" style="font-size: 0.92rem; line-height: 1.6;">
+      {{ lesson.short_description }}
+    </p>
+
+    <!-- STUDIO AUDIO CONTROLLER BOX -->
+    <div class="audio-studio-player-box mb-3">
+      <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3">
+        <!-- Play / Pause & Title/Time -->
+        <div class="d-flex align-items-center gap-3">
+          <button type="button" id="studioMainPlayBtn" class="btn btn-primary rounded-circle d-flex align-items-center justify-content-center p-0 flex-shrink-0 shadow-sm" style="width: 46px; height: 46px;" title="Phát / Tạm dừng toàn bài">
+            <i class="ph-fill ph-play text-white fs-5" id="studioPlayIcon"></i>
+          </button>
+          <div>
+            <div class="fw-bold text-dark small mb-0.5">Phát bài nghe toàn diện</div>
+            <div class="text-muted small d-flex align-items-center gap-1.5" style="font-size: 0.78rem;">
+              <span id="studioCurrentTime">00:00</span> / <span id="studioTotalTime">{{ lesson.audio_duration or '02:45' }}</span>
+              <span class="badge bg-warning-subtle text-dark border border-warning-subtle py-0.5 px-1.5 fw-semibold" style="font-size: 0.68rem;">{{ lesson.accent or 'US' }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Seekbar & Controls -->
+        <div class="d-flex align-items-center gap-2 flex-grow-1 mx-md-3" style="max-width: 380px;">
+          <button type="button" id="studioSkipBackBtn" class="btn btn-sm btn-light border rounded-circle p-0 d-flex align-items-center justify-content-center flex-shrink-0" style="width: 32px; height: 32px;" title="Lùi 5 giây">
+            <i class="ph-bold ph-arrow-counter-clockwise text-secondary fs-6"></i>
+          </button>
+
+          <input type="range" id="studioSeekbar" class="listening-seekbar flex-grow-1" min="0" max="100" value="0" step="1">
+
+          <button type="button" id="studioSkipForwardBtn" class="btn btn-sm btn-light border rounded-circle p-0 d-flex align-items-center justify-content-center flex-shrink-0" style="width: 32px; height: 32px;" title="Tiến 5 giây">
+            <i class="ph-bold ph-arrow-clockwise text-secondary fs-6"></i>
+          </button>
+        </div>
+
+        <!-- Speed & Blind Listening -->
+        <div class="d-flex align-items-center gap-2 justify-content-end">
+          <button type="button" id="studioRateBtn" class="btn btn-sm btn-light border rounded-pill px-2.5 py-1 fw-bold text-secondary" style="font-size: 0.78rem;" title="Tốc độ phát">
+            1.0x
+          </button>
+          <button type="button" id="studioBlindBtn" class="btn btn-sm btn-light border rounded-pill px-3 py-1 fw-semibold text-secondary d-inline-flex align-items-center gap-1.5" style="font-size: 0.78rem;" title="Làm mờ để luyện tai nghe">
+            <i class="ph-bold ph-eye" id="studioBlindIcon"></i>
+            <span id="studioBlindText">Che lời</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 3 LISTENING TABS NAV -->
+    <div class="nav nav-pills nav-fill gap-2 pt-2 border-top border-light" id="listeningTabs" role="tablist">
+      <button class="nav-link active rounded-3 fw-bold py-2 px-3 text-start d-flex align-items-center gap-2 transition" id="tab-transcript-btn" data-bs-toggle="tab" data-bs-target="#listeningTabTranscript" type="button" role="tab" style="font-size: 0.86rem;">
+        <i class="ph-bold ph-subtitles fs-5 text-primary"></i>
+        <span>1. Lời thoại tương tác</span>
+      </button>
+      <button class="nav-link rounded-3 fw-bold py-2 px-3 text-start d-flex align-items-center gap-2 transition" id="tab-dictation-btn" data-bs-toggle="tab" data-bs-target="#listeningTabDictation" type="button" role="tab" style="font-size: 0.86rem;">
+        <i class="ph-bold ph-pencil-simple-line fs-5 text-warning"></i>
+        <span>2. Chép chính tả</span>
+      </button>
+      <button class="nav-link rounded-3 fw-bold py-2 px-3 text-start d-flex align-items-center gap-2 transition" id="tab-notes-btn" data-bs-toggle="tab" data-bs-target="#listeningTabNotes" type="button" role="tab" style="font-size: 0.86rem;">
+        <i class="ph-bold ph-note-pencil fs-5 text-success"></i>
+        <span>3. Ghi chú & Hoàn thành</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- LISTENING TABS CONTENT -->
+  <div class="tab-content mb-4" id="listeningTabsContent">
+
+    <!-- TAB 1: INTERACTIVE TRANSCRIPT -->
+    <div class="tab-pane fade show active" id="listeningTabTranscript" role="tabpanel">
+      <div class="card-modern p-4 p-md-4 mb-3">
+        <div class="d-flex align-items-center justify-content-between mb-3.5 pb-2.5 border-bottom border-light">
+          <div class="d-flex align-items-center gap-2">
+            <span class="rounded-circle d-flex align-items-center justify-content-center" style="width: 32px; height: 32px; background-color: var(--warning-subtle); color: var(--warning);">
+              <i class="ph-bold ph-headphones fs-5"></i>
+            </span>
+            <div>
+              <h5 class="fw-bold text-dark mb-0" style="font-size: 1.05rem;">Lời thoại bài nghe (Interactive Transcript)</h5>
+              <small class="text-muted">Nhấp vào câu bất kỳ để nghe riêng câu đó</small>
+            </div>
+          </div>
+          <span class="badge bg-light text-secondary border rounded-pill px-2.5 py-1 small fw-semibold">
+            {{ transcript_lines|length }} câu thoại
+          </span>
+        </div>
+
+        <!-- Transcript Line Items -->
+        <div class="d-flex flex-column gap-2" id="transcriptContainer">
+          {% for line in transcript_lines %}
+          <div class="transcript-card d-flex align-items-start gap-3 transition-hover" 
+               data-line-index="{{ loop.index0 }}"
+               data-line-text="{{ line.text|replace('\"', '&quot;') }}"
+               title="Nhấp để nghe câu này">
+            <button type="button" class="btn btn-light border rounded-circle p-0 d-flex align-items-center justify-content-center flex-shrink-0 btn-play-line mt-0.5 shadow-none" style="width: 34px; height: 34px;">
+              <i class="ph-fill ph-play fs-6 text-primary line-play-icon"></i>
+            </button>
+            <div class="flex-grow-1 overflow-hidden">
+              {% if line.speaker %}
+              <div class="badge bg-light text-dark border px-2 py-0.5 mb-1 small fw-bold">{{ line.speaker }}</div>
+              {% endif %}
+              <div class="transcript-text text-dark" style="font-size: 1.02rem; line-height: 1.6;">
+                {{ line.text }}
+              </div>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+
+        {% if lesson.content and lesson.examples %}
+        <div class="mt-4 pt-3 border-top border-light">
+          <h6 class="fw-bold text-dark small text-uppercase mb-2" style="letter-spacing: 0.04em;">
+            <i class="ph-bold ph-lightbulb text-warning me-1"></i>Hướng dẫn & Mẹo nghe:
+          </h6>
+          <div class="text-secondary small lh-lg" style="white-space: pre-line;">{{ lesson.content }}</div>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- TAB 2: DICTATION LAB (CHÉP CHÍNH TẢ) -->
+    <div class="tab-pane fade" id="listeningTabDictation" role="tabpanel">
+      <div class="card-modern p-4 p-md-4 mb-3">
+        <div class="d-flex align-items-center justify-content-between mb-3.5 pb-2.5 border-bottom border-light">
+          <div class="d-flex align-items-center gap-2">
+            <span class="rounded-circle d-flex align-items-center justify-content-center" style="width: 32px; height: 32px; background-color: var(--primary-subtle); color: var(--primary);">
+              <i class="ph-bold ph-pencil-simple-line fs-5"></i>
+            </span>
+            <div>
+              <h5 class="fw-bold text-dark mb-0" style="font-size: 1.05rem;">Luyện Chép Chính Tả (Dictation Lab)</h5>
+              <small class="text-muted">Nghe câu thoại và gõ lại chính xác để rèn luyện phản xạ tai</small>
+            </div>
+          </div>
+          <span class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill px-3 py-1 fw-bold" id="dictationStepBadge">
+            Câu 1 / {{ transcript_lines|length or 1 }}
+          </span>
+        </div>
+
+        <div class="p-4 rounded-4 border mb-3" style="background-color: var(--bg-surface-subtle); border-color: var(--border-light) !important;">
+          <div class="d-flex align-items-center justify-content-between mb-3">
+            <div class="d-flex align-items-center gap-2">
+              <button type="button" id="dictationPlayCurrentBtn" class="btn btn-primary rounded-pill px-3.5 py-1.5 fw-bold d-inline-flex align-items-center gap-1.5 shadow-xs" style="font-size: 0.85rem;">
+                <i class="ph-fill ph-play"></i>
+                <span>Phát câu này</span>
+              </button>
+              <button type="button" id="dictationReplayBtn" class="btn btn-light border rounded-pill px-3 py-1.5 fw-semibold text-secondary d-inline-flex align-items-center gap-1 shadow-none" style="font-size: 0.85rem;">
+                <i class="ph-bold ph-arrow-counter-clockwise"></i>
+                <span>Nghe lại</span>
+              </button>
+            </div>
+            <span class="text-muted small" id="dictationSpeakerName"></span>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label small fw-bold text-muted mb-1.5">Gõ những gì bạn nghe được vào đây:</label>
+            <textarea id="dictationInput" class="form-control p-3 rounded-3 shadow-none" rows="3" 
+                      placeholder="Gõ câu tiếng Anh nghe được tại đây rồi bấm 'Kiểm tra'..." 
+                      style="border-color: var(--border-light); font-size: 1.02rem; line-height: 1.6;"></textarea>
+          </div>
+
+          <!-- Comparison result container -->
+          <div id="dictationResultBox" class="p-3 rounded-3 border d-none mb-3 bg-white">
+            <div class="small fw-bold text-muted mb-1 text-uppercase" style="letter-spacing: 0.04em;">Kết quả so khớp:</div>
+            <div id="dictationDiffOutput" class="fs-6 lh-base mb-2"></div>
+            <div class="small text-muted" id="dictationAccuracyText"></div>
+          </div>
+
+          <div class="d-flex align-items-center justify-content-between">
+            <button type="button" id="dictationCheckBtn" class="btn btn-primary rounded-pill px-4 py-2 fw-bold shadow-xs d-inline-flex align-items-center gap-1.5">
+              <i class="ph-bold ph-check"></i>
+              <span>Kiểm tra đáp án</span>
+            </button>
+            <button type="button" id="dictationNextBtn" class="btn btn-light border rounded-pill px-4 py-2 fw-bold text-secondary d-inline-flex align-items-center gap-1.5 shadow-none">
+              <span>Câu tiếp theo</span>
+              <i class="ph-bold ph-arrow-right"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 3: NOTES & COMPLETE -->
+    <div class="tab-pane fade" id="listeningTabNotes" role="tabpanel">
+      <div class="card-modern p-4 p-md-4 mb-3">
+        <div class="d-flex align-items-center justify-content-between mb-3.5 pb-2.5 border-bottom border-light">
+          <div class="d-flex align-items-center gap-2">
+            <span class="rounded-circle d-flex align-items-center justify-content-center" style="width: 32px; height: 32px; background-color: var(--primary-subtle); color: var(--primary);">
+              <i class="ph-bold ph-note-pencil fs-5"></i>
+            </span>
+            <h5 class="fw-bold text-dark mb-0" style="font-size: 1.05rem;">Ghi chú bài nghe & Hoàn thành</h5>
+          </div>
+        </div>
+
+        <!-- Add Lesson Notes Form -->
+        <form id="noteFormListening" action="{{ url_for('learning.save_lesson_note', lesson_id=lesson.id) }}" method="post" class="mb-4">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <div class="mb-2.5">
+            <label class="form-label fw-bold text-dark small">Ghi chép từ mới / lưu ý phát âm cho bài này:</label>
+            <textarea class="form-control rounded-3 p-3 shadow-none" 
+                      name="note" rows="4" 
+                      placeholder="Nhập từ vựng mới hoặc cấu trúc câu bạn nghe được tại đây..."
+                      style="border-color: var(--border-light); font-size: 0.9rem; line-height: 1.6;">{{ user_note }}</textarea>
+          </div>
+          <div class="d-flex justify-content-between align-items-center">
+            <small class="text-muted d-inline-flex align-items-center gap-1" style="font-size: 0.76rem;">
+              <i class="ph-bold ph-cloud-check text-success"></i> Gõ để lưu ghi chú cá nhân
+            </small>
+            <button type="submit" class="btn btn-primary rounded-3 px-4 py-2 fw-bold shadow-sm d-inline-flex align-items-center gap-1.5" style="font-size: 0.84rem;">
+              <i class="ph-bold ph-floppy-disk"></i>
+              <span>Lưu Ghi Chú</span>
+            </button>
+          </div>
+        </form>
+
+        <!-- Complete Lesson Milestone Box -->
+        <div class="p-4 rounded-4 text-center border" style="background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%); border-color: #a7f3d0 !important;">
+          {% if completed %}
+          <div class="d-flex flex-column align-items-center py-2">
+            <div class="rounded-circle bg-success text-white d-flex align-items-center justify-content-center mb-2.5 shadow-sm" style="width: 52px; height: 52px;">
+              <i class="ph-bold ph-check fs-3"></i>
+            </div>
+            <h5 class="fw-bold text-success mb-1">Tuyệt vời! Bạn đã hoàn thành bài nghe này.</h5>
+            <p class="text-secondary small mb-3" style="max-width: 460px;">
+              Hệ thống đã ghi nhận tiến độ học tập tích lũy cho tài khoản của bạn. Hãy tiếp tục học các bài tiếp theo để duy trì chuỗi học tập!
+            </p>
+            <a class="btn btn-primary rounded-3 px-4 py-2 fw-bold shadow-sm d-inline-flex align-items-center gap-2" href="{{ url_for('learning.lessons', skill='Listening') }}">
+              <i class="ph-bold ph-arrow-left"></i>
+              <span>Quay lại Thư viện Luyện Nghe</span>
+            </a>
+          </div>
+          {% else %}
+          <div class="d-flex flex-column align-items-center py-2">
+            <div class="rounded-circle d-flex align-items-center justify-content-center mb-2.5 shadow-sm" style="width: 52px; height: 52px; background-color: var(--primary); color: white;">
+              <i class="ph-bold ph-trophy fs-3"></i>
+            </div>
+            <h5 class="fw-bold text-dark mb-1">Bạn đã sẵn sàng hoàn thành bài nghe?</h5>
+            <p class="text-secondary small mb-3" style="max-width: 440px;">
+              Nhấn nút bên dưới để ghi nhận hoàn thành bài và nhận điểm tích lũy kinh nghiệm (+20 XP) hôm nay!
+            </p>
+            <form method="post" action="{{ url_for('learning.complete_lesson', lesson_id=lesson.id) }}">
+              {{ form.hidden_tag() }}
+              <button class="btn btn-primary btn-lg rounded-pill px-5 py-2.5 fw-bold shadow-sm d-inline-flex align-items-center gap-2">
+                <i class="ph-bold ph-check-circle fs-5"></i>
+                <span>Đánh dấu hoàn thành bài nghe</span>
+              </button>
+            </form>
+          </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+{% else %}
+  <!-- UNIFIED LESSON HEADER & LEARNING STEPPER CARD (READING / SPEAKING / WRITING) -->
   <div class="card-modern p-4 p-md-4 mb-4">
     <!-- Level, Skill Badges & Status -->
     <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-2.5">
@@ -233,9 +535,9 @@
             <p class="text-secondary small mb-3" style="max-width: 460px;">
               Hệ thống đã ghi nhận tiến độ học tập tích lũy cho tài khoản của bạn. Hãy tiếp tục học các bài tiếp theo để duy trì chuỗi học tập!
             </p>
-            <a class="btn btn-primary rounded-3 px-4 py-2 fw-bold shadow-sm d-inline-flex align-items-center gap-2" href="{{ url_for('learning.lessons') }}">
+            <a class="btn btn-primary rounded-3 px-4 py-2 fw-bold shadow-sm d-inline-flex align-items-center gap-2" href="{{ url_for('learning.lessons', skill=lesson.skill) if lesson.skill else url_for('learning.lessons') }}">
               <i class="ph-bold ph-arrow-left"></i>
-              <span>Quay lại Thư viện bài học</span>
+              <span>Quay lại {{ lesson.skill if lesson.skill else 'Thư viện bài học' }}</span>
             </a>
           </div>
           {% else %}
@@ -274,6 +576,7 @@
       <i class="ph-bold ph-arrow-right"></i>
     </button>
   </div>
+{% endif %}
 
 </div>
 
@@ -346,18 +649,24 @@ const csrfToken = "{{ csrf_token() }}";
 function updateSectionProgress(sec) {
   currentSec = sec;
   const pct = Math.round((sec / 3) * 100);
-  document.getElementById("sectionProgressText").innerText = `Tiến độ bài học: Phần ${sec} / 3 (${pct}%)`;
+  const progText = document.getElementById("sectionProgressText");
+  if (progText) progText.innerText = `Tiến độ bài học: Phần ${sec} / 3 (${pct}%)`;
   const stepBadge = document.getElementById("sectionStepBadge");
   if (stepBadge) stepBadge.innerText = `Bước ${sec} / 3`;
-  document.getElementById("sectionProgressBar").style.width = `${pct}%`;
+  const progBar = document.getElementById("sectionProgressBar");
+  if (progBar) progBar.style.width = `${pct}%`;
 
-  document.getElementById("prevSectionBtn").disabled = (sec === 1);
-  if (sec === 3) {
-    document.getElementById("nextSectionBtn").innerText = "Đã ở phần cuối";
-    document.getElementById("nextSectionBtn").disabled = true;
-  } else {
-    document.getElementById("nextSectionBtn").innerText = "Phần tiếp theo →";
-    document.getElementById("nextSectionBtn").disabled = false;
+  const prevBtn = document.getElementById("prevSectionBtn");
+  if (prevBtn) prevBtn.disabled = (sec === 1);
+  const nextBtn = document.getElementById("nextSectionBtn");
+  if (nextBtn) {
+    if (sec === 3) {
+      nextBtn.innerText = "Đã ở phần cuối";
+      nextBtn.disabled = true;
+    } else {
+      nextBtn.innerText = "Phần tiếp theo →";
+      nextBtn.disabled = false;
+    }
   }
 }
 
@@ -365,20 +674,27 @@ function navigateSection(delta) {
   const newSec = currentSec + delta;
   if (newSec >= 1 && newSec <= 3) {
     const tabEl = document.getElementById(`tab-sec${newSec}`);
-    const tab = new bootstrap.Tab(tabEl);
-    tab.show();
-    updateSectionProgress(newSec);
+    if (tabEl) {
+      const tab = new bootstrap.Tab(tabEl);
+      tab.show();
+      updateSectionProgress(newSec);
+    }
   }
 }
 
 function copyShareUrl() {
   const urlInput = document.getElementById("shareUrlInput");
-  urlInput.select();
-  navigator.clipboard.writeText(urlInput.value);
-  document.getElementById("copyAlert").classList.remove("d-none");
-  setTimeout(() => {
-    document.getElementById("copyAlert").classList.add("d-none");
-  }, 3000);
+  if (urlInput) {
+    urlInput.select();
+    navigator.clipboard.writeText(urlInput.value);
+    const alertEl = document.getElementById("copyAlert");
+    if (alertEl) {
+      alertEl.classList.remove("d-none");
+      setTimeout(() => {
+        alertEl.classList.add("d-none");
+      }, 3000);
+    }
+  }
 }
 
 document.addEventListener("DOMContentLoaded", function() {
@@ -389,7 +705,7 @@ document.addEventListener("DOMContentLoaded", function() {
       const lessonId = this.dataset.lessonId;
       const heartIcon = this.querySelector("i");
 
-      fetch(`/learning/lessons/${lessonId}/favorite`, {
+      fetch(`/lessons/${lessonId}/favorite`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -419,7 +735,7 @@ document.addEventListener("DOMContentLoaded", function() {
       const sectionIdx = this.dataset.section;
       const bmIcon = this.querySelector("i");
 
-      fetch(`/learning/lessons/{{ lesson.id }}/bookmark`, {
+      fetch(`/lessons/{{ lesson.id }}/bookmark`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -442,6 +758,312 @@ document.addEventListener("DOMContentLoaded", function() {
       });
     });
   });
+
+  {% if lesson.skill == 'Listening' %}
+  // ==========================================
+  // LISTENING DETAIL STUDIO & DICTATION SCRIPT
+  // ==========================================
+  const studioPlayBtn = document.getElementById("studioMainPlayBtn");
+  const studioPlayIcon = document.getElementById("studioPlayIcon");
+  const studioCurrentTime = document.getElementById("studioCurrentTime");
+  const studioTotalTime = document.getElementById("studioTotalTime");
+  const studioSeekbar = document.getElementById("studioSeekbar");
+  const studioSkipBackBtn = document.getElementById("studioSkipBackBtn");
+  const studioSkipForwardBtn = document.getElementById("studioSkipForwardBtn");
+  const studioRateBtn = document.getElementById("studioRateBtn");
+  const studioBlindBtn = document.getElementById("studioBlindBtn");
+  const studioBlindIcon = document.getElementById("studioBlindIcon");
+  const studioBlindText = document.getElementById("studioBlindText");
+
+  const transcriptCards = document.querySelectorAll(".transcript-card");
+  const lessonAccent = "{{ lesson.accent or 'US' }}";
+  const lessonLang = lessonAccent === "UK" ? "en-GB" : "en-US";
+  const rawDuration = "{{ lesson.audio_duration or '02:45' }}";
+
+  let studioPlaying = false;
+  let studioRate = 1.0;
+  let studioProgressSec = 0;
+  let studioTotalSec = 165;
+  let studioTimer = null;
+  let studioUtterance = null;
+  let isBlind = false;
+
+  const durationParts = rawDuration.split(":");
+  if (durationParts.length === 2) {
+    studioTotalSec = parseInt(durationParts[0]) * 60 + parseInt(durationParts[1]);
+  }
+
+  function formatTimeStudio(seconds) {
+    const m = Math.floor(seconds / 60);
+    const s = Math.floor(seconds % 60);
+    return `${m < 10 ? '0' : ''}${m}:${s < 10 ? '0' : ''}${s}`;
+  }
+
+  function stopStudioPlayback() {
+    if ('speechSynthesis' in window) {
+      window.speechSynthesis.cancel();
+    }
+    if (studioTimer) {
+      clearInterval(studioTimer);
+      studioTimer = null;
+    }
+    studioPlaying = false;
+    if (studioPlayIcon) {
+      studioPlayIcon.classList.remove("ph-pause");
+      studioPlayIcon.classList.add("ph-play");
+    }
+    transcriptCards.forEach(c => {
+      c.classList.remove("is-active");
+      const ic = c.querySelector(".line-play-icon");
+      if (ic) {
+        ic.classList.remove("ph-pause");
+        ic.classList.add("ph-play");
+      }
+    });
+  }
+
+  function playStudioSentence(text, cardEl) {
+    stopStudioPlayback();
+
+    if (cardEl) {
+      cardEl.classList.add("is-active");
+      const ic = cardEl.querySelector(".line-play-icon");
+      if (ic) {
+        ic.classList.remove("ph-play");
+        ic.classList.add("ph-pause");
+      }
+    }
+
+    if ('speechSynthesis' in window) {
+      const utt = new SpeechSynthesisUtterance(text);
+      utt.lang = lessonLang;
+      utt.rate = studioRate;
+      utt.onend = function() {
+        stopStudioPlayback();
+      };
+      utt.onerror = function() {
+        stopStudioPlayback();
+      };
+      window.speechSynthesis.speak(utt);
+    }
+  }
+
+  // Bind Transcript Lines
+  transcriptCards.forEach((card, idx) => {
+    card.addEventListener("click", function(e) {
+      const text = this.dataset.lineText;
+      const isCurrentlyActive = this.classList.contains("is-active");
+      if (isCurrentlyActive && window.speechSynthesis && window.speechSynthesis.speaking) {
+        stopStudioPlayback();
+      } else {
+        playStudioSentence(text, this);
+      }
+    });
+  });
+
+  // Studio Main Play / Pause
+  if (studioPlayBtn) {
+    studioPlayBtn.addEventListener("click", function() {
+      if (studioPlaying) {
+        stopStudioPlayback();
+      } else {
+        stopStudioPlayback();
+        const fullText = Array.from(transcriptCards).map(c => c.dataset.lineText).join(". ");
+        studioPlaying = true;
+        if (studioPlayIcon) {
+          studioPlayIcon.classList.remove("ph-play");
+          studioPlayIcon.classList.add("ph-pause");
+        }
+
+        if ('speechSynthesis' in window) {
+          studioUtterance = new SpeechSynthesisUtterance(fullText);
+          studioUtterance.lang = lessonLang;
+          studioUtterance.rate = studioRate;
+          studioUtterance.onend = function() {
+            stopStudioPlayback();
+          };
+          studioUtterance.onerror = function() {
+            stopStudioPlayback();
+          };
+          window.speechSynthesis.speak(studioUtterance);
+        }
+
+        studioTimer = setInterval(() => {
+          if (!studioPlaying) return;
+          studioProgressSec += 1;
+          if (studioCurrentTime) studioCurrentTime.innerText = formatTimeStudio(studioProgressSec);
+          if (studioSeekbar) studioSeekbar.value = Math.min(100, Math.round((studioProgressSec / studioTotalSec) * 100));
+          if (studioProgressSec >= studioTotalSec) {
+            stopStudioPlayback();
+          }
+        }, 1000);
+      }
+    });
+  }
+
+  // Seekbar Change
+  if (studioSeekbar) {
+    studioSeekbar.addEventListener("input", function() {
+      const pct = parseInt(this.value);
+      studioProgressSec = Math.round((pct / 100) * studioTotalSec);
+      if (studioCurrentTime) studioCurrentTime.innerText = formatTimeStudio(studioProgressSec);
+    });
+  }
+
+  // Skip -5s / +5s
+  if (studioSkipBackBtn) {
+    studioSkipBackBtn.addEventListener("click", function() {
+      studioProgressSec = Math.max(0, studioProgressSec - 5);
+      if (studioCurrentTime) studioCurrentTime.innerText = formatTimeStudio(studioProgressSec);
+      if (studioSeekbar) studioSeekbar.value = Math.round((studioProgressSec / studioTotalSec) * 100);
+    });
+  }
+
+  if (studioSkipForwardBtn) {
+    studioSkipForwardBtn.addEventListener("click", function() {
+      studioProgressSec = Math.min(studioTotalSec, studioProgressSec + 5);
+      if (studioCurrentTime) studioCurrentTime.innerText = formatTimeStudio(studioProgressSec);
+      if (studioSeekbar) studioSeekbar.value = Math.round((studioProgressSec / studioTotalSec) * 100);
+    });
+  }
+
+  // Rate Toggle
+  const studioRates = [1.0, 1.25, 1.5, 0.75];
+  let sRateIdx = 0;
+  if (studioRateBtn) {
+    studioRateBtn.addEventListener("click", function() {
+      sRateIdx = (sRateIdx + 1) % studioRates.length;
+      studioRate = studioRates[sRateIdx];
+      this.innerText = `${studioRate}x`;
+    });
+  }
+
+  // Blind Listening Mode Toggle
+  if (studioBlindBtn) {
+    studioBlindBtn.addEventListener("click", function() {
+      isBlind = !isBlind;
+      document.querySelectorAll(".transcript-text").forEach(el => {
+        el.classList.toggle("is-blinded", isBlind);
+      });
+      if (isBlind) {
+        studioBlindBtn.classList.add("btn-warning", "text-dark");
+        studioBlindBtn.classList.remove("btn-light", "text-secondary");
+        studioBlindIcon.classList.remove("ph-eye");
+        studioBlindIcon.classList.add("ph-eye-slash");
+        studioBlindText.innerText = "Hiện lời";
+      } else {
+        studioBlindBtn.classList.remove("btn-warning", "text-dark");
+        studioBlindBtn.classList.add("btn-light", "text-secondary");
+        studioBlindIcon.classList.remove("ph-eye-slash");
+        studioBlindIcon.classList.add("ph-eye");
+        studioBlindText.innerText = "Che lời";
+      }
+    });
+  }
+
+  // ==========================================
+  // DICTATION LAB ENGINE
+  // ==========================================
+  const dictationItems = {{ transcript_lines|tojson }};
+  let dictationIdx = 0;
+
+  const dictationStepBadge = document.getElementById("dictationStepBadge");
+  const dictationSpeakerName = document.getElementById("dictationSpeakerName");
+  const dictationInput = document.getElementById("dictationInput");
+  const dictationPlayCurrentBtn = document.getElementById("dictationPlayCurrentBtn");
+  const dictationReplayBtn = document.getElementById("dictationReplayBtn");
+  const dictationCheckBtn = document.getElementById("dictationCheckBtn");
+  const dictationNextBtn = document.getElementById("dictationNextBtn");
+  const dictationResultBox = document.getElementById("dictationResultBox");
+  const dictationDiffOutput = document.getElementById("dictationDiffOutput");
+  const dictationAccuracyText = document.getElementById("dictationAccuracyText");
+
+  function loadDictationSentence(index) {
+    if (!dictationItems || dictationItems.length === 0) return;
+    dictationIdx = index;
+    const item = dictationItems[dictationIdx];
+    if (dictationStepBadge) dictationStepBadge.innerText = `Câu ${dictationIdx + 1} / ${dictationItems.length}`;
+    if (dictationSpeakerName) dictationSpeakerName.innerText = item.speaker ? `Người nói: ${item.speaker}` : "";
+    if (dictationInput) {
+      dictationInput.value = "";
+      dictationInput.focus();
+    }
+    if (dictationResultBox) dictationResultBox.classList.add("d-none");
+  }
+
+  function speakDictationSentence() {
+    if (!dictationItems || dictationItems.length === 0) return;
+    const item = dictationItems[dictationIdx];
+    if ('speechSynthesis' in window) {
+      window.speechSynthesis.cancel();
+      const utt = new SpeechSynthesisUtterance(item.text);
+      utt.lang = lessonLang;
+      utt.rate = studioRate;
+      window.speechSynthesis.speak(utt);
+    }
+  }
+
+  if (dictationPlayCurrentBtn) {
+    dictationPlayCurrentBtn.addEventListener("click", speakDictationSentence);
+  }
+  if (dictationReplayBtn) {
+    dictationReplayBtn.addEventListener("click", speakDictationSentence);
+  }
+
+  if (dictationCheckBtn) {
+    dictationCheckBtn.addEventListener("click", function() {
+      if (!dictationItems || dictationItems.length === 0) return;
+      const targetText = dictationItems[dictationIdx].text.trim();
+      const userText = (dictationInput ? dictationInput.value : "").trim();
+
+      const clean = str => str.toLowerCase().replace(/[.,/#!$%^&*;:{}=\-_`~()?"']/g, "");
+      const targetWords = targetText.split(/\s+/);
+      const userWords = userText.split(/\s+/);
+
+      let correctCount = 0;
+      const outputParts = [];
+
+      for (let i = 0; i < targetWords.length; i++) {
+        const targetW = targetWords[i];
+        const cleanTarget = clean(targetW);
+        const userW = userWords[i] || "";
+        const cleanUser = clean(userW);
+
+        if (cleanTarget === cleanUser && cleanTarget.length > 0) {
+          correctCount++;
+          outputParts.push(`<span class="text-success fw-bold me-1">${targetW}</span>`);
+        } else {
+          outputParts.push(`<span class="text-danger text-decoration-underline fw-bold me-1">${userW || '___'}</span> <span class="badge bg-light text-secondary border me-1">${targetW}</span>`);
+        }
+      }
+
+      const accuracy = Math.min(100, Math.round((correctCount / targetWords.length) * 100));
+
+      if (dictationDiffOutput) dictationDiffOutput.innerHTML = outputParts.join(" ");
+      if (dictationAccuracyText) {
+        dictationAccuracyText.innerHTML = `Độ chính xác: <strong class="${accuracy >= 80 ? 'text-success' : 'text-warning'}">${accuracy}%</strong> (${correctCount}/${targetWords.length} từ đúng).`;
+      }
+      if (dictationResultBox) dictationResultBox.classList.remove("d-none");
+    });
+  }
+
+  if (dictationNextBtn) {
+    dictationNextBtn.addEventListener("click", function() {
+      if (!dictationItems || dictationItems.length === 0) return;
+      const nextIdx = (dictationIdx + 1) % dictationItems.length;
+      loadDictationSentence(nextIdx);
+      speakDictationSentence();
+    });
+  }
+
+  // Load first sentence on dictation tab click
+  const dictTabBtn = document.getElementById("tab-dictation-btn");
+  if (dictTabBtn) {
+    dictTabBtn.addEventListener("shown.bs.tab", function() {
+      loadDictationSentence(0);
+    });
+  }
+  {% endif %}
 });
 </script>
 {% endblock %}

@@ -24,6 +24,7 @@ def lessons():
     raw_skill = request.args.get("skill", "All").strip()
     status = request.args.get("status", "").strip()
     sort = request.args.get("sort", "").strip()
+    accent = request.args.get("accent", "").strip()
     search = (request.args.get("search") or request.args.get("q") or "").strip()
     q = search
 
@@ -202,6 +203,16 @@ def lessons():
 
     lessons_list = query.all()
 
+    # Assign accent and audio duration for listening lessons
+    duration_pool = ["02:15", "02:45", "03:10", "03:35", "04:15", "04:50"]
+    for idx, l in enumerate(lessons_list):
+        if l.skill == "Listening":
+            l.accent = "UK" if (l.id % 2 == 0) else "US"
+            l.audio_duration = duration_pool[l.id % len(duration_pool)]
+
+    if current_skill == "Listening" and accent in ["US", "UK"]:
+        lessons_list = [l for l in lessons_list if getattr(l, "accent", "US") == accent]
+
     # Filter by status
     if status == "completed":
         lessons_list = [l for l in lessons_list if l.id in done]
@@ -247,6 +258,7 @@ def lessons():
         skill_param=current_skill,
         level=level,
         status=status,
+        accent=accent,
         sort=sort,
         search=search,
         q=q,
@@ -318,6 +330,30 @@ def lesson_detail(lesson_id):
     lesson.view_count = (lesson.view_count or 0) + 1
     db.session.commit()
 
+    # Listening specific properties
+    transcript_lines = []
+    if lesson.skill == "Listening":
+        lesson.accent = "UK" if (lesson.id % 2 == 0) else "US"
+        duration_pool = ["02:15", "02:45", "03:10", "03:35", "04:15", "04:50"]
+        lesson.audio_duration = duration_pool[lesson.id % len(duration_pool)]
+
+        raw_source = lesson.examples or lesson.content or ""
+        lines = [l.strip() for l in raw_source.splitlines() if l.strip()]
+        for idx, line in enumerate(lines):
+            speaker = None
+            text = line
+            if ":" in line:
+                parts = line.split(":", 1)
+                if len(parts[0]) <= 25 and not parts[0].startswith("http"):
+                    speaker = parts[0].strip()
+                    text = parts[1].strip()
+            transcript_lines.append({
+                "index": idx + 1,
+                "speaker": speaker,
+                "text": text,
+                "full_line": line
+            })
+
     completed = LessonProgress.query.filter_by(user_id=current_user.id, lesson_id=lesson.id).first()
     note_record = LessonNote.query.filter_by(user_id=current_user.id, lesson_id=lesson.id).first()
     bookmarks = [b.section_index for b in LessonBookmark.query.filter_by(user_id=current_user.id, lesson_id=lesson.id).all()]
@@ -326,12 +362,25 @@ def lesson_detail(lesson_id):
     return render_template(
         "learning/lesson_detail.html",
         lesson=lesson,
+        transcript_lines=transcript_lines,
         completed=completed,
         user_note=note_record.content if note_record else "",
         bookmarks=bookmarks,
         is_favorite=is_favorite,
         form=ActionForm()
     )
+
+
+@bp.get("/listening/<int:lesson_id>")
+@login_required
+def listening_detail(lesson_id):
+    return lesson_detail(lesson_id)
+
+
+@bp.get("/listening")
+@login_required
+def listening_hub():
+    return redirect(url_for("learning.lessons", skill="Listening"))
 
 
 @bp.post("/lessons/<int:lesson_id>/notes")

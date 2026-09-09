@@ -5,6 +5,7 @@
 <div class="container-fluid max-w-7xl py-4">
 
   <!-- Breadcrumb Navigation -->
+  <!-- Breadcrumb Navigation -->
   <nav class="app-breadcrumb mb-3" aria-label="breadcrumb">
     <ol class="breadcrumb mb-0 align-items-center flex-wrap">
       <li class="breadcrumb-item">
@@ -13,9 +14,25 @@
           <span>Trang Chủ</span>
         </a>
       </li>
+      {% if current_skill == 'Listening' %}
+      <li class="breadcrumb-item">
+        <a href="{{ url_for('learning.lessons') }}">Bài Học</a>
+      </li>
+      <li class="breadcrumb-item active" aria-current="page">
+        <span>Luyện Nghe</span>
+      </li>
+      {% elif current_skill != 'All' %}
+      <li class="breadcrumb-item">
+        <a href="{{ url_for('learning.lessons') }}">Bài Học</a>
+      </li>
+      <li class="breadcrumb-item active" aria-current="page">
+        <span>{{ current_skill }}</span>
+      </li>
+      {% else %}
       <li class="breadcrumb-item active" aria-current="page">
         <span>Thư Viện Bài Học</span>
       </li>
+      {% endif %}
     </ol>
   </nav>
 
@@ -132,7 +149,7 @@
 
       <div class="row g-3 align-items-center mb-3">
         <!-- Search Input -->
-        <div class="col-lg-5">
+        <div class="col-lg-{{ '4' if current_skill == 'Listening' else '5' }}">
           <label class="form-label small fw-bold text-muted mb-1">Tìm theo Tiêu đề / Nội dung</label>
           <div class="input-group">
             <span class="input-group-text bg-white border-end-0 text-muted" style="border-color: var(--border-light);">
@@ -143,7 +160,7 @@
                    placeholder="Nhập từ khóa tìm kiếm..."
                    style="border-color: var(--border-light); font-size: 0.9rem;">
             {% if search or q %}
-            <a href="{{ url_for('learning.lessons', skill=current_skill, level=level, status=status, sort=sort) }}" 
+            <a href="{{ url_for('learning.lessons', skill=current_skill, level=level, status=status, accent=accent, sort=sort) }}" 
                class="btn btn-light border border-start-0 text-muted" title="Xóa tìm kiếm">
               <i class="ph-bold ph-x"></i>
             </a>
@@ -152,7 +169,7 @@
         </div>
 
         <!-- Level Filter -->
-        <div class="col-6 col-md-3">
+        <div class="col-6 col-md-{{ '2' if current_skill == 'Listening' else '3' }}">
           <label class="form-label small fw-bold text-muted mb-1">Cấp độ (CEFR)</label>
           <select class="form-select border shadow-none" name="level" style="border-color: var(--border-light); font-size: 0.86rem;" onchange="this.form.submit()">
             <option value="">Tất cả level</option>
@@ -161,6 +178,18 @@
             {% endfor %}
           </select>
         </div>
+
+        {% if current_skill == 'Listening' %}
+        <!-- Accent Filter (US / UK) -->
+        <div class="col-6 col-md-2">
+          <label class="form-label small fw-bold text-muted mb-1">Giọng đọc (Accent)</label>
+          <select class="form-select border shadow-none" name="accent" style="border-color: var(--border-light); font-size: 0.86rem;" onchange="this.form.submit()">
+            <option value="">Tất cả giọng</option>
+            <option value="US" {{ 'selected' if accent=='US' }}>🇺🇸 Giọng Mỹ (US)</option>
+            <option value="UK" {{ 'selected' if accent=='UK' }}>🇬🇧 Giọng Anh (UK)</option>
+          </select>
+        </div>
+        {% endif %}
 
         <!-- Status Filter -->
         <div class="col-6 col-md-2">
@@ -174,7 +203,7 @@
         </div>
 
         <!-- Action Button -->
-        <div class="col-12 col-md-2 d-flex align-self-end">
+        <div class="col-{{ '6' if current_skill == 'Listening' else '12' }} col-md-2 d-flex align-self-end">
           <button type="submit" class="btn btn-primary w-100 rounded-3 fw-bold py-2.5 shadow-sm d-inline-flex align-items-center justify-content-center gap-1.5" style="font-size: 0.88rem;">
             <i class="ph-bold ph-magnifying-glass"></i>
             <span>Tìm kiếm</span>
@@ -186,19 +215,19 @@
       <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 pt-3 border-top border-light">
         <div class="d-flex flex-wrap align-items-center gap-2 small">
           <span class="text-muted fw-bold me-1" style="font-size: 0.78rem;">Lọc nhanh cấp độ:</span>
-          <a href="{{ url_for('learning.lessons', skill=current_skill, status=status, search=search, sort=sort) }}" 
+          <a href="{{ url_for('learning.lessons', skill=current_skill, status=status, accent=accent, search=search, sort=sort) }}" 
              class="btn btn-sm rounded-pill px-3 py-1 fw-semibold {% if not level %}btn-primary text-white shadow-xs{% else %}btn-light border text-secondary{% endif %}" 
              style="font-size: 0.78rem;">
             Tất cả
           </a>
           {% for lvl_key in ['A1', 'A2', 'B1', 'B2', 'C1'] %}
-          <a href="{{ url_for('learning.lessons', skill=current_skill, level=lvl_key, status=status, search=search, sort=sort) }}" 
+          <a href="{{ url_for('learning.lessons', skill=current_skill, level=lvl_key, status=status, accent=accent, search=search, sort=sort) }}" 
              class="btn btn-sm rounded-pill px-3 py-1 fw-semibold {% if level == lvl_key %}btn-primary text-white shadow-xs{% else %}btn-light border text-secondary{% endif %}" 
              style="font-size: 0.78rem;">
             {{ lvl_key }}
           </a>
           {% endfor %}
-          <a href="{{ url_for('learning.lessons', skill=current_skill, status='completed', level=level, search=search, sort=sort) }}" 
+          <a href="{{ url_for('learning.lessons', skill=current_skill, status='completed', level=level, accent=accent, search=search, sort=sort) }}" 
              class="btn btn-sm rounded-pill px-3 py-1 fw-semibold {% if status == 'completed' %}btn-success text-white shadow-xs{% else %}btn-light border text-secondary{% endif %}" 
              style="font-size: 0.78rem;">
             ✓ Đã học
@@ -241,8 +270,104 @@
     {% for lesson in lessons %}
     {% set is_done = lesson.id in done %}
 
+    {% if current_skill == 'Listening' or lesson.skill == 'Listening' %}
+    <!-- CLEAN AUDIO LESSON CARD (LISTENING HUB) -->
     <div class="col-12 col-md-6 col-lg-4">
-      <article class="card-modern p-4 h-100 d-flex flex-column justify-content-between position-relative transition-hover">
+      <article class="card-modern card-lesson-clickable p-3.5 h-100 d-flex flex-column justify-content-between position-relative transition-hover" 
+               id="lessonCard-{{ lesson.id }}" 
+               data-detail-url="{{ url_for('learning.lesson_detail', lesson_id=lesson.id) }}"
+               style="cursor: pointer;">
+        <div>
+          <!-- Top Row: Level, Accent & Favorite -->
+          <div class="d-flex justify-content-between align-items-center mb-2.5">
+            <div class="d-flex align-items-center gap-1.5">
+              <span class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill px-2.5 py-0.5 fw-bold" style="font-size: 0.74rem;">
+                {{ lesson.level }}
+              </span>
+              <span class="badge bg-warning-subtle text-dark border border-warning-subtle rounded-pill px-2 py-0.5 fw-semibold" style="font-size: 0.72rem;">
+                <i class="ph-bold ph-waveform text-warning me-0.5"></i>{{ lesson.accent or ('US' if loop.index % 2 == 1 else 'UK') }}
+              </span>
+            </div>
+
+            <button type="button" 
+                    class="btn btn-link p-0 text-decoration-none shadow-none btn-fav-toggle" 
+                    data-lesson-id="{{ lesson.id }}"
+                    title="Đánh dấu yêu thích">
+              <i class="ph-bold ph-heart fs-5 {{ 'text-danger' if lesson.id in favorite_ids else 'text-muted opacity-50' }} transition-hover"></i>
+            </button>
+          </div>
+
+          <!-- Quick Play & Title -->
+          <div class="d-flex align-items-start gap-2.5 mb-2">
+            <button type="button" 
+                    class="btn-audio-quick-play rounded-circle d-flex align-items-center justify-content-center flex-shrink-0 shadow-xs"
+                    data-lesson-id="{{ lesson.id }}"
+                    data-lesson-title="{{ lesson.title }}"
+                    data-lesson-accent="{{ lesson.accent or ('US' if loop.index % 2 == 1 else 'UK') }}"
+                    data-lesson-duration="{{ lesson.audio_duration or '02:45' }}"
+                    data-lesson-url="{{ url_for('learning.lesson_detail', lesson_id=lesson.id) }}"
+                    data-lesson-text="{{ (lesson.examples or lesson.content or lesson.short_description)|striptags|replace('\"', '&quot;') }}"
+                    title="Nghe nhanh bài này">
+              <i class="ph-fill ph-play text-white fs-6 play-icon"></i>
+              <div class="soundwave-bars d-none">
+                <span></span><span></span><span></span>
+              </div>
+            </button>
+
+            <div class="overflow-hidden">
+              <h6 class="fw-bold text-dark mb-0.5 text-truncate" style="font-size: 1rem; line-height: 1.35;">
+                <a href="{{ url_for('learning.lesson_detail', lesson_id=lesson.id) }}" class="text-dark text-decoration-none hover-primary">
+                  {{ lesson.title }}
+                </a>
+              </h6>
+              <span class="text-muted d-inline-flex align-items-center gap-1" style="font-size: 0.76rem;">
+                <i class="ph-bold ph-clock text-muted"></i> {{ lesson.audio_duration or '02:45' }}
+              </span>
+            </div>
+          </div>
+
+          <!-- Clamped Description (max 2 lines) -->
+          <p class="text-secondary small mb-3" style="font-size: 0.84rem; line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">
+            {{ lesson.short_description }}
+          </p>
+        </div>
+
+        <!-- Card Footer -->
+        <div class="pt-2.5 border-top border-light d-flex align-items-center justify-content-between mt-auto">
+          {% if is_done %}
+          <span class="badge bg-success-subtle text-success rounded-pill px-2.5 py-0.5 fw-bold" style="font-size: 0.72rem;">
+            ✓ Đã học
+          </span>
+          {% else %}
+          <span class="badge bg-light text-secondary border rounded-pill px-2 py-0.5" style="font-size: 0.72rem;">
+            Chưa học
+          </span>
+          {% endif %}
+
+          <div class="d-flex align-items-center gap-1.5">
+            <button type="button" class="btn btn-light border rounded-3 px-2 py-1 btn-preview text-secondary fw-semibold d-inline-flex align-items-center gap-1 shadow-none" 
+                    data-lesson-id="{{ lesson.id }}" title="Xem trước nội dung" style="font-size: 0.76rem;">
+              <i class="ph-bold ph-eye"></i>
+              <span>Xem trước</span>
+            </button>
+
+            <a href="{{ url_for('learning.lesson_detail', lesson_id=lesson.id) }}" 
+               class="btn btn-primary btn-sm rounded-pill px-3 py-1 fw-bold shadow-xs d-inline-flex align-items-center gap-1"
+               style="font-size: 0.8rem;">
+              <span>{{ 'Ôn tập' if is_done else 'Vào học' }}</span>
+              <i class="ph-bold ph-arrow-right"></i>
+            </a>
+          </div>
+        </div>
+      </article>
+    </div>
+
+    {% else %}
+    <!-- STANDARD LESSON CARD (READING / SPEAKING / WRITING) -->
+    <div class="col-12 col-md-6 col-lg-4">
+      <article class="card-modern card-lesson-clickable p-4 h-100 d-flex flex-column justify-content-between position-relative transition-hover"
+               data-detail-url="{{ url_for('learning.lesson_detail', lesson_id=lesson.id) }}"
+               style="cursor: pointer;">
         <div>
           <!-- Top Row Badges & Favorite Button -->
           <div class="d-flex justify-content-between align-items-center mb-3">
@@ -301,9 +426,9 @@
             </a>
           </div>
         </div>
-
       </article>
     </div>
+    {% endif %}
     {% endfor %}
   </div>
     {% else %}
@@ -372,6 +497,52 @@
   </div>
 </div>
 
+<!-- ========================================== -->
+<!-- 7. FLOATING MINI-DOCK AUDIO PLAYER         -->
+<!-- ========================================== -->
+<div id="listeningMiniDock" class="listening-mini-dock d-none">
+  <!-- Left info & play button -->
+  <div class="d-flex align-items-center gap-2.5 overflow-hidden" style="max-width: 250px;">
+    <button type="button" id="dockPlayBtn" class="btn btn-primary rounded-circle d-flex align-items-center justify-content-center p-0 flex-shrink-0 shadow-xs" style="width: 38px; height: 38px;" title="Phát / Tạm dừng">
+      <i class="ph-fill ph-play text-white fs-6" id="dockPlayIcon"></i>
+    </button>
+    <div class="overflow-hidden">
+      <div id="dockLessonTitle" class="fw-bold text-dark text-truncate small" style="font-size: 0.88rem;">Bài nghe</div>
+      <div class="text-muted small d-flex align-items-center gap-1.5" style="font-size: 0.72rem;">
+        <span id="dockCurrentTime">00:00</span> / <span id="dockTotalTime">02:45</span>
+        <span id="dockAccentBadge" class="badge bg-warning-subtle text-dark border border-warning-subtle py-0.5 px-1.5 fw-semibold" style="font-size: 0.65rem;">US</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Center: Seekbar & Skip Controls -->
+  <div class="d-flex align-items-center gap-2 flex-grow-1 mx-2" style="max-width: 360px;">
+    <button type="button" id="dockSkipBackBtn" class="btn btn-sm btn-light border rounded-circle p-0 d-flex align-items-center justify-content-center flex-shrink-0 shadow-none" style="width: 28px; height: 28px;" title="Lùi 5 giây">
+      <i class="ph-bold ph-arrow-counter-clockwise text-secondary" style="font-size: 0.75rem;"></i>
+    </button>
+
+    <input type="range" id="dockSeekbar" class="listening-seekbar flex-grow-1" min="0" max="100" value="0" step="1">
+
+    <button type="button" id="dockSkipForwardBtn" class="btn btn-sm btn-light border rounded-circle p-0 d-flex align-items-center justify-content-center flex-shrink-0 shadow-none" style="width: 28px; height: 28px;" title="Tiến 5 giây">
+      <i class="ph-bold ph-arrow-clockwise text-secondary" style="font-size: 0.75rem;"></i>
+    </button>
+  </div>
+
+  <!-- Right: Rate & Action Buttons -->
+  <div class="d-flex align-items-center gap-2 flex-shrink-0">
+    <button type="button" id="dockRateBtn" class="btn btn-sm btn-light border rounded-pill px-2.5 py-0.5 fw-bold text-secondary shadow-none" style="font-size: 0.76rem;" title="Điều chỉnh tốc độ phát">
+      1.0x
+    </button>
+    <a id="dockLearnBtn" href="#" class="btn btn-primary btn-sm rounded-pill px-3 py-1 fw-bold text-nowrap d-none d-sm-inline-flex align-items-center gap-1 shadow-xs" style="font-size: 0.78rem;">
+      <span>Vào học</span>
+      <i class="ph-bold ph-arrow-right"></i>
+    </a>
+    <button type="button" id="dockCloseBtn" class="btn btn-sm btn-light border rounded-circle p-0 d-flex align-items-center justify-content-center shadow-none" style="width: 28px; height: 28px;" title="Đóng trình phát">
+      <i class="ph-bold ph-x text-muted" style="font-size: 0.75rem;"></i>
+    </button>
+  </div>
+</div>
+
 <script>
 document.addEventListener("DOMContentLoaded", function() {
   const csrfToken = "{{ csrf_token() }}";
@@ -432,6 +603,242 @@ document.addEventListener("DOMContentLoaded", function() {
         })
         .catch(err => console.error(err));
       });
+    });
+  }
+
+  // Entire Card Click -> Navigate directly to lesson detail
+  document.querySelectorAll(".card-lesson-clickable").forEach(card => {
+    card.addEventListener("click", function(e) {
+      if (e.target.closest("button") || e.target.closest("a") || e.target.closest("input")) {
+        return;
+      }
+      const url = this.dataset.detailUrl;
+      if (url) {
+        window.location.href = url;
+      }
+    });
+  });
+
+  // ==========================================
+  // LISTENING AUDIO ENGINE (DUAL TTS / AUDIO)
+  // ==========================================
+  const miniDock = document.getElementById("listeningMiniDock");
+  const dockPlayBtn = document.getElementById("dockPlayBtn");
+  const dockPlayIcon = document.getElementById("dockPlayIcon");
+  const dockLessonTitle = document.getElementById("dockLessonTitle");
+  const dockCurrentTime = document.getElementById("dockCurrentTime");
+  const dockTotalTime = document.getElementById("dockTotalTime");
+  const dockAccentBadge = document.getElementById("dockAccentBadge");
+  const dockSeekbar = document.getElementById("dockSeekbar");
+  const dockSkipBackBtn = document.getElementById("dockSkipBackBtn");
+  const dockSkipForwardBtn = document.getElementById("dockSkipForwardBtn");
+  const dockRateBtn = document.getElementById("dockRateBtn");
+  const dockLearnBtn = document.getElementById("dockLearnBtn");
+  const dockCloseBtn = document.getElementById("dockCloseBtn");
+
+  let activeLessonId = null;
+  let activeCardBtn = null;
+  let isPlaying = false;
+  let playbackRate = 1.0;
+  let progressInterval = null;
+  let currentProgressSec = 0;
+  let totalEstimatedSec = 165; // ~02:45
+  let currentUtterance = null;
+
+  function formatTime(seconds) {
+    const m = Math.floor(seconds / 60);
+    const s = Math.floor(seconds % 60);
+    return `${m < 10 ? '0' : ''}${m}:${s < 10 ? '0' : ''}${s}`;
+  }
+
+  function stopAudio() {
+    if ('speechSynthesis' in window) {
+      window.speechSynthesis.cancel();
+    }
+    if (progressInterval) {
+      clearInterval(progressInterval);
+      progressInterval = null;
+    }
+    isPlaying = false;
+    updateDockUi(false);
+    if (activeCardBtn) {
+      activeCardBtn.classList.remove("is-playing");
+      const icon = activeCardBtn.querySelector(".play-icon");
+      const waves = activeCardBtn.querySelector(".soundwave-bars");
+      if (icon) {
+        icon.classList.remove("ph-pause", "d-none");
+        icon.classList.add("ph-play");
+      }
+      if (waves) waves.classList.add("d-none");
+    }
+  }
+
+  function updateDockUi(playing) {
+    if (dockPlayIcon) {
+      dockPlayIcon.classList.toggle("ph-pause", playing);
+      dockPlayIcon.classList.toggle("ph-play", !playing);
+    }
+    if (activeCardBtn) {
+      activeCardBtn.classList.toggle("is-playing", playing);
+      const icon = activeCardBtn.querySelector(".play-icon");
+      const waves = activeCardBtn.querySelector(".soundwave-bars");
+      if (icon) {
+        if (playing) {
+          icon.classList.add("d-none");
+        } else {
+          icon.classList.remove("d-none", "ph-pause");
+          icon.classList.add("ph-play");
+        }
+      }
+      if (waves) {
+        waves.classList.toggle("d-none", !playing);
+      }
+    }
+  }
+
+  function playLesson(btn) {
+    const lessonId = btn.dataset.lessonId;
+    const title = btn.dataset.lessonTitle;
+    const accent = btn.dataset.lessonAccent || "US";
+    const duration = btn.dataset.lessonDuration || "02:45";
+    const url = btn.dataset.lessonUrl;
+    const text = btn.dataset.lessonText || title;
+
+    // Parse duration (mm:ss) into seconds
+    const parts = duration.split(":");
+    if (parts.length === 2) {
+      totalEstimatedSec = parseInt(parts[0]) * 60 + parseInt(parts[1]);
+    } else {
+      totalEstimatedSec = 165;
+    }
+
+    if (activeLessonId === lessonId && isPlaying) {
+      // Toggle pause
+      stopAudio();
+      return;
+    }
+
+    stopAudio();
+
+    activeLessonId = lessonId;
+    activeCardBtn = btn;
+    currentProgressSec = 0;
+
+    // Update Dock Header Info
+    if (miniDock) miniDock.classList.remove("d-none");
+    if (dockLessonTitle) dockLessonTitle.innerText = title;
+    if (dockTotalTime) dockTotalTime.innerText = duration;
+    if (dockCurrentTime) dockCurrentTime.innerText = "00:00";
+    if (dockAccentBadge) dockAccentBadge.innerText = accent;
+    if (dockSeekbar) dockSeekbar.value = 0;
+    if (dockLearnBtn) dockLearnBtn.href = url;
+
+    // Web Speech Synthesis Execution
+    if ('speechSynthesis' in window) {
+      currentUtterance = new SpeechSynthesisUtterance(text);
+      currentUtterance.lang = accent === "UK" ? "en-GB" : "en-US";
+      currentUtterance.rate = playbackRate;
+
+      currentUtterance.onend = function() {
+        stopAudio();
+        if (dockCurrentTime) dockCurrentTime.innerText = duration;
+        if (dockSeekbar) dockSeekbar.value = 100;
+      };
+
+      currentUtterance.onerror = function() {
+        stopAudio();
+      };
+
+      window.speechSynthesis.speak(currentUtterance);
+    }
+
+    isPlaying = true;
+    updateDockUi(true);
+
+    // Progress counter
+    progressInterval = setInterval(() => {
+      if (!isPlaying) return;
+      currentProgressSec += 1;
+      if (currentProgressSec > totalEstimatedSec) {
+        currentProgressSec = totalEstimatedSec;
+      }
+      if (dockCurrentTime) dockCurrentTime.innerText = formatTime(currentProgressSec);
+      if (dockSeekbar) {
+        dockSeekbar.value = Math.round((currentProgressSec / totalEstimatedSec) * 100);
+      }
+      if (currentProgressSec >= totalEstimatedSec) {
+        stopAudio();
+      }
+    }, 1000);
+  }
+
+  // Attach quick play triggers
+  document.querySelectorAll(".btn-audio-quick-play").forEach(btn => {
+    btn.addEventListener("click", function(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      playLesson(this);
+    });
+  });
+
+  // Dock Play / Pause Toggle
+  if (dockPlayBtn) {
+    dockPlayBtn.addEventListener("click", function() {
+      if (!activeCardBtn) return;
+      if (isPlaying) {
+        stopAudio();
+      } else {
+        playLesson(activeCardBtn);
+      }
+    });
+  }
+
+  // Dock Close
+  if (dockCloseBtn) {
+    dockCloseBtn.addEventListener("click", function() {
+      stopAudio();
+      if (miniDock) miniDock.classList.add("d-none");
+    });
+  }
+
+  // Skip Back 5s
+  if (dockSkipBackBtn) {
+    dockSkipBackBtn.addEventListener("click", function() {
+      currentProgressSec = Math.max(0, currentProgressSec - 5);
+      if (dockCurrentTime) dockCurrentTime.innerText = formatTime(currentProgressSec);
+      if (dockSeekbar) dockSeekbar.value = Math.round((currentProgressSec / totalEstimatedSec) * 100);
+    });
+  }
+
+  // Skip Forward 5s
+  if (dockSkipForwardBtn) {
+    dockSkipForwardBtn.addEventListener("click", function() {
+      currentProgressSec = Math.min(totalEstimatedSec, currentProgressSec + 5);
+      if (dockCurrentTime) dockCurrentTime.innerText = formatTime(currentProgressSec);
+      if (dockSeekbar) dockSeekbar.value = Math.round((currentProgressSec / totalEstimatedSec) * 100);
+    });
+  }
+
+  // Seekbar change
+  if (dockSeekbar) {
+    dockSeekbar.addEventListener("input", function() {
+      const pct = parseInt(this.value);
+      currentProgressSec = Math.round((pct / 100) * totalEstimatedSec);
+      if (dockCurrentTime) dockCurrentTime.innerText = formatTime(currentProgressSec);
+    });
+  }
+
+  // Rate Toggle
+  const rates = [1.0, 1.25, 1.5, 0.75];
+  let rateIdx = 0;
+  if (dockRateBtn) {
+    dockRateBtn.addEventListener("click", function() {
+      rateIdx = (rateIdx + 1) % rates.length;
+      playbackRate = rates[rateIdx];
+      this.innerText = `${playbackRate}x`;
+      if (isPlaying && activeCardBtn) {
+        playLesson(activeCardBtn);
+      }
     });
   }
 });
