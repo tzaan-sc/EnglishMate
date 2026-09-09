@@ -123,13 +123,17 @@
               }
             } catch (e) {}
           </script>
+          {% with sidebar_prefix="desktop" %}
           {% include "_sidebar.html" %}
+          {% endwith %}
         </aside>
 
         <!-- Offcanvas Mobile Sidebar -->
         <div class="offcanvas offcanvas-start d-md-none" tabindex="-1" id="mobileSidebar" style="width: 260px;">
           <div class="offcanvas-body d-flex flex-column justify-content-between p-0 h-100">
+            {% with sidebar_prefix="mobile" %}
             {% include "_sidebar.html" %}
+            {% endwith %}
           </div>
         </div>
 

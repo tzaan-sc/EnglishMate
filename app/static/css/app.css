@@ -2956,6 +2956,75 @@ a:hover {
     color: var(--primary);
 }
 
+/* Sidebar Submenu & Sublinks */
+.sidebar-submenu {
+    list-style: none;
+    padding-left: 12px;
+    margin-left: 20px;
+    margin-top: 3px;
+    margin-bottom: 4px;
+    border-left: 2px solid rgba(0, 0, 0, 0.07);
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+[data-theme="dark"] .sidebar-submenu {
+    border-left-color: rgba(255, 255, 255, 0.1);
+}
+
+.nav-sublink {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 6px 10px;
+    border-radius: var(--radius-sm, 6px);
+    color: var(--text-secondary);
+    font-size: 0.815rem;
+    font-weight: 500;
+    text-decoration: none;
+    transition: all 0.15s ease;
+}
+
+.nav-sublink i {
+    font-size: 0.95rem;
+    color: var(--text-muted);
+    transition: all 0.15s ease;
+    flex-shrink: 0;
+}
+
+.nav-sublink:hover {
+    background-color: var(--bg-surface-subtle);
+    color: var(--text-primary);
+}
+
+.nav-sublink:hover i {
+    color: var(--text-primary);
+}
+
+.nav-sublink.active {
+    background-color: var(--primary-subtle);
+    color: var(--primary);
+    font-weight: 600;
+}
+
+.nav-sublink.active i {
+    color: var(--primary);
+}
+
+.submenu-arrow {
+    transition: transform 0.2s ease;
+}
+
+.nav-link-modern[aria-expanded="true"] .submenu-arrow {
+    transform: rotate(180deg);
+}
+
+.app-sidebar.collapsed .sidebar-submenu,
+.app-sidebar.collapsed .submenu-arrow {
+    display: none !important;
+}
+
 /* Fallbacks for custom colored links */
 .sidebar-menu .nav-link-primary:hover, .sidebar-menu .nav-link-primary.active { background-color: var(--primary-subtle) !important; color: var(--primary) !important; }
 .sidebar-menu .nav-link-primary.active .menu-icon-box { background-color: var(--primary) !important; color: #ffffff !important; }

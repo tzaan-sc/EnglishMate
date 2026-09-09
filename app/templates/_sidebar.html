@@ -72,35 +72,55 @@
                     <span>Trang chủ</span>
                 </a>
             </li>
+            <!-- GROUP: BÀI HỌC (VỚI CÁC MỤC KỸ NĂNG CON) -->
+            {% set is_listening_active = request.path.startswith('/listening') or (request.path == url_for('learning.lessons') and request.args.get('skill') == 'Listening') %}
+            {% set is_reading_active = request.path.startswith('/reading') or (request.path == url_for('learning.lessons') and request.args.get('skill') == 'Reading') %}
+            {% set is_speaking_active = request.path.startswith('/speaking') or (request.path == url_for('learning.lessons') and request.args.get('skill') == 'Speaking') %}
+            {% set is_writing_active = request.path.startswith('/writing') or (request.path == url_for('learning.lessons') and request.args.get('skill') == 'Writing') %}
+            {% set is_all_lessons_active = request.path.startswith(url_for('learning.lessons')) and request.args.get('skill') not in ['Listening', 'Reading', 'Speaking', 'Writing'] and not request.path.startswith('/admin') %}
+            {% set is_lessons_active = is_all_lessons_active or is_listening_active or is_reading_active or is_speaking_active or is_writing_active %}
+            {% set menu_id = 'submenuLessons_' ~ (sidebar_prefix|default('main')) %}
+
             <li class="nav-item">
-                <a class="nav-link-modern {% if request.path.startswith(url_for('learning.lessons')) and request.args.get('skill') not in ['Listening', 'Reading', 'Speaking', 'Writing'] and not request.path.startswith('/admin') %}active{% endif %}" href="{{ url_for('learning.lessons') }}" title="Bài học">
+                <button type="button" class="nav-link-modern w-100 border-0 bg-transparent text-start {% if is_lessons_active %}active{% endif %}" data-bs-toggle="collapse" data-bs-target="#{{ menu_id }}" aria-expanded="{{ 'true' if is_lessons_active else 'false' }}" aria-controls="{{ menu_id }}" title="Bài học">
                     <i class="ph ph-graduation-cap"></i>
                     <span>Bài học</span>
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link-modern {% if request.path.startswith('/listening') or (request.path == url_for('learning.lessons') and request.args.get('skill') == 'Listening') %}active{% endif %}" href="/listening" title="Luyện Nghe">
-                    <i class="ph-bold ph-headphones text-warning"></i>
-                    <span>Luyện Nghe</span>
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link-modern {% if request.path.startswith('/reading') or (request.path == url_for('learning.lessons') and request.args.get('skill') == 'Reading') %}active{% endif %}" href="/reading" title="Đọc Hiểu">
-                    <i class="ph-bold ph-book-open-text" style="color: #0d9488;"></i>
-                    <span>Đọc Hiểu</span>
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link-modern {% if request.path.startswith('/speaking') or (request.path == url_for('learning.lessons') and request.args.get('skill') == 'Speaking') %}active{% endif %}" href="/speaking" title="Luyện Nói">
-                    <i class="ph-bold ph-chats-circle" style="color: #ea580c;"></i>
-                    <span>Luyện Nói</span>
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link-modern {% if request.path.startswith('/writing') or (request.path == url_for('learning.lessons') and request.args.get('skill') == 'Writing') %}active{% endif %}" href="/writing" title="Luyện Viết">
-                    <i class="ph-bold ph-pen-nib" style="color: #be123c;"></i>
-                    <span>Luyện Viết</span>
-                </a>
+                    <i class="ph-bold ph-caret-down ms-auto submenu-arrow" style="font-size: 0.72rem;"></i>
+                </button>
+                <div class="collapse {% if is_lessons_active %}show{% endif %}" id="{{ menu_id }}">
+                    <ul class="sidebar-submenu">
+                        <li>
+                            <a class="nav-sublink {% if is_all_lessons_active %}active{% endif %}" href="{{ url_for('learning.lessons') }}" title="Tất cả bài học">
+                                <i class="ph-bold ph-squares-four"></i>
+                                <span>Tất cả bài học</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a class="nav-sublink {% if is_listening_active %}active{% endif %}" href="/listening" title="Luyện Nghe">
+                                <i class="ph-bold ph-headphones text-warning"></i>
+                                <span>Luyện Nghe</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a class="nav-sublink {% if is_reading_active %}active{% endif %}" href="/reading" title="Đọc Hiểu">
+                                <i class="ph-bold ph-book-open-text" style="color: #0d9488;"></i>
+                                <span>Đọc Hiểu</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a class="nav-sublink {% if is_speaking_active %}active{% endif %}" href="/speaking" title="Luyện Nói">
+                                <i class="ph-bold ph-chats-circle" style="color: #ea580c;"></i>
+                                <span>Luyện Nói</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a class="nav-sublink {% if is_writing_active %}active{% endif %}" href="/writing" title="Luyện Viết">
+                                <i class="ph-bold ph-pen-nib" style="color: #be123c;"></i>
+                                <span>Luyện Viết</span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
             </li>
             <li class="nav-item">
                 <a class="nav-link-modern {% if request.path.startswith(url_for('learning.vocabulary')) or request.path.startswith('/flashcard-sets') and not request.path.startswith('/admin') %}active{% endif %}" href="{{ url_for('learning.vocabulary') }}" title="Từ vựng & Flashcards">
