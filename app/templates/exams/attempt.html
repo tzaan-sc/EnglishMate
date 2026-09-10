@@ -13,7 +13,7 @@
         </a>
       </li>
       <li class="breadcrumb-item">
-        <a href="{{ url_for('exams.exam_list') }}">Đề Thi</a>
+        <a href="{{ url_for('exams.exam_list') }}">Thư Viện Đề Thi</a>
       </li>
       <li class="breadcrumb-item active text-truncate" aria-current="page" style="max-width: 280px;" title="{{ exam.title }}">
         <span>Làm Bài: {{ exam.title }}</span>
@@ -23,16 +23,25 @@
 
 <div class="row mb-3">
   <div class="col-12 d-flex justify-content-between align-items-center flex-wrap gap-2">
-    <h3 class="mb-0">{{ exam.title }} <span class="badge bg-secondary fs-6">{{ 'Thi Thật' if mode == 'real' else 'Luyện Tập' }}</span></h3>
-    <div class="d-flex align-items-center gap-3">
+    <div>
+      <h3 class="mb-1 fw-bold text-dark">{{ exam.title }} <span class="badge bg-secondary-subtle text-secondary border rounded-pill fs-6 fw-semibold">{{ 'Thi Thật' if mode == 'real' else 'Luyện Tập' }}</span></h3>
+      <span class="text-secondary small">Tiến trình làm bài của bạn được tự động lưu nháp liên tục.</span>
+    </div>
+    <div class="d-flex align-items-center gap-2.5 flex-wrap">
+      <span id="autosave-status" class="badge bg-light text-secondary border rounded-pill px-2.5 py-1.5 small fw-normal d-inline-flex align-items-center gap-1.5 shadow-none" style="font-size: 0.76rem;">
+        <i class="ph-bold ph-cloud-check text-success"></i>
+        <span>Tự động lưu nháp</span>
+      </span>
       {% if mode == 'real' and current_user.exam_allow_pause %}
-      <button type="button" class="btn btn-outline-warning text-dark-emphasis rounded-pill px-3 py-1.5 fw-semibold small" id="btnPause">
-        ⏸️ Tạm dừng
+      <button type="button" class="btn btn-outline-warning text-dark-emphasis rounded-pill px-3 py-1.5 fw-semibold small d-inline-flex align-items-center gap-1" id="btnPause">
+        <i class="ph-bold ph-pause"></i>
+        <span>Tạm dừng</span>
       </button>
       {% endif %}
       {% if mode == 'real' %}
-      <div class="fs-4 fw-bold text-danger {% if not current_user.exam_show_timer %}d-none{% endif %}" id="timer">
-        --:--
+      <div class="timer-card text-center p-2 px-3 bg-navy text-white rounded-3 shadow-sm {% if not current_user.exam_show_timer %}d-none{% endif %}">
+        <div class="small opacity-75 text-uppercase" style="font-size: 0.65rem; letter-spacing: 0.05em;">Thời gian còn lại</div>
+        <span id="timer" class="fs-4 fw-bold font-monospace">--:--</span>
       </div>
       {% endif %}
     </div>
@@ -136,11 +145,14 @@
 <div class="modal fade" id="pauseModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content border-0 shadow-lg rounded-4 p-4 text-center">
-      <div class="fs-1 mb-2">⏸️</div>
+      <div class="rounded-circle bg-warning-subtle text-warning d-inline-flex align-items-center justify-content-center mb-3" style="width: 64px; height: 64px;">
+        <i class="ph-bold ph-pause fs-2"></i>
+      </div>
       <h4 class="fw-bold text-dark mb-2">Bài Thi Đang Tạm Dừng</h4>
-      <p class="text-secondary small mb-4">Đồng hồ đếm ngược đã ngưng chạy. Khi sẵn sàng, bấm nút bên dưới để tiếp tục.</p>
-      <button type="button" class="btn btn-warning text-dark btn-lg w-100 rounded-pill fw-bold" id="btnResume">
-        ▶️ Tiếp tục làm bài ngay
+      <p class="text-secondary small mb-4">Đồng hồ đếm ngược đã ngưng chạy. Tiến trình làm bài của bạn được bảo lưu an toàn. Khi sẵn sàng, bấm nút bên dưới để tiếp tục.</p>
+      <button type="button" class="btn btn-warning text-dark btn-lg w-100 rounded-pill fw-bold d-inline-flex align-items-center justify-content-center gap-1.5 shadow-sm" id="btnResume">
+        <i class="ph-bold ph-play"></i>
+        <span>Tiếp tục làm bài ngay</span>
       </button>
     </div>
   </div>
@@ -158,6 +170,12 @@
 {% block scripts %}
 <script>
 document.addEventListener("DOMContentLoaded", function() {
+  const DRAFT_KEY = "exam_draft_{{ current_user.id }}_{{ submission.id }}";
+  const autosaveStatus = document.getElementById("autosave-status");
+  const form = document.getElementById('exam-form');
+  const radios = document.querySelectorAll('input[type="radio"]');
+  const textareas = document.querySelectorAll('textarea');
+
   function playClickSound() {
     {% if current_user.exam_sound_effects %}
     try {
@@ -167,13 +185,95 @@ document.addEventListener("DOMContentLoaded", function() {
       osc.connect(gain);
       gain.connect(ctx.destination);
       osc.frequency.setValueAtTime(600, ctx.currentTime);
-      gain.gain.setValueAtTime(0.05, ctx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.1);
-      osc.start(ctx.currentTime);
-      osc.stop(ctx.currentTime + 0.1);
+      gain.gain.setValueAtTime(0.04, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.08);
+      osc.start();
+      osc.stop(ctx.currentTime + 0.08);
     } catch(e) {}
     {% endif %}
   }
+
+  // --- Auto-Save & Restore with LocalStorage ---
+  function saveDraft() {
+    const answers = {};
+    radios.forEach(r => {
+      if (r.checked) {
+        answers[r.name] = r.value;
+      }
+    });
+    textareas.forEach(ta => {
+      if (ta.value.trim()) {
+        answers[ta.name] = ta.value;
+      }
+    });
+
+    const draft = {
+      answers: answers,
+      timeLeft: typeof timeLeft !== 'undefined' ? timeLeft : null,
+      savedAt: Date.now()
+    };
+
+    try {
+      localStorage.setItem(DRAFT_KEY, JSON.stringify(draft));
+      if (autosaveStatus) {
+        autosaveStatus.innerHTML = '<i class="ph-bold ph-cloud-check text-success"></i> <span>Đã lưu nháp</span>';
+      }
+    } catch (e) {
+      console.warn("Could not save draft to LocalStorage", e);
+    }
+  }
+
+  function restoreDraft() {
+    try {
+      const saved = localStorage.getItem(DRAFT_KEY);
+      if (saved) {
+        const draft = JSON.parse(saved);
+        if (draft && draft.answers) {
+          Object.entries(draft.answers).forEach(([name, val]) => {
+            const radio = document.querySelector(`input[name="${name}"][value="${val}"]`);
+            if (radio) {
+              radio.checked = true;
+              const qId = name.replace('question_', '');
+              const navBtn = document.getElementById('nav-' + qId);
+              if (navBtn) {
+                navBtn.classList.remove('btn-outline-secondary');
+                navBtn.classList.add('btn-primary');
+              }
+            }
+            const ta = document.querySelector(`textarea[name="${name}"]`);
+            if (ta) {
+              ta.value = val;
+              const qId = name.replace('question_', '');
+              const navBtn = document.getElementById('nav-' + qId);
+              if (navBtn) {
+                navBtn.classList.remove('btn-outline-secondary');
+                navBtn.classList.add('btn-primary');
+              }
+            }
+          });
+        }
+        if (draft && typeof draft.timeLeft === 'number' && typeof timeLeft !== 'undefined') {
+          if (draft.timeLeft > 0 && draft.timeLeft < timeLeft) {
+            timeLeft = draft.timeLeft;
+          }
+        }
+        if (autosaveStatus) {
+          autosaveStatus.innerHTML = '<i class="ph-bold ph-cloud-check text-success"></i> <span>Đã khôi phục bài làm</span>';
+        }
+      }
+    } catch (e) {
+      console.warn("Could not restore draft", e);
+    }
+  }
+
+  function cleanDraft() {
+    try {
+      localStorage.removeItem(DRAFT_KEY);
+    } catch(e) {}
+  }
+
+  // Clear draft on form submit
+  form.addEventListener("submit", cleanDraft);
 
   {% if mode == 'real' and current_user.exam_allow_pause %}
   let isPaused = false;
@@ -195,17 +295,17 @@ document.addEventListener("DOMContentLoaded", function() {
   });
   {% endif %}
 
-  // Navigation active state
-  const radios = document.querySelectorAll('input[type="radio"]');
+  // Navigation active state & Radio Click handler
   radios.forEach(r => {
     r.addEventListener('change', function() {
-      const qId = this.name.split('_')[1];
+      const qId = this.name.replace('question_', '');
       const navBtn = document.getElementById('nav-' + qId);
       if(navBtn) {
         navBtn.classList.remove('btn-outline-secondary');
         navBtn.classList.add('btn-primary');
       }
       playClickSound();
+      saveDraft();
 
       {% if current_user.exam_show_realtime_score %}
       const parent = this.closest('.card-body');
@@ -237,6 +337,26 @@ document.addEventListener("DOMContentLoaded", function() {
     });
   });
 
+  // Auto-save on textarea input with debounce
+  let taDebounceTimer;
+  textareas.forEach(ta => {
+    ta.addEventListener('input', function() {
+      const qId = this.name.replace('question_', '');
+      const navBtn = document.getElementById('nav-' + qId);
+      if (navBtn) {
+        if (this.value.trim()) {
+          navBtn.classList.remove('btn-outline-secondary');
+          navBtn.classList.add('btn-primary');
+        } else {
+          navBtn.classList.add('btn-outline-secondary');
+          navBtn.classList.remove('btn-primary');
+        }
+      }
+      clearTimeout(taDebounceTimer);
+      taDebounceTimer = setTimeout(saveDraft, 1000);
+    });
+  });
+
   // Audio player constraints
   const audios = document.querySelectorAll('.exam-audio');
   audios.forEach(audio => {
@@ -257,10 +377,9 @@ document.addEventListener("DOMContentLoaded", function() {
 
   // Timer logic for 'real' mode
   {% if mode == 'real' %}
-  const durationMinutes = {{ exam.duration }};
+  const durationMinutes = {{ exam.duration or exam.duration_minutes or 60 }};
   let timeLeft = durationMinutes * 60;
   const timerDisplay = document.getElementById('timer');
-  const form = document.getElementById('exam-form');
   
   const timer = setInterval(() => {
     {% if current_user.exam_allow_pause %}
@@ -268,6 +387,7 @@ document.addEventListener("DOMContentLoaded", function() {
     {% endif %}
     if (timeLeft <= 0) {
       clearInterval(timer);
+      cleanDraft();
       {% if current_user.exam_auto_submit %}
       timerDisplay.innerHTML = "HẾT GIỜ";
       alert("Đã hết thời gian làm bài. Hệ thống sẽ tự động nộp bài.");
@@ -281,6 +401,11 @@ document.addEventListener("DOMContentLoaded", function() {
       let s = timeLeft % 60;
       timerDisplay.innerHTML = `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
       timeLeft--;
+
+      // Periodically persist remaining time every 10 seconds
+      if (timeLeft % 10 === 0) {
+        saveDraft();
+      }
     }
   }, 1000);
   {% endif %}
@@ -315,6 +440,9 @@ document.addEventListener("DOMContentLoaded", function() {
       feedback.classList.remove('d-none');
     });
   });
+
+  // Restore draft on load
+  restoreDraft();
 });
 </script>
 {% endblock %}

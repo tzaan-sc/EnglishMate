@@ -4,6 +4,24 @@
 
 {% block content %}
 <div class="container-fluid max-w-7xl py-4">
+
+  <!-- Breadcrumb Navigation -->
+  <nav class="app-breadcrumb mb-3" aria-label="breadcrumb">
+    <ol class="breadcrumb mb-0 align-items-center flex-wrap">
+      <li class="breadcrumb-item">
+        <a href="{{ url_for('main.dashboard') }}" class="d-inline-flex align-items-center gap-1">
+          <i class="ph ph-house"></i>
+          <span>Trang Chủ</span>
+        </a>
+      </li>
+      <li class="breadcrumb-item">
+        <a href="{{ url_for('exams.exam_list') }}">Thư Viện Đề Thi</a>
+      </li>
+      <li class="breadcrumb-item active text-truncate" aria-current="page" style="max-width: 320px;" title="{{ test.title }}">
+        <span>Làm Bài: {{ test.title }}</span>
+      </li>
+    </ol>
+  </nav>
     
     <div class="row g-4">
       
@@ -20,12 +38,17 @@
               <div>
                 <span class="badge bg-success px-3 py-1 rounded-pill mb-2">Đang thực hiện</span>
                 <h2 class="mb-1 fw-bold">{{ test.title }}</h2>
-                <p class="text-muted mb-0 small">Vui lòng không tải lại trang hoặc nhấn nút quay lại trong quá trình làm bài.</p>
+                <p class="text-muted mb-0 small">Hệ thống tự động lưu nháp tiến trình làm bài. Bạn có thể yên tâm làm bài.</p>
               </div>
-              <div class="d-flex align-items-center gap-3">
+              <div class="d-flex align-items-center gap-2.5 flex-wrap">
+                <span id="autosave-status" class="badge bg-light text-secondary border rounded-pill px-2.5 py-1.5 small fw-normal d-inline-flex align-items-center gap-1.5 shadow-none" style="font-size: 0.76rem;">
+                  <i class="ph-bold ph-cloud-check text-success"></i>
+                  <span>Tự động lưu nháp</span>
+                </span>
                 {% if current_user.exam_allow_pause %}
-                <button type="button" class="btn btn-outline-warning text-dark-emphasis rounded-pill px-3 py-1.5 fw-semibold small" id="btnPause">
-                  ⏸️ Tạm dừng
+                <button type="button" class="btn btn-outline-warning text-dark-emphasis rounded-pill px-3 py-1.5 fw-semibold small d-inline-flex align-items-center gap-1" id="btnPause">
+                  <i class="ph-bold ph-pause"></i>
+                  <span>Tạm dừng</span>
                 </button>
                 {% endif %}
                 <div class="timer-card text-center p-2 px-3 bg-navy text-white rounded-3 shadow-sm {% if not current_user.exam_show_timer %}d-none{% endif %}">
@@ -270,17 +293,21 @@
 <!-- Submit Confirmation Modal -->
 <div class="modal fade" id="submitConfirmModal" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content border-0 rounded-4 shadow">
+    <div class="modal-content border-0 rounded-4 shadow-lg overflow-hidden">
       <div class="modal-body p-4 text-center">
-        <span class="fs-1 text-warning">⚠️</span>
-        <h4 class="fw-bold mt-3 mb-2">Bạn muốn nộp bài?</h4>
-        <p class="text-muted mb-4">
-          Bạn đã trả lời <strong id="modal-answered-count" class="text-green">0</strong> trên 100 câu hỏi. 
-          Hãy chắc chắn rằng bạn đã kiểm tra kỹ trước khi nộp.
+        <div class="rounded-circle bg-warning-subtle text-warning d-inline-flex align-items-center justify-content-center mb-3" style="width: 56px; height: 56px;">
+          <i class="ph-bold ph-warning fs-2"></i>
+        </div>
+        <h4 class="fw-bold text-dark mb-2">Bạn muốn nộp bài?</h4>
+        <p class="text-secondary small mb-4">
+          Bạn đã trả lời <strong id="modal-answered-count" class="text-primary fw-bold">0</strong> trên 100 câu hỏi. 
+          Hãy chắc chắn rằng bạn đã kiểm tra kỹ trước khi xác nhận nộp bài.
         </p>
-        <div class="d-flex gap-3">
-          <button type="button" class="btn btn-light w-50 py-2.5 rounded-3" data-bs-dismiss="modal">Làm tiếp</button>
-          <button type="button" class="btn btn-primary w-50 py-2.5 rounded-3" id="btn-modal-submit">Nộp bài</button>
+        <div class="d-flex gap-2.5">
+          <button type="button" class="btn btn-light border w-50 py-2 rounded-pill fw-semibold" data-bs-dismiss="modal">Làm tiếp</button>
+          <button type="button" class="btn btn-primary w-50 py-2 rounded-pill fw-bold shadow-xs" id="btn-modal-submit">
+            <i class="ph-bold ph-check me-1"></i> Xác nhận nộp
+          </button>
         </div>
       </div>
     </div>
@@ -291,11 +318,14 @@
 <div class="modal fade" id="pauseModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content border-0 shadow-lg rounded-4 p-4 text-center">
-      <div class="fs-1 mb-2">⏸️</div>
+      <div class="rounded-circle bg-warning-subtle text-warning d-inline-flex align-items-center justify-content-center mb-3" style="width: 64px; height: 64px;">
+        <i class="ph-bold ph-pause fs-2"></i>
+      </div>
       <h4 class="fw-bold text-dark mb-2">Bài Thi Đang Tạm Dừng</h4>
-      <p class="text-secondary small mb-4">Đồng hồ đếm ngược đã ngưng chạy. Khi sẵn sàng, bấm nút bên dưới để tiếp tục.</p>
-      <button type="button" class="btn btn-warning text-dark btn-lg w-100 rounded-pill fw-bold" id="btnResume">
-        ▶️ Tiếp tục làm bài ngay
+      <p class="text-secondary small mb-4">Đồng hồ đếm ngược đã ngưng chạy. Tiến trình làm bài của bạn được an toàn. Khi sẵn sàng, bấm nút bên dưới để tiếp tục.</p>
+      <button type="button" class="btn btn-warning text-dark btn-lg w-100 rounded-pill fw-bold d-inline-flex align-items-center justify-content-center gap-1.5 shadow-sm" id="btnResume">
+        <i class="ph-bold ph-play"></i>
+        <span>Tiếp tục làm bài ngay</span>
       </button>
     </div>
   </div>
@@ -320,6 +350,8 @@ document.addEventListener("DOMContentLoaded", function() {
   const timeSpentInput = document.getElementById("time-spent");
   const isTimerExpiredInput = document.getElementById("is-timer-expired");
   const testForm = document.getElementById("toeic-test-form");
+  const autosaveStatus = document.getElementById("autosave-status");
+  const DRAFT_KEY = "toeic_draft_{{ current_user.id }}_{{ attempt.id }}";
   
   function playClickSound() {
     {% if current_user.exam_sound_effects %}
@@ -329,21 +361,87 @@ document.addEventListener("DOMContentLoaded", function() {
       let gain = ctx.createGain();
       osc.connect(gain);
       gain.connect(ctx.destination);
+      osc.type = "sine";
       osc.frequency.setValueAtTime(600, ctx.currentTime);
-      gain.gain.setValueAtTime(0.05, ctx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.1);
-      osc.start(ctx.currentTime);
-      osc.stop(ctx.currentTime + 0.1);
+      gain.gain.setValueAtTime(0.04, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.00001, ctx.currentTime + 0.08);
+      osc.start();
+      osc.stop(ctx.currentTime + 0.08);
     } catch(e) {}
     {% endif %}
   }
 
+  // --- LocalStorage Auto-save & Restore ---
+  const radios = document.querySelectorAll('input[type="radio"]');
+  const answeredCountSpan = document.getElementById("answered-count");
+  const modalAnsweredCountSpan = document.getElementById("modal-answered-count");
+
+  function saveDraft() {
+    const answers = {};
+    radios.forEach(radio => {
+      if (radio.checked) {
+        answers[radio.name] = radio.value;
+      }
+    });
+    const draft = {
+      answers: answers,
+      timeSpent: timeSpent,
+      savedAt: Date.now()
+    };
+    try {
+      localStorage.setItem(DRAFT_KEY, JSON.stringify(draft));
+      if (autosaveStatus) {
+        autosaveStatus.innerHTML = '<i class="ph-bold ph-cloud-check text-success"></i> <span>Đã lưu nháp</span>';
+      }
+    } catch (e) {
+      console.warn("Auto-save error", e);
+    }
+  }
+
+  function restoreDraft() {
+    try {
+      const saved = localStorage.getItem(DRAFT_KEY);
+      if (saved) {
+        const draft = JSON.parse(saved);
+        if (draft && draft.answers) {
+          let count = 0;
+          Object.entries(draft.answers).forEach(([name, val]) => {
+            const r = document.querySelector(`input[name="${name}"][value="${val}"]`);
+            if (r) {
+              r.checked = true;
+              count++;
+            }
+          });
+        }
+        if (draft && typeof draft.timeSpent === "number" && draft.timeSpent > 0 && draft.timeSpent < TOTAL_TIME) {
+          timeSpent = draft.timeSpent;
+          timeSpentInput.value = timeSpent;
+          timeRemaining = Math.max(0, TOTAL_TIME - timeSpent);
+        }
+        updateProgress();
+        if (autosaveStatus) {
+          autosaveStatus.innerHTML = '<i class="ph-bold ph-cloud-check text-success"></i> <span>Đã khôi phục bài làm</span>';
+        }
+      }
+    } catch (e) {
+      console.warn("Restore draft error", e);
+    }
+  }
+
+  function cleanDraft() {
+    try {
+      localStorage.removeItem(DRAFT_KEY);
+    } catch (e) {}
+  }
+
+  // Pause / Resume Logic
   {% if current_user.exam_allow_pause %}
   let isPaused = false;
-  const pauseModal = new bootstrap.Modal(document.getElementById("pauseModal"));
-  const formContainer = document.getElementById("toeic-test-form");
   const btnPause = document.getElementById("btnPause");
   const btnResume = document.getElementById("btnResume");
+  const pauseModalEl = document.getElementById("pauseModal");
+  const pauseModal = new bootstrap.Modal(pauseModalEl);
+  const formContainer = document.querySelector(".questions-stack");
 
   btnPause.addEventListener("click", function() {
     isPaused = true;
@@ -378,10 +476,16 @@ document.addEventListener("DOMContentLoaded", function() {
       document.querySelector(".timer-card").classList.add("bg-danger");
     }
     
+    // Periodically persist timer every 10 seconds
+    if (timeSpent % 10 === 0) {
+      saveDraft();
+    }
+
     // Time expired
     if (timeRemaining <= 0) {
       clearInterval(timerInterval);
       isTimerExpiredInput.value = "true";
+      cleanDraft();
       {% if current_user.exam_auto_submit %}
       alert("Thời gian làm bài đã hết! Hệ thống tự động nộp bài.");
       testForm.submit();
@@ -392,11 +496,6 @@ document.addEventListener("DOMContentLoaded", function() {
       {% endif %}
     }
   }, 1000);
-
-  // Monitor Radio Changes
-  const radios = document.querySelectorAll('input[type="radio"]');
-  const answeredCountSpan = document.getElementById("answered-count");
-  const modalAnsweredCountSpan = document.getElementById("modal-answered-count");
 
   function updateProgress() {
     let answeredQuestions = new Set();
@@ -420,10 +519,12 @@ document.addEventListener("DOMContentLoaded", function() {
     modalAnsweredCountSpan.textContent = answeredQuestions.size;
   }
 
+  // Monitor Radio Changes with Auto-save
   radios.forEach(radio => {
     radio.addEventListener("change", function() {
       updateProgress();
       playClickSound();
+      saveDraft();
     });
   });
 
@@ -434,19 +535,27 @@ document.addEventListener("DOMContentLoaded", function() {
       const targetBox = document.getElementById("question-box-" + qnum);
       if (targetBox) {
         targetBox.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        
-        // Brief highlight effect
         targetBox.classList.add("highlight");
         setTimeout(() => targetBox.classList.remove("highlight"), 1000);
       }
     });
   });
 
-  // Modal Submit Button click handler
+  // Form submit handlers
+  testForm.addEventListener("submit", function() {
+    clearInterval(timerInterval);
+    cleanDraft();
+  });
+
   document.getElementById("btn-modal-submit").addEventListener("click", function() {
     clearInterval(timerInterval);
+    cleanDraft();
     testForm.submit();
   });
+
+  // Restore existing draft on load
+  restoreDraft();
 });
 </script>
 {% endblock %}
+
