@@ -38,35 +38,23 @@
 
         <!-- Right Controls: Streak, Level, Notifications, Pro Upgrade -->
         <div class="d-flex align-items-center gap-2">
-          {% if current_user.is_authenticated and current_user.is_admin %}
-            {% if request.path.startswith('/admin') %}
-            <a href="{{ url_for('main.dashboard') }}" class="btn btn-sm btn-outline-dark rounded-pill px-3 fw-bold small d-inline-flex align-items-center gap-1">
-              <i class="ph-bold ph-arrow-left fs-6"></i> Giao diện Học viên
-            </a>
-            {% else %}
-            <a href="{{ url_for('admin.dashboard') }}" class="btn btn-sm btn-danger rounded-pill px-3 fw-bold small d-inline-flex align-items-center gap-1 shadow-xs">
-              <i class="ph-bold ph-shield-check fs-6"></i> Trang Quản trị
-            </a>
-            {% endif %}
-          {% endif %}
-
-          <!-- 1. Level pill -->
+          {% if not current_user.is_admin %}
+          <!-- 1. Level pill (Students only) -->
           <a href="{{ url_for('learning.gamification_hub') }}" class="topbar-pill topbar-pill--level text-decoration-none" title="Cấp độ {{ current_user.get_level() }} ({{ current_user.xp }} XP)">
             <i class="ph ph-medal topbar-pill-icon"></i>
             <span class="topbar-pill-value">Lv.<strong>{{ current_user.get_level() }}</strong></span>
           </a>
 
-          <!-- 2. Streak badge -->
-          {% if current_user.is_authenticated %}
-            {% set streak_stat = current_user.get_streak_status() %}
-            <div class="topbar-pill {% if streak_stat.is_learned_today %}streak-active{% else %}streak-inactive{% endif %}"
-                 title="{{ streak_stat.status_badge }}: {{ streak_stat.status_message }} (Kỷ lục: {{ streak_stat.longest_streak }} ngày)">
-              <i class="{% if streak_stat.is_learned_today %}ph-fill ph-flame streak-flame-lit{% else %}ph ph-flame{% endif %} topbar-pill-icon"></i>
-              <span class="topbar-pill-value">{{ streak_stat.current_streak }}</span>
-            </div>
+          <!-- 2. Streak badge (Students only) -->
+          {% set streak_stat = current_user.get_streak_status() %}
+          <div class="topbar-pill {% if streak_stat.is_learned_today %}streak-active{% else %}streak-inactive{% endif %}"
+               title="{{ streak_stat.status_badge }}: {{ streak_stat.status_message }} (Kỷ lục: {{ streak_stat.longest_streak }} ngày)">
+            <i class="{% if streak_stat.is_learned_today %}ph-fill ph-flame streak-flame-lit{% else %}ph ph-flame{% endif %} topbar-pill-icon"></i>
+            <span class="topbar-pill-value">{{ streak_stat.current_streak }}</span>
+          </div>
           {% endif %}
 
-          <!-- 3. Notification bell -->
+          <!-- Notification bell -->
           <div class="dropdown">
             <button class="topbar-icon-btn position-relative" type="button" id="notifDropdown" data-bs-toggle="dropdown" aria-expanded="false" title="Thông báo học tập">
               <i class="ph ph-bell" style="font-size: 1.1rem;"></i>
@@ -103,11 +91,13 @@
             </div>
           </div>
 
-          <!-- 4. Pro Upgrade button -->
+          {% if not current_user.is_admin %}
+          <!-- Pro Upgrade button (Students only) -->
           <button type="button" class="btn-upgrade-pro border-0 text-decoration-none cursor-pointer" data-bs-toggle="modal" data-bs-target="#proModal" title="Xem thông tin gói PRO">
             <i class="ph ph-crown" style="font-size: 0.9rem;"></i>
             <span>NÂNG CẤP PRO</span>
           </button>
+          {% endif %}
         </div>
 
       </header>
@@ -256,7 +246,9 @@
   </div>
 
   {% include "_session_warning_modal.html" %}
+  {% if current_user.is_authenticated and not current_user.is_admin %}
   {% include "_streak_modal.html" %}
+  {% endif %}
   <script src="https://unpkg.com/lucide@latest"></script>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
   <script src="{{ url_for('static', filename='js/app.js') }}"></script>
