@@ -921,13 +921,20 @@ def import_hub():
 @bp.get("/import/template/<content_type>")
 @admin_required
 def download_import_template(content_type):
-    from ...utils.template_generator import generate_all_templates, TEMPLATE_DIR, JSON_TEMPLATE_DIR
-    if not os.path.exists(TEMPLATE_DIR) or len(os.listdir(TEMPLATE_DIR)) < 5:
+    from ...utils.template_generator import generate_all_templates, TEMPLATE_DIR, JSON_TEMPLATE_DIR, CSV_TEMPLATE_DIR
+    if not os.path.exists(TEMPLATE_DIR) or len(os.listdir(TEMPLATE_DIR)) < 5 or not os.path.exists(CSV_TEMPLATE_DIR):
         generate_all_templates()
 
     fmt = request.args.get("format", "xlsx").lower()
-    base_dir = JSON_TEMPLATE_DIR if fmt == "json" else TEMPLATE_DIR
-    ext = "json" if fmt == "json" else "xlsx"
+    if fmt == "json":
+        base_dir = JSON_TEMPLATE_DIR
+        ext = "json"
+    elif fmt == "csv":
+        base_dir = CSV_TEMPLATE_DIR
+        ext = "csv"
+    else:
+        base_dir = TEMPLATE_DIR
+        ext = "xlsx"
 
     filename_map = {
         "vocabulary": f"template_vocabulary.{ext}",
@@ -940,11 +947,16 @@ def download_import_template(content_type):
     if not filename or not os.path.exists(os.path.join(base_dir, filename)):
         abort(404)
 
+    extra_kwargs = {}
+    if ext == "csv":
+        extra_kwargs["mimetype"] = "text/csv; charset=utf-8"
+
     return send_from_directory(
         base_dir,
         filename,
         as_attachment=True,
-        download_name=f"englishmate_{filename}"
+        download_name=f"englishmate_{filename}",
+        **extra_kwargs
     )
 
 
@@ -952,7 +964,7 @@ def download_import_template(content_type):
 @admin_required
 def validate_import_file():
     if "file" not in request.files:
-        return jsonify({"success": False, "error": "Vui lòng chọn file Excel hoặc JSON để upload."}), 400
+        return jsonify({"success": False, "error": "Vui lòng chọn file Excel, CSV hoặc JSON để upload."}), 400
 
     uploaded_file = request.files["file"]
     content_type = request.form.get("content_type", "").strip()
@@ -961,8 +973,8 @@ def validate_import_file():
         return jsonify({"success": False, "error": "Chưa chọn file."}), 400
 
     fname = uploaded_file.filename.lower()
-    if not (fname.endswith(".xlsx") or fname.endswith(".json")):
-        return jsonify({"success": False, "error": "Chỉ chấp nhận file định dạng Excel (.xlsx) hoặc JSON (.json)."}), 400
+    if not (fname.endswith(".xlsx") or fname.endswith(".json") or fname.endswith(".csv")):
+        return jsonify({"success": False, "error": "Chỉ chấp nhận file định dạng Excel (.xlsx), CSV (.csv) hoặc JSON (.json)."}), 400
 
     from .importer import parse_and_validate_file
     result = parse_and_validate_file(uploaded_file, uploaded_file.filename, content_type)

@@ -28,7 +28,7 @@ CONTENT_SCHEMAS = {
     "lessons": {
         "title": "Bài học (Lessons)",
         "required_columns": ["title", "level", "skill", "short_description", "content", "examples"],
-        "optional_columns": ["thumbnail_url"],
+        "optional_columns": ["thumbnail_url", "audio_url", "accent", "audio_duration", "listening_transcript", "min_words", "max_words", "template"],
         "level_valid": ["A1", "A2", "B1", "B2", "C1", "C2"],
         "skill_valid": ["Grammar", "Vocabulary", "Reading", "Listening", "Speaking", "Writing", "General"],
     },
@@ -44,8 +44,59 @@ CONTENT_SCHEMAS = {
         "required_columns": ["category", "title", "duration_minutes", "difficulty", "skill", "part", "question_text", "option_a", "option_b", "option_c", "option_d", "correct_answer", "explanation"],
         "optional_columns": ["transcript", "media_url"],
         "difficulty_valid": ["Easy", "Medium", "Hard"],
+        "correct_answer_valid": ["A", "B", "C", "D"],
     }
 }
+
+
+def _validate_record(row_data, schema):
+    row_errors = []
+
+    for req_col in schema["required_columns"]:
+        if not row_data.get(req_col):
+            row_errors.append(f"Cột/Trường '{req_col}' không được để trống")
+
+    if "level" in row_data and row_data["level"]:
+        level_upper = row_data["level"].upper()
+        if "level_valid" in schema and level_upper not in schema["level_valid"]:
+            row_errors.append(f"Cấp độ '{row_data['level']}' không hợp lệ (Phải là A1, A2, B1, B2, C1, hoặc C2)")
+        row_data["level"] = level_upper
+
+    if "difficulty" in row_data and row_data["difficulty"]:
+        diff_title = row_data["difficulty"].title()
+        if "difficulty_valid" in schema and diff_title not in schema["difficulty_valid"]:
+            row_errors.append(f"Độ khó '{row_data['difficulty']}' không hợp lệ (Phải là Easy, Medium, hoặc Hard)")
+        row_data["difficulty"] = diff_title
+
+    if "skill" in row_data and row_data["skill"]:
+        skill_title = row_data["skill"].title()
+        if "skill_valid" in schema and skill_title not in schema["skill_valid"]:
+            row_errors.append(f"Kỹ năng '{row_data['skill']}' không hợp lệ (Phải là Grammar, Vocabulary, Reading, Listening, Speaking, Writing, General)")
+        row_data["skill"] = skill_title
+
+    if "correct_option" in row_data and row_data["correct_option"]:
+        opt_upper = row_data["correct_option"].upper()
+        if "correct_option_valid" in schema and opt_upper not in schema["correct_option_valid"]:
+            row_errors.append(f"Đáp án đúng '{row_data['correct_option']}' không hợp lệ (Phải là A, B, C, hoặc D)")
+        row_data["correct_option"] = opt_upper
+
+    if "correct_answer" in row_data and row_data["correct_answer"]:
+        ans_upper = row_data["correct_answer"].upper()
+        if "correct_answer_valid" in schema and ans_upper not in schema["correct_answer_valid"]:
+            row_errors.append(f"Đáp án đúng '{row_data['correct_answer']}' không hợp lệ (Phải là A, B, C, hoặc D)")
+        row_data["correct_answer"] = ans_upper
+
+    if "duration_minutes" in row_data and row_data["duration_minutes"]:
+        val_dur = str(row_data["duration_minutes"]).strip()
+        try:
+            dur_int = int(float(val_dur))
+            if dur_int <= 0:
+                row_errors.append(f"Thời lượng bài thi '{val_dur}' phải lớn hơn 0 phút")
+            row_data["duration_minutes"] = str(dur_int)
+        except (ValueError, TypeError):
+            row_errors.append(f"Thời lượng bài thi '{val_dur}' không hợp lệ (Phải là số nguyên phút, ví dụ: 60)")
+
+    return row_errors
 
 
 def parse_and_validate_file(file_stream, filename, content_type):
@@ -117,35 +168,7 @@ def parse_and_validate_csv(file_stream, content_type):
             val = row[col_idx] if col_idx < len(row) else ""
             row_data[col_name] = str(val).strip() if val is not None else ""
 
-        row_errors = []
-
-        for req_col in schema["required_columns"]:
-            if not row_data.get(req_col):
-                row_errors.append(f"Cột '{req_col}' không được để trống")
-
-        if "level" in row_data and row_data["level"]:
-            level_upper = row_data["level"].upper()
-            if "level_valid" in schema and level_upper not in schema["level_valid"]:
-                row_errors.append(f"Cấp độ '{row_data['level']}' không hợp lệ (Phải là A1, A2, B1, B2, C1, hoặc C2)")
-            row_data["level"] = level_upper
-
-        if "difficulty" in row_data and row_data["difficulty"]:
-            diff_title = row_data["difficulty"].title()
-            if "difficulty_valid" in schema and diff_title not in schema["difficulty_valid"]:
-                row_errors.append(f"Độ khó '{row_data['difficulty']}' không hợp lệ (Phải là Easy, Medium, hoặc Hard)")
-            row_data["difficulty"] = diff_title
-
-        if "skill" in row_data and row_data["skill"]:
-            skill_title = row_data["skill"].title()
-            if "skill_valid" in schema and skill_title not in schema["skill_valid"]:
-                row_errors.append(f"Kỹ năng '{row_data['skill']}' không hợp lệ (Phải là Grammar, Vocabulary, Reading, Listening, Speaking, Writing, General)")
-            row_data["skill"] = skill_title
-
-        if "correct_option" in row_data and row_data["correct_option"]:
-            opt_upper = row_data["correct_option"].upper()
-            if "correct_option_valid" in schema and opt_upper not in schema["correct_option_valid"]:
-                row_errors.append(f"Đáp án đúng '{row_data['correct_option']}' không hợp lệ (Phải là A, B, C, hoặc D)")
-            row_data["correct_option"] = opt_upper
+        row_errors = _validate_record(row_data, schema)
 
         if row_errors:
             error_records.append({
@@ -226,35 +249,7 @@ def parse_and_validate_json(file_stream, content_type):
         for col_name in schema["required_columns"] + schema.get("optional_columns", []):
             row_data[col_name] = normalized_item.get(col_name, "")
 
-        row_errors = []
-
-        for req_col in schema["required_columns"]:
-            if not row_data.get(req_col):
-                row_errors.append(f"Trường '{req_col}' không được để trống")
-
-        if "level" in row_data and row_data["level"]:
-            level_upper = row_data["level"].upper()
-            if "level_valid" in schema and level_upper not in schema["level_valid"]:
-                row_errors.append(f"Cấp độ '{row_data['level']}' không hợp lệ (Phải là A1, A2, B1, B2, C1, hoặc C2)")
-            row_data["level"] = level_upper
-
-        if "difficulty" in row_data and row_data["difficulty"]:
-            diff_title = row_data["difficulty"].title()
-            if "difficulty_valid" in schema and diff_title not in schema["difficulty_valid"]:
-                row_errors.append(f"Độ khó '{row_data['difficulty']}' không hợp lệ (Phải là Easy, Medium, hoặc Hard)")
-            row_data["difficulty"] = diff_title
-
-        if "skill" in row_data and row_data["skill"]:
-            skill_title = row_data["skill"].title()
-            if "skill_valid" in schema and skill_title not in schema["skill_valid"]:
-                row_errors.append(f"Kỹ năng '{row_data['skill']}' không hợp lệ (Phải là Grammar, Vocabulary, Reading, Listening, Speaking, Writing, General)")
-            row_data["skill"] = skill_title
-
-        if "correct_option" in row_data and row_data["correct_option"]:
-            opt_upper = row_data["correct_option"].upper()
-            if "correct_option_valid" in schema and opt_upper not in schema["correct_option_valid"]:
-                row_errors.append(f"Đáp án đúng '{row_data['correct_option']}' không hợp lệ (Phải là A, B, C, hoặc D)")
-            row_data["correct_option"] = opt_upper
+        row_errors = _validate_record(row_data, schema)
 
         if row_errors:
             error_records.append({
@@ -338,40 +333,7 @@ def parse_and_validate_excel(file_stream, content_type):
                 val = ""
             row_data[col_name] = val
 
-        row_errors = []
-
-        # Validate required columns
-        for req_col in schema["required_columns"]:
-            if not row_data.get(req_col):
-                row_errors.append(f"Cột '{req_col}' không được để trống")
-
-        # Validate Level
-        if "level" in row_data and row_data["level"]:
-            level_upper = row_data["level"].upper()
-            if "level_valid" in schema and level_upper not in schema["level_valid"]:
-                row_errors.append(f"Cấp độ '{row_data['level']}' không hợp lệ (Phải là A1, A2, B1, B2, C1, hoặc C2)")
-            row_data["level"] = level_upper
-
-        # Validate Difficulty
-        if "difficulty" in row_data and row_data["difficulty"]:
-            diff_title = row_data["difficulty"].title()
-            if "difficulty_valid" in schema and diff_title not in schema["difficulty_valid"]:
-                row_errors.append(f"Độ khó '{row_data['difficulty']}' không hợp lệ (Phải là Easy, Medium, hoặc Hard)")
-            row_data["difficulty"] = diff_title
-
-        # Validate Skill for lessons
-        if "skill" in row_data and row_data["skill"]:
-            skill_title = row_data["skill"].title()
-            if "skill_valid" in schema and skill_title not in schema["skill_valid"]:
-                row_errors.append(f"Kỹ năng '{row_data['skill']}' không hợp lệ (Phải là Grammar, Vocabulary, Reading, Listening, Speaking, Writing, General)")
-            row_data["skill"] = skill_title
-
-        # Validate Correct Option
-        if "correct_option" in row_data and row_data["correct_option"]:
-            opt_upper = row_data["correct_option"].upper()
-            if "correct_option_valid" in schema and opt_upper not in schema["correct_option_valid"]:
-                row_errors.append(f"Đáp án đúng '{row_data['correct_option']}' không hợp lệ (Phải là A, B, C, hoặc D)")
-            row_data["correct_option"] = opt_upper
+        row_errors = _validate_record(row_data, schema)
 
         if row_errors:
             error_records.append({
@@ -489,6 +451,29 @@ def commit_import_records(content_type, valid_records, user_id=None, mode="inser
             title_str = d["title"].strip()
             existing = Lesson.query.filter_by(title=title_str).first()
 
+            # Pack skill_data if any multimedia / skill-specific fields exist
+            skill_data = {}
+            if d.get("audio_url"):
+                skill_data["audio_url"] = d["audio_url"]
+            if d.get("accent"):
+                skill_data["accent"] = d["accent"]
+            if d.get("audio_duration"):
+                skill_data["audio_duration"] = d["audio_duration"]
+            if d.get("listening_transcript"):
+                skill_data["transcript"] = d["listening_transcript"]
+            if d.get("min_words"):
+                try:
+                    skill_data["min_words"] = int(float(d["min_words"]))
+                except (ValueError, TypeError):
+                    pass
+            if d.get("max_words"):
+                try:
+                    skill_data["max_words"] = int(float(d["max_words"]))
+                except (ValueError, TypeError):
+                    pass
+            if d.get("template"):
+                skill_data["template"] = d["template"]
+
             if existing and mode == "insert_or_update":
                 existing.level = d.get("level", existing.level)
                 existing.skill = d.get("skill", existing.skill)
@@ -497,6 +482,8 @@ def commit_import_records(content_type, valid_records, user_id=None, mode="inser
                 existing.examples = d.get("examples", existing.examples)
                 if d.get("thumbnail_url"):
                     existing.thumbnail_url = d["thumbnail_url"]
+                if skill_data:
+                    existing.skill_data = {**(existing.skill_data or {}), **skill_data}
                 updated_count += 1
             elif not existing:
                 item = Lesson(
@@ -507,6 +494,7 @@ def commit_import_records(content_type, valid_records, user_id=None, mode="inser
                     content=d.get("content", ""),
                     examples=d.get("examples", ""),
                     thumbnail_url=d.get("thumbnail_url") or None,
+                    skill_data=skill_data if skill_data else None,
                     is_active=True,
                 )
                 db.session.add(item)
@@ -550,9 +538,13 @@ def commit_import_records(content_type, valid_records, user_id=None, mode="inser
             d = rec["data"]
             exam_title = d["title"].strip()
             if exam_title not in exam_groups:
+                try:
+                    dur = int(float(d.get("duration_minutes", 15)))
+                except (ValueError, TypeError):
+                    dur = 15
                 exam_groups[exam_title] = {
                     "category": d.get("category", "General"),
-                    "duration_minutes": int(d.get("duration_minutes", 15)),
+                    "duration_minutes": dur,
                     "difficulty": d.get("difficulty", "Medium"),
                     "questions": []
                 }
@@ -560,22 +552,45 @@ def commit_import_records(content_type, valid_records, user_id=None, mode="inser
 
         for title_str, grp in exam_groups.items():
             exam = Exam.query.filter_by(title=title_str).first()
+            category = grp["category"]
+            questions = grp["questions"]
+
+            # Calculate part_distribution for TOEIC exams
+            part_dist = None
+            if category.upper() == "TOEIC":
+                p5 = sum(1 for q in questions if "5" in str(q.get("part", "")))
+                p6 = sum(1 for q in questions if "6" in str(q.get("part", "")))
+                p7 = sum(1 for q in questions if "7" in str(q.get("part", "")))
+                if p5 or p6 or p7:
+                    part_dist = {"part5": p5, "part6": p6, "part7": p7}
+                else:
+                    part_dist = {"part5": 30, "part6": 16, "part7": 54}
+
             if not exam:
                 exam = Exam(
                     title=title_str,
-                    category=grp["category"],
+                    category=category,
                     duration=grp["duration_minutes"],
                     duration_minutes=grp["duration_minutes"],
                     difficulty=grp["difficulty"],
-                    question_count=len(grp["questions"]),
+                    question_count=len(questions),
+                    part_distribution=part_dist,
                     is_published=True,
                     is_active=True
                 )
                 db.session.add(exam)
                 db.session.flush()
                 inserted_count += 1
+            else:
+                if part_dist:
+                    exam.part_distribution = part_dist
+                exam.question_count = len(questions)
+                exam.duration_minutes = grp["duration_minutes"]
+                exam.duration = grp["duration_minutes"]
+                ExamQuestion.query.filter_by(exam_id=exam.id).delete()
+                updated_count += 1
 
-            for q_data in grp["questions"]:
+            for q_data in questions:
                 eq = ExamQuestion(
                     exam_id=exam.id,
                     skill=q_data.get("skill", "READING"),

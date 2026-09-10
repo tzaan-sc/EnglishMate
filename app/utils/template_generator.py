@@ -1,3 +1,4 @@
+import csv
 import json
 import os
 from openpyxl import Workbook
@@ -6,6 +7,7 @@ from openpyxl.utils import get_column_letter
 
 TEMPLATE_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), "static", "templates", "excel")
 JSON_TEMPLATE_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), "static", "templates", "json")
+CSV_TEMPLATE_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), "static", "templates", "csv")
 
 HEADER_FILL = PatternFill(start_color="059669", end_color="059669", fill_type="solid")
 HEADER_FONT = Font(name="Arial", size=11, bold=True, color="FFFFFF")
@@ -243,6 +245,7 @@ def get_sample_exams_data():
 def generate_all_templates():
     os.makedirs(TEMPLATE_DIR, exist_ok=True)
     os.makedirs(JSON_TEMPLATE_DIR, exist_ok=True)
+    os.makedirs(CSV_TEMPLATE_DIR, exist_ok=True)
 
     data_map = {
         "vocabulary": (get_sample_vocabulary_data, "template_vocabulary"),
@@ -279,6 +282,15 @@ def generate_all_templates():
         with open(json_path, "w", encoding="utf-8") as f:
             json.dump(json_records, f, ensure_ascii=False, indent=2)
         created_files.append(json_path)
+
+        # 3. Generate CSV (.csv with UTF-8 BOM for Excel compatibility)
+        csv_path = os.path.join(CSV_TEMPLATE_DIR, f"{base_name}.csv")
+        with open(csv_path, "w", encoding="utf-8-sig", newline="") as f:
+            writer = csv.writer(f)
+            writer.writerow(headers)
+            for r in rows:
+                writer.writerow(r)
+        created_files.append(csv_path)
 
     return created_files
 

@@ -31,15 +31,22 @@
         Trung tâm Import Dữ liệu Học tập
       </h2>
       <p class="text-secondary small mb-0" style="font-size: 0.92rem;">
-        Nạp hàng loạt từ vựng, ngữ pháp, bài học, câu hỏi và đề thi vào Database bằng file <strong>Excel (.xlsx)</strong> hoặc <strong>JSON (.json)</strong>.
+        Nạp hàng loạt từ vựng, ngữ pháp, bài học, câu hỏi và đề thi vào Database bằng file <strong>Excel (.xlsx)</strong>, <strong>CSV (.csv)</strong> hoặc <strong>JSON (.json)</strong>.
       </p>
     </div>
     <div class="d-flex gap-2">
-      <a href="{{ url_for('admin.dashboard') }}" class="btn btn-light border fw-semibold text-secondary px-3.5 py-2 rounded-3 shadow-xs d-inline-flex align-items-center gap-1.5 transition-hover" style="font-size: 0.88rem;">
+      <a href="{{ url_for('admin.dashboard') }}" class="btn btn-light border rounded-pill px-3.5 py-1.5 text-secondary fw-semibold shadow-2xs d-inline-flex align-items-center gap-1.5 transition-hover" style="font-size: 0.88rem;">
         <i class="ph-bold ph-arrow-left"></i>
         <span>Về trang Admin</span>
       </a>
     </div>
+  </div>
+
+  <!-- IN-PAGE ALERT BANNER (REPLACES NATIVE BROWSER ALERTS) -->
+  <div id="inPageAlert" class="alert alert-dismissible fade show border-0 rounded-3 mb-4 d-none align-items-center gap-2 shadow-sm" role="alert">
+    <i class="ph-bold ph-warning-circle fs-5 flex-shrink-0" id="inPageAlertIcon"></i>
+    <div class="flex-grow-1 small fw-medium" id="inPageAlertMsg"></div>
+    <button type="button" class="btn-close shadow-none" onclick="hideInPageAlert()"></button>
   </div>
 
   <!-- CURRENT DATABASE METRICS BAR (CLEAN & COMPACT) -->
@@ -80,7 +87,7 @@
       <div>
         <h5 class="fw-bold text-dark mb-1 d-flex align-items-center gap-2" style="font-size: 1.15rem;">
           <span class="rounded-circle bg-primary text-white d-inline-flex align-items-center justify-content-center fw-bold" style="width: 26px; height: 26px; font-size: 0.8rem;">1</span>
-          <span>Tải File Mẫu Chuẩn (Excel / JSON)</span>
+          <span>Tải File Mẫu Chuẩn (Excel / CSV / JSON)</span>
         </h5>
         <p class="text-secondary small mb-0" style="font-size: 0.88rem;">
           Tải file mẫu về máy, điền dữ liệu học tập của bạn vào các cột/trường tương ứng rồi nạp lên ở Bước 2.
@@ -93,17 +100,19 @@
       <table class="table table-hover align-middle mb-0" style="font-size: 0.88rem;">
         <thead class="table-light">
           <tr>
-            <th style="min-width: 180px;">Loại Dữ Liệu</th>
+            <th style="min-width: 200px;">Loại Dữ Liệu</th>
             <th style="min-width: 320px;">Các trường thông tin chuẩn</th>
-            <th class="text-end" style="min-width: 220px;">Tải File Mẫu</th>
+            <th class="text-end" style="min-width: 270px;">Tải File Mẫu</th>
           </tr>
         </thead>
         <tbody>
           <!-- 1. Vocabulary -->
           <tr>
             <td>
-              <div class="d-flex align-items-center gap-2">
-                <span class="fs-4">📗</span>
+              <div class="d-flex align-items-center gap-2.5">
+                <div class="rounded-3 bg-primary-subtle text-primary d-flex align-items-center justify-content-center flex-shrink-0" style="width: 36px; height: 36px;">
+                  <i class="ph-bold ph-translate fs-5"></i>
+                </div>
                 <div>
                   <strong class="text-dark d-block">Từ vựng (Vocabulary)</strong>
                   <span class="text-muted small">Dùng cho Flashcard, Tra cứu & Games</span>
@@ -116,14 +125,18 @@
               </span>
             </td>
             <td class="text-end">
-              <div class="d-inline-flex gap-1.5">
+              <div class="d-inline-flex gap-1.5 flex-wrap justify-content-end">
                 <a href="{{ url_for('admin.download_import_template', content_type='vocabulary', format='xlsx') }}" class="btn btn-sm btn-light border fw-bold text-success shadow-2xs d-inline-flex align-items-center gap-1 px-2.5 py-1" title="Tải Excel">
                   <i class="ph-bold ph-file-xls fs-6"></i>
-                  <span>Excel (.xlsx)</span>
+                  <span>Excel</span>
+                </a>
+                <a href="{{ url_for('admin.download_import_template', content_type='vocabulary', format='csv') }}" class="btn btn-sm btn-light border fw-semibold text-warning-emphasis shadow-2xs d-inline-flex align-items-center gap-1 px-2.5 py-1" title="Tải CSV">
+                  <i class="ph-bold ph-file-csv fs-6"></i>
+                  <span>CSV</span>
                 </a>
                 <a href="{{ url_for('admin.download_import_template', content_type='vocabulary', format='json') }}" class="btn btn-sm btn-light border fw-semibold text-secondary shadow-2xs d-inline-flex align-items-center gap-1 px-2.5 py-1" title="Tải JSON">
                   <i class="ph-bold ph-file-code fs-6 text-primary"></i>
-                  <span>JSON (.json)</span>
+                  <span>JSON</span>
                 </a>
               </div>
             </td>
@@ -132,8 +145,10 @@
           <!-- 2. Grammar -->
           <tr>
             <td>
-              <div class="d-flex align-items-center gap-2">
-                <span class="fs-4">📘</span>
+              <div class="d-flex align-items-center gap-2.5">
+                <div class="rounded-3 bg-success-subtle text-success d-flex align-items-center justify-content-center flex-shrink-0" style="width: 36px; height: 36px;">
+                  <i class="ph-bold ph-book-open-text fs-5"></i>
+                </div>
                 <div>
                   <strong class="text-dark d-block">Ngữ pháp (Grammar)</strong>
                   <span class="text-muted small">Cẩm nang & Quy tắc ngữ pháp</span>
@@ -146,14 +161,18 @@
               </span>
             </td>
             <td class="text-end">
-              <div class="d-inline-flex gap-1.5">
+              <div class="d-inline-flex gap-1.5 flex-wrap justify-content-end">
                 <a href="{{ url_for('admin.download_import_template', content_type='grammar', format='xlsx') }}" class="btn btn-sm btn-light border fw-bold text-success shadow-2xs d-inline-flex align-items-center gap-1 px-2.5 py-1" title="Tải Excel">
                   <i class="ph-bold ph-file-xls fs-6"></i>
-                  <span>Excel (.xlsx)</span>
+                  <span>Excel</span>
+                </a>
+                <a href="{{ url_for('admin.download_import_template', content_type='grammar', format='csv') }}" class="btn btn-sm btn-light border fw-semibold text-warning-emphasis shadow-2xs d-inline-flex align-items-center gap-1 px-2.5 py-1" title="Tải CSV">
+                  <i class="ph-bold ph-file-csv fs-6"></i>
+                  <span>CSV</span>
                 </a>
                 <a href="{{ url_for('admin.download_import_template', content_type='grammar', format='json') }}" class="btn btn-sm btn-light border fw-semibold text-secondary shadow-2xs d-inline-flex align-items-center gap-1 px-2.5 py-1" title="Tải JSON">
                   <i class="ph-bold ph-file-code fs-6 text-primary"></i>
-                  <span>JSON (.json)</span>
+                  <span>JSON</span>
                 </a>
               </div>
             </td>
@@ -162,8 +181,10 @@
           <!-- 3. Lessons -->
           <tr>
             <td>
-              <div class="d-flex align-items-center gap-2">
-                <span class="fs-4">📙</span>
+              <div class="d-flex align-items-center gap-2.5">
+                <div class="rounded-3 bg-info-subtle text-info d-flex align-items-center justify-content-center flex-shrink-0" style="width: 36px; height: 36px;">
+                  <i class="ph-bold ph-chalkboard-teacher fs-5"></i>
+                </div>
                 <div>
                   <strong class="text-dark d-block">Bài học (Lessons)</strong>
                   <span class="text-muted small">Bài giảng các kỹ năng & khóa học</span>
@@ -172,18 +193,22 @@
             </td>
             <td>
               <span class="text-secondary small">
-                <code>title</code>, <code>level</code> (A1-C2), <code>skill</code> (Writing/Speaking/Reading/Listening...), <code>short_description</code>, <code>content</code> (Markdown), <code>examples</code>, thumbnail_url
+                <code>title</code>, <code>level</code> (A1-C2), <code>skill</code> (Writing/Speaking/Reading/Listening...), <code>short_description</code>, <code>content</code>, <code>examples</code>, audio_url, min_words
               </span>
             </td>
             <td class="text-end">
-              <div class="d-inline-flex gap-1.5">
+              <div class="d-inline-flex gap-1.5 flex-wrap justify-content-end">
                 <a href="{{ url_for('admin.download_import_template', content_type='lessons', format='xlsx') }}" class="btn btn-sm btn-light border fw-bold text-success shadow-2xs d-inline-flex align-items-center gap-1 px-2.5 py-1" title="Tải Excel">
                   <i class="ph-bold ph-file-xls fs-6"></i>
-                  <span>Excel (.xlsx)</span>
+                  <span>Excel</span>
+                </a>
+                <a href="{{ url_for('admin.download_import_template', content_type='lessons', format='csv') }}" class="btn btn-sm btn-light border fw-semibold text-warning-emphasis shadow-2xs d-inline-flex align-items-center gap-1 px-2.5 py-1" title="Tải CSV">
+                  <i class="ph-bold ph-file-csv fs-6"></i>
+                  <span>CSV</span>
                 </a>
                 <a href="{{ url_for('admin.download_import_template', content_type='lessons', format='json') }}" class="btn btn-sm btn-light border fw-semibold text-secondary shadow-2xs d-inline-flex align-items-center gap-1 px-2.5 py-1" title="Tải JSON">
                   <i class="ph-bold ph-file-code fs-6 text-primary"></i>
-                  <span>JSON (.json)</span>
+                  <span>JSON</span>
                 </a>
               </div>
             </td>
@@ -192,8 +217,10 @@
           <!-- 4. Questions -->
           <tr>
             <td>
-              <div class="d-flex align-items-center gap-2">
-                <span class="fs-4">📕</span>
+              <div class="d-flex align-items-center gap-2.5">
+                <div class="rounded-3 bg-warning-subtle text-warning d-flex align-items-center justify-content-center flex-shrink-0" style="width: 36px; height: 36px;">
+                  <i class="ph-bold ph-question fs-5"></i>
+                </div>
                 <div>
                   <strong class="text-dark d-block">Câu hỏi & Bài tập (Questions)</strong>
                   <span class="text-muted small">Ngân hàng trắc nghiệm & Quiz</span>
@@ -206,14 +233,18 @@
               </span>
             </td>
             <td class="text-end">
-              <div class="d-inline-flex gap-1.5">
+              <div class="d-inline-flex gap-1.5 flex-wrap justify-content-end">
                 <a href="{{ url_for('admin.download_import_template', content_type='questions', format='xlsx') }}" class="btn btn-sm btn-light border fw-bold text-success shadow-2xs d-inline-flex align-items-center gap-1 px-2.5 py-1" title="Tải Excel">
                   <i class="ph-bold ph-file-xls fs-6"></i>
-                  <span>Excel (.xlsx)</span>
+                  <span>Excel</span>
+                </a>
+                <a href="{{ url_for('admin.download_import_template', content_type='questions', format='csv') }}" class="btn btn-sm btn-light border fw-semibold text-warning-emphasis shadow-2xs d-inline-flex align-items-center gap-1 px-2.5 py-1" title="Tải CSV">
+                  <i class="ph-bold ph-file-csv fs-6"></i>
+                  <span>CSV</span>
                 </a>
                 <a href="{{ url_for('admin.download_import_template', content_type='questions', format='json') }}" class="btn btn-sm btn-light border fw-semibold text-secondary shadow-2xs d-inline-flex align-items-center gap-1 px-2.5 py-1" title="Tải JSON">
                   <i class="ph-bold ph-file-code fs-6 text-primary"></i>
-                  <span>JSON (.json)</span>
+                  <span>JSON</span>
                 </a>
               </div>
             </td>
@@ -222,11 +253,13 @@
           <!-- 5. Exams -->
           <tr>
             <td>
-              <div class="d-flex align-items-center gap-2">
-                <span class="fs-4">📓</span>
+              <div class="d-flex align-items-center gap-2.5">
+                <div class="rounded-3 bg-danger-subtle text-danger d-flex align-items-center justify-content-center flex-shrink-0" style="width: 36px; height: 36px;">
+                  <i class="ph-bold ph-newspaper fs-5"></i>
+                </div>
                 <div>
                   <strong class="text-dark d-block">Đề thi (TOEIC / IELTS Exams)</strong>
-                  <span class="text-muted small">Đề thi thử & bài kiểm tra trọn gói</span>
+                  <span class="text-muted small">Đề thi thử trọn gói & phân bổ Part</span>
                 </div>
               </div>
             </td>
@@ -236,14 +269,18 @@
               </span>
             </td>
             <td class="text-end">
-              <div class="d-inline-flex gap-1.5">
+              <div class="d-inline-flex gap-1.5 flex-wrap justify-content-end">
                 <a href="{{ url_for('admin.download_import_template', content_type='exams', format='xlsx') }}" class="btn btn-sm btn-light border fw-bold text-success shadow-2xs d-inline-flex align-items-center gap-1 px-2.5 py-1" title="Tải Excel">
                   <i class="ph-bold ph-file-xls fs-6"></i>
-                  <span>Excel (.xlsx)</span>
+                  <span>Excel</span>
+                </a>
+                <a href="{{ url_for('admin.download_import_template', content_type='exams', format='csv') }}" class="btn btn-sm btn-light border fw-semibold text-warning-emphasis shadow-2xs d-inline-flex align-items-center gap-1 px-2.5 py-1" title="Tải CSV">
+                  <i class="ph-bold ph-file-csv fs-6"></i>
+                  <span>CSV</span>
                 </a>
                 <a href="{{ url_for('admin.download_import_template', content_type='exams', format='json') }}" class="btn btn-sm btn-light border fw-semibold text-secondary shadow-2xs d-inline-flex align-items-center gap-1 px-2.5 py-1" title="Tải JSON">
                   <i class="ph-bold ph-file-code fs-6 text-primary"></i>
-                  <span>JSON (.json)</span>
+                  <span>JSON</span>
                 </a>
               </div>
             </td>
@@ -261,7 +298,7 @@
         <span>Upload File & Kiểm Tra Dữ Liệu</span>
       </h5>
       <p class="text-secondary small mb-0" style="font-size: 0.88rem;">
-        Hệ thống sẽ tự động quét cú pháp, kiểm tra các cột bắt buộc và phát hiện lỗi trước khi lưu vào Database.
+        Hệ thống tự động quét cú pháp, kiểm tra các cột bắt buộc, định dạng số và phát hiện lỗi trước khi lưu vào Database.
       </p>
     </div>
 
@@ -271,22 +308,22 @@
         <div class="col-md-4">
           <label class="form-label fw-bold small text-dark mb-1.5">1. Chọn loại dữ liệu nạp <span class="text-danger">*</span></label>
           <select class="form-select border shadow-none py-2.5 fw-semibold" id="selectContentType" required style="border-color: var(--border-light); font-size: 0.9rem;">
-            <option value="" disabled selected>-- Chọn danh mục --</option>
-            <option value="vocabulary">📗 Từ vựng (Vocabulary)</option>
-            <option value="grammar">📘 Ngữ pháp (Grammar Topics)</option>
-            <option value="lessons">📙 Bài học (Lessons)</option>
-            <option value="questions">📕 Câu hỏi Trắc nghiệm (Questions)</option>
-            <option value="exams">📓 Đề thi (TOEIC / IELTS Exams)</option>
+            <option value="" disabled selected>-- Chọn danh mục nạp --</option>
+            <option value="vocabulary">Từ vựng (Vocabulary)</option>
+            <option value="grammar">Ngữ pháp (Grammar Topics)</option>
+            <option value="lessons">Bài học (Lessons)</option>
+            <option value="questions">Câu hỏi Trắc nghiệm (Questions)</option>
+            <option value="exams">Đề thi (TOEIC / IELTS Exams)</option>
           </select>
         </div>
 
         <!-- File Upload Drag & Drop Area -->
         <div class="col-md-8">
-          <label class="form-label fw-bold small text-dark mb-1.5">2. Chọn file (.xlsx hoặc .json) <span class="text-danger">*</span></label>
+          <label class="form-label fw-bold small text-dark mb-1.5">2. Chọn file (.xlsx, .csv hoặc .json) <span class="text-danger">*</span></label>
           <div class="input-group">
-            <input class="form-control border shadow-none py-2.5" type="file" id="excelFileInput" accept=".xlsx, .json" required style="border-color: var(--border-light); font-size: 0.9rem;">
+            <input class="form-control border shadow-none py-2.5" type="file" id="excelFileInput" accept=".xlsx, .csv, .json" required style="border-color: var(--border-light); font-size: 0.9rem;">
           </div>
-          <div class="form-text text-muted small mt-1">Hỗ trợ các file định dạng Microsoft Excel (.xlsx) hoặc JavaScript Object Notation (.json).</div>
+          <div class="form-text text-muted small mt-1">Hỗ trợ các định dạng Microsoft Excel (.xlsx), CSV (.csv) hoặc JavaScript Object Notation (.json).</div>
         </div>
       </div>
 
@@ -376,10 +413,16 @@
         </div>
       </div>
 
-      <button type="button" class="btn btn-success fw-bold px-4 py-2.5 rounded-3 shadow-sm d-inline-flex align-items-center gap-2" id="btnCommitImport" style="font-size: 0.95rem;">
-        <i class="ph-bold ph-check-circle fs-5"></i>
-        <span>Xác nhận Nạp vào Database</span>
-      </button>
+      <div class="d-flex gap-2">
+        <button type="button" class="btn btn-light border fw-semibold px-3.5 py-2.5 rounded-3 text-secondary d-inline-flex align-items-center gap-1.5" onclick="resetImportFlow()">
+          <i class="ph-bold ph-arrow-counter-clockwise"></i>
+          <span>Chọn file khác</span>
+        </button>
+        <button type="button" class="btn btn-success fw-bold px-4 py-2.5 rounded-3 shadow-sm d-inline-flex align-items-center gap-2" id="btnCommitImport" style="font-size: 0.95rem;">
+          <i class="ph-bold ph-check-circle fs-5"></i>
+          <span>Xác nhận Nạp vào Database</span>
+        </button>
+      </div>
     </div>
   </div>
 
@@ -394,8 +437,9 @@
     </p>
 
     <div class="d-flex justify-content-center gap-2 flex-wrap">
-      <button type="button" class="btn btn-primary fw-bold px-4 py-2.5 rounded-3 shadow-sm" onclick="resetImportFlow()">
-        <i class="ph-bold ph-plus-circle me-1.5"></i> Tiếp tục Import file khác
+      <button type="button" class="btn btn-primary fw-bold px-4 py-2.5 rounded-3 shadow-sm d-inline-flex align-items-center gap-1.5" onclick="resetImportFlow()">
+        <i class="ph-bold ph-plus-circle"></i>
+        <span>Tiếp tục Import file khác</span>
       </button>
       <a href="{{ url_for('learning.vocabulary') }}" class="btn btn-light border fw-semibold text-secondary px-4 py-2.5 rounded-3" id="btnViewFrontend">
         Xem trên giao diện học
@@ -410,13 +454,33 @@
 let currentValidationData = null;
 const csrfToken = "{{ csrf_token() }}";
 
+function showInPageAlert(msg, type = "danger") {
+  const alertBox = document.getElementById("inPageAlert");
+  const alertMsg = document.getElementById("inPageAlertMsg");
+  const alertIcon = document.getElementById("inPageAlertIcon");
+
+  alertBox.className = `alert alert-dismissible fade show border-0 rounded-3 mb-4 d-flex align-items-center gap-2 shadow-sm alert-${type}`;
+  alertIcon.className = (type === "success") ? "ph-bold ph-check-circle fs-5 flex-shrink-0" :
+                        (type === "warning") ? "ph-bold ph-warning fs-5 flex-shrink-0" :
+                        "ph-bold ph-warning-circle fs-5 flex-shrink-0";
+  alertMsg.textContent = msg;
+  alertBox.classList.remove("d-none");
+  alertBox.scrollIntoView({ behavior: "smooth", block: "center" });
+}
+
+function hideInPageAlert() {
+  document.getElementById("inPageAlert").classList.add("d-none");
+}
+
 document.getElementById("uploadValidateForm").addEventListener("submit", async function(e) {
   e.preventDefault();
+  hideInPageAlert();
+
   const contentType = document.getElementById("selectContentType").value;
   const fileInput = document.getElementById("excelFileInput");
 
   if (!contentType || !fileInput.files[0]) {
-    alert("Vui lòng chọn loại dữ liệu và file Excel/JSON.");
+    showInPageAlert("Vui lòng chọn loại dữ liệu và file Excel, CSV hoặc JSON hợp lệ.", "warning");
     return;
   }
 
@@ -437,14 +501,14 @@ document.getElementById("uploadValidateForm").addEventListener("submit", async f
 
     const data = await res.json();
     if (!res.ok || !data.success) {
-      alert("Lỗi kiểm tra file: " + (data.error || "Không xác định"));
+      showInPageAlert("Lỗi kiểm tra file: " + (data.error || "Không xác định"), "danger");
       return;
     }
 
     currentValidationData = data;
     renderPreview(data);
   } catch (err) {
-    alert("Lỗi kết nối máy chủ: " + err.message);
+    showInPageAlert("Lỗi kết nối máy chủ: " + err.message, "danger");
   } finally {
     btnValidate.disabled = false;
     btnValidate.innerHTML = `<i class="ph-bold ph-magnifying-glass fs-5"></i><span>Kiểm tra & Xem trước Dữ liệu</span>`;
@@ -505,7 +569,7 @@ function renderPreview(data) {
 
 document.getElementById("btnCommitImport").addEventListener("click", async function() {
   if (!currentValidationData || currentValidationData.valid_count === 0) {
-    alert("Không có dòng dữ liệu hợp lệ để import.");
+    showInPageAlert("Không có dòng dữ liệu hợp lệ để import vào Database.", "warning");
     return;
   }
 
@@ -530,7 +594,7 @@ document.getElementById("btnCommitImport").addEventListener("click", async funct
 
     const result = await res.json();
     if (!res.ok || !result.success) {
-      alert("Lỗi khi lưu vào Database: " + (result.error || "Không xác định"));
+      showInPageAlert("Lỗi khi lưu vào Database: " + (result.error || "Không xác định"), "danger");
       btnCommit.disabled = false;
       btnCommit.innerHTML = `<i class="ph-bold ph-check-circle fs-5"></i><span>Xác nhận Nạp vào Database</span>`;
       return;
@@ -556,7 +620,7 @@ document.getElementById("btnCommitImport").addEventListener("click", async funct
     document.getElementById("successResultBox").scrollIntoView({ behavior: 'smooth' });
 
   } catch (err) {
-    alert("Lỗi kết nối: " + err.message);
+    showInPageAlert("Lỗi kết nối máy chủ: " + err.message, "danger");
     btnCommit.disabled = false;
     btnCommit.innerHTML = `<i class="ph-bold ph-check-circle fs-5"></i><span>Xác nhận Nạp vào Database</span>`;
   }
@@ -566,6 +630,7 @@ function resetImportFlow() {
   document.getElementById("uploadValidateForm").reset();
   document.getElementById("previewSection").style.display = "none";
   document.getElementById("successResultBox").style.display = "none";
+  hideInPageAlert();
   currentValidationData = null;
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
