@@ -2,8 +2,8 @@ from flask_wtf import FlaskForm
 from wtforms import SelectField, StringField, SubmitField, TextAreaField
 from wtforms.validators import DataRequired, Length
 
-LEVELS = [(x, x) for x in ("A1", "A2", "B1", "B2", "C1")]
-SKILLS = [(x, x) for x in ("Vocabulary", "Grammar", "Reading", "Listening", "Speaking")]
+LEVELS = [(x, x) for x in ("A1", "A2", "B1", "B2", "C1", "C2")]
+SKILLS = [(x, x) for x in ("Vocabulary", "Grammar", "Reading", "Listening", "Speaking", "Writing")]
 
 
 class LessonForm(FlaskForm):

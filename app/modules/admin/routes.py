@@ -35,7 +35,40 @@ def dashboard():
 @bp.get("/lessons")
 @admin_required
 def lessons():
-    return render_template("admin/lessons.html", lessons=Lesson.query.order_by(Lesson.id.desc()).all(), form=ConfirmForm())
+    search = request.args.get("search", request.args.get("q", "")).strip()
+    skill = request.args.get("skill", "").strip()
+    level = request.args.get("level", "").strip()
+    status = request.args.get("status", "").strip()
+
+    query = Lesson.query
+    if search:
+        query = query.filter(Lesson.title.ilike(f"%{search}%") | Lesson.short_description.ilike(f"%{search}%"))
+    if skill and skill != "All":
+        query = query.filter(Lesson.skill.ilike(skill))
+    if level and level != "All":
+        query = query.filter_by(level=level)
+    if status == "active":
+        query = query.filter_by(is_active=True)
+    elif status == "hidden":
+        query = query.filter_by(is_active=False)
+
+    total_count = Lesson.query.count()
+    active_count = Lesson.query.filter_by(is_active=True).count()
+    hidden_count = total_count - active_count
+
+    lessons_list = query.order_by(Lesson.id.desc()).all()
+    return render_template(
+        "admin/lessons.html",
+        lessons=lessons_list,
+        form=ConfirmForm(),
+        search=search,
+        skill=skill,
+        level=level,
+        status=status,
+        total_count=total_count,
+        active_count=active_count,
+        hidden_count=hidden_count,
+    )
 
 
 @bp.route("/lessons/new", methods=["GET", "POST"])
@@ -65,6 +98,7 @@ def lesson_edit(lesson_id):
     return render_template("admin/lesson_form.html", form=form, title="Sửa bài học")
 
 
+@bp.post("/lessons/<int:lesson_id>/toggle-status")
 @bp.post("/lessons/<int:lesson_id>/delete")
 @admin_required
 def lesson_delete(lesson_id):
@@ -72,9 +106,10 @@ def lesson_delete(lesson_id):
     if not form.validate_on_submit():
         abort(400)
     lesson = db.get_or_404(Lesson, lesson_id)
-    lesson.is_active = False
+    lesson.is_active = not lesson.is_active
     db.session.commit()
-    flash("Đã ẩn bài học (dữ liệu tiến độ vẫn được giữ nguyên).", "info")
+    msg = f"Đã kích hoạt mở lại bài học '{lesson.title}'." if lesson.is_active else f"Đã ẩn bài học '{lesson.title}' (dữ liệu tiến độ vẫn được giữ nguyên)."
+    flash(msg, "success" if lesson.is_active else "info")
     return redirect(url_for("admin.lessons"))
 
 

@@ -4,12 +4,22 @@
 {% block content %}
 <div class="container-fluid max-w-7xl py-4">
 
-  <div class="card-modern p-4">
-    <!-- Header with Action -->
-    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
+  <!-- Header Card with Stats & Action -->
+  <div class="card-modern p-4 mb-4">
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
       <div>
-        <h4 class="fw-bold text-dark mb-1" style="font-size: 1.35rem; letter-spacing: -0.01em;">Danh sách Bài học</h4>
-        <p class="text-secondary small mb-0">Tất cả {{ lessons|length }} bài học đang có trên hệ thống EnglishMate</p>
+        <div class="d-inline-flex align-items-center gap-1.5 px-2.5 py-0.5 rounded-pill bg-primary-subtle text-primary border border-primary-subtle small fw-bold mb-2">
+          <i class="ph-bold ph-books"></i>
+          <span>Hệ thống Quản trị Học tập</span>
+        </div>
+        <h3 class="fw-bold text-dark mb-1" style="letter-spacing: -0.01em;">Quản lý Bài học</h3>
+        <p class="text-secondary small mb-0">
+          Tổng cộng <strong>{{ total_count }}</strong> bài học 
+          <span class="text-muted mx-1">·</span> 
+          <span class="text-success fw-semibold"><i class="ph-bold ph-check-circle me-0.5"></i>{{ active_count }} Đang mở</span> 
+          <span class="text-muted mx-1">·</span> 
+          <span class="text-secondary fw-semibold"><i class="ph-bold ph-eye-slash me-0.5"></i>{{ hidden_count }} Đã ẩn</span>
+        </p>
       </div>
 
       <a class="btn btn-primary fw-bold px-3.5 py-2 rounded-3 shadow-xs d-inline-flex align-items-center gap-1.5" href="{{ url_for('admin.lesson_create') }}" style="font-size: 0.88rem;">
@@ -18,57 +28,199 @@
       </a>
     </div>
 
-    <!-- Table -->
-    <div class="table-responsive border rounded-3 overflow-hidden">
+    <!-- Filter & Search Toolbar -->
+    <div class="pt-3 mt-3 border-top">
+      <form method="get" action="{{ url_for('admin.lessons') }}" class="row g-2.5 align-items-center">
+        <!-- Search Input -->
+        <div class="col-12 col-lg-4">
+          <div class="input-group input-group-sm">
+            <span class="input-group-text bg-white border-end-0 text-muted ps-2.5">
+              <i class="ph-bold ph-magnifying-glass"></i>
+            </span>
+            <input type="text" name="search" value="{{ search }}" class="form-control border-start-0 ps-1" placeholder="Tìm theo tiêu đề, mô tả bài học...">
+            {% if search %}
+            <a href="{{ url_for('admin.lessons', skill=skill, level=level, status=status) }}" class="btn btn-light border border-start-0 text-muted" title="Xóa từ khóa">
+              <i class="ph-bold ph-x"></i>
+            </a>
+            {% endif %}
+          </div>
+        </div>
+
+        <!-- Skill Select -->
+        <div class="col-6 col-md-3 col-lg-2">
+          <select name="skill" class="form-select form-select-sm" onchange="this.form.submit()">
+            <option value="">Tất cả kỹ năng</option>
+            <option value="Listening" {{ 'selected' if skill == 'Listening' }}>🎧 Listening</option>
+            <option value="Reading" {{ 'selected' if skill == 'Reading' }}>📖 Reading</option>
+            <option value="Speaking" {{ 'selected' if skill == 'Speaking' }}>🗣️ Speaking</option>
+            <option value="Writing" {{ 'selected' if skill == 'Writing' }}>✍️ Writing</option>
+            <option value="Grammar" {{ 'selected' if skill == 'Grammar' }}>📐 Grammar</option>
+            <option value="Vocabulary" {{ 'selected' if skill == 'Vocabulary' }}>🔤 Vocabulary</option>
+          </select>
+        </div>
+
+        <!-- Level Select -->
+        <div class="col-6 col-md-3 col-lg-2">
+          <select name="level" class="form-select form-select-sm" onchange="this.form.submit()">
+            <option value="">Tất cả Level</option>
+            {% for lvl in ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'] %}
+            <option value="{{ lvl }}" {{ 'selected' if level == lvl }}>Level {{ lvl }}</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <!-- Status Select -->
+        <div class="col-6 col-md-3 col-lg-2">
+          <select name="status" class="form-select form-select-sm" onchange="this.form.submit()">
+            <option value="">Tất cả trạng thái</option>
+            <option value="active" {{ 'selected' if status == 'active' }}>🟢 Đang mở</option>
+            <option value="hidden" {{ 'selected' if status == 'hidden' }}>⚪ Đã ẩn</option>
+          </select>
+        </div>
+
+        <!-- Buttons -->
+        <div class="col-6 col-md-3 col-lg-2 d-flex gap-1.5">
+          <button type="submit" class="btn btn-sm btn-dark fw-bold w-100 d-inline-flex align-items-center justify-content-center gap-1">
+            <i class="ph-bold ph-funnel"></i>
+            <span>Lọc</span>
+          </button>
+          {% if search or skill or level or status %}
+          <a href="{{ url_for('admin.lessons') }}" class="btn btn-sm btn-light border text-secondary fw-semibold px-2.5" title="Đặt lại bộ lọc">
+            <i class="ph-bold ph-arrow-counter-clockwise"></i>
+          </a>
+          {% endif %}
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Lessons Data Table -->
+  <div class="card-modern p-0 overflow-hidden">
+    <div class="table-responsive">
       <table class="table table-hover align-middle mb-0" style="font-size: 0.88rem;">
-        <thead class="table-light">
+        <thead class="table-light border-bottom">
           <tr>
-            <th class="py-3 ps-3" style="min-width: 280px;">Tên bài học & Mô tả</th>
-            <th class="py-3 text-center" style="width: 100px;">Cấp độ</th>
+            <th class="py-3 ps-3" style="min-width: 300px;">Tên bài học & Mô tả</th>
+            <th class="py-3 text-center" style="width: 90px;">Cấp độ</th>
             <th class="py-3 text-center" style="width: 120px;">Kỹ năng</th>
-            <th class="py-3 text-center" style="width: 120px;">Trạng thái</th>
-            <th class="py-3 text-end pe-3" style="min-width: 140px;">Hành động</th>
+            <th class="py-3 text-center" style="width: 140px;">Thông tin</th>
+            <th class="py-3 text-center" style="width: 110px;">Trạng thái</th>
+            <th class="py-3 text-end pe-3" style="min-width: 180px;">Hành động</th>
           </tr>
         </thead>
         <tbody>
           {% for lesson in lessons %}
           <tr>
+            <!-- Title & Description -->
             <td class="ps-3">
               <div class="d-flex align-items-start gap-2.5">
-                <div class="rounded-3 bg-info-subtle text-info d-inline-flex align-items-center justify-content-center flex-shrink-0 mt-0.5" style="width: 32px; height: 32px; font-size: 1rem;">
-                  <i class="ph-bold ph-book-open"></i>
+                {% set sk = (lesson.skill or '')|lower %}
+                <div class="rounded-3 d-inline-flex align-items-center justify-content-center flex-shrink-0 mt-0.5 
+                  {% if sk == 'listening' %}bg-primary-subtle text-primary
+                  {% elif sk == 'reading' %}bg-success-subtle text-success
+                  {% elif sk == 'speaking' %}bg-warning-subtle text-warning
+                  {% elif sk == 'writing' %}bg-purple-subtle text-purple
+                  {% else %}bg-info-subtle text-info{% endif %}" 
+                  style="width: 36px; height: 36px; font-size: 1.1rem;">
+                  {% if sk == 'listening' %}<i class="ph-bold ph-headphones"></i>
+                  {% elif sk == 'reading' %}<i class="ph-bold ph-book-open"></i>
+                  {% elif sk == 'speaking' %}<i class="ph-bold ph-chats-circle"></i>
+                  {% elif sk == 'writing' %}<i class="ph-bold ph-pen-nib"></i>
+                  {% else %}<i class="ph-bold ph-article"></i>{% endif %}
                 </div>
                 <div>
-                  <span class="fw-bold text-dark d-block lead-tight">{{ lesson.title }}</span>
-                  <small class="text-muted text-truncate d-block" style="max-width: 380px;">{{ lesson.short_description }}</small>
+                  <div class="d-flex align-items-center gap-1.5 flex-wrap">
+                    <span class="badge bg-light text-secondary border font-monospace" style="font-size: 0.7rem;">#{{ lesson.id }}</span>
+                    <span class="fw-bold text-dark leading-tight">{{ lesson.title }}</span>
+                  </div>
+                  <small class="text-muted text-truncate d-block mt-0.5" style="max-width: 420px;" title="{{ lesson.short_description }}">
+                    {{ lesson.short_description }}
+                  </small>
                 </div>
               </div>
             </td>
+
+            <!-- Level -->
             <td class="text-center">
-              <span class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill px-2.5 py-1 font-semibold">{{ lesson.level }}</span>
+              <span class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill px-2.5 py-1 font-semibold">
+                {{ lesson.level }}
+              </span>
             </td>
+
+            <!-- Skill -->
             <td class="text-center">
-              <span class="badge bg-purple-subtle text-purple border border-purple-subtle rounded-pill px-2.5 py-1 font-semibold">{{ lesson.skill }}</span>
-            </td>
-            <td class="text-center">
-              {% if lesson.is_active %}
-              <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-2.5 py-1 font-semibold">Đang mở</span>
+              {% if sk == 'listening' %}
+              <span class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill px-2.5 py-1 font-semibold">Listening</span>
+              {% elif sk == 'reading' %}
+              <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-2.5 py-1 font-semibold">Reading</span>
+              {% elif sk == 'speaking' %}
+              <span class="badge bg-warning-subtle text-warning border border-warning-subtle rounded-pill px-2.5 py-1 font-semibold">Speaking</span>
+              {% elif sk == 'writing' %}
+              <span class="badge bg-purple-subtle text-purple border border-purple-subtle rounded-pill px-2.5 py-1 font-semibold">Writing</span>
               {% else %}
-              <span class="badge bg-secondary-subtle text-secondary border rounded-pill px-2.5 py-1 font-semibold">Đã ẩn</span>
+              <span class="badge bg-info-subtle text-info border border-info-subtle rounded-pill px-2.5 py-1 font-semibold">{{ lesson.skill }}</span>
               {% endif %}
             </td>
+
+            <!-- Info (Date & Views) -->
+            <td class="text-center">
+              <div class="small">
+                <span class="text-secondary d-block" style="font-size: 0.78rem;">
+                  <i class="ph ph-calendar me-0.5"></i>{{ lesson.created_at.strftime('%d/%m/%Y') if lesson.created_at else '---' }}
+                </span>
+                <span class="text-muted d-block" style="font-size: 0.74rem;">
+                  <i class="ph ph-eye me-0.5"></i>{{ lesson.view_count }} lượt xem
+                </span>
+              </div>
+            </td>
+
+            <!-- Status -->
+            <td class="text-center">
+              {% if lesson.is_active %}
+              <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-2.5 py-1 font-semibold">
+                <i class="ph-bold ph-check me-0.5"></i>Đang mở
+              </span>
+              {% else %}
+              <span class="badge bg-secondary-subtle text-secondary border rounded-pill px-2.5 py-1 font-semibold">
+                <i class="ph-bold ph-eye-slash me-0.5"></i>Đã ẩn
+              </span>
+              {% endif %}
+            </td>
+
+            <!-- Actions -->
             <td class="text-end pe-3">
-              <div class="d-inline-flex gap-1.5">
-                <a class="btn btn-sm btn-light border fw-semibold text-primary shadow-2xs d-inline-flex align-items-center gap-1 px-2.5 py-1" href="{{ url_for('admin.lesson_edit', lesson_id=lesson.id) }}">
+              <div class="d-inline-flex align-items-center gap-1.5">
+                <!-- Preview as Student Link -->
+                <a class="btn btn-sm btn-light border fw-semibold text-secondary shadow-2xs d-inline-flex align-items-center gap-1 px-2 py-1" 
+                   href="{{ lesson.url }}" target="_blank" title="Xem thử bài học trên giao diện học viên">
+                  <i class="ph-bold ph-arrow-square-out text-primary"></i>
+                  <span>Xem</span>
+                </a>
+
+                <!-- Edit Link -->
+                <a class="btn btn-sm btn-light border fw-semibold text-primary shadow-2xs d-inline-flex align-items-center gap-1 px-2.5 py-1" 
+                   href="{{ url_for('admin.lesson_edit', lesson_id=lesson.id) }}" title="Chỉnh sửa nội dung">
                   <i class="ph-bold ph-pencil-simple"></i>
                   <span>Sửa</span>
                 </a>
+
+                <!-- Toggle Status Button -->
                 {% if lesson.is_active %}
-                <form method="post" action="{{ url_for('admin.lesson_delete', lesson_id=lesson.id) }}" onsubmit="return confirm('Bạn có chắc chắn muốn ẩn bài học này không?')" class="m-0 d-inline">
+                <form method="post" action="{{ url_for('admin.lesson_delete', lesson_id=lesson.id) }}" 
+                      onsubmit="return confirm('Bạn có chắc chắn muốn ẨN bài học \'{{ lesson.title }}\' không? Học viên sẽ không nhìn thấy bài này nữa.')" class="m-0 d-inline">
                   {{ form.csrf_token }}
-                  <button type="submit" class="btn btn-sm btn-light border fw-semibold text-danger shadow-2xs d-inline-flex align-items-center gap-1 px-2.5 py-1">
+                  <button type="submit" class="btn btn-sm btn-light border fw-semibold text-danger shadow-2xs d-inline-flex align-items-center gap-1 px-2 py-1" title="Ẩn bài học khỏi học viên">
                     <i class="ph-bold ph-eye-slash"></i>
                     <span>Ẩn</span>
+                  </button>
+                </form>
+                {% else %}
+                <form method="post" action="{{ url_for('admin.lesson_delete', lesson_id=lesson.id) }}" 
+                      onsubmit="return confirm('Mở lại bài học \'{{ lesson.title }}\' cho học viên?')" class="m-0 d-inline">
+                  {{ form.csrf_token }}
+                  <button type="submit" class="btn btn-sm btn-light border fw-semibold text-success shadow-2xs d-inline-flex align-items-center gap-1 px-2 py-1" title="Mở lại bài học">
+                    <i class="ph-bold ph-eye"></i>
+                    <span>Mở</span>
                   </button>
                 </form>
                 {% endif %}
@@ -77,9 +229,15 @@
           </tr>
           {% else %}
           <tr>
-            <td colspan="5" class="text-center py-5 text-muted">
+            <td colspan="6" class="text-center py-5 text-muted">
               <i class="ph-bold ph-folder-notch-open fs-2 d-block mb-2 text-secondary opacity-50"></i>
-              <span>Chưa có bài học nào trong hệ thống.</span>
+              <div class="fw-semibold">Không tìm thấy bài học nào phù hợp.</div>
+              {% if search or skill or level or status %}
+              <small class="text-muted d-block mt-1">Thử xóa bộ lọc hoặc tìm với từ khóa khác.</small>
+              <a href="{{ url_for('admin.lessons') }}" class="btn btn-sm btn-outline-secondary rounded-pill px-3 mt-2">
+                <i class="ph-bold ph-arrow-counter-clockwise me-1"></i>Xóa bộ lọc
+              </a>
+              {% endif %}
             </td>
           </tr>
           {% endfor %}

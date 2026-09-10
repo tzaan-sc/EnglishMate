@@ -237,7 +237,7 @@
           <h6 class="fw-bold text-dark small text-uppercase mb-2" style="letter-spacing: 0.04em;">
             <i class="ph-bold ph-lightbulb text-warning me-1"></i>Hướng dẫn & Mẹo nghe:
           </h6>
-          <div class="text-secondary small lh-lg" style="white-space: pre-line;">{{ lesson.content }}</div>
+          <div class="text-secondary small lh-lg" style="white-space: pre-line;">{{ lesson.content|safe if ('<' in lesson.content) else lesson.content }}</div>
         </div>
         {% endif %}
       </div>
@@ -1391,7 +1391,7 @@
         </div>
 
         <!-- Styled Reading Body -->
-        <div class="prose text-dark lh-lg" style="font-size: 1rem; color: #334155; line-height: 1.8; white-space: pre-line;">{{ lesson.content }}</div>
+        <div class="prose text-dark lh-lg" style="font-size: 1rem; color: #334155; line-height: 1.8;">{{ lesson.content|safe if ('<' in lesson.content) else lesson.content }}</div>
       </div>
     </div>
 
