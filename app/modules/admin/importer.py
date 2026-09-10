@@ -15,7 +15,7 @@ CONTENT_SCHEMAS = {
     "vocabulary": {
         "title": "Từ vựng (Vocabulary)",
         "required_columns": ["word", "pronunciation", "part_of_speech", "meaning_vi", "example_en", "example_vi", "topic", "level"],
-        "optional_columns": ["image_url", "collocations", "synonyms", "antonyms"],
+        "optional_columns": ["category", "subcategory", "lesson_unit", "image_url", "collocations", "synonyms", "antonyms"],
         "level_valid": ["A1", "A2", "B1", "B2", "C1", "C2"],
     },
     "grammar": {
@@ -28,7 +28,12 @@ CONTENT_SCHEMAS = {
     "lessons": {
         "title": "Bài học (Lessons)",
         "required_columns": ["title", "level", "skill", "short_description", "content", "examples"],
-        "optional_columns": ["thumbnail_url", "audio_url", "accent", "audio_duration", "listening_transcript", "min_words", "max_words", "template"],
+        "optional_columns": [
+            "thumbnail_url", "audio_url", "accent", "audio_duration", "listening_transcript", "transcript",
+            "reading_genre", "reading_passage", "reading_questions",
+            "speaking_genre", "speaking_sentences", "speaking_tips",
+            "writing_genre", "min_words", "max_words", "writing_templates", "template"
+        ],
         "level_valid": ["A1", "A2", "B1", "B2", "C1", "C2"],
         "skill_valid": ["Grammar", "Vocabulary", "Reading", "Listening", "Speaking", "Writing", "General"],
     },
@@ -42,11 +47,159 @@ CONTENT_SCHEMAS = {
     "exams": {
         "title": "Đề thi & Kiểm tra (Exams)",
         "required_columns": ["category", "title", "duration_minutes", "difficulty", "skill", "part", "question_text", "option_a", "option_b", "option_c", "option_d", "correct_answer", "explanation"],
-        "optional_columns": ["transcript", "media_url"],
+        "optional_columns": ["type", "transcript", "media_url"],
         "difficulty_valid": ["Easy", "Medium", "Hard"],
         "correct_answer_valid": ["A", "B", "C", "D"],
     }
 }
+
+
+def _normalize_grammar_examples(val):
+    """
+    Ensures grammar examples are stored in the line-delimited format
+    expected by learner templates: 'English Sentence|Vietnamese Translation'
+    """
+    if not val:
+        return ""
+    val_str = str(val).strip()
+    if val_str.startswith("[") or val_str.startswith("{"):
+        try:
+            parsed = json.loads(val_str)
+            if isinstance(parsed, list):
+                lines = []
+                for item in parsed:
+                    if isinstance(item, dict):
+                        en = item.get("en") or item.get("english") or item.get("sentence") or ""
+                        vi = item.get("vi") or item.get("vietnamese") or item.get("meaning") or ""
+                        if en and vi:
+                            lines.append(f"{en}|{vi}")
+                        elif en:
+                            lines.append(en)
+                    elif isinstance(item, str) and item.strip():
+                        lines.append(item.strip())
+                if lines:
+                    return "\n".join(lines)
+            elif isinstance(parsed, dict):
+                en = parsed.get("en") or parsed.get("english") or ""
+                vi = parsed.get("vi") or parsed.get("vietnamese") or ""
+                if en and vi:
+                    return f"{en}|{vi}"
+        except Exception:
+            pass
+    return val_str
+
+
+def _extract_lesson_skill_data_from_dict(d):
+    """
+    Extracts structured skill_data dictionary from row for all 4 skills:
+    Listening, Reading, Speaking, Writing.
+    Fully compatible with routes.py and learner detail templates.
+    """
+    skill_data = {}
+
+    # Listening
+    if d.get("audio_url"):
+        skill_data["audio_url"] = str(d["audio_url"]).strip()
+    if d.get("accent"):
+        skill_data["accent"] = str(d["accent"]).strip().upper()
+    if d.get("audio_duration"):
+        skill_data["audio_duration"] = str(d["audio_duration"]).strip()
+    trans = d.get("listening_transcript") or d.get("transcript")
+    if trans:
+        skill_data["transcript"] = str(trans).strip()
+
+    # Reading
+    if d.get("reading_genre"):
+        skill_data["reading_genre"] = str(d["reading_genre"]).strip()
+    passage = d.get("reading_passage") or d.get("passage")
+    if passage:
+        skill_data["passage"] = str(passage).strip()
+    q_raw = d.get("reading_questions") or d.get("reading_questions_json")
+    if q_raw:
+        if isinstance(q_raw, list):
+            skill_data["questions"] = q_raw
+        elif isinstance(q_raw, str) and q_raw.strip().startswith("["):
+            try:
+                skill_data["questions"] = json.loads(q_raw)
+            except Exception:
+                pass
+
+    # Speaking
+    if d.get("speaking_genre"):
+        skill_data["speaking_genre"] = str(d["speaking_genre"]).strip()
+    sent_raw = d.get("speaking_sentences") or d.get("speaking_sentences_json")
+    if sent_raw:
+        if isinstance(sent_raw, list):
+            skill_data["sentences"] = sent_raw
+        elif isinstance(sent_raw, str):
+            sent_str = sent_raw.strip()
+            if sent_str.startswith("["):
+                try:
+                    skill_data["sentences"] = json.loads(sent_str)
+                except Exception:
+                    pass
+            else:
+                parsed = []
+                for idx, line in enumerate(sent_str.splitlines()):
+                    line = line.strip()
+                    if not line:
+                        continue
+                    parts = [p.strip() for p in line.split("|")]
+                    parsed.append({
+                        "idx": idx + 1,
+                        "text": parts[0],
+                        "ipa": parts[1] if len(parts) > 1 else "",
+                        "vi": parts[2] if len(parts) > 2 else ""
+                    })
+                if parsed:
+                    skill_data["sentences"] = parsed
+    tips_raw = d.get("speaking_tips")
+    if tips_raw:
+        if isinstance(tips_raw, list):
+            skill_data["tips"] = tips_raw
+        elif isinstance(tips_raw, str):
+            skill_data["tips"] = [t.strip() for t in tips_raw.splitlines() if t.strip()]
+
+    # Writing
+    if d.get("writing_genre"):
+        skill_data["writing_genre"] = str(d["writing_genre"]).strip()
+    if d.get("min_words"):
+        try:
+            skill_data["min_words"] = int(float(d["min_words"]))
+        except (ValueError, TypeError):
+            pass
+    if d.get("max_words"):
+        try:
+            skill_data["max_words"] = int(float(d["max_words"]))
+        except (ValueError, TypeError):
+            pass
+    tpl_raw = d.get("writing_templates") or d.get("writing_templates_json") or d.get("template")
+    if tpl_raw:
+        if isinstance(tpl_raw, list):
+            skill_data["templates"] = tpl_raw
+        elif isinstance(tpl_raw, str):
+            tpl_str = tpl_raw.strip()
+            if tpl_str.startswith("["):
+                try:
+                    skill_data["templates"] = json.loads(tpl_str)
+                except Exception:
+                    pass
+            else:
+                parsed = []
+                for line in tpl_str.splitlines():
+                    line = line.strip()
+                    if not line:
+                        continue
+                    parts = [p.strip() for p in line.split("|")]
+                    parsed.append({
+                        "label": parts[0],
+                        "text": parts[1] if len(parts) > 1 else "",
+                        "vi": parts[2] if len(parts) > 2 else ""
+                    })
+                if parsed:
+                    skill_data["templates"] = parsed
+
+    return skill_data
 
 
 def _validate_record(row_data, schema):
@@ -374,7 +527,15 @@ def commit_import_records(content_type, valid_records, user_id=None, mode="inser
         for rec in valid_records:
             d = rec["data"]
             word_str = d["word"].strip()
-            existing = Vocabulary.query.filter(Vocabulary.word.ilike(word_str)).first()
+            pos_str = d.get("part_of_speech", "").strip()
+
+            if pos_str:
+                existing = Vocabulary.query.filter(
+                    Vocabulary.word.ilike(word_str),
+                    Vocabulary.part_of_speech.ilike(pos_str)
+                ).first()
+            else:
+                existing = Vocabulary.query.filter(Vocabulary.word.ilike(word_str)).first()
 
             if existing and mode == "insert_or_update":
                 existing.pronunciation = d.get("pronunciation", existing.pronunciation)
@@ -384,14 +545,20 @@ def commit_import_records(content_type, valid_records, user_id=None, mode="inser
                 existing.example_vi = d.get("example_vi", existing.example_vi)
                 existing.topic = d.get("topic", existing.topic)
                 existing.level = d.get("level", existing.level)
+                if d.get("category"):
+                    existing.category = d["category"].strip()
+                if d.get("subcategory"):
+                    existing.subcategory = d["subcategory"].strip()
+                if d.get("lesson_unit"):
+                    existing.lesson_unit = d["lesson_unit"].strip()
                 if d.get("image_url"):
-                    existing.image_url = d["image_url"]
+                    existing.image_url = d["image_url"].strip()
                 if d.get("collocations"):
-                    existing.collocations = d["collocations"]
+                    existing.collocations = d["collocations"].strip()
                 if d.get("synonyms"):
-                    existing.synonyms = d["synonyms"]
+                    existing.synonyms = d["synonyms"].strip()
                 if d.get("antonyms"):
-                    existing.antonyms = d["antonyms"]
+                    existing.antonyms = d["antonyms"].strip()
                 updated_count += 1
             elif not existing:
                 item = Vocabulary(
@@ -403,6 +570,9 @@ def commit_import_records(content_type, valid_records, user_id=None, mode="inser
                     example_vi=d.get("example_vi", ""),
                     topic=d.get("topic", "General"),
                     level=d.get("level", "A1"),
+                    category=d.get("category", "CEFR") or "CEFR",
+                    subcategory=d.get("subcategory") or None,
+                    lesson_unit=d.get("lesson_unit") or None,
                     image_url=d.get("image_url") or None,
                     collocations=d.get("collocations") or None,
                     synonyms=d.get("synonyms") or None,
@@ -416,6 +586,7 @@ def commit_import_records(content_type, valid_records, user_id=None, mode="inser
             d = rec["data"]
             title_str = d["title"].strip()
             existing = GrammarTopic.query.filter_by(title=title_str).first()
+            norm_examples = _normalize_grammar_examples(d.get("examples_json", ""))
 
             if existing and mode == "insert_or_update":
                 existing.category = d.get("category", existing.category)
@@ -423,7 +594,8 @@ def commit_import_records(content_type, valid_records, user_id=None, mode="inser
                 existing.difficulty = d.get("difficulty", existing.difficulty)
                 existing.summary = d.get("summary", existing.summary)
                 existing.rule_explanation = d.get("rule_explanation", existing.rule_explanation)
-                existing.examples_json = d.get("examples_json", existing.examples_json)
+                if norm_examples:
+                    existing.examples_json = norm_examples
                 if d.get("common_mistakes"):
                     existing.common_mistakes = d["common_mistakes"]
                 if d.get("tips_tricks"):
@@ -437,7 +609,7 @@ def commit_import_records(content_type, valid_records, user_id=None, mode="inser
                     difficulty=d.get("difficulty", "Medium"),
                     summary=d.get("summary", ""),
                     rule_explanation=d.get("rule_explanation", ""),
-                    examples_json=d.get("examples_json", ""),
+                    examples_json=norm_examples,
                     common_mistakes=d.get("common_mistakes") or None,
                     tips_tricks=d.get("tips_tricks") or None,
                     is_active=True,
@@ -451,28 +623,7 @@ def commit_import_records(content_type, valid_records, user_id=None, mode="inser
             title_str = d["title"].strip()
             existing = Lesson.query.filter_by(title=title_str).first()
 
-            # Pack skill_data if any multimedia / skill-specific fields exist
-            skill_data = {}
-            if d.get("audio_url"):
-                skill_data["audio_url"] = d["audio_url"]
-            if d.get("accent"):
-                skill_data["accent"] = d["accent"]
-            if d.get("audio_duration"):
-                skill_data["audio_duration"] = d["audio_duration"]
-            if d.get("listening_transcript"):
-                skill_data["transcript"] = d["listening_transcript"]
-            if d.get("min_words"):
-                try:
-                    skill_data["min_words"] = int(float(d["min_words"]))
-                except (ValueError, TypeError):
-                    pass
-            if d.get("max_words"):
-                try:
-                    skill_data["max_words"] = int(float(d["max_words"]))
-                except (ValueError, TypeError):
-                    pass
-            if d.get("template"):
-                skill_data["template"] = d["template"]
+            skill_data = _extract_lesson_skill_data_from_dict(d)
 
             if existing and mode == "insert_or_update":
                 existing.level = d.get("level", existing.level)
@@ -591,16 +742,24 @@ def commit_import_records(content_type, valid_records, user_id=None, mode="inser
                 updated_count += 1
 
             for q_data in questions:
+                media_info = None
+                if q_data.get("media_url"):
+                    media_url_clean = str(q_data["media_url"]).strip()
+                    media_info = {"audio_url": media_url_clean, "media_url": media_url_clean}
+
                 eq = ExamQuestion(
                     exam_id=exam.id,
                     skill=q_data.get("skill", "READING"),
                     part=q_data.get("part", "Part 1"),
+                    type=q_data.get("type", "SINGLE_CHOICE") or "SINGLE_CHOICE",
                     question_text=q_data.get("question_text", ""),
                     option_a=q_data.get("option_a", ""),
                     option_b=q_data.get("option_b", ""),
                     option_c=q_data.get("option_c", ""),
                     option_d=q_data.get("option_d", ""),
                     correct_answer=q_data.get("correct_answer", "A"),
+                    media_info=media_info,
+                    transcript=q_data.get("transcript") or None,
                     explanation=q_data.get("explanation", "")
                 )
                 db.session.add(eq)

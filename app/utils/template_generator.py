@@ -52,31 +52,36 @@ def get_sample_vocabulary_data():
     headers = [
         "word", "pronunciation", "part_of_speech", "meaning_vi",
         "example_en", "example_vi", "topic", "level",
+        "category", "subcategory", "lesson_unit",
         "image_url", "collocations", "synonyms", "antonyms"
     ]
     rows = [
         [
             "accomplish", "/əˈkʌm.plɪʃ/", "verb", "hoàn thành, đạt được",
             "She accomplished all her goals for this semester.", "Cô ấy đã hoàn thành mọi mục tiêu trong học kỳ này.",
-            "Education", "B1", "https://images.unsplash.com/photo-1434030216411-0b793f4b4173?w=500",
+            "Education", "B1", "CEFR", "Academic", "Unit 1",
+            "https://images.unsplash.com/photo-1434030216411-0b793f4b4173?w=500",
             "accomplish a mission; accomplish a task", "achieve, complete, fulfill", "fail, abandon"
         ],
         [
             "sustainable", "/səˈsteɪ.nə.bəl/", "adjective", "bền vững, thân thiện với môi trường",
             "The company is committed to sustainable development.", "Công ty cam kết phát triển bền vững.",
-            "Environment", "B2", "https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?w=500",
+            "Environment", "B2", "CEFR", "Nature & Climate", "Unit 3",
+            "https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?w=500",
             "sustainable energy; sustainable development", "eco-friendly, renewable", "unsustainable, wasteful"
         ],
         [
             "negotiate", "/nəˈɡoʊ.ʃi.eɪt/", "verb", "đàm phán, thương lượng",
             "The union is negotiating for better working conditions.", "Công đoàn đang đàm phán để có điều kiện làm việc tốt hơn.",
-            "Business", "B2", "",
+            "Business", "B2", "TOEIC", "Contracts & Negotiations", "Part 7",
+            "",
             "negotiate a contract; negotiate terms", "bargain, discuss", "surrender"
         ],
         [
             "pivotal", "/ˈpɪv.ə.t̬əl/", "adjective", "then chốt, mang tính quyết định",
             "He played a pivotal role in the success of the project.", "Anh ấy đóng một vai trò then chốt trong sự thành công của dự án.",
-            "General", "C1", "",
+            "General", "C1", "IELTS", "Advanced Vocabulary", "Band 7.5+",
+            "",
             "pivotal role; pivotal moment", "crucial, vital, critical", "trivial, insignificant"
         ]
     ]
@@ -118,7 +123,11 @@ def get_sample_grammar_data():
 def get_sample_lessons_data():
     headers = [
         "title", "level", "skill", "short_description",
-        "content", "examples", "thumbnail_url"
+        "content", "examples", "thumbnail_url",
+        "audio_url", "accent", "audio_duration", "listening_transcript",
+        "reading_genre", "reading_passage",
+        "speaking_genre", "speaking_sentences", "speaking_tips",
+        "writing_genre", "min_words", "max_words", "writing_templates"
     ]
     rows = [
         [
@@ -128,7 +137,12 @@ def get_sample_lessons_data():
             "Học cách viết email giao dịch thương mại chuyên nghiệp, trang trọng và thuyết phục.",
             "### 1. Introduction\nWriting effective business emails is essential in professional settings.\n\n### 2. Email Structure\n- **Subject Line**: Concise and clear\n- **Salutation**: Dear Mr./Ms. [Last Name] or Dear [First Name]\n- **Opening**: I hope this email finds you well.\n- **Main Body**: State the purpose clearly.\n- **Call to Action**: Please let me know your availability.\n- **Sign-off**: Best regards / Sincerely.",
             "Could you please confirm receipt of this document?|Bạn có thể vui lòng xác nhận đã nhận tài liệu này không?\nI look forward to hearing from you soon.|Tôi rất mong sớm nhận được phản hồi từ bạn.",
-            "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=500"
+            "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=500",
+            "", "", "", "",
+            "", "",
+            "", "", "",
+            "Email công việc (Business Email)", "50", "120",
+            "Lời chào & Mở đầu | I hope this email finds you well. | Hy vọng bạn nhận được email này trong tình trạng tốt nhất.\nYêu cầu | Could you please provide the latest update on the project? | Bạn có thể vui lòng cập nhật tiến độ mới nhất của dự án không?\nKết thư | Thank you for your support and collaboration. | Cảm ơn sự hỗ trợ và hợp tác của bạn."
         ],
         [
             "Everyday Small Talk & Networking",
@@ -137,7 +151,13 @@ def get_sample_lessons_data():
             "Nắm vững các mẫu câu bắt chuyện tự nhiên trong môi trường công sở và đời sống.",
             "### 1. Weather and Surroundings\nStart conversations with neutral topics like weather or current surroundings.\n\n### 2. Open-ended Questions\nUse 'How was your weekend?' instead of 'Did you have a good weekend?' to keep conversations flowing.",
             "Nice weather we're having today, isn't it?|Thời tiết hôm nay đẹp thật, phải không?\nHow are things going with your new project?|Dự án mới của bạn tiến triển thế nào rồi?",
-            "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=500"
+            "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=500",
+            "", "", "", "",
+            "", "",
+            "Giao tiếp thường ngày (Daily Small Talk)",
+            "Nice weather we're having today, isn't it? | /naɪs ˈweð.ɚ wiːr ˈhæv.ɪŋ təˈdeɪ/ | Thời tiết hôm nay đẹp thật, phải không?\nHow are things going with your new team? | /haʊ ɑːr θɪŋz ˈɡoʊ.ɪŋ wɪð jɔːr nuː tiːm/ | Mọi chuyện với nhóm mới của bạn thế nào rồi?",
+            "Giữ ngữ điệu thân thiện và mỉm cười khi mở đầu cuộc trò chuyện.\nChú ý nối âm giữa các từ kết thúc bằng phụ âm và bắt đầu bằng nguyên âm.",
+            "", "", "", ""
         ]
     ]
     return headers, rows
@@ -189,8 +209,8 @@ def get_sample_questions_data():
 def get_sample_exams_data():
     headers = [
         "category", "title", "duration_minutes", "difficulty",
-        "skill", "part", "question_text", "option_a", "option_b", "option_c", "option_d",
-        "correct_answer", "explanation"
+        "skill", "part", "type", "question_text", "option_a", "option_b", "option_c", "option_d",
+        "correct_answer", "explanation", "media_url", "transcript"
     ]
     rows = [
         [
@@ -200,6 +220,7 @@ def get_sample_exams_data():
             "Medium",
             "READING",
             "Part 5",
+            "SINGLE_CHOICE",
             "All employees are requested to submit their expense reports _______ Friday afternoon.",
             "by",
             "until",
@@ -207,6 +228,8 @@ def get_sample_exams_data():
             "on",
             "A",
             "'By Friday afternoon' nghĩa là trước hoặc muộn nhất vào chiều thứ Sáu (deadline). 'Until' chỉ hành động kéo dài liên tục.",
+            "",
+            ""
         ],
         [
             "TOEIC",
@@ -215,6 +238,7 @@ def get_sample_exams_data():
             "Medium",
             "READING",
             "Part 5",
+            "SINGLE_CHOICE",
             "Mr. Henderson was _______ promoted to Senior Marketing Director.",
             "recent",
             "recently",
@@ -222,21 +246,26 @@ def get_sample_exams_data():
             "recency",
             "B",
             "Vị trí đứng giữa trợ động từ 'was' và phân từ hai 'promoted' cần một trạng từ (Adverb) để bổ nghĩa -> chọn 'recently'.",
+            "",
+            ""
         ],
         [
-            "IELTS",
-            "IELTS General Practice Test 01",
-            "60",
-            "Hard",
-            "READING",
-            "Section 1",
-            "According to the notice, what must visitors do before entering the construction area?",
-            "Sign the guestbook",
-            "Wear a hard hat and safety vest",
-            "Call their supervisor",
-            "Leave their mobile phones at reception",
-            "B",
-            "Đoạn văn quy định rõ tất cả khách tham quan bắt buộc phải trang bị mũ bảo hộ và áo phản quang trước khi bước vào công trường.",
+            "TOEIC",
+            "TOEIC Listening Practice Test 01",
+            "30",
+            "Medium",
+            "LISTENING",
+            "Part 1",
+            "SINGLE_CHOICE",
+            "Look at the picture and choose the best statement.",
+            "The woman is typing on a laptop.",
+            "The woman is drinking a cup of coffee.",
+            "The woman is walking in the park.",
+            "The woman is reading a printed magazine.",
+            "A",
+            "Bức tranh mô tả một người phụ nữ đang ngồi gõ bàn phím máy tính xách tay trong văn phòng.",
+            "https://actions.google.com/sounds/v1/office/typing_on_computer_keyboard.ogg",
+            "The woman is sitting at her desk typing on a laptop computer."
         ]
     ]
     return headers, rows

@@ -1,4 +1,4 @@
-﻿title,level,skill,short_description,content,examples,thumbnail_url
+﻿title,level,skill,short_description,content,examples,thumbnail_url,audio_url,accent,audio_duration,listening_transcript,reading_genre,reading_passage,speaking_genre,speaking_sentences,speaking_tips,writing_genre,min_words,max_words,writing_templates
 Mastering Business Email Communication,B2,Writing,"Học cách viết email giao dịch thương mại chuyên nghiệp, trang trọng và thuyết phục.","### 1. Introduction
 Writing effective business emails is essential in professional settings.
 
@@ -9,10 +9,14 @@ Writing effective business emails is essential in professional settings.
 - **Main Body**: State the purpose clearly.
 - **Call to Action**: Please let me know your availability.
 - **Sign-off**: Best regards / Sincerely.","Could you please confirm receipt of this document?|Bạn có thể vui lòng xác nhận đã nhận tài liệu này không?
-I look forward to hearing from you soon.|Tôi rất mong sớm nhận được phản hồi từ bạn.",https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=500
+I look forward to hearing from you soon.|Tôi rất mong sớm nhận được phản hồi từ bạn.",https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=500,,,,,,,,,,Email công việc (Business Email),50,120,"Lời chào & Mở đầu | I hope this email finds you well. | Hy vọng bạn nhận được email này trong tình trạng tốt nhất.
+Yêu cầu | Could you please provide the latest update on the project? | Bạn có thể vui lòng cập nhật tiến độ mới nhất của dự án không?
+Kết thư | Thank you for your support and collaboration. | Cảm ơn sự hỗ trợ và hợp tác của bạn."
 Everyday Small Talk & Networking,A2,Speaking,Nắm vững các mẫu câu bắt chuyện tự nhiên trong môi trường công sở và đời sống.,"### 1. Weather and Surroundings
 Start conversations with neutral topics like weather or current surroundings.
 
 ### 2. Open-ended Questions
 Use 'How was your weekend?' instead of 'Did you have a good weekend?' to keep conversations flowing.","Nice weather we're having today, isn't it?|Thời tiết hôm nay đẹp thật, phải không?
-How are things going with your new project?|Dự án mới của bạn tiến triển thế nào rồi?",https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=500
+How are things going with your new project?|Dự án mới của bạn tiến triển thế nào rồi?",https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=500,,,,,,,Giao tiếp thường ngày (Daily Small Talk),"Nice weather we're having today, isn't it? | /naɪs ˈweð.ɚ wiːr ˈhæv.ɪŋ təˈdeɪ/ | Thời tiết hôm nay đẹp thật, phải không?
+How are things going with your new team? | /haʊ ɑːr θɪŋz ˈɡoʊ.ɪŋ wɪð jɔːr nuː tiːm/ | Mọi chuyện với nhóm mới của bạn thế nào rồi?","Giữ ngữ điệu thân thiện và mỉm cười khi mở đầu cuộc trò chuyện.
+Chú ý nối âm giữa các từ kết thúc bằng phụ âm và bắt đầu bằng nguyên âm.",,,,

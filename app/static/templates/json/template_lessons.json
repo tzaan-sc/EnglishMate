@@ -6,7 +6,20 @@
     "short_description": "Học cách viết email giao dịch thương mại chuyên nghiệp, trang trọng và thuyết phục.",
     "content": "### 1. Introduction\nWriting effective business emails is essential in professional settings.\n\n### 2. Email Structure\n- **Subject Line**: Concise and clear\n- **Salutation**: Dear Mr./Ms. [Last Name] or Dear [First Name]\n- **Opening**: I hope this email finds you well.\n- **Main Body**: State the purpose clearly.\n- **Call to Action**: Please let me know your availability.\n- **Sign-off**: Best regards / Sincerely.",
     "examples": "Could you please confirm receipt of this document?|Bạn có thể vui lòng xác nhận đã nhận tài liệu này không?\nI look forward to hearing from you soon.|Tôi rất mong sớm nhận được phản hồi từ bạn.",
-    "thumbnail_url": "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=500"
+    "thumbnail_url": "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=500",
+    "audio_url": "",
+    "accent": "",
+    "audio_duration": "",
+    "listening_transcript": "",
+    "reading_genre": "",
+    "reading_passage": "",
+    "speaking_genre": "",
+    "speaking_sentences": "",
+    "speaking_tips": "",
+    "writing_genre": "Email công việc (Business Email)",
+    "min_words": "50",
+    "max_words": "120",
+    "writing_templates": "Lời chào & Mở đầu | I hope this email finds you well. | Hy vọng bạn nhận được email này trong tình trạng tốt nhất.\nYêu cầu | Could you please provide the latest update on the project? | Bạn có thể vui lòng cập nhật tiến độ mới nhất của dự án không?\nKết thư | Thank you for your support and collaboration. | Cảm ơn sự hỗ trợ và hợp tác của bạn."
   },
   {
     "title": "Everyday Small Talk & Networking",
@@ -15,6 +28,19 @@
     "short_description": "Nắm vững các mẫu câu bắt chuyện tự nhiên trong môi trường công sở và đời sống.",
     "content": "### 1. Weather and Surroundings\nStart conversations with neutral topics like weather or current surroundings.\n\n### 2. Open-ended Questions\nUse 'How was your weekend?' instead of 'Did you have a good weekend?' to keep conversations flowing.",
     "examples": "Nice weather we're having today, isn't it?|Thời tiết hôm nay đẹp thật, phải không?\nHow are things going with your new project?|Dự án mới của bạn tiến triển thế nào rồi?",
-    "thumbnail_url": "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=500"
+    "thumbnail_url": "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=500",
+    "audio_url": "",
+    "accent": "",
+    "audio_duration": "",
+    "listening_transcript": "",
+    "reading_genre": "",
+    "reading_passage": "",
+    "speaking_genre": "Giao tiếp thường ngày (Daily Small Talk)",
+    "speaking_sentences": "Nice weather we're having today, isn't it? | /naɪs ˈweð.ɚ wiːr ˈhæv.ɪŋ təˈdeɪ/ | Thời tiết hôm nay đẹp thật, phải không?\nHow are things going with your new team? | /haʊ ɑːr θɪŋz ˈɡoʊ.ɪŋ wɪð jɔːr nuː tiːm/ | Mọi chuyện với nhóm mới của bạn thế nào rồi?",
+    "speaking_tips": "Giữ ngữ điệu thân thiện và mỉm cười khi mở đầu cuộc trò chuyện.\nChú ý nối âm giữa các từ kết thúc bằng phụ âm và bắt đầu bằng nguyên âm.",
+    "writing_genre": "",
+    "min_words": "",
+    "max_words": "",
+    "writing_templates": ""
   }
 ]
