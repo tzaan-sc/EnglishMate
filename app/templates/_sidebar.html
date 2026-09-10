@@ -39,15 +39,9 @@
                 </a>
             </li>
             <li class="nav-item">
-                <a class="nav-link-modern {% if request.path == url_for('admin.users') %}active{% endif %}" href="{{ url_for('admin.users') }}" title="Người dùng">
-                    <i class="ph ph-users"></i>
-                    <span>Người dùng</span>
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link-modern {% if request.path == url_for('admin.roles') %}active{% endif %}" href="{{ url_for('admin.roles') }}" title="Vai trò & Quyền">
-                    <i class="ph ph-user-gear"></i>
-                    <span>Vai trò & Quyền</span>
+                <a class="nav-link-modern {% if request.path.startswith('/admin/users') or request.path.startswith('/admin/roles') %}active{% endif %}" href="{{ url_for('admin.users') }}" title="Người dùng & Phân quyền">
+                    <i class="ph ph-users-three"></i>
+                    <span>Người dùng & Phân quyền</span>
                 </a>
             </li>
             <li class="nav-item mb-2">

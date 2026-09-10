@@ -273,11 +273,39 @@ def vocabulary_delete(word_id):
 @admin_required
 def users():
     search = request.args.get("q", "").strip()
+    active_tab = request.args.get("tab", "users").strip().lower()
     query = User.query
     if search:
         query = query.filter((User.username.ilike(f"%{search}%")) | (User.email.ilike(f"%{search}%")))
-    all_roles = Role.query.order_by(Role.id.asc()).all()
-    return render_template("admin/users.html", users=query.order_by(User.created_at.desc()).all(), roles=all_roles, search=search, form=ConfirmForm())
+
+    roles_list = Role.query.order_by(Role.is_custom.asc(), Role.id.asc()).all()
+    permissions_list = Permission.query.order_by(Permission.category.asc(), Permission.id.asc()).all()
+
+    templates = {
+        "MODERATOR_TEMP": {
+            "name": "Mẫu Quản trị Nội dung (Content Moderator)",
+            "perm_names": ["lessons:read", "lessons:write", "vocabulary:manage", "exams:manage"]
+        },
+        "SECURITY_TEMP": {
+            "name": "Mẫu Cảnh báo & An ninh (Security Admin)",
+            "perm_names": ["users:manage", "roles:manage", "audit:read"]
+        },
+        "FULL_ADMIN_TEMP": {
+            "name": "Mẫu Toàn quyền Quản trị (Full Admin)",
+            "perm_names": [p.name for p in permissions_list]
+        }
+    }
+
+    return render_template(
+        "admin/users.html",
+        users=query.order_by(User.created_at.desc()).all(),
+        roles=roles_list,
+        permissions=permissions_list,
+        templates=templates,
+        search=search,
+        active_tab=active_tab,
+        form=ConfirmForm()
+    )
 
 
 @bp.post("/users/<int:user_id>/toggle")
@@ -295,7 +323,7 @@ def user_toggle(user_id):
         act_str = "MỞ KHÓA" if user.is_active else "KHÓA"
         log_audit_action(current_user.id, "TOGGLE_USER_STATUS", "User", user.id, f"{act_str} tài khoản {user.username}")
         flash("Đã cập nhật trạng thái tài khoản.", "success")
-    return redirect(url_for("admin.users"))
+    return redirect(url_for("admin.users", tab="users"))
 
 
 @bp.post("/users/<int:user_id>/toggle-role")
@@ -312,7 +340,7 @@ def user_toggle_role(user_id):
         db.session.commit()
         log_audit_action(current_user.id, "TOGGLE_ROLE", "User", user.id, f"Đổi vai trò {user.username} thành {user.role}")
         flash(f"Đã chuyển vai trò tài khoản {user.username} thành {user.role}.", "success")
-    return redirect(url_for("admin.users"))
+    return redirect(url_for("admin.users", tab="users"))
 
 
 # --- ROLE & PERMISSION MANAGEMENT (MỤC 1.6) ---
@@ -348,33 +376,10 @@ def roles():
 
             log_audit_action(current_user.id, "CREATE_ROLE", "Role", role.id, f"Khởi tạo vai trò tùy chỉnh '{role_name}'")
             flash(f"Đã khởi tạo vai trò tùy chỉnh '{role_name}' thành công.", "success")
-            return redirect(url_for("admin.roles"))
+        return redirect(url_for("admin.users", tab="roles"))
 
-    roles_list = Role.query.order_by(Role.is_custom.asc(), Role.id.asc()).all()
-    permissions_list = Permission.query.order_by(Permission.category.asc(), Permission.id.asc()).all()
-
-    templates = {
-        "MODERATOR_TEMP": {
-            "name": "Mẫu Quản trị Nội dung (Content Moderator)",
-            "perm_names": ["lessons:read", "lessons:write", "vocabulary:manage", "exams:manage"]
-        },
-        "SECURITY_TEMP": {
-            "name": "Mẫu Cảnh báo & An ninh (Security Admin)",
-            "perm_names": ["users:manage", "roles:manage", "audit:read"]
-        },
-        "FULL_ADMIN_TEMP": {
-            "name": "Mẫu Toàn quyền Quản trị (Full Admin)",
-            "perm_names": [p.name for p in permissions_list]
-        }
-    }
-
-    return render_template(
-        "admin/roles.html",
-        roles=roles_list,
-        permissions=permissions_list,
-        templates=templates,
-        form=ConfirmForm()
-    )
+    # Redirect to consolidated Users & Roles hub
+    return redirect(url_for("admin.users", tab="roles"))
 
 
 @bp.post("/roles/<int:role_id>/edit")
@@ -402,7 +407,7 @@ def role_edit(role_id):
     db.session.commit()
     log_audit_action(current_user.id, "UPDATE_ROLE", "Role", role.id, f"Cập nhật vai trò '{role.name}'")
     flash(f"Đã cập nhật quyền hạn cho vai trò '{role.name}'.", "success")
-    return redirect(url_for("admin.roles"))
+    return redirect(url_for("admin.users", tab="roles"))
 
 
 @bp.post("/roles/<int:role_id>/delete")
@@ -420,7 +425,7 @@ def role_delete(role_id):
         db.session.commit()
         log_audit_action(current_user.id, "DELETE_ROLE", "Role", role_id, f"Xóa vai trò '{role_name}'")
         flash(f"Đã xóa vai trò '{role_name}'.", "info")
-    return redirect(url_for("admin.roles"))
+    return redirect(url_for("admin.users", tab="roles"))
 
 
 @bp.post("/users/<int:user_id>/assign-role")
