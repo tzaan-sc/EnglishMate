@@ -4,6 +4,8 @@ from functools import wraps
 from flask import abort, flash, redirect, render_template, request, url_for, jsonify, send_from_directory
 from flask_login import current_user, login_required
 
+from datetime import datetime, timezone, timedelta
+
 from ...extensions import db
 from ..auth.models import User
 from ..exams.models import Exam
@@ -11,6 +13,8 @@ from ..learning.models import Lesson, Question, QuizAttempt, Vocabulary, Grammar
 from . import bp
 from .forms import ConfirmForm, LessonForm, VocabularyForm
 from .importer import parse_and_validate_excel, commit_import_records, CONTENT_SCHEMAS
+from .models import AuditLog, Permission, Role, RolePermission, UserRole
+from .utils import log_audit_action, permission_required, has_permission
 
 
 def admin_required(view):
@@ -155,6 +159,7 @@ def lesson_create():
         lesson.skill_data = _extract_skill_data(lesson.skill, request.form)
         db.session.add(lesson)
         db.session.commit()
+        log_audit_action(current_user.id, "CREATE_LESSON", "Lesson", lesson.id, f"Tạo bài học '{lesson.title}' ({lesson.skill} - {lesson.level})")
         flash("Đã thêm bài học mới.", "success")
         return redirect(url_for("admin.lessons"))
     return render_template("admin/lesson_form.html", form=form, title="Thêm bài học", skill_data={})
@@ -169,6 +174,7 @@ def lesson_edit(lesson_id):
         form.populate_obj(lesson)
         lesson.skill_data = _extract_skill_data(lesson.skill, request.form)
         db.session.commit()
+        log_audit_action(current_user.id, "UPDATE_LESSON", "Lesson", lesson.id, f"Cập nhật bài học '{lesson.title}' ({lesson.skill} - {lesson.level})")
         flash("Đã cập nhật bài học.", "success")
         return redirect(url_for("admin.lessons"))
     return render_template(
@@ -208,6 +214,8 @@ def lesson_delete(lesson_id):
     lesson = db.get_or_404(Lesson, lesson_id)
     lesson.is_active = not lesson.is_active
     db.session.commit()
+    act_str = "MỞ LẠI" if lesson.is_active else "ẨN"
+    log_audit_action(current_user.id, "TOGGLE_LESSON", "Lesson", lesson.id, f"{act_str} bài học '{lesson.title}'")
     msg = f"Đã kích hoạt mở lại bài học '{lesson.title}'." if lesson.is_active else f"Đã ẩn bài học '{lesson.title}' (dữ liệu tiến độ vẫn được giữ nguyên)."
     flash(msg, "success" if lesson.is_active else "info")
     return redirect(url_for("admin.lessons"))
@@ -235,6 +243,7 @@ def vocabulary_create():
         form.populate_obj(word)
         db.session.add(word)
         db.session.commit()
+        log_audit_action(current_user.id, "CREATE_VOCABULARY", "Vocabulary", word.id, f"Thêm từ vựng '{word.word}' ({word.part_of_speech} - {word.level})")
         flash("Đã thêm từ vựng mới.", "success")
         return redirect(url_for("admin.vocabulary"))
     return render_template("admin/vocabulary_form.html", form=form, title="Thêm từ vựng")
@@ -248,6 +257,7 @@ def vocabulary_edit(word_id):
     if form.validate_on_submit():
         form.populate_obj(word)
         db.session.commit()
+        log_audit_action(current_user.id, "UPDATE_VOCABULARY", "Vocabulary", word.id, f"Cập nhật từ vựng '{word.word}' ({word.part_of_speech} - {word.level})")
         flash("Đã cập nhật từ vựng.", "success")
         return redirect(url_for("admin.vocabulary"))
     return render_template("admin/vocabulary_form.html", form=form, title="Sửa từ vựng")
@@ -263,8 +273,10 @@ def vocabulary_delete(word_id):
     if word.progress_records:
         flash("Không thể xóa từ đã có dữ liệu học tập.", "warning")
     else:
+        word_str = word.word
         db.session.delete(word)
         db.session.commit()
+        log_audit_action(current_user.id, "DELETE_VOCABULARY", "Vocabulary", word_id, f"Xóa từ vựng '{word_str}'")
         flash("Đã xóa từ vựng.", "info")
     return redirect(url_for("admin.vocabulary"))
 
@@ -344,9 +356,6 @@ def user_toggle_role(user_id):
 
 
 # --- ROLE & PERMISSION MANAGEMENT (MỤC 1.6) ---
-from datetime import datetime
-from .models import AuditLog, Permission, Role, RolePermission, UserRole
-from .utils import log_audit_action, permission_required, has_permission
 
 
 @bp.route("/roles", methods=["GET", "POST"])
@@ -465,20 +474,147 @@ def user_assign_role(user_id):
 def audit_logs():
     search = request.args.get("q", "").strip()
     action_filter = request.args.get("action", "").strip()
+    date_from_str = request.args.get("date_from", "").strip()
+    date_to_str = request.args.get("date_to", "").strip()
+    page = request.args.get("page", 1, type=int)
+    per_page = 20
 
     query = AuditLog.query
     if search:
         query = query.join(User, AuditLog.user_id == User.id, isouter=True).filter(
-            (User.username.ilike(f"%{search}%")) | (AuditLog.details.ilike(f"%{search}%")) | (AuditLog.ip_address.ilike(f"%{search}%"))
+            (User.username.ilike(f"%{search}%"))
+            | (AuditLog.details.ilike(f"%{search}%"))
+            | (AuditLog.ip_address.ilike(f"%{search}%"))
+            | (AuditLog.target_type.ilike(f"%{search}%"))
+            | (AuditLog.target_id.ilike(f"%{search}%"))
         )
     if action_filter:
-        query = query.filter_by(action=action_filter)
+        query = query.filter(AuditLog.action == action_filter)
 
-    logs = query.order_by(AuditLog.created_at.desc()).limit(100).all()
-    actions = db.session.query(AuditLog.action).distinct().all()
-    action_list = [a[0] for a in actions]
+    if date_from_str:
+        try:
+            df = datetime.strptime(date_from_str, "%Y-%m-%d")
+            df_utc = (df - timedelta(hours=7)).replace(tzinfo=timezone.utc)
+            query = query.filter(AuditLog.created_at >= df_utc)
+        except ValueError:
+            pass
 
-    return render_template("admin/audit_logs.html", logs=logs, search=search, action_filter=action_filter, actions=action_list)
+    if date_to_str:
+        try:
+            dt = datetime.strptime(date_to_str, "%Y-%m-%d")
+            dt_utc = (dt + timedelta(days=1) - timedelta(hours=7)).replace(tzinfo=timezone.utc)
+            query = query.filter(AuditLog.created_at < dt_utc)
+        except ValueError:
+            pass
+
+    total_count = query.count()
+    pagination = query.order_by(AuditLog.created_at.desc()).paginate(page=page, per_page=per_page, error_out=False)
+    logs = pagination.items
+
+    standard_actions = [
+        "IMPORT_DATA",
+        "CREATE_LESSON",
+        "UPDATE_LESSON",
+        "TOGGLE_LESSON",
+        "CREATE_VOCABULARY",
+        "UPDATE_VOCABULARY",
+        "DELETE_VOCABULARY",
+        "CREATE_EXAM",
+        "UPDATE_EXAM",
+        "DELETE_EXAM",
+        "TOGGLE_EXAM_PUBLISH",
+        "UPLOAD_EXAM",
+        "TOGGLE_USER_STATUS",
+        "TOGGLE_ROLE",
+        "ASSIGN_ROLE",
+        "CREATE_ROLE",
+        "UPDATE_ROLE",
+        "DELETE_ROLE",
+    ]
+    db_actions = [a[0] for a in db.session.query(AuditLog.action).distinct().all() if a[0]]
+    all_actions = sorted(list(set(standard_actions + db_actions)))
+
+    return render_template(
+        "admin/audit_logs.html",
+        logs=logs,
+        pagination=pagination,
+        search=search,
+        action_filter=action_filter,
+        date_from=date_from_str,
+        date_to=date_to_str,
+        actions=all_actions,
+        total_count=total_count
+    )
+
+
+@bp.get("/audit-logs/export")
+@admin_required
+def audit_logs_export():
+    import csv
+    from io import StringIO
+    from flask import Response
+
+    search = request.args.get("q", "").strip()
+    action_filter = request.args.get("action", "").strip()
+    date_from_str = request.args.get("date_from", "").strip()
+    date_to_str = request.args.get("date_to", "").strip()
+
+    query = AuditLog.query
+    if search:
+        query = query.join(User, AuditLog.user_id == User.id, isouter=True).filter(
+            (User.username.ilike(f"%{search}%"))
+            | (AuditLog.details.ilike(f"%{search}%"))
+            | (AuditLog.ip_address.ilike(f"%{search}%"))
+            | (AuditLog.target_type.ilike(f"%{search}%"))
+            | (AuditLog.target_id.ilike(f"%{search}%"))
+        )
+    if action_filter:
+        query = query.filter(AuditLog.action == action_filter)
+
+    if date_from_str:
+        try:
+            df = datetime.strptime(date_from_str, "%Y-%m-%d")
+            df_utc = (df - timedelta(hours=7)).replace(tzinfo=timezone.utc)
+            query = query.filter(AuditLog.created_at >= df_utc)
+        except ValueError:
+            pass
+
+    if date_to_str:
+        try:
+            dt = datetime.strptime(date_to_str, "%Y-%m-%d")
+            dt_utc = (dt + timedelta(days=1) - timedelta(hours=7)).replace(tzinfo=timezone.utc)
+            query = query.filter(AuditLog.created_at < dt_utc)
+        except ValueError:
+            pass
+
+    logs = query.order_by(AuditLog.created_at.desc()).all()
+
+    si = StringIO()
+    si.write('\ufeff')
+    writer = csv.writer(si)
+    writer.writerow(["Mã Log", "Thời gian (UTC+7)", "Người thực hiện", "Hành động (Action)", "Đối tượng (Target)", "Chi tiết thao tác", "Địa chỉ IP"])
+
+    for log in logs:
+        time_str = log.created_at_vn.strftime('%Y-%m-%d %H:%M:%S') if log.created_at_vn else ''
+        username = log.user.username if log.user else 'Hệ thống'
+        target_str = f"{log.target_type or ''} #{log.target_id or ''}".strip()
+        writer.writerow([
+            log.id,
+            time_str,
+            username,
+            log.action,
+            target_str,
+            log.details or '',
+            log.ip_address or '127.0.0.1'
+        ])
+
+    output = si.getvalue()
+    filename = f"audit_logs_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv"
+    return Response(
+        output,
+        mimetype="text/csv; charset=utf-8",
+        headers={"Content-Disposition": f"attachment; filename={filename}"}
+    )
 
 
 # --- EXAM UPLOAD SYSTEM (GIAI ĐOẠN 3) ---
@@ -515,6 +651,7 @@ def exam_upload():
                 df = pd.read_excel(filepath)
                 
             exam = import_exam_from_dataframe(df, category, title, duration)
+            log_audit_action(current_user.id, "UPLOAD_EXAM", "Exam", exam.id, f"Tải lên đề thi '{exam.title}' ({category} - {len(df)} câu hỏi)")
             flash(f"Đã import thành công {len(df)} câu hỏi vào đề thi '{exam.title}'.", "success")
         except Exception as e:
             flash(f"Lỗi khi xử lý file: {str(e)}", "danger")
@@ -733,6 +870,7 @@ def exam_create():
         )
         db.session.add(exam)
         db.session.commit()
+        log_audit_action(current_user.id, "CREATE_EXAM", "Exam", exam.id, f"Tạo đề thi '{exam.title}' ({exam.category} - {exam.question_count} câu)")
 
         flash(f"Đã tạo đề thi '{exam.title}' thành công!", "success")
         return redirect(url_for("admin.exams_list"))
@@ -768,6 +906,7 @@ def exam_edit(exam_id):
             exam.question_count = int(request.form.get("question_count", exam.question_count))
 
         db.session.commit()
+        log_audit_action(current_user.id, "UPDATE_EXAM", "Exam", exam.id, f"Cập nhật đề thi '{exam.title}' ({exam.category})")
         flash(f"Đã cập nhật đề thi '{exam.title}'.", "success")
         return redirect(url_for("admin.exams_list"))
 
@@ -781,6 +920,8 @@ def exam_toggle_publish(exam_id):
     exam.is_published = not exam.is_published
     db.session.commit()
 
+    act_str = "Xuất bản" if exam.is_published else "Chuyển về bản nháp"
+    log_audit_action(current_user.id, "TOGGLE_EXAM_PUBLISH", "Exam", exam.id, f"{act_str} đề thi '{exam.title}'")
     msg = f"Đã xuất bản đề thi '{exam.title}'." if exam.is_published else f"Đã chuyển đề thi '{exam.title}' về trạng thái nháp."
     flash(msg, "info")
     return redirect(url_for("admin.exams_list"))
@@ -793,6 +934,9 @@ def exam_toggle_publish_ajax(exam_id):
     exam = db.get_or_404(Exam, exam_id)
     exam.is_published = not exam.is_published
     db.session.commit()
+
+    act_str = "Xuất bản" if exam.is_published else "Chuyển về bản nháp"
+    log_audit_action(current_user.id, "TOGGLE_EXAM_PUBLISH", "Exam", exam.id, f"{act_str} (Ajax) đề thi '{exam.title}'")
 
     total_exams = Exam.query.filter_by(is_active=True).count()
     published_count = Exam.query.filter_by(is_active=True, is_published=True).count()
@@ -856,6 +1000,7 @@ def exam_delete(exam_id):
     title = exam.title
     db.session.delete(exam)
     db.session.commit()
+    log_audit_action(current_user.id, "DELETE_EXAM", "Exam", exam_id, f"Xóa đề thi '{title}'")
 
     flash(f"Đã xóa đề thi '{title}' thành công.", "success")
     return redirect(url_for("admin.exams_list"))
@@ -1008,6 +1153,16 @@ def commit_import():
             user_id=current_user.id,
             mode=mode
         )
+        if res.get("success"):
+            created_cnt = res.get("created_count", 0)
+            updated_cnt = res.get("updated_count", 0)
+            log_audit_action(
+                current_user.id,
+                "IMPORT_DATA",
+                content_type.capitalize(),
+                None,
+                f"Import {content_type}: thêm mới {created_cnt}, cập nhật {updated_cnt} bản ghi (chế độ: {mode})"
+            )
         return jsonify(res)
     except Exception as e:
         db.session.rollback()

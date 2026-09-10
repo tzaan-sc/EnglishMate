@@ -120,3 +120,43 @@ def test_audit_logs_recording(client):
     assert res_logs.status_code == 200
     assert "ASSIGN_ROLE".encode("utf-8") in res_logs.data
     assert "MODERATOR".encode("utf-8") in res_logs.data
+
+    # Test filtering by action
+    res_filter = client.get("/admin/audit-logs?action=ASSIGN_ROLE")
+    assert res_filter.status_code == 200
+    assert "ASSIGN_ROLE".encode("utf-8") in res_filter.data
+
+    # Test export CSV
+    res_export = client.get("/admin/audit-logs/export")
+    assert res_export.status_code == 200
+    assert res_export.mimetype == "text/csv"
+    assert "Mã Log,Thời gian (UTC+7)".encode("utf-8") in res_export.data
+    assert "ASSIGN_ROLE".encode("utf-8") in res_export.data
+
+
+def test_crud_triggers_audit_log(client):
+    login_admin(client)
+
+    # 1. Create a lesson and verify audit log was created
+    res_lesson = client.post(
+        "/admin/lessons/new",
+        data={
+            "title": "Audit Test Lesson",
+            "skill": "Reading",
+            "level": "B1",
+            "short_description": "Testing audit log creation",
+            "content": "Sample content for reading",
+            "examples": "Example 1: This is a test.\nExample 2: This is another test.",
+            "is_active": "y"
+        },
+        follow_redirects=True
+    )
+    assert res_lesson.status_code == 200
+
+    with client.application.app_context():
+        log = AuditLog.query.filter_by(action="CREATE_LESSON").first()
+        assert log is not None
+        assert "Audit Test Lesson" in log.details
+        assert log.target_type == "Lesson"
+        assert log.created_at_vn is not None
+

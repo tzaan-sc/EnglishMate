@@ -19,29 +19,91 @@
     </ol>
   </nav>
 
-  <div class="card-modern p-4">
-    <!-- Header with Filters -->
-    <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3 mb-4">
-      <div>
-        <h4 class="fw-bold text-dark mb-1" style="font-size: 1.35rem; letter-spacing: -0.01em;">Nhật ký Kiểm tra Hệ thống (Audit Logs)</h4>
-        <p class="text-secondary small mb-0">Theo dõi chi tiết các thao tác quản trị, nạp dữ liệu, thay đổi vai trò và phân quyền</p>
+  <!-- Page Header -->
+  <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
+    <div>
+      <div class="d-inline-flex align-items-center gap-1.5 px-2.5 py-0.5 rounded-pill bg-purple-subtle text-purple border border-purple-subtle small fw-bold mb-1.5">
+        <i class="ph-bold ph-clock-counter-clockwise"></i>
+        <span>An ninh & Giám sát Hệ thống</span>
       </div>
+      <h3 class="fw-bold text-dark mb-1" style="letter-spacing: -0.01em;">Nhật ký Kiểm tra Hệ thống (Audit Logs)</h3>
+      <p class="text-secondary small mb-0">Theo dõi toàn bộ các thao tác chỉnh sửa bài học, từ vựng, đề thi, import dữ liệu và phân quyền</p>
+    </div>
+    <div class="d-flex align-items-center gap-2">
+      <a href="{{ url_for('admin.audit_logs_export', q=search, action=action_filter, date_from=date_from, date_to=date_to) }}" 
+         class="btn btn-outline-success btn-sm d-inline-flex align-items-center gap-1.5 fw-semibold px-3 py-2 rounded-3" 
+         title="Tải xuống toàn bộ nhật ký theo bộ lọc hiện tại">
+        <i class="ph-bold ph-download-simple fs-6"></i>
+        <span>Xuất file CSV</span>
+      </a>
+    </div>
+  </div>
 
-      <form method="get" class="d-flex flex-wrap gap-2" style="max-width: 480px;">
-        <select name="action" class="form-select form-select-sm border shadow-none" style="max-width: 180px; font-size: 0.85rem;">
-          <option value="">-- Tất cả hành động --</option>
-          {% for a in actions %}
-          <option value="{{ a }}" {% if action_filter == a %}selected{% endif %}>{{ a }}</option>
-          {% endfor %}
-        </select>
-        <div class="input-group input-group-sm flex-grow-1">
-          <span class="input-group-text bg-white border-end-0 text-muted ps-2.5">
-            <i class="ph-bold ph-magnifying-glass"></i>
-          </span>
-          <input type="text" name="q" value="{{ search }}" class="form-control border-start-0 ps-1" placeholder="Tìm người thực hiện, IP...">
-          <button type="submit" class="btn btn-dark fw-semibold px-3">Lọc</button>
+  <div class="card-modern p-4">
+    <!-- Filter Toolbar -->
+    <form method="get" action="{{ url_for('admin.audit_logs') }}" class="mb-4">
+      <div class="row g-2 align-items-end">
+        <!-- Search Keyword -->
+        <div class="col-12 col-md-4 col-lg-3">
+          <label class="form-label small fw-semibold text-secondary mb-1">Tìm kiếm từ khóa</label>
+          <div class="input-group input-group-sm">
+            <span class="input-group-text bg-white border-end-0 text-muted ps-2.5">
+              <i class="ph-bold ph-magnifying-glass"></i>
+            </span>
+            <input type="text" name="q" value="{{ search }}" class="form-control border-start-0 ps-1" placeholder="Người dùng, IP, nội dung...">
+          </div>
         </div>
-      </form>
+
+        <!-- Action Filter -->
+        <div class="col-12 col-md-4 col-lg-3">
+          <label class="form-label small fw-semibold text-secondary mb-1">Loại hành động</label>
+          <select name="action" class="form-select form-select-sm border shadow-none">
+            <option value="">-- Tất cả hành động --</option>
+            {% for a in actions %}
+            <option value="{{ a }}" {% if action_filter == a %}selected{% endif %}>{{ a }}</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <!-- Date From -->
+        <div class="col-6 col-md-2 col-lg-2">
+          <label class="form-label small fw-semibold text-secondary mb-1">Từ ngày</label>
+          <input type="date" name="date_from" value="{{ date_from }}" class="form-control form-control-sm border shadow-none">
+        </div>
+
+        <!-- Date To -->
+        <div class="col-6 col-md-2 col-lg-2">
+          <label class="form-label small fw-semibold text-secondary mb-1">Đến ngày</label>
+          <input type="date" name="date_to" value="{{ date_to }}" class="form-control form-control-sm border shadow-none">
+        </div>
+
+        <!-- Buttons -->
+        <div class="col-12 col-md-auto d-flex gap-2">
+          <button type="submit" class="btn btn-dark btn-sm fw-semibold px-3 py-1.5 d-inline-flex align-items-center gap-1">
+            <i class="ph-bold ph-funnel"></i>
+            <span>Lọc</span>
+          </button>
+          {% if search or action_filter or date_from or date_to %}
+          <a href="{{ url_for('admin.audit_logs') }}" class="btn btn-light border btn-sm text-secondary px-2.5 py-1.5 d-inline-flex align-items-center gap-1" title="Xóa toàn bộ bộ lọc">
+            <i class="ph-bold ph-arrow-counter-clockwise"></i>
+            <span>Đặt lại</span>
+          </a>
+          {% endif %}
+        </div>
+      </div>
+    </form>
+
+    <!-- Table Info Banner -->
+    <div class="d-flex justify-content-between align-items-center pb-2 mb-2 border-bottom">
+      <span class="small text-muted">
+        Tìm thấy <strong class="text-dark">{{ total_count }}</strong> bản ghi nhật ký
+        {% if search or action_filter or date_from or date_to %}
+        (đang áp dụng bộ lọc)
+        {% endif %}
+      </span>
+      <span class="small text-muted font-monospace">
+        Múi giờ chuẩn: <strong>Giờ Việt Nam (GMT+7)</strong>
+      </span>
     </div>
 
     <!-- Table -->
@@ -49,66 +111,207 @@
       <table class="table table-hover align-middle mb-0" style="font-size: 0.88rem;">
         <thead class="table-light">
           <tr>
-            <th class="py-3 ps-3" style="width: 180px;">Thời gian</th>
+            <th class="py-3 ps-3" style="width: 170px;">Thời gian (GMT+7)</th>
             <th class="py-3" style="min-width: 160px;">Người thực hiện</th>
-            <th class="py-3 text-center" style="width: 170px;">Hành động (Action)</th>
-            <th class="py-3" style="min-width: 280px;">Chi tiết & Đối tượng</th>
-            <th class="py-3 text-end pe-3" style="width: 140px;">Địa chỉ IP</th>
+            <th class="py-3 text-center" style="width: 180px;">Hành động (Action)</th>
+            <th class="py-3" style="min-width: 140px;">Đối tượng (Target)</th>
+            <th class="py-3" style="min-width: 260px;">Chi tiết thao tác</th>
+            <th class="py-3 text-end pe-3" style="width: 130px;">Địa chỉ IP</th>
           </tr>
         </thead>
         <tbody>
           {% for log in logs %}
           <tr>
+            <!-- Time -->
             <td class="ps-3">
               <span class="fw-bold text-dark d-block font-monospace small">#{{ log.id }}</span>
               <small class="text-muted" style="font-size: 0.78rem;">
-                <i class="ph-bold ph-clock me-1"></i>{{ log.created_at.strftime('%H:%M:%S %d/%m/%Y') if log.created_at else '---' }}
+                <i class="ph-bold ph-clock me-1"></i>{{ log.created_at_vn.strftime('%H:%M:%S %d/%m/%Y') if log.created_at_vn else '---' }}
               </small>
             </td>
+
+            <!-- Actor -->
             <td>
               {% if log.user %}
               <div class="d-flex align-items-center gap-2">
                 <div class="rounded-circle bg-primary-subtle text-primary fw-bold d-inline-flex align-items-center justify-content-center" style="width: 28px; height: 28px; font-size: 0.75rem;">
                   {{ log.user.username[0].upper() }}
                 </div>
-                <span class="fw-semibold text-dark small">{{ log.user.username }}</span>
+                <div>
+                  <span class="fw-semibold text-dark small d-block">{{ log.user.username }}</span>
+                  <span class="badge bg-light text-secondary border font-monospace" style="font-size: 0.68rem;">{{ log.user.role }}</span>
+                </div>
               </div>
               {% else %}
-              <span class="badge bg-light text-muted border font-semibold">Hệ thống</span>
+              <span class="badge bg-light text-muted border font-semibold">
+                <i class="ph-bold ph-cpu me-1"></i>Hệ thống
+              </span>
               {% endif %}
             </td>
+
+            <!-- Action Badge -->
             <td class="text-center">
-              {% if 'CREATE' in log.action or 'IMPORT' in log.action %}
+              {% if 'CREATE' in log.action or 'IMPORT' in log.action or 'UPLOAD' in log.action %}
               <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-2.5 py-1 font-semibold">{{ log.action }}</span>
               {% elif 'DELETE' in log.action or 'LOCK' in log.action %}
               <span class="badge bg-danger-subtle text-danger border border-danger-subtle rounded-pill px-2.5 py-1 font-semibold">{{ log.action }}</span>
               {% elif 'ASSIGN' in log.action or 'ROLE' in log.action %}
               <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle rounded-pill px-2.5 py-1 font-semibold">{{ log.action }}</span>
+              {% elif 'UPDATE' in log.action or 'TOGGLE' in log.action %}
+              <span class="badge bg-info-subtle text-info-emphasis border border-info-subtle rounded-pill px-2.5 py-1 font-semibold">{{ log.action }}</span>
               {% else %}
               <span class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill px-2.5 py-1 font-semibold">{{ log.action }}</span>
               {% endif %}
             </td>
+
+            <!-- Target -->
             <td>
-              <span class="text-dark small d-block">{{ log.details or '---' }}</span>
               {% if log.target_type %}
-              <small class="text-muted font-monospace" style="font-size: 0.75rem;">Target: {{ log.target_type }} #{{ log.target_id or '' }}</small>
+              <span class="badge bg-light text-dark border font-monospace" style="font-size: 0.75rem;">
+                {{ log.target_type }} {% if log.target_id %}#{{ log.target_id }}{% endif %}
+              </span>
+              {% else %}
+              <span class="text-muted small">---</span>
               {% endif %}
             </td>
+
+            <!-- Details -->
+            <td>
+              <div class="d-flex align-items-center justify-content-between gap-2">
+                <span class="text-dark small text-truncate" style="max-width: 380px;" title="{{ log.details or '' }}">
+                  {{ log.details or '---' }}
+                </span>
+                {% if log.details and log.details|length > 40 %}
+                <button type="button" class="btn btn-link btn-sm p-0 text-primary text-decoration-none small flex-shrink-0" 
+                        onclick="showLogDetail('{{ log.id }}', '{{ log.created_at_vn.strftime('%H:%M:%S %d/%m/%Y') if log.created_at_vn else '' }}', '{{ log.user.username if log.user else 'Hệ thống' }}', '{{ log.action }}', '{{ log.target_type or '' }} {{ '#' ~ log.target_id if log.target_id else '' }}', '{{ log.ip_address or '127.0.0.1' }}', {{ log.details|tojson }})">
+                  Chi tiết
+                </button>
+                {% endif %}
+              </div>
+            </td>
+
+            <!-- IP Address -->
             <td class="text-end pe-3">
               <span class="badge bg-light text-secondary border font-monospace" style="font-size: 0.76rem;">{{ log.ip_address or '127.0.0.1' }}</span>
             </td>
           </tr>
           {% else %}
           <tr>
-            <td colspan="5" class="text-center py-5 text-muted">
+            <td colspan="6" class="text-center py-5 text-muted">
               <i class="ph-bold ph-clock-counter-clockwise fs-2 d-block mb-2 text-secondary opacity-50"></i>
-              <span>Chưa có nhật ký kiểm tra nào.</span>
+              <h6 class="fw-semibold text-secondary mb-1">Chưa có nhật ký kiểm tra nào</h6>
+              <p class="small text-muted mb-0">Các thao tác thêm/sửa/xóa bài học, đề thi, từ vựng, nạp file và phân quyền sẽ được tự động ghi lại tại đây.</p>
             </td>
           </tr>
           {% endfor %}
         </tbody>
       </table>
     </div>
+
+    <!-- Pagination -->
+    {% if pagination and pagination.pages > 1 %}
+    <div class="d-flex flex-column flex-sm-row justify-content-between align-items-center gap-3 mt-4 pt-3 border-top">
+      <span class="small text-muted">
+        Trang <strong>{{ pagination.page }}</strong> / <strong>{{ pagination.pages }}</strong> 
+        (Hiển thị {{ logs|length }} trên tổng số {{ total_count }} bản ghi)
+      </span>
+
+      <nav aria-label="Phân trang Audit Logs">
+        <ul class="pagination pagination-sm mb-0">
+          <li class="page-item {% if not pagination.has_prev %}disabled{% endif %}">
+            <a class="page-link" href="{{ url_for('admin.audit_logs', page=pagination.prev_num, q=search, action=action_filter, date_from=date_from, date_to=date_to) if pagination.has_prev else '#' }}" aria-label="Trang trước">
+              <i class="ph-bold ph-caret-left"></i>
+            </a>
+          </li>
+
+          {% for p in pagination.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2) %}
+            {% if p %}
+              <li class="page-item {% if p == pagination.page %}active{% endif %}">
+                <a class="page-link" href="{{ url_for('admin.audit_logs', page=p, q=search, action=action_filter, date_from=date_from, date_to=date_to) }}">{{ p }}</a>
+              </li>
+            {% else %}
+              <li class="page-item disabled"><span class="page-link">…</span></li>
+            {% endif %}
+          {% endfor %}
+
+          <li class="page-item {% if not pagination.has_next %}disabled{% endif %}">
+            <a class="page-link" href="{{ url_for('admin.audit_logs', page=pagination.next_num, q=search, action=action_filter, date_from=date_from, date_to=date_to) if pagination.has_next else '#' }}" aria-label="Trang sau">
+              <i class="ph-bold ph-caret-right"></i>
+            </a>
+          </li>
+        </ul>
+      </nav>
+    </div>
+    {% endif %}
+
   </div>
 </div>
+
+<!-- MODAL: XEM CHI TIẾT NHẬT KÝ -->
+<div class="modal fade" id="logDetailModal" tabindex="-1" aria-labelledby="logDetailModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
+      <div class="modal-header border-bottom px-4 py-3 bg-light">
+        <h6 class="modal-title fw-bold text-dark d-flex align-items-center gap-2" id="logDetailModalLabel">
+          <i class="ph-bold ph-file-text text-primary"></i>
+          <span>Chi tiết Nhật ký Audit #<span id="detailLogId"></span></span>
+        </h6>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
+      </div>
+      <div class="modal-body p-4">
+        <div class="d-flex flex-column gap-3">
+          <div class="row g-2">
+            <div class="col-6">
+              <small class="text-muted d-block">Thời gian (GMT+7):</small>
+              <span class="fw-semibold text-dark small" id="detailTime"></span>
+            </div>
+            <div class="col-6">
+              <small class="text-muted d-block">Địa chỉ IP:</small>
+              <span class="font-monospace small" id="detailIp"></span>
+            </div>
+          </div>
+
+          <div class="row g-2">
+            <div class="col-6">
+              <small class="text-muted d-block">Người thực hiện:</small>
+              <span class="fw-semibold text-dark small" id="detailUser"></span>
+            </div>
+            <div class="col-6">
+              <small class="text-muted d-block">Hành động:</small>
+              <span class="badge bg-primary-subtle text-primary border" id="detailAction"></span>
+            </div>
+          </div>
+
+          <div>
+            <small class="text-muted d-block">Đối tượng tác động:</small>
+            <span class="badge bg-light text-dark border font-monospace" id="detailTarget"></span>
+          </div>
+
+          <div>
+            <small class="text-muted d-block mb-1">Nội dung chi tiết (Details / Payload):</small>
+            <div class="bg-light p-3 rounded-3 border text-dark font-monospace small" style="white-space: pre-wrap; word-break: break-word; max-height: 200px; overflow-y: auto;" id="detailContent"></div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer border-top px-4 py-2.5 bg-light">
+        <button type="button" class="btn btn-secondary btn-sm px-3" data-bs-dismiss="modal">Đóng</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+function showLogDetail(id, time, user, action, target, ip, details) {
+  document.getElementById('detailLogId').textContent = id;
+  document.getElementById('detailTime').textContent = time;
+  document.getElementById('detailUser').textContent = user;
+  document.getElementById('detailAction').textContent = action;
+  document.getElementById('detailTarget').textContent = target || '---';
+  document.getElementById('detailIp').textContent = ip;
+  document.getElementById('detailContent').textContent = details || 'Không có mô tả chi tiết';
+
+  var modal = new bootstrap.Modal(document.getElementById('logDetailModal'));
+  modal.show();
+}
+</script>
 {% endblock %}

@@ -1,4 +1,4 @@
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 from app.extensions import db
 
 now = lambda: datetime.now(timezone.utc)
@@ -56,3 +56,9 @@ class AuditLog(db.Model):
     created_at = db.Column(db.DateTime(timezone=True), default=now, nullable=False, index=True)
 
     user = db.relationship("User", backref=db.backref("audit_logs", lazy="dynamic"))
+
+    @property
+    def created_at_vn(self):
+        if not self.created_at:
+            return None
+        return self.created_at + timedelta(hours=7)
