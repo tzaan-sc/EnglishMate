@@ -9,10 +9,10 @@
     <div>
       <div class="d-inline-flex align-items-center gap-1.5 px-2.5 py-0.5 rounded-pill bg-primary-subtle text-primary border border-primary-subtle small fw-bold mb-2">
         <i class="ph-bold ph-pencil-simple-line"></i>
-        <span>Biên soạn Bài giảng</span>
+        <span>Biên soạn Bài giảng Đa Kỹ Năng</span>
       </div>
       <h3 class="fw-bold text-dark mb-1" style="letter-spacing: -0.01em;">{{ title }}</h3>
-      <p class="text-secondary small mb-0">Quản lý nội dung lý thuyết, cấu trúc ngữ pháp và bộ ví dụ thực hành cho học viên</p>
+      <p class="text-secondary small mb-0">Hệ thống form thông minh tự động thích ứng trường dữ liệu theo từng kỹ năng học tập</p>
     </div>
 
     <a class="btn btn-light border fw-semibold text-secondary px-3.5 py-2 rounded-3 shadow-2xs d-inline-flex align-items-center gap-1.5" href="{{ url_for('admin.lessons') }}" style="font-size: 0.88rem;">
@@ -25,13 +25,13 @@
     {{ form.csrf_token }}
 
     <div class="row g-4">
-      <!-- LEFT COLUMN: Main Content (8 cols) -->
+      <!-- LEFT COLUMN: Main Content & Dynamic Fields (8 cols) -->
       <div class="col-lg-8">
         <!-- Section 1: General Info -->
         <div class="card-modern p-4 mb-4">
           <div class="d-flex align-items-center gap-2 mb-3 pb-2 border-bottom">
             <i class="ph-bold ph-info text-primary fs-5"></i>
-            <h5 class="fw-bold text-dark mb-0" style="font-size: 1.05rem;">Thông tin cơ bản</h5>
+            <h5 class="fw-bold text-dark mb-0" style="font-size: 1.05rem;">1. Thông tin chung</h5>
           </div>
 
           <!-- Title -->
@@ -39,7 +39,7 @@
             <label class="form-label fw-bold text-dark small text-uppercase" style="letter-spacing: 0.03em;">
               Tiêu đề bài học <span class="text-danger">*</span>
             </label>
-            {{ form.title(class="form-control rounded-3 py-2", placeholder="Ví dụ: Present Continuous for Future Plans, Listening: Daily Routines...", style="font-size: 0.95rem;") }}
+            {{ form.title(class="form-control rounded-3 py-2", placeholder="Ví dụ: Daily Routines & Activities, Expressing Opinions in Business...", style="font-size: 0.95rem;") }}
             {% if form.title.errors %}
               <div class="text-danger small mt-1"><i class="ph-bold ph-warning-circle me-1"></i>{{ form.title.errors[0] }}</div>
             {% endif %}
@@ -50,50 +50,222 @@
             <label class="form-label fw-bold text-dark small text-uppercase" style="letter-spacing: 0.03em;">
               Mô tả tóm tắt <span class="text-danger">*</span>
             </label>
-            {{ form.short_description(class="form-control rounded-3", rows="2", placeholder="Tóm tắt ngắn gọn nội dung và mục tiêu người học sẽ đạt được sau bài học này (dưới 280 ký tự)...") }}
+            {{ form.short_description(class="form-control rounded-3", rows="2", placeholder="Tóm tắt ngắn gọn nội dung và mục tiêu bài học (dưới 280 ký tự)...") }}
             {% if form.short_description.errors %}
               <div class="text-danger small mt-1"><i class="ph-bold ph-warning-circle me-1"></i>{{ form.short_description.errors[0] }}</div>
             {% endif %}
           </div>
         </div>
 
-        <!-- Section 2: Theory & Content (Rich Text Editor) -->
+        <!-- Section 2: Dynamic Skill-Specific Fields Container -->
+        <div class="card-modern p-4 mb-4 border-2 border-primary-subtle shadow-sm" id="dynamicSkillSection">
+          <div class="d-flex align-items-center justify-content-between mb-3 pb-2 border-bottom">
+            <div class="d-flex align-items-center gap-2">
+              <span class="rounded-circle bg-primary text-white d-inline-flex align-items-center justify-content-center" style="width: 28px; height: 28px; font-size: 0.85rem;">
+                <i class="ph-bold ph-sparkle"></i>
+              </span>
+              <h5 class="fw-bold text-dark mb-0" style="font-size: 1.05rem;">
+                2. Dữ liệu Chuyên biệt: <span id="activeSkillBadge" class="text-primary fw-bolder">Listening</span>
+              </h5>
+            </div>
+            <span class="badge bg-primary-subtle text-primary border border-primary-subtle px-2.5 py-1 font-monospace" style="font-size: 0.72rem;">Dynamic JSON Field</span>
+          </div>
+
+          <div id="dynamic-fields-container">
+            <!-- 🎧 BLOCK 1: LISTENING -->
+            <div id="fields-Listening" class="skill-fields d-none">
+              <div class="alert alert-info py-2 px-3 small d-flex align-items-center gap-2 mb-3 rounded-3">
+                <i class="ph-bold ph-headphones fs-5 text-primary"></i>
+                <span>Cấu hình phục vụ cho phòng luyện nghe (Studio Player) và bài tập chép chính tả (Dictation Lab).</span>
+              </div>
+
+              <div class="row g-3 mb-3">
+                <div class="col-md-7">
+                  <label class="form-label fw-bold text-dark small">Audio File URL (MP3 / WAV)</label>
+                  <div class="input-group input-group-sm">
+                    <span class="input-group-text bg-light text-muted"><i class="ph-bold ph-link"></i></span>
+                    <input type="url" name="audio_url" value="{{ skill_data.get('audio_url', '') }}" class="form-control" placeholder="https://domain.com/audio.mp3 hoặc /static/audio/...">
+                  </div>
+                  <small class="text-muted" style="font-size: 0.75rem;">Nếu để trống, hệ thống sẽ tự động dùng giọng đọc phát âm chuẩn của trình duyệt.</small>
+                </div>
+
+                <div class="col-md-3">
+                  <label class="form-label fw-bold text-dark small">Giọng đọc (Accent)</label>
+                  <select name="accent" class="form-select form-select-sm">
+                    <option value="US" {{ 'selected' if skill_data.get('accent') == 'US' }}>🇺🇸 Giọng Mỹ (US)</option>
+                    <option value="UK" {{ 'selected' if skill_data.get('accent') == 'UK' }}>🇬🇧 Giọng Anh (UK)</option>
+                  </select>
+                </div>
+
+                <div class="col-md-2">
+                  <label class="form-label fw-bold text-dark small">Thời lượng</label>
+                  <input type="text" name="audio_duration" value="{{ skill_data.get('audio_duration', '') }}" class="form-control form-control-sm" placeholder="03:15">
+                </div>
+              </div>
+
+              <div class="mb-0">
+                <label class="form-label fw-bold text-dark small">Lời thoại chi tiết (Transcript / Dictation)</label>
+                <textarea name="listening_transcript" class="form-control rounded-3" rows="6" placeholder="Nhập lời thoại nghe của bài. Mỗi câu một dòng kèm tên người nói (nếu có).\nVí dụ:\nAlex: Good morning! How was your weekend?\nSarah: It was fantastic, I visited my grandparents in the countryside.">{{ skill_data.get('transcript', '') }}</textarea>
+                <small class="text-muted d-block mt-1" style="font-size: 0.75rem;">Lời thoại này sẽ được dùng để tách câu đồng bộ chép chính tả cho học viên.</small>
+              </div>
+            </div>
+
+            <!-- 📖 BLOCK 2: READING -->
+            <div id="fields-Reading" class="skill-fields d-none">
+              <div class="alert alert-success py-2 px-3 small d-flex align-items-center gap-2 mb-3 rounded-3">
+                <i class="ph-bold ph-book-open fs-5 text-success"></i>
+                <span>Cấu hình bài đọc hiểu (Reading Passage) kèm bộ câu hỏi trắc nghiệm kiểm tra khả năng đọc hiểu.</span>
+              </div>
+
+              <div class="mb-3">
+                <label class="form-label fw-bold text-dark small">Thể loại bài đọc (Genre)</label>
+                <input type="text" name="reading_genre" value="{{ skill_data.get('reading_genre', '') }}" class="form-control form-control-sm" placeholder="Ví dụ: Tin tức báo chí, Bài luận học thuật, Email công việc, Bưu thiếp du lịch...">
+              </div>
+
+              <div class="mb-3">
+                <label class="form-label fw-bold text-dark small">Văn bản bài đọc chính (Reading Passage)</label>
+                <textarea name="reading_passage" class="form-control rounded-3" rows="7" placeholder="Dán đoạn văn bài đọc hoàn chỉnh tại đây. Học viên sẽ đọc đoạn văn này trước khi trả lời câu hỏi trắc nghiệm...">{{ skill_data.get('passage', '') }}</textarea>
+              </div>
+
+              <div class="mb-0">
+                <label class="form-label fw-bold text-dark small d-flex justify-content-between align-items-center">
+                  <span>Bộ câu hỏi trắc nghiệm đọc hiểu (Comprehension Questions - JSON)</span>
+                  <button type="button" class="btn btn-link p-0 text-primary small text-decoration-none" id="btnFillSampleReading">Chèn mẫu câu hỏi</button>
+                </label>
+                <textarea id="readingQuestionsJson" name="reading_questions_json" class="form-control font-monospace rounded-3" rows="6" placeholder='[
+  {
+    "id": 1,
+    "question": "What is the main topic of the article?",
+    "options": ["Option A", "Option B", "Option C", "Option D"],
+    "answer": 0,
+    "explanation": "Giải thích chi tiết tại sao chọn đáp án này..."
+  }
+]'>{{ skill_data.get('questions')|tojson(indent=2) if skill_data.get('questions') else '' }}</textarea>
+                <small class="text-muted d-block mt-1" style="font-size: 0.75rem;">Mỗi câu hỏi gồm câu hỏi, 4 phương án lựa chọn, chỉ số đáp án đúng (0 cho A, 1 cho B, v.v.), và lời giải thích.</small>
+              </div>
+            </div>
+
+            <!-- 🗣️ BLOCK 3: SPEAKING -->
+            <div id="fields-Speaking" class="skill-fields d-none">
+              <div class="alert alert-warning py-2 px-3 small d-flex align-items-center gap-2 mb-3 rounded-3">
+                <i class="ph-bold ph-chats-circle fs-5 text-warning"></i>
+                <span>Cấu hình bài luyện nói: Danh sách các mẫu câu kèm phiên âm IPA chuẩn và mẹo phát âm.</span>
+              </div>
+
+              <div class="mb-3">
+                <label class="form-label fw-bold text-dark small">Chủ đề / Bối cảnh giao tiếp</label>
+                <input type="text" name="speaking_genre" value="{{ skill_data.get('speaking_genre', '') }}" class="form-control form-control-sm" placeholder="Ví dụ: Giới thiệu bản thân, Phỏng vấn xin việc, Hỏi & Chỉ đường, Đàm phán thương mại...">
+              </div>
+
+              <div class="mb-3">
+                <label class="form-label fw-bold text-dark small d-flex justify-content-between align-items-center">
+                  <span>Danh sách câu luyện nói (Mỗi câu một dòng theo định dạng: Câu | /IPA/ | Nghĩa)</span>
+                  <button type="button" class="btn btn-link p-0 text-primary small text-decoration-none" id="btnFillSampleSpeaking">Chèn mẫu câu nói</button>
+                </label>
+                <textarea id="speakingSentences" name="speaking_sentences_json" class="form-control font-monospace rounded-3" rows="6" placeholder="Hi everyone, my name is Alex. | /haɪ ˈev.ri.wʌn maɪ neɪm ɪz ˈæl.ɪks/ | Xin chào mọi người, mình tên là Alex.
+I have over four years of experience. | /aɪ hæv ˈoʊ.vɚ fɔːr jɪrz əv ɪkˈspɪr.i.əns/ | Tôi có hơn bốn năm kinh nghiệm.">{% if skill_data.get('sentences') %}{% for s in skill_data.get('sentences') %}{{ s.text }} | {{ s.ipa }} | {{ s.vi }}
+{% endfor %}{% endif %}</textarea>
+                <small class="text-muted d-block mt-1" style="font-size: 0.75rem;">Hỗ trợ nhập trực tiếp từng dòng hoặc dán mảng JSON chuẩn.</small>
+              </div>
+
+              <div class="mb-0">
+                <label class="form-label fw-bold text-dark small">Mẹo ngữ điệu & Nhả chữ (Mỗi dòng một mẹo)</label>
+                <textarea name="speaking_tips" class="form-control rounded-3" rows="3" placeholder="Lên giọng nhẹ ở cuối tên của bạn và hạ giọng ở cuối câu khẳng định.&#10;Chú ý phát âm rõ âm cuối /s/ và /t/.">{{ skill_data.get('tips', [])|join('\n') if skill_data.get('tips') is iterable and skill_data.get('tips') is not string else skill_data.get('tips', '') }}</textarea>
+              </div>
+            </div>
+
+            <!-- ✍️ BLOCK 4: WRITING -->
+            <div id="fields-Writing" class="skill-fields d-none">
+              <div class="alert alert-purple py-2 px-3 small d-flex align-items-center gap-2 mb-3 rounded-3" style="background-color: #f3e8ff; color: #6b21a8; border: 1px solid #e9d5ff;">
+                <i class="ph-bold ph-pen-nib fs-5"></i>
+                <span>Cấu hình bài viết: Yêu cầu số từ, thể loại văn bản và các mẫu câu dàn ý (Templates).</span>
+              </div>
+
+              <div class="row g-3 mb-3">
+                <div class="col-md-6">
+                  <label class="form-label fw-bold text-dark small">Thể loại bài viết (Writing Genre)</label>
+                  <input type="text" name="writing_genre" value="{{ skill_data.get('writing_genre', '') }}" class="form-control form-control-sm" placeholder="Ví dụ: Email công việc, Thư mời, Bài luận quan điểm (Persuasive Essay)...">
+                </div>
+
+                <div class="col-md-3">
+                  <label class="form-label fw-bold text-dark small">Số từ tối thiểu (Min)</label>
+                  <input type="number" name="min_words" value="{{ skill_data.get('min_words', 40) }}" class="form-control form-control-sm" min="10" max="1000">
+                </div>
+
+                <div class="col-md-3">
+                  <label class="form-label fw-bold text-dark small">Số từ tối đa (Max)</label>
+                  <input type="number" name="max_words" value="{{ skill_data.get('max_words', 80) }}" class="form-control form-control-sm" min="20" max="2000">
+                </div>
+              </div>
+
+              <div class="mb-0">
+                <label class="form-label fw-bold text-dark small d-flex justify-content-between align-items-center">
+                  <span>Mẫu câu dàn ý gợi ý (Mỗi dòng: Nhãn | Câu mẫu tiếng Anh | Dịch nghĩa)</span>
+                  <button type="button" class="btn btn-link p-0 text-primary small text-decoration-none" id="btnFillSampleWriting">Chèn mẫu dàn ý</button>
+                </label>
+                <textarea id="writingTemplates" name="writing_templates_json" class="form-control font-monospace rounded-3" rows="6" placeholder="Mở bài | First, I would like to express my view on this matter. | Đầu tiên, tôi muốn bày tỏ quan điểm về vấn đề này.
+Thân bài | Furthermore, there are several convincing reasons to consider. | Hơn nữa, có một số lý do thuyết phục cần xem xét.
+Kết bài | In conclusion, continuous practice brings noticeable progress. | Tóm lại, luyện tập liên tục đem lại tiến bộ rõ rệt.">{% if skill_data.get('templates') %}{% for t in skill_data.get('templates') %}{{ t.label }} | {{ t.text }} | {{ t.vi }}
+{% endfor %}{% endif %}</textarea>
+                <small class="text-muted d-block mt-1" style="font-size: 0.75rem;">Học viên có thể bấm vào các mẫu câu này để chèn nhanh vào bài viết của họ.</small>
+              </div>
+            </div>
+
+            <!-- 📐 BLOCK 5: GRAMMAR & VOCABULARY -->
+            <div id="fields-Grammar" class="skill-fields d-none">
+              <div class="alert alert-secondary py-3 px-3 small d-flex align-items-center gap-2 mb-0 rounded-3">
+                <i class="ph-bold ph-info fs-5 text-secondary"></i>
+                <div>
+                  <strong>Bài học Ngữ pháp / Từ vựng:</strong> 
+                  <div>Sử dụng khung <em>Nội dung lý thuyết (Rich Text)</em> và <em>Ví dụ minh họa</em> bên dưới để trình bày bảng cấu trúc, quy tắc và ví dụ đối chiếu.</div>
+                </div>
+              </div>
+            </div>
+            <div id="fields-Vocabulary" class="skill-fields d-none">
+              <div class="alert alert-secondary py-3 px-3 small d-flex align-items-center gap-2 mb-0 rounded-3">
+                <i class="ph-bold ph-translate fs-5 text-secondary"></i>
+                <div>
+                  <strong>Kho Từ vựng Chuyên sâu:</strong> 
+                  <div>Bạn cũng có thể quản lý từng từ vựng riêng biệt có phát âm và từ loại tại <a href="{{ url_for('admin.vocabulary') }}" class="fw-bold text-primary">Quản lý Từ vựng</a>.</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Section 3: Theory & Content (Rich Text Editor) -->
         <div class="card-modern p-4 mb-4">
           <div class="d-flex align-items-center justify-content-between mb-3 pb-2 border-bottom">
             <div class="d-flex align-items-center gap-2">
               <i class="ph-bold ph-article text-success fs-5"></i>
-              <h5 class="fw-bold text-dark mb-0" style="font-size: 1.05rem;">Nội dung lý thuyết</h5>
+              <h5 class="fw-bold text-dark mb-0" style="font-size: 1.05rem;">3. Nội dung lý thuyết chính</h5>
             </div>
-            <span class="badge bg-light text-secondary border">Rich-text / Markdown</span>
+            <span class="badge bg-light text-secondary border">CKEditor Rich-Text</span>
           </div>
 
           <div class="mb-0">
             <label class="form-label fw-bold text-dark small text-uppercase mb-2" style="letter-spacing: 0.03em;">
-              Chi tiết bài giảng & Cấu trúc <span class="text-danger">*</span>
+              Chi tiết bài giảng & Hướng dẫn học tập <span class="text-danger">*</span>
             </label>
-            {{ form.content(id="contentEditor", class="form-control rounded-3", rows="12", placeholder="Nhập nội dung lý thuyết chi tiết...") }}
+            {{ form.content(id="contentEditor", class="form-control rounded-3", rows="10", placeholder="Nhập nội dung lý thuyết chi tiết...") }}
             {% if form.content.errors %}
               <div class="text-danger small mt-1"><i class="ph-bold ph-warning-circle me-1"></i>{{ form.content.errors[0] }}</div>
             {% endif %}
-            <small class="text-muted d-block mt-2">
-              <i class="ph-bold ph-lightbulb me-1 text-warning"></i>
-              Bạn có thể định dạng tiêu đề, bôi đậm cấu trúc ngữ pháp, danh sách hoặc bảng biểu để bài học trực quan nhất.
-            </small>
           </div>
         </div>
 
-        <!-- Section 3: Examples -->
+        <!-- Section 4: Examples -->
         <div class="card-modern p-4">
           <div class="d-flex align-items-center gap-2 mb-3 pb-2 border-bottom">
             <i class="ph-bold ph-chat-centered-text text-warning fs-5"></i>
-            <h5 class="fw-bold text-dark mb-0" style="font-size: 1.05rem;">Ví dụ minh họa & Ngữ cảnh</h5>
+            <h5 class="fw-bold text-dark mb-0" style="font-size: 1.05rem;">4. Ví dụ minh họa tiêu biểu</h5>
           </div>
 
           <div class="mb-0">
             <label class="form-label fw-bold text-dark small text-uppercase" style="letter-spacing: 0.03em;">
-              Các câu ví dụ thực tế <span class="text-danger">*</span>
+              Các câu ví dụ thực tế (Mỗi dòng một câu) <span class="text-danger">*</span>
             </label>
-            {{ form.examples(class="form-control rounded-3 font-monospace", rows="5", placeholder="Nhập mỗi câu ví dụ trên một dòng kèm bản dịch.\nVí dụ:\nI am meeting Sarah at 7 PM tonight. (Tôi sẽ gặp Sarah lúc 7 giờ tối nay.)\nThey aren't coming to the party on Friday. (Họ không đến dự tiệc vào thứ Sáu.)", style="font-size: 0.88rem; line-height: 1.6;") }}
+            {{ form.examples(class="form-control rounded-3 font-monospace", rows="4", placeholder="Nhập mỗi câu ví dụ trên một dòng kèm bản dịch.\nVí dụ:\nI am meeting Sarah at 7 PM tonight. (Tôi sẽ gặp Sarah lúc 7 giờ tối nay.)\nThey aren't coming to the party on Friday. (Họ không đến dự tiệc vào thứ Sáu.)", style="font-size: 0.88rem; line-height: 1.6;") }}
             {% if form.examples.errors %}
               <div class="text-danger small mt-1"><i class="ph-bold ph-warning-circle me-1"></i>{{ form.examples.errors[0] }}</div>
             {% endif %}
@@ -107,7 +279,7 @@
         <div class="card-modern p-4 mb-4">
           <div class="d-flex align-items-center gap-2 mb-3 pb-2 border-bottom">
             <i class="ph-bold ph-sliders text-primary fs-5"></i>
-            <h5 class="fw-bold text-dark mb-0" style="font-size: 1.05rem;">Phân loại bài học</h5>
+            <h5 class="fw-bold text-dark mb-0" style="font-size: 1.05rem;">Phân loại & Kỹ năng</h5>
           </div>
 
           <!-- Skill Select -->
@@ -115,11 +287,11 @@
             <label class="form-label fw-bold text-dark small text-uppercase" style="letter-spacing: 0.03em;">
               Kỹ năng chính <span class="text-danger">*</span>
             </label>
-            {{ form.skill(class="form-select rounded-3 py-2") }}
+            {{ form.skill(id="skill-selector", class="form-select rounded-3 py-2 fw-bold text-primary border-primary-subtle shadow-2xs") }}
             {% if form.skill.errors %}
               <div class="text-danger small mt-1">{{ form.skill.errors[0] }}</div>
             {% endif %}
-            <small class="text-muted d-block mt-1">Định tuyến vị trí hiển thị trên thư viện bài học của học viên.</small>
+            <small class="text-muted d-block mt-1">Khi thay đổi kỹ năng, khối dữ liệu chuyên biệt ở cột bên trái sẽ tự động chuyển đổi.</small>
           </div>
 
           <!-- Level Select -->
@@ -131,7 +303,7 @@
             {% if form.level.errors %}
               <div class="text-danger small mt-1">{{ form.level.errors[0] }}</div>
             {% endif %}
-            <small class="text-muted d-block mt-1">Từ A1 (Mất gốc/Cơ bản) đến C2 (Thành thạo).</small>
+            <small class="text-muted d-block mt-1">Từ A1 (Cơ bản) đến C2 (Thành thạo).</small>
           </div>
         </div>
 
@@ -143,7 +315,7 @@
           </div>
 
           <p class="text-muted small mb-3">
-            Bài học sau khi lưu sẽ hiển thị ngay cho học viên trên hệ thống EnglishMate (trừ khi bạn chủ động ẩn sau đó).
+            Dữ liệu kỹ năng chuyên biệt sẽ được lưu tự động vào cấu trúc JSON để phục vụ giao diện học viên tương ứng.
           </p>
 
           <div class="d-flex flex-column gap-2">
@@ -157,17 +329,18 @@
           </div>
         </div>
 
-        <!-- Tips Card -->
+        <!-- Workflow Summary Card -->
         <div class="card-modern p-4 bg-primary-subtle border-primary-subtle">
           <div class="d-flex align-items-center gap-2 mb-2 text-primary">
-            <i class="ph-bold ph-lightbulb fs-5"></i>
-            <h6 class="fw-bold mb-0">Mẹo biên soạn chuẩn</h6>
+            <i class="ph-bold ph-flow-arrow fs-5"></i>
+            <h6 class="fw-bold mb-0">Luồng lưu trữ linh hoạt</h6>
           </div>
-          <ul class="text-secondary small mb-0 ps-3" style="line-height: 1.7;">
-            <li>Chia nhỏ lý thuyết thành các đoạn văn ngắn từ 2 - 3 câu để tránh quá tải cho học viên.</li>
-            <li>In đậm hoặc làm nổi bật cấu trúc chính (ví dụ: <code>S + V-ing</code>).</li>
-            <li>Kèm theo ví dụ đối chiếu giữa cách dùng đúng và lỗi sai phổ biến.</li>
-          </ul>
+          <p class="text-secondary small mb-2" style="line-height: 1.6;">
+            Nhờ kiến trúc <strong>JSON skill_data</strong>, bạn có thể dễ dàng mở rộng thêm trường thông tin cho từng kỹ năng mà không làm ảnh hưởng tới các bài học cũ.
+          </p>
+          <div class="small fw-semibold text-primary">
+            <i class="ph-bold ph-check me-1"></i>Tự động thích ứng học viên
+          </div>
         </div>
       </div>
     </div>
@@ -180,7 +353,9 @@
 <script src="https://cdn.ckeditor.com/ckeditor5/39.0.1/classic/ckeditor.js"></script>
 <script>
   document.addEventListener("DOMContentLoaded", function() {
+    // 1. CKEditor Initialization
     const editorTarget = document.querySelector('#contentEditor');
+    let ckEditorInstance = null;
     if (editorTarget) {
       ClassicEditor
         .create(editorTarget, {
@@ -194,7 +369,7 @@
           placeholder: 'Nhập nội dung bài giảng chi tiết tại đây...'
         })
         .then(editor => {
-          // Sync CKEditor data to textarea when form is submitted
+          ckEditorInstance = editor;
           const form = document.getElementById('lessonForm');
           if (form) {
             form.addEventListener('submit', () => {
@@ -203,15 +378,90 @@
           }
         })
         .catch(error => {
-          console.warn('CKEditor fallback to standard textarea:', error);
+          console.warn('CKEditor init fallback:', error);
         });
+    }
+
+    // 2. Dynamic Skill Fields Switching
+    const skillSelector = document.getElementById('skill-selector');
+    const allSkillBlocks = document.querySelectorAll('.skill-fields');
+    const activeSkillBadge = document.getElementById('activeSkillBadge');
+
+    function updateDynamicFields() {
+      if (!skillSelector) return;
+      const selectedSkill = skillSelector.value;
+
+      // Update badge text
+      if (activeSkillBadge) {
+        activeSkillBadge.textContent = selectedSkill;
+      }
+
+      // Hide all dynamic blocks
+      allSkillBlocks.forEach(block => block.classList.add('d-none'));
+
+      // Show target block
+      const targetBlock = document.getElementById(`fields-${selectedSkill}`);
+      if (targetBlock) {
+        targetBlock.classList.remove('d-none');
+      }
+    }
+
+    // Run on initial page load (for edit or prefilled state)
+    updateDynamicFields();
+
+    // Listen to change event
+    if (skillSelector) {
+      skillSelector.addEventListener('change', updateDynamicFields);
+    }
+
+    // 3. Helper buttons to fill sample structured data quickly
+    const btnFillReading = document.getElementById('btnFillSampleReading');
+    if (btnFillReading) {
+      btnFillReading.addEventListener('click', () => {
+        const area = document.getElementById('readingQuestionsJson');
+        if (area && !area.value.trim()) {
+          area.value = JSON.stringify([
+            {
+              "id": 1,
+              "question": "What is the primary conclusion of the passage?",
+              "options": [
+                "Continuous practice ensures notable progress",
+                "Grammar is the only important factor",
+                "Language immersion is strictly prohibited",
+                "Writing is unnecessary in communication"
+              ],
+              "answer": 0,
+              "explanation": "Đoạn kết bài đã khẳng định việc luyện tập thường xuyên là chìa khóa đạt tiến bộ."
+            }
+          ], null, 2);
+        }
+      });
+    }
+
+    const btnFillSpeaking = document.getElementById('btnFillSampleSpeaking');
+    if (btnFillSpeaking) {
+      btnFillSpeaking.addEventListener('click', () => {
+        const area = document.getElementById('speakingSentences');
+        if (area && !area.value.trim()) {
+          area.value = "Hi everyone, my name is Alex. | /haɪ ˈev.ri.wʌn maɪ neɪm ɪz ˈæl.ɪks/ | Xin chào mọi người, mình tên là Alex.\nI am delighted to practice speaking with you. | /aɪ æm dɪˈlaɪ.tɪd tuː ˈpræk.tɪs ˈspiː.kɪŋ wɪð juː/ | Rất vui được luyện nói cùng các bạn.";
+        }
+      });
+    }
+
+    const btnFillWriting = document.getElementById('btnFillSampleWriting');
+    if (btnFillWriting) {
+      btnFillWriting.addEventListener('click', () => {
+        const area = document.getElementById('writingTemplates');
+        if (area && !area.value.trim()) {
+          area.value = "Mở bài | First, I would like to express my perspective. | Đầu tiên, tôi muốn chia sẻ góc nhìn của mình.\nThân bài | Furthermore, there are several notable benefits to explore. | Hơn nữa, có nhiều lợi ích đáng lưu tâm để khám phá.\nKết bài | In conclusion, a balanced approach produces the best results. | Tóm lại, một hướng tiếp cận cân bằng đem lại kết quả tốt nhất.";
+        }
+      });
     }
   });
 </script>
 <style>
-  /* Fix CKEditor styling inside modern Bootstrap card */
   .ck-editor__editable_inline {
-    min-height: 280px;
+    min-height: 240px;
     font-size: 0.95rem;
     line-height: 1.7;
     border-bottom-left-radius: 0.5rem !important;
@@ -222,13 +472,6 @@
     border-top-right-radius: 0.5rem !important;
     background: #f8fafc !important;
     border-color: #e2e8f0 !important;
-  }
-  .ck.ck-editor__main>.ck-editor__editable {
-    border-color: #e2e8f0 !important;
-  }
-  .ck.ck-editor__main>.ck-editor__editable:focus {
-    border-color: #6366f1 !important;
-    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15) !important;
   }
 </style>
 {% endblock %}

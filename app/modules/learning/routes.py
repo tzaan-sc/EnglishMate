@@ -330,12 +330,15 @@ def _render_lesson_page(lesson):
 
     # Listening specific properties
     transcript_lines = []
+    sd = getattr(lesson, "skill_data", None) or {}
     if lesson.skill == "Listening":
-        lesson.accent = "UK" if (lesson.id % 2 == 0) else "US"
+        lesson.accent = sd.get("accent") or ("UK" if (lesson.id % 2 == 0) else "US")
         duration_pool = ["02:15", "02:45", "03:10", "03:35", "04:15", "04:50"]
-        lesson.audio_duration = duration_pool[lesson.id % len(duration_pool)]
+        lesson.audio_duration = sd.get("audio_duration") or duration_pool[lesson.id % len(duration_pool)]
+        if sd.get("audio_url"):
+            lesson.audio_url = sd.get("audio_url")
 
-        raw_source = lesson.examples or lesson.content or ""
+        raw_source = sd.get("transcript") or lesson.examples or lesson.content or ""
         lines = [l.strip() for l in raw_source.splitlines() if l.strip()]
         for idx, line in enumerate(lines):
             speaker = None
@@ -360,7 +363,10 @@ def _render_lesson_page(lesson):
     reading_questions = []
 
     if lesson.skill == "Reading":
-        if lesson.examples and len(lesson.examples.strip()) > 30:
+        if sd.get("passage"):
+            reading_passage = sd.get("passage").strip()
+            reading_guideline = lesson.content.strip() if lesson.content else ""
+        elif lesson.examples and len(lesson.examples.strip()) > 30:
             reading_passage = lesson.examples.strip()
             reading_guideline = lesson.content.strip() if lesson.content else ""
         else:
@@ -482,23 +488,31 @@ def _render_lesson_page(lesson):
             }
         }
 
-        reading_info = READING_DATA.get(lesson.id, {
-            "genre": "Bài đọc thực hành",
-            "est_minutes": max(1, len(reading_passage) // 250 + 1),
-            "vocab": [
-                {"word": "comprehension", "ipa": "/ˌkɑːm.prəˈhen.ʃən/", "pos": "noun", "vi": "sự đọc hiểu", "ex": "Reading daily improves language comprehension."},
-                {"word": "context", "ipa": "/ˈkɑːn.tekst/", "pos": "noun", "vi": "ngữ cảnh", "ex": "Always observe words in their natural context."}
-            ],
-            "questions": [
-                {
-                    "id": 1,
-                    "question": f"What is the main topic of '{lesson.title}'?",
-                    "options": [lesson.title, "Grammar review", "Speaking dialogue", "Listening audio"],
-                    "answer": 0,
-                    "explanation": f"Nội dung bài học hướng dẫn trọng tâm về: {lesson.title}."
-                }
-            ]
-        })
+        if sd.get("questions") or sd.get("reading_genre"):
+            reading_info = {
+                "genre": sd.get("reading_genre") or "Bài đọc",
+                "est_minutes": max(1, len(reading_passage) // 250 + 1),
+                "vocab": sd.get("vocab", []),
+                "questions": sd.get("questions", [])
+            }
+        else:
+            reading_info = READING_DATA.get(lesson.id, {
+                "genre": "Bài đọc thực hành",
+                "est_minutes": max(1, len(reading_passage) // 250 + 1),
+                "vocab": [
+                    {"word": "comprehension", "ipa": "/ˌkɑːm.prəˈhen.ʃən/", "pos": "noun", "vi": "sự đọc hiểu", "ex": "Reading daily improves language comprehension."},
+                    {"word": "context", "ipa": "/ˈkɑːn.tekst/", "pos": "noun", "vi": "ngữ cảnh", "ex": "Always observe words in their natural context."}
+                ],
+                "questions": [
+                    {
+                        "id": 1,
+                        "question": f"What is the main topic of '{lesson.title}'?",
+                        "options": [lesson.title, "Grammar review", "Speaking dialogue", "Listening audio"],
+                        "answer": 0,
+                        "explanation": f"Nội dung bài học hướng dẫn trọng tâm về: {lesson.title}."
+                    }
+                ]
+            })
         reading_vocab = reading_info.get("vocab", [])
         reading_questions = reading_info.get("questions", [])
         lesson.reading_genre = reading_info.get("genre", "Bài đọc")
@@ -573,16 +587,24 @@ def _render_lesson_page(lesson):
             }
         }
 
-        writing_info = WRITING_DATA.get(lesson.id, {
-            "genre": "Bài viết thực hành",
-            "target_min": 40,
-            "target_max": 80,
-            "templates": [
-                {"label": "Mở đầu", "text": "First, I would like to express my thoughts on this topic.", "vi": "Đầu tiên, tôi muốn chia sẻ suy nghĩ về chủ đề này."},
-                {"label": "Phát triển ý", "text": "Furthermore, there are several key reasons to consider.", "vi": "Hơn nữa, có một số lý do quan trọng cần xem xét."},
-                {"label": "Kết bài", "text": "In conclusion, practicing writing regularly brings noticeable progress.", "vi": "Tóm lại, luyện viết thường xuyên đem lại tiến bộ rõ rệt."}
-            ]
-        })
+        if sd.get("writing_genre") or sd.get("min_words") or sd.get("templates"):
+            writing_info = {
+                "genre": sd.get("writing_genre") or "Bài viết thực hành",
+                "target_min": sd.get("min_words", 40),
+                "target_max": sd.get("max_words", 80),
+                "templates": sd.get("templates", [])
+            }
+        else:
+            writing_info = WRITING_DATA.get(lesson.id, {
+                "genre": "Bài viết thực hành",
+                "target_min": 40,
+                "target_max": 80,
+                "templates": [
+                    {"label": "Mở đầu", "text": "First, I would like to express my thoughts on this topic.", "vi": "Đầu tiên, tôi muốn chia sẻ suy nghĩ về chủ đề này."},
+                    {"label": "Phát triển ý", "text": "Furthermore, there are several key reasons to consider.", "vi": "Hơn nữa, có một số lý do quan trọng cần xem xét."},
+                    {"label": "Kết bài", "text": "In conclusion, practicing writing regularly brings noticeable progress.", "vi": "Tóm lại, luyện viết thường xuyên đem lại tiến bộ rõ rệt."}
+                ]
+            })
 
         lesson.writing_genre = writing_info.get("genre", "Bài viết")
         lesson.target_min = writing_info.get("target_min", 40)
@@ -667,17 +689,24 @@ def _render_lesson_page(lesson):
             }
         }
 
-        speaking_info = SPEAKING_DATA.get(lesson.id, {
-            "genre": "Giao tiếp thực hành",
-            "sentences": [
-                {"idx": 1, "text": lesson.title, "ipa": "/prəˌnʌn.siˈeɪ.ʃən ˈpræk.tɪs/", "vi": f"Luyện tập phát âm chủ đề: {lesson.title}."},
-                {"idx": 2, "text": (lesson.examples or "Practice speaking clearly and naturally every day.").splitlines()[0], "ipa": "/ˈpræk.tɪs ˈspiː.kɪŋ ˈklɪr.li ænd ˈnætʃ.ɚ.əl.i/", "vi": "Luyện nói rõ ràng và tự nhiên mỗi ngày."}
-            ],
-            "tips": [
-                "Giữ hơi thở đều đặn và thả lỏng cơ miệng khi phát âm.",
-                "Nghe mẫu nhiều lần trước khi bấm thu âm để bắt chước ngữ điệu chuẩn."
-            ]
-        })
+        if sd.get("speaking_genre") or sd.get("sentences"):
+            speaking_info = {
+                "genre": sd.get("speaking_genre") or "Giao tiếp thực hành",
+                "sentences": sd.get("sentences", []),
+                "tips": sd.get("tips", [])
+            }
+        else:
+            speaking_info = SPEAKING_DATA.get(lesson.id, {
+                "genre": "Giao tiếp thực hành",
+                "sentences": [
+                    {"idx": 1, "text": lesson.title, "ipa": "/prəˌnʌn.siˈeɪ.ʃən ˈpræk.tɪs/", "vi": f"Luyện tập phát âm chủ đề: {lesson.title}."},
+                    {"idx": 2, "text": (lesson.examples or "Practice speaking clearly and naturally every day.").splitlines()[0], "ipa": "/ˈpræk.tɪs ˈspiː.kɪŋ ˈklɪr.li ænd ˈnætʃ.ɚ.əl.i/", "vi": "Luyện nói rõ ràng và tự nhiên mỗi ngày."}
+                ],
+                "tips": [
+                    "Giữ hơi thở đều đặn và thả lỏng cơ miệng khi phát âm.",
+                    "Nghe mẫu nhiều lần trước khi bấm thu âm để bắt chước ngữ điệu chuẩn."
+                ]
+            })
 
         lesson.speaking_genre = speaking_info.get("genre", "Luyện nói")
         speaking_sentences = speaking_info.get("sentences", [])

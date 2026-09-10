@@ -71,6 +71,80 @@ def lessons():
     )
 
 
+def _extract_skill_data(skill, form_data):
+    import json
+    data = {}
+    if skill == "Listening":
+        data["audio_url"] = form_data.get("audio_url", "").strip()
+        data["accent"] = form_data.get("accent", "US").strip()
+        data["audio_duration"] = form_data.get("audio_duration", "").strip()
+        data["transcript"] = form_data.get("listening_transcript", "").strip()
+    elif skill == "Reading":
+        data["reading_genre"] = form_data.get("reading_genre", "").strip()
+        data["passage"] = form_data.get("reading_passage", "").strip()
+        q_raw = form_data.get("reading_questions_json", "").strip()
+        if q_raw:
+            try:
+                data["questions"] = json.loads(q_raw)
+            except Exception:
+                pass
+    elif skill == "Speaking":
+        data["speaking_genre"] = form_data.get("speaking_genre", "").strip()
+        sent_raw = form_data.get("speaking_sentences_json", "").strip()
+        if sent_raw:
+            try:
+                if sent_raw.startswith("["):
+                    data["sentences"] = json.loads(sent_raw)
+                else:
+                    parsed = []
+                    for idx, line in enumerate(sent_raw.splitlines()):
+                        line = line.strip()
+                        if not line:
+                            continue
+                        parts = [p.strip() for p in line.split("|")]
+                        parsed.append({
+                            "idx": idx + 1,
+                            "text": parts[0],
+                            "ipa": parts[1] if len(parts) > 1 else "",
+                            "vi": parts[2] if len(parts) > 2 else ""
+                        })
+                    data["sentences"] = parsed
+            except Exception:
+                pass
+        data["tips"] = [t.strip() for t in form_data.get("speaking_tips", "").splitlines() if t.strip()]
+    elif skill == "Writing":
+        data["writing_genre"] = form_data.get("writing_genre", "").strip()
+        try:
+            data["min_words"] = int(form_data.get("min_words", 40))
+        except (ValueError, TypeError):
+            data["min_words"] = 40
+        try:
+            data["max_words"] = int(form_data.get("max_words", 80))
+        except (ValueError, TypeError):
+            data["max_words"] = 80
+        tpl_raw = form_data.get("writing_templates_json", "").strip()
+        if tpl_raw:
+            try:
+                if tpl_raw.startswith("["):
+                    data["templates"] = json.loads(tpl_raw)
+                else:
+                    parsed = []
+                    for line in tpl_raw.splitlines():
+                        line = line.strip()
+                        if not line:
+                            continue
+                        parts = [p.strip() for p in line.split("|")]
+                        parsed.append({
+                            "label": parts[0],
+                            "text": parts[1] if len(parts) > 1 else "",
+                            "vi": parts[2] if len(parts) > 2 else ""
+                        })
+                    data["templates"] = parsed
+            except Exception:
+                pass
+    return data
+
+
 @bp.route("/lessons/new", methods=["GET", "POST"])
 @admin_required
 def lesson_create():
@@ -78,11 +152,12 @@ def lesson_create():
     if form.validate_on_submit():
         lesson = Lesson()
         form.populate_obj(lesson)
+        lesson.skill_data = _extract_skill_data(lesson.skill, request.form)
         db.session.add(lesson)
         db.session.commit()
         flash("Đã thêm bài học mới.", "success")
         return redirect(url_for("admin.lessons"))
-    return render_template("admin/lesson_form.html", form=form, title="Thêm bài học")
+    return render_template("admin/lesson_form.html", form=form, title="Thêm bài học", skill_data={})
 
 
 @bp.route("/lessons/<int:lesson_id>/edit", methods=["GET", "POST"])
@@ -92,10 +167,17 @@ def lesson_edit(lesson_id):
     form = LessonForm(obj=lesson)
     if form.validate_on_submit():
         form.populate_obj(lesson)
+        lesson.skill_data = _extract_skill_data(lesson.skill, request.form)
         db.session.commit()
         flash("Đã cập nhật bài học.", "success")
         return redirect(url_for("admin.lessons"))
-    return render_template("admin/lesson_form.html", form=form, title="Sửa bài học")
+    return render_template(
+        "admin/lesson_form.html",
+        form=form,
+        title="Sửa bài học",
+        lesson=lesson,
+        skill_data=lesson.skill_data or {}
+    )
 
 
 @bp.post("/lessons/<int:lesson_id>/toggle-status")

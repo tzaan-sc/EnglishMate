@@ -56,13 +56,49 @@ def test_admin_lesson_create_writing_c2_and_toggle_status(client, app):
     toggle_res = client.post(f"/admin/lessons/{lesson_id}/toggle-status", follow_redirects=True)
     assert toggle_res.status_code == 200
     with app.app_context():
-        lesson = Lesson.query.get(lesson_id)
+        from app.extensions import db
+        lesson = db.session.get(Lesson, lesson_id)
         assert lesson.is_active is False
 
     # Toggle status to re-open
     reopen_res = client.post(f"/admin/lessons/{lesson_id}/toggle-status", follow_redirects=True)
     assert reopen_res.status_code == 200
     with app.app_context():
-        lesson = Lesson.query.get(lesson_id)
+        lesson = db.session.get(Lesson, lesson_id)
         assert lesson.is_active is True
+
+
+def test_admin_lesson_create_with_skill_data_json(client, app):
+    login(client, "admin@test.com", "admin123")
+
+    # 1. Create a Listening lesson with audio_url and accent
+    res = client.post("/admin/lessons/new", data={
+        "title": "Listening Studio Practice Lesson",
+        "level": "B2",
+        "skill": "Listening",
+        "short_description": "Podcast about technology innovations.",
+        "content": "Listen to the discussion and take notes.",
+        "examples": "Example conversation line 1\nExample line 2",
+        "audio_url": "https://example.com/podcast.mp3",
+        "accent": "UK",
+        "audio_duration": "03:45",
+        "listening_transcript": "Host: Welcome to the show!\nGuest: Thank you for inviting me."
+    }, follow_redirects=True)
+    assert res.status_code == 200
+
+    with app.app_context():
+        from app.modules.learning.models import Lesson
+        lesson = Lesson.query.filter_by(title="Listening Studio Practice Lesson").first()
+        assert lesson is not None
+        assert lesson.skill_data is not None
+        assert lesson.skill_data.get("audio_url") == "https://example.com/podcast.mp3"
+        assert lesson.skill_data.get("accent") == "UK"
+        assert lesson.skill_data.get("audio_duration") == "03:45"
+        lesson_id = lesson.id
+
+    # Test that student view /listening/<id> loads this lesson properly
+    student_res = client.get(f"/listening/{lesson_id}")
+    assert student_res.status_code == 200
+    assert "Listening Studio Practice Lesson".encode() in student_res.data
+
 

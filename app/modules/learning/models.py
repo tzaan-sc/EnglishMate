@@ -14,6 +14,7 @@ class Lesson(db.Model):
     thumbnail_url = db.Column(db.String(255), nullable=True)
     view_count = db.Column(db.Integer, nullable=False, default=0)
     is_active = db.Column(db.Boolean, nullable=False, default=True)
+    skill_data = db.Column(db.JSON, nullable=True, default=dict)
     created_at = db.Column(db.DateTime(timezone=True), default=now, nullable=False)
     updated_at = db.Column(db.DateTime(timezone=True), default=now, onupdate=now, nullable=False)
 
