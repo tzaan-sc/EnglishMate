@@ -4029,20 +4029,24 @@ def gamification_hub():
             "unlocked_at": unlocked_at
         })
         
-    # Leaderboards
-    all_time_leaders = User.query.order_by(User.xp.desc()).limit(20).all()
-    streak_leaders = User.query.order_by(User.current_streak.desc()).limit(20).all()
+    # Leaderboards (Chỉ dành cho Học viên, loại trừ Quản trị viên Admin)
+    student_filter = (User.role != "ADMIN")
+    all_time_leaders = User.query.filter(student_filter).order_by(User.xp.desc()).limit(20).all()
+    streak_leaders = User.query.filter(student_filter).order_by(User.current_streak.desc()).limit(20).all()
     
     # Weekly XP Leaders
     start_of_week = date.today() - timedelta(days=date.today().weekday())
     weekly_acts = db.session.query(
         DailyActivity.user_id,
         func.sum(DailyActivity.completed_lessons * 20).label("weekly_xp")
-    ).filter(DailyActivity.activity_date >= start_of_week).group_by(DailyActivity.user_id).all()
+    ).join(User, User.id == DailyActivity.user_id).filter(
+        DailyActivity.activity_date >= start_of_week,
+        User.role != "ADMIN"
+    ).group_by(DailyActivity.user_id).all()
     
     weekly_xp_map = {row.user_id: (row.weekly_xp or 0) for row in weekly_acts}
-    all_users = User.query.all()
-    weekly_leaders = sorted(all_users, key=lambda u: weekly_xp_map.get(u.id, 0) + min(50, (u.xp or 0)), reverse=True)[:20]
+    all_students = User.query.filter(student_filter).all()
+    weekly_leaders = sorted(all_students, key=lambda u: weekly_xp_map.get(u.id, 0) + min(50, (u.xp or 0)), reverse=True)[:20]
     
     # Daily goal calculation
     today = date.today()

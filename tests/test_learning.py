@@ -54,7 +54,7 @@ def test_streak_mechanics(app):
     from app.extensions import db
 
     with app.app_context():
-        user = User.query.first()
+        user = User.query.filter_by(email="student@test.com").first()
         today = date.today()
 
         # Rule 1: Initial streak is 0
@@ -107,7 +107,7 @@ def test_streak_mechanics(app):
 def test_streak_status_four_states(app):
     from app.extensions import db
     with app.app_context():
-        user = User.query.first()
+        user = User.query.filter_by(email="student@test.com").first()
         today = date.today()
         yesterday = today - timedelta(days=1)
 
@@ -162,7 +162,7 @@ def test_streak_activation_popup_event(client, app):
     login(client)
     today = date.today()
     with app.app_context():
-        user = User.query.first()
+        user = User.query.filter_by(email="student@test.com").first()
         DailyActivity.query.filter_by(user_id=user.id, activity_date=today).delete()
         user.last_activity_date = today - timedelta(days=1)
         user.current_streak = 3
@@ -179,5 +179,24 @@ def test_streak_activation_popup_event(client, app):
     # Modal HTML exists in page and was automatically triggered
     assert "streakActivatedModal" in html
     assert "CHUỖI HỌC TẬP ĐÃ KÍCH HOẠT" in html
+
+
+def test_admin_excluded_from_level_and_streak(app):
+    from app.modules.auth.models import User, record_daily_activity
+    with app.app_context():
+        admin = User.query.filter_by(role="ADMIN").first()
+        assert admin is not None
+        assert admin.is_admin is True
+
+        # Rule: Admin has no level and cannot gain XP
+        assert admin.get_level() is None
+        assert admin.get_current_streak() == 0
+        admin_status = admin.get_streak_status()
+        assert admin_status["state"] == "admin"
+        assert admin_status["current_streak"] == 0
+
+        # Attempting to add XP or record activity should be no-op for admin
+        assert admin.add_xp(100) == 0
+        assert record_daily_activity(admin) is None
 
 

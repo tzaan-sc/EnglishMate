@@ -56,10 +56,10 @@ def test_grammar_detail_render(client):
 
     res = client.get(f"/grammar/{topic_id}")
     assert res.status_code == 200
-    assert "1. Quy tắc & Công thức Ngữ pháp".encode("utf-8") in res.data
-    assert "2. Ví dụ minh họa & Giải thích chi tiết".encode("utf-8") in res.data
-    assert "3. Các Lỗi thường gặp".encode("utf-8") in res.data
-    assert "4. Mẹo ghi nhớ & Thủ thuật".encode("utf-8") in res.data
+    assert "Khái niệm & Bản chất Ngữ pháp".encode("utf-8") in res.data
+    assert "Cấu trúc & Bảng Quy tắc".encode("utf-8") in res.data
+    assert "Ví dụ Minh họa".encode("utf-8") in res.data
+    assert "Lỗi Thường Gặp".encode("utf-8") in res.data
 
 
 def test_grammar_complete_and_favorite(client):

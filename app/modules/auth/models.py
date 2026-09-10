@@ -66,6 +66,8 @@ class User(UserMixin, db.Model):
     updated_at = db.Column(db.DateTime(timezone=True), default=now, onupdate=now, nullable=False)
 
     def get_level(self):
+        if self.is_admin:
+            return None
         LEVEL_TIERS = [
             (1, 0, 100, "Tân thủ"),
             (2, 100, 250, "Tập sự"),
@@ -95,6 +97,17 @@ class User(UserMixin, db.Model):
         return lvl
 
     def get_level_info(self):
+        if self.is_admin:
+            return {
+                "level": None,
+                "title": "Quản trị viên",
+                "current_xp": 0,
+                "min_xp": 0,
+                "max_xp": 0,
+                "progress_pct": 100,
+                "needed_xp": 0,
+                "is_admin": True,
+            }
         LEVEL_TIERS = [
             (1, 0, 100, "Tân thủ"),
             (2, 100, 250, "Tập sự"),
@@ -129,11 +142,12 @@ class User(UserMixin, db.Model):
             "min_xp": min_xp,
             "max_xp": max_xp,
             "progress_pct": pct,
-            "needed_xp": needed
+            "needed_xp": needed,
+            "is_admin": False,
         }
 
     def add_xp(self, amount, reason=None):
-        if amount <= 0:
+        if self.is_admin or amount <= 0:
             return 0
         self.xp = (self.xp or 0) + amount
         self.get_level()
@@ -240,10 +254,13 @@ class User(UserMixin, db.Model):
     def get_current_streak(self):
         """
         Returns active streak count based on calendar days:
+        - Admin users: always 0 (streak does not apply)
         - If user learned today: returns current_streak
         - If user learned yesterday: returns current_streak (waiting for today's lesson)
         - If user missed yesterday or earlier: streak is broken, resets to 0 and returns 0.
         """
+        if self.is_admin:
+            return 0
         if not self.last_activity_date:
             return 0
         today = date.today()
@@ -261,7 +278,7 @@ class User(UserMixin, db.Model):
     def get_streak_status(self):
         """
         Returns detailed streak status dictionary for frontend UI according to specification:
-        - state: 'not_started' | 'active_today' | 'pending_today' | 'broken'
+        - state: 'not_started' | 'active_today' | 'pending_today' | 'broken' | 'admin'
         - current_streak: int
         - previous_streak: int
         - longest_streak: int
@@ -271,6 +288,18 @@ class User(UserMixin, db.Model):
         - status_message: str
         - btn_text: str
         """
+        if self.is_admin:
+            return {
+                "state": "admin",
+                "current_streak": 0,
+                "previous_streak": 0,
+                "longest_streak": 0,
+                "is_learned_today": False,
+                "status_badge": "Quản trị viên",
+                "status_title": "Quản trị viên",
+                "status_message": "Tài khoản Quản trị viên không áp dụng hệ thống Chuỗi học tập.",
+                "btn_text": "",
+            }
         today = date.today()
         yesterday = today - timedelta(days=1)
 
@@ -360,6 +389,9 @@ def record_daily_activity(user, lessons_count=1):
     - Quy tắc 5: Tính theo ngày lịch (calendar date)
     - Cập nhật kỷ lục longest_streak
     """
+    if not user or user.is_admin:
+        return None
+
     today = date.today()
     yesterday = today - timedelta(days=1)
 

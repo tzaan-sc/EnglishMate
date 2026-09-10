@@ -33,9 +33,15 @@
             {{ current_user.username[0].upper() }}
             {% endif %}
           </div>
+          {% if not current_user.is_admin %}
           <span class="position-absolute bottom-0 end-0 badge rounded-pill bg-warning text-dark border border-2 border-white fw-bold px-2 py-0.5 shadow-sm" style="font-size: 0.72rem;">
             Lv.{{ level_info.level }}
           </span>
+          {% else %}
+          <span class="position-absolute bottom-0 end-0 badge rounded-pill bg-danger text-white border border-2 border-white fw-bold px-2 py-0.5 shadow-sm" style="font-size: 0.7rem;">
+            Admin
+          </span>
+          {% endif %}
         </div>
 
         <div class="flex-grow-1">
@@ -47,11 +53,18 @@
             <h3 class="fw-bold text-white mb-0" style="letter-spacing: -0.01em;">
               {{ current_user.full_name or current_user.username }}
             </h3>
+            {% if current_user.is_admin %}
+            <span class="badge bg-danger text-white rounded-pill px-2.5 py-0.5 fw-bold" style="font-size: 0.74rem;">
+              <i class="ph-bold ph-shield-check me-1"></i>Quản trị viên
+            </span>
+            {% else %}
             <span class="badge rounded-pill px-2.5 py-0.5 fw-bold" style="background: rgba(255,255,255,0.2); font-size: 0.72rem; color: #fef08a;">
               Danh hiệu: {{ level_info.title }}
             </span>
+            {% endif %}
           </div>
 
+          {% if not current_user.is_admin %}
           <!-- Level Progress Bar in Hero -->
           <div class="mt-2" style="max-width: 480px;">
             <div class="d-flex justify-content-between text-white small mb-1" style="font-size: 0.75rem;">
@@ -63,6 +76,11 @@
                    style="width: {{ level_info.progress_pct }}%;" aria-valuenow="{{ level_info.progress_pct }}" aria-valuemin="0" aria-valuemax="100"></div>
             </div>
           </div>
+          {% else %}
+          <div class="mt-2 text-white-50 small">
+            <i class="ph-bold ph-info me-1"></i>Tài khoản Quản trị viên (Hệ thống cấp độ và chuỗi Streak chỉ áp dụng cho tài khoản Học viên).
+          </div>
+          {% endif %}
         </div>
       </div>
 
