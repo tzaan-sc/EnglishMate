@@ -270,6 +270,12 @@
       let isReloading = false;
       setInterval(async () => {
         if (isReloading) return;
+        // Do not reload if user is actively interacting with an input or textarea
+        const activeTag = document.activeElement ? document.activeElement.tagName.toLowerCase() : '';
+        if (['input', 'textarea', 'select'].includes(activeTag)) return;
+        // Do not reload if a bootstrap modal is currently open
+        if (document.querySelector('.modal.show')) return;
+
         try {
           const res = await fetch('/_dev_live_reload_check');
           if (res.ok) {
@@ -278,12 +284,14 @@
               lastTimestamp = data.timestamp;
             } else if (data.timestamp > lastTimestamp) {
               isReloading = true;
-              console.log('[EnglishMate LiveReload] Phát hiện thay đổi file giao diện, đang tự động reload trang...');
-              window.location.reload();
+              console.log('[EnglishMate LiveReload] Phát hiện thay đổi file giao diện, đang tự động reload...');
+              setTimeout(() => {
+                window.location.reload();
+              }, 400);
             }
           }
         } catch (e) {}
-      }, 1200);
+      }, 2000);
     })();
   </script>
   {% endif %}

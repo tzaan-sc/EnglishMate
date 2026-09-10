@@ -180,6 +180,24 @@ def lesson_edit(lesson_id):
     )
 
 
+@bp.get("/lessons/<int:lesson_id>/quick-preview")
+@admin_required
+def lesson_quick_preview(lesson_id):
+    from flask import jsonify
+    lesson = db.get_or_404(Lesson, lesson_id)
+    return jsonify({
+        "id": lesson.id,
+        "title": lesson.title,
+        "skill": lesson.skill,
+        "level": lesson.level,
+        "short_description": lesson.short_description or "",
+        "content_preview": lesson.content or "",
+        "examples": lesson.examples or "",
+        "url": lesson.url,
+        "edit_url": url_for("admin.lesson_edit", lesson_id=lesson.id),
+    })
+
+
 @bp.post("/lessons/<int:lesson_id>/toggle-status")
 @bp.post("/lessons/<int:lesson_id>/delete")
 @admin_required

@@ -43,7 +43,7 @@
       </a>
     </div>
 
-    <!-- Filter & Search Toolbar -->
+    <!-- Filter & Search Toolbar (No auto-reload on select to avoid jitter) -->
     <div class="pt-3 mt-3 border-top">
       <form method="get" action="{{ url_for('admin.lessons') }}" class="row g-2.5 align-items-center">
         <!-- Search Input -->
@@ -63,20 +63,20 @@
 
         <!-- Skill Select -->
         <div class="col-6 col-md-3 col-lg-2">
-          <select name="skill" class="form-select form-select-sm" onchange="this.form.submit()">
+          <select name="skill" class="form-select form-select-sm">
             <option value="">Tất cả kỹ năng</option>
-            <option value="Listening" {{ 'selected' if skill == 'Listening' }}>🎧 Listening</option>
-            <option value="Reading" {{ 'selected' if skill == 'Reading' }}>📖 Reading</option>
-            <option value="Speaking" {{ 'selected' if skill == 'Speaking' }}>🗣️ Speaking</option>
-            <option value="Writing" {{ 'selected' if skill == 'Writing' }}>✍️ Writing</option>
-            <option value="Grammar" {{ 'selected' if skill == 'Grammar' }}>📐 Grammar</option>
-            <option value="Vocabulary" {{ 'selected' if skill == 'Vocabulary' }}>🔤 Vocabulary</option>
+            <option value="Listening" {{ 'selected' if skill == 'Listening' }}>Listening</option>
+            <option value="Reading" {{ 'selected' if skill == 'Reading' }}>Reading</option>
+            <option value="Speaking" {{ 'selected' if skill == 'Speaking' }}>Speaking</option>
+            <option value="Writing" {{ 'selected' if skill == 'Writing' }}>Writing</option>
+            <option value="Grammar" {{ 'selected' if skill == 'Grammar' }}>Grammar</option>
+            <option value="Vocabulary" {{ 'selected' if skill == 'Vocabulary' }}>Vocabulary</option>
           </select>
         </div>
 
         <!-- Level Select -->
         <div class="col-6 col-md-3 col-lg-2">
-          <select name="level" class="form-select form-select-sm" onchange="this.form.submit()">
+          <select name="level" class="form-select form-select-sm">
             <option value="">Tất cả Level</option>
             {% for lvl in ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'] %}
             <option value="{{ lvl }}" {{ 'selected' if level == lvl }}>Level {{ lvl }}</option>
@@ -86,10 +86,10 @@
 
         <!-- Status Select -->
         <div class="col-6 col-md-3 col-lg-2">
-          <select name="status" class="form-select form-select-sm" onchange="this.form.submit()">
+          <select name="status" class="form-select form-select-sm">
             <option value="">Tất cả trạng thái</option>
-            <option value="active" {{ 'selected' if status == 'active' }}>🟢 Đang mở</option>
-            <option value="hidden" {{ 'selected' if status == 'hidden' }}>⚪ Đã ẩn</option>
+            <option value="active" {{ 'selected' if status == 'active' }}>Đang mở</option>
+            <option value="hidden" {{ 'selected' if status == 'hidden' }}>Đã ẩn</option>
           </select>
         </div>
 
@@ -205,12 +205,19 @@
             <!-- Actions -->
             <td class="text-end pe-3">
               <div class="d-inline-flex align-items-center gap-1.5">
-                <!-- Preview as Student Link -->
-                <a class="btn btn-sm btn-light border fw-semibold text-secondary shadow-2xs d-inline-flex align-items-center gap-1 px-2 py-1" 
-                   href="{{ lesson.url }}" target="_blank" title="Xem thử bài học trên giao diện học viên">
-                  <i class="ph-bold ph-arrow-square-out text-primary"></i>
+                <!-- Quick Preview Modal Button (No full page reload, no tab jumping) -->
+                <button type="button" 
+                        class="btn btn-sm btn-light border fw-semibold text-secondary shadow-2xs d-inline-flex align-items-center gap-1 px-2 py-1 btn-admin-preview" 
+                        data-id="{{ lesson.id }}" 
+                        data-title="{{ lesson.title }}" 
+                        data-level="{{ lesson.level }}" 
+                        data-skill="{{ lesson.skill }}" 
+                        data-url="{{ lesson.url }}" 
+                        data-edit-url="{{ url_for('admin.lesson_edit', lesson_id=lesson.id) }}"
+                        title="Xem nhanh bài học không cần rời trang">
+                  <i class="ph-bold ph-eye text-primary"></i>
                   <span>Xem</span>
-                </a>
+                </button>
 
                 <!-- Edit Link -->
                 <a class="btn btn-sm btn-light border fw-semibold text-primary shadow-2xs d-inline-flex align-items-center gap-1 px-2.5 py-1" 
@@ -222,19 +229,19 @@
                 <!-- Toggle Status Button -->
                 {% if lesson.is_active %}
                 <form method="post" action="{{ url_for('admin.lesson_delete', lesson_id=lesson.id) }}" 
-                      onsubmit="return confirm('Bạn có chắc chắn muốn ẨN bài học \'{{ lesson.title }}\' không? Học viên sẽ không nhìn thấy bài này nữa.')" class="m-0 d-inline">
+                      onsubmit="return confirm('Bạn có chắc chắn muốn ẨN bài học \'{{ lesson.title }}\' không?')" class="m-0 d-inline">
                   {{ form.csrf_token }}
-                  <button type="submit" class="btn btn-sm btn-light border fw-semibold text-danger shadow-2xs d-inline-flex align-items-center gap-1 px-2 py-1" title="Ẩn bài học khỏi học viên">
+                  <button type="submit" class="btn btn-sm btn-light border fw-semibold text-danger shadow-2xs d-inline-flex align-items-center gap-1 px-2 py-1" title="Ẩn bài học">
                     <i class="ph-bold ph-eye-slash"></i>
                     <span>Ẩn</span>
                   </button>
                 </form>
                 {% else %}
                 <form method="post" action="{{ url_for('admin.lesson_delete', lesson_id=lesson.id) }}" 
-                      onsubmit="return confirm('Mở lại bài học \'{{ lesson.title }}\' cho học viên?')" class="m-0 d-inline">
+                      onsubmit="return confirm('Mở lại bài học \'{{ lesson.title }}\'?')" class="m-0 d-inline">
                   {{ form.csrf_token }}
                   <button type="submit" class="btn btn-sm btn-light border fw-semibold text-success shadow-2xs d-inline-flex align-items-center gap-1 px-2 py-1" title="Mở lại bài học">
-                    <i class="ph-bold ph-eye"></i>
+                    <i class="ph-bold ph-check"></i>
                     <span>Mở</span>
                   </button>
                 </form>
@@ -261,4 +268,116 @@
     </div>
   </div>
 </div>
+
+<!-- QUICK PREVIEW MODAL (ZERO RELOAD, ZERO JITTER) -->
+<div class="modal fade" id="adminLessonPreviewModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+    <div class="modal-content border-0 shadow-lg rounded-4">
+      <div class="modal-header border-bottom py-3 px-4">
+        <div>
+          <div class="d-flex align-items-center gap-2 mb-1">
+            <span id="prevModalSkill" class="badge bg-primary-subtle text-primary border rounded-pill px-2.5 py-0.5 font-semibold">Skill</span>
+            <span id="prevModalLevel" class="badge bg-light text-secondary border rounded-pill px-2.5 py-0.5 font-semibold">Level</span>
+          </div>
+          <h5 class="modal-title fw-bold text-dark mb-0" id="prevModalTitle">Tiêu đề bài học</h5>
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body p-4">
+        <!-- Short Description -->
+        <div class="p-3 bg-light rounded-3 mb-3 border">
+          <span class="text-muted small fw-bold text-uppercase d-block mb-1" style="font-size: 0.72rem; letter-spacing: 0.05em;">Tóm tắt nội dung</span>
+          <p class="text-dark small mb-0" id="prevModalDesc">Đang tải...</p>
+        </div>
+
+        <!-- Content Preview -->
+        <div class="mb-3">
+          <span class="text-muted small fw-bold text-uppercase d-block mb-1.5" style="font-size: 0.72rem; letter-spacing: 0.05em;">Lý thuyết bài giảng</span>
+          <div id="prevModalContent" class="p-3 border rounded-3 text-secondary small lh-lg" style="max-height: 260px; overflow-y: auto; background: #fafafa;">
+            Đang tải...
+          </div>
+        </div>
+
+        <!-- Examples Preview -->
+        <div class="mb-0">
+          <span class="text-muted small fw-bold text-uppercase d-block mb-1.5" style="font-size: 0.72rem; letter-spacing: 0.05em;">Ví dụ minh họa</span>
+          <div id="prevModalExamples" class="p-3 border rounded-3 font-monospace small bg-light" style="white-space: pre-line;">
+            Đang tải...
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer border-top py-2.5 px-4 d-flex justify-content-between">
+        <button type="button" class="btn btn-light border rounded-pill px-3.5 py-1.5 fw-semibold text-secondary" data-bs-dismiss="modal">
+          Đóng
+        </button>
+        <div class="d-flex gap-2">
+          <a id="prevModalEditBtn" href="#" class="btn btn-primary rounded-pill px-3.5 py-1.5 fw-bold shadow-xs d-inline-flex align-items-center gap-1.5">
+            <i class="ph-bold ph-pencil-simple"></i>
+            <span>Sửa bài học</span>
+          </a>
+          <a id="prevModalStudentBtn" href="#" target="_blank" class="btn btn-outline-dark rounded-pill px-3.5 py-1.5 fw-semibold d-inline-flex align-items-center gap-1.5">
+            <i class="ph-bold ph-arrow-square-out"></i>
+            <span>Mở trang học viên</span>
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  document.addEventListener("DOMContentLoaded", function() {
+    const modalEl = document.getElementById('adminLessonPreviewModal');
+    if (!modalEl) return;
+    const previewModal = new bootstrap.Modal(modalEl);
+
+    document.querySelectorAll('.btn-admin-preview').forEach(btn => {
+      btn.addEventListener('click', function(e) {
+        e.preventDefault();
+        const lessonId = this.dataset.id;
+        const title = this.dataset.title;
+        const level = this.dataset.level;
+        const skill = this.dataset.skill;
+        const url = this.dataset.url;
+        const editUrl = this.dataset.editUrl;
+
+        document.getElementById('prevModalTitle').textContent = title;
+        document.getElementById('prevModalSkill').textContent = skill;
+        document.getElementById('prevModalLevel').textContent = level;
+        document.getElementById('prevModalEditBtn').href = editUrl;
+        document.getElementById('prevModalStudentBtn').href = url;
+
+        document.getElementById('prevModalDesc').textContent = 'Đang tải thông tin...';
+        document.getElementById('prevModalContent').textContent = 'Đang tải lý thuyết...';
+        document.getElementById('prevModalExamples').textContent = 'Đang tải ví dụ...';
+
+        previewModal.show();
+
+        fetch(`/admin/lessons/${lessonId}/quick-preview`)
+          .then(res => {
+            if (!res.ok) throw new Error('Không thể tải dữ liệu bài học');
+            return res.json();
+          })
+          .then(data => {
+            document.getElementById('prevModalDesc').textContent = data.short_description || 'Không có mô tả tóm tắt.';
+            const contentBox = document.getElementById('prevModalContent');
+            if (data.content_preview && data.content_preview.includes('<')) {
+              contentBox.innerHTML = data.content_preview;
+            } else {
+              contentBox.textContent = data.content_preview || 'Không có nội dung lý thuyết.';
+            }
+            document.getElementById('prevModalExamples').textContent = data.examples || 'Chưa có ví dụ minh họa.';
+          })
+          .catch(err => {
+            console.warn('Lỗi khi tải preview:', err);
+            document.getElementById('prevModalDesc').textContent = 'Đã mở bài học thành công.';
+            document.getElementById('prevModalContent').textContent = 'Bạn có thể bấm nút "Mở trang học viên" ở góc dưới để xem toàn bộ giao diện đầy đủ.';
+            document.getElementById('prevModalExamples').textContent = '';
+          });
+      });
+    });
+  });
+</script>
 {% endblock %}
