@@ -38,6 +38,10 @@
           </div>
         </form>
 
+        <a class="btn btn-outline-primary fw-bold px-3 py-1.5 rounded-3 shadow-2xs d-inline-flex align-items-center gap-1.5" href="{{ url_for('admin.import_hub', type='vocabulary') }}" style="font-size: 0.88rem;">
+          <i class="ph-bold ph-file-arrow-up fs-5"></i>
+          <span>Import từ file</span>
+        </a>
         <a class="btn btn-primary fw-bold px-3 py-1.5 rounded-3 shadow-xs d-inline-flex align-items-center gap-1.5" href="{{ url_for('admin.vocabulary_create') }}" style="font-size: 0.88rem;">
           <i class="ph-bold ph-plus-circle fs-5"></i>
           <span>Thêm từ mới</span>

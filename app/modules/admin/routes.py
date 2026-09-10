@@ -908,6 +908,7 @@ def exam_stats_analytics(exam_id):
 @bp.get("/import")
 @admin_required
 def import_hub():
+    selected_type = request.args.get("type", "").strip().lower()
     stats = {
         "vocabulary_count": Vocabulary.query.count(),
         "grammar_count": GrammarTopic.query.count(),
@@ -915,7 +916,7 @@ def import_hub():
         "questions_count": Question.query.count(),
         "exams_count": Exam.query.count()
     }
-    return render_template("admin/import_hub.html", schemas=CONTENT_SCHEMAS, stats=stats)
+    return render_template("admin/import_hub.html", schemas=CONTENT_SCHEMAS, stats=stats, selected_type=selected_type)
 
 
 @bp.get("/import/template/<content_type>")

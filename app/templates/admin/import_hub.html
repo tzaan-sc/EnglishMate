@@ -276,12 +276,12 @@
         <div class="col-md-4">
           <label class="form-label fw-bold small text-dark mb-1.5">1. Chọn loại dữ liệu nạp <span class="text-danger">*</span></label>
           <select class="form-select border shadow-none py-2.5 fw-semibold" id="selectContentType" required style="border-color: var(--border-light); font-size: 0.9rem;">
-            <option value="" disabled selected>-- Chọn danh mục nạp --</option>
-            <option value="vocabulary">Từ vựng (Vocabulary)</option>
-            <option value="grammar">Ngữ pháp (Grammar Topics)</option>
-            <option value="lessons">Bài học (Lessons)</option>
-            <option value="questions">Câu hỏi Trắc nghiệm (Questions)</option>
-            <option value="exams">Đề thi (TOEIC / IELTS Exams)</option>
+            <option value="" disabled {{ 'selected' if not selected_type }}>-- Chọn danh mục nạp --</option>
+            <option value="vocabulary" {{ 'selected' if selected_type == 'vocabulary' }}>Từ vựng (Vocabulary)</option>
+            <option value="grammar" {{ 'selected' if selected_type == 'grammar' }}>Ngữ pháp (Grammar Topics)</option>
+            <option value="lessons" {{ 'selected' if selected_type == 'lessons' }}>Bài học (Lessons)</option>
+            <option value="questions" {{ 'selected' if selected_type == 'questions' }}>Câu hỏi Trắc nghiệm (Questions)</option>
+            <option value="exams" {{ 'selected' if selected_type == 'exams' }}>Đề thi (TOEIC / IELTS Exams)</option>
           </select>
         </div>
 
@@ -602,5 +602,17 @@ function resetImportFlow() {
   currentValidationData = null;
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
+
+document.addEventListener("DOMContentLoaded", function() {
+  const selectContentType = document.getElementById("selectContentType");
+  if (selectContentType && selectContentType.value) {
+    const uploadArea = document.getElementById("uploadValidateForm");
+    if (uploadArea) {
+      setTimeout(() => {
+        uploadArea.scrollIntoView({ behavior: "smooth", block: "center" });
+      }, 150);
+    }
+  }
+});
 </script>
 {% endblock %}
