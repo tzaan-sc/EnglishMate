@@ -92,8 +92,9 @@
               {% set r_perms = r.permissions %}
               {% if r_perms %}
                 {% for rp in r_perms %}
-                <span class="badge bg-light text-dark border rounded-pill px-2.5 py-1 small font-monospace" style="font-size: 0.76rem;">
-                  ✓ {{ rp.permission.name }}
+                <span class="badge bg-light text-dark border rounded-pill px-2.5 py-1 small font-monospace d-inline-flex align-items-center gap-1" style="font-size: 0.76rem;">
+                  <i class="ph-bold ph-check text-success"></i>
+                  <span>{{ rp.permission.name }}</span>
                 </span>
                 {% endfor %}
               {% else %}

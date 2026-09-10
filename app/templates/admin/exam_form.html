@@ -4,9 +4,28 @@
 {% block content %}
 <div class="container-fluid max-w-4xl py-4">
 
+  <!-- Breadcrumb Navigation -->
+  <nav class="app-breadcrumb mb-3" aria-label="breadcrumb">
+    <ol class="breadcrumb mb-0 align-items-center flex-wrap">
+      <li class="breadcrumb-item">
+        <a href="{{ url_for('admin.dashboard') }}" class="d-inline-flex align-items-center gap-1">
+          <i class="ph-bold ph-shield-check"></i>
+          <span>Quản trị Hệ thống</span>
+        </a>
+      </li>
+      <li class="breadcrumb-item">
+        <a href="{{ url_for('admin.exams_list') }}">Quản lý Đề thi</a>
+      </li>
+      <li class="breadcrumb-item active" aria-current="page">
+        <span>{{ title }}</span>
+      </li>
+    </ol>
+  </nav>
+
   <div class="d-flex justify-content-between align-items-center mb-4">
-    <a href="{{ url_for('admin.exams_list') }}" class="btn btn-light rounded-pill px-3 text-secondary">
-      ← Quay lại danh sách đề thi
+    <a href="{{ url_for('admin.exams_list') }}" class="btn btn-light border rounded-pill px-3.5 py-1.5 text-secondary fw-semibold shadow-2xs d-inline-flex align-items-center gap-1.5" style="font-size: 0.88rem;">
+      <i class="ph-bold ph-arrow-left"></i>
+      <span>Quay lại danh sách đề thi</span>
     </a>
   </div>
 
