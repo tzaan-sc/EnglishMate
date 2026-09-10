@@ -22,26 +22,6 @@
     </ol>
   </nav>
 
-  <!-- 2 CORE NAVIGATION TABS -->
-  <div class="d-flex flex-wrap gap-2 mb-4 align-items-center justify-content-between">
-    <div class="d-flex gap-2">
-      <a href="{{ url_for('exams.exam_list') }}" class="btn btn-light border rounded-pill px-4 py-2 fw-semibold text-secondary d-inline-flex align-items-center gap-1.5" style="font-size: 0.86rem;">
-        <i class="ph-bold ph-files"></i>
-        <span>Thư viện đề thi</span>
-      </a>
-      <a href="{{ url_for('exams.test_history') }}" class="btn btn-primary rounded-pill px-4 py-2 fw-bold shadow-xs d-inline-flex align-items-center gap-1.5" style="font-size: 0.86rem;">
-        <i class="ph-bold ph-clock-counter-clockwise"></i>
-        <span>Lịch sử & Phân tích</span>
-      </a>
-    </div>
-    <div>
-      <button type="button" class="btn btn-light border rounded-pill px-3.5 py-2 fw-semibold text-secondary d-inline-flex align-items-center gap-1.5 shadow-xs" data-bs-toggle="modal" data-bs-target="#examSettingsModal" style="font-size: 0.84rem;">
-        <i class="ph-bold ph-gear fs-6"></i>
-        <span>Cài đặt đề thi</span>
-      </button>
-    </div>
-  </div>
-
   <!-- ZONE 1: HERO & STATS BANNER -->
   <div class="hero-brand-card p-4 p-lg-4 mb-4 shadow-sm">
     <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3 mb-3 position-relative" style="z-index: 2;">
@@ -51,7 +31,7 @@
           <span>TEST HISTORY & PERFORMANCE ARCHIVE</span>
         </div>
         <h3 class="fw-bold text-white mb-1 d-flex align-items-center gap-2" style="letter-spacing: -0.01em;">
-          Lịch Sử Kiểm Tra (Test History)
+          Lịch Sử Kiểm Tra
         </h3>
         <p class="text-white-50 mb-0 small">
           Theo dõi toàn bộ quá trình thực hành, xem lại giải thích chi tiết và so sánh tiến độ kết quả thi.
@@ -68,6 +48,10 @@
           <i class="ph-bold ph-download-simple fs-6"></i>
           <span>Xuất CSV</span>
         </a>
+        <button type="button" class="btn btn-outline-light rounded-pill px-3.5 py-1.5 fw-semibold d-inline-flex align-items-center gap-1.5" data-bs-toggle="modal" data-bs-target="#examSettingsModal" style="font-size: 0.84rem; background: rgba(255,255,255,0.08); border-color: rgba(255,255,255,0.25);">
+          <i class="ph-bold ph-gear fs-6"></i>
+          <span>Cài đặt đề thi</span>
+        </button>
       </div>
     </div>
 
@@ -118,6 +102,25 @@
         </div>
       </div>
     </div>
+  </div>
+
+  <!-- ZONE 2: 2 CORE NAVIGATION TABS -->
+  <div class="d-flex flex-wrap gap-2 mb-4 align-items-center justify-content-between">
+    <div class="d-flex gap-2">
+      <a href="{{ url_for('exams.exam_list') }}" class="btn btn-light border rounded-pill px-4 py-2 fw-semibold text-secondary d-inline-flex align-items-center gap-1.5" style="font-size: 0.86rem;">
+        <i class="ph-bold ph-files"></i>
+        <span>Thư viện đề thi</span>
+      </a>
+      <a href="{{ url_for('exams.test_history') }}" class="btn btn-primary rounded-pill px-4 py-2 fw-bold shadow-xs d-inline-flex align-items-center gap-1.5" style="font-size: 0.86rem;">
+        <i class="ph-bold ph-clock-counter-clockwise"></i>
+        <span>Lịch sử & Phân tích</span>
+      </a>
+    </div>
+
+    <!-- Quick Count -->
+    <span class="text-secondary small fw-semibold">
+      Hiển thị <strong>{{ history|length }}</strong> lượt làm bài
+    </span>
   </div>
 
   <!-- Multi-dimensional Filter & Sorting Toolbar -->
