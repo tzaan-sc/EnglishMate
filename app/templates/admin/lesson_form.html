@@ -33,10 +33,18 @@
       <p class="text-secondary small mb-0">Hệ thống form thông minh tự động thích ứng trường dữ liệu theo từng kỹ năng học tập</p>
     </div>
 
-    <a class="btn btn-light border fw-semibold text-secondary px-3.5 py-2 rounded-3 shadow-2xs d-inline-flex align-items-center gap-1.5" href="{{ url_for('admin.lessons') }}" style="font-size: 0.88rem;">
-      <i class="ph-bold ph-arrow-left"></i>
-      <span>Quay lại Danh sách</span>
-    </a>
+    <div class="d-flex gap-2">
+      {% if lesson and lesson.id %}
+      <a class="btn btn-outline-primary fw-semibold px-3.5 py-2 rounded-3 shadow-2xs d-inline-flex align-items-center gap-1.5" href="{{ lesson.url }}" target="_blank" title="Xem thử bài học trên web học viên" style="font-size: 0.88rem;">
+        <i class="ph-bold ph-arrow-square-out"></i>
+        <span>Xem trên Web</span>
+      </a>
+      {% endif %}
+      <a class="btn btn-light border fw-semibold text-secondary px-3.5 py-2 rounded-3 shadow-2xs d-inline-flex align-items-center gap-1.5" href="{{ url_for('admin.lessons') }}" style="font-size: 0.88rem;">
+        <i class="ph-bold ph-arrow-left"></i>
+        <span>Quay lại Danh sách</span>
+      </a>
+    </div>
   </div>
 
   <form method="post" id="lessonForm">

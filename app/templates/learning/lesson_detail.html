@@ -4,6 +4,31 @@
 {% block content %}
 <div class="container-fluid max-w-4xl py-3">
 
+  <!-- ADMIN PREVIEW & FAST RETURN BAR -->
+  {% if current_user.is_authenticated and current_user.is_admin %}
+  <div class="card-modern border border-warning-subtle shadow-xs p-2.5 px-3.5 mb-3 rounded-3" style="background: #fffbeb;">
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-2">
+      <div class="d-flex align-items-center gap-2 small">
+        <span class="badge bg-warning text-dark fw-bold px-2 py-1 rounded-pill d-inline-flex align-items-center gap-1">
+          <i class="ph-bold ph-shield-check"></i>
+          <span>Admin Preview</span>
+        </span>
+        <span class="text-secondary fw-semibold">Bạn đang xem trước bài học thực tế dưới góc nhìn học viên.</span>
+      </div>
+      <div class="d-flex align-items-center gap-2 flex-shrink-0">
+        <a href="{{ url_for('admin.lesson_edit', lesson_id=lesson.id) }}" class="btn btn-sm btn-light border fw-bold text-primary shadow-2xs d-inline-flex align-items-center gap-1 px-3 py-1">
+          <i class="ph-bold ph-pencil-simple"></i>
+          <span>Sửa bài này</span>
+        </a>
+        <a href="{{ url_for('admin.lessons') }}" class="btn btn-sm btn-dark fw-bold shadow-2xs d-inline-flex align-items-center gap-1 px-3 py-1">
+          <i class="ph-bold ph-arrow-left"></i>
+          <span>Quay lại Quản lý Bài học</span>
+        </a>
+      </div>
+    </div>
+  </div>
+  {% endif %}
+
   <!-- Breadcrumb Navigation -->
   <nav class="app-breadcrumb mb-3" aria-label="breadcrumb">
     <ol class="breadcrumb mb-0 align-items-center flex-wrap">
