@@ -80,7 +80,24 @@
     </div>
   </div>
 
-  <!-- Attempts Analytics History Table -->
+  <!-- Attempts Analytics History Table / Zero State -->
+  {% if attempts|length == 0 %}
+  <div class="card-modern p-5 text-center">
+    <div class="rounded-circle bg-secondary-subtle text-secondary mx-auto d-flex align-items-center justify-content-center mb-3" style="width: 64px; height: 64px;">
+      <i class="ph ph-chart-bar fs-2"></i>
+    </div>
+    <h5 class="fw-bold text-dark mb-1">Chưa Có Lượt Thi Nào Được Ghi Nhận</h5>
+    <p class="text-secondary small mb-3" style="max-width: 480px; margin: 0 auto;">
+      Đề thi này chưa có học viên nào tham gia làm bài. Dữ liệu phổ điểm, tỷ lệ đạt và thời gian hoàn thành sẽ tự động tổng hợp ngay khi có bài nộp đầu tiên.
+    </p>
+    <div>
+      <a href="{{ url_for('admin.exams_list') }}" class="btn btn-outline-primary btn-sm rounded-pill px-3.5 py-1.5 fw-semibold d-inline-flex align-items-center gap-1.5">
+        <i class="ph-bold ph-arrow-left"></i>
+        <span>Quay lại danh sách đề thi</span>
+      </a>
+    </div>
+  </div>
+  {% else %}
   <div class="card-modern p-0 overflow-hidden">
     <div class="p-3.5 px-4 border-bottom d-flex align-items-center gap-2">
       <i class="ph-bold ph-clock-counter-clockwise text-primary fs-5"></i>
@@ -139,6 +156,7 @@
       </table>
     </div>
   </div>
+  {% endif %}
 
 </div>
 {% endblock %}

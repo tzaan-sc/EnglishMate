@@ -69,6 +69,7 @@ class Exam(db.Model):
     question_bank = db.Column(db.String(80), nullable=False, default="General")
     selection_type = db.Column(db.String(20), nullable=False, default="random")
     selected_question_ids = db.Column(db.Text, nullable=True)
+    part_distribution = db.Column(db.JSON, nullable=True)  # e.g., {"part5": 30, "part6": 16, "part7": 54}
     question_count = db.Column(db.Integer, nullable=False, default=10)
     is_published = db.Column(db.Boolean, nullable=False, default=True)
     is_active = db.Column(db.Boolean, default=True)

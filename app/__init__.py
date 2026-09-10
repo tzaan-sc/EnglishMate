@@ -36,6 +36,31 @@ def create_app(config_object=Config):
     app.register_blueprint(admin_bp)
     app.register_blueprint(exams_bp)
 
+    with app.app_context():
+        try:
+            from sqlalchemy import inspect, text
+            with db.engine.connect() as conn:
+                is_pg = "postgresql" in str(db.engine.url)
+                if is_pg:
+                    conn.execute(text("ALTER TABLE exam ADD COLUMN IF NOT EXISTS part_distribution JSON;"))
+                    conn.execute(text("ALTER TABLE lesson ADD COLUMN IF NOT EXISTS skill_data JSON;"))
+                    conn.commit()
+                elif "sqlite" in str(db.engine.url):
+                    insp = inspect(db.engine)
+                    tables = insp.get_table_names()
+                    if "exam" in tables:
+                        cols = [c["name"] for c in insp.get_columns("exam")]
+                        if "part_distribution" not in cols:
+                            conn.execute(text("ALTER TABLE exam ADD COLUMN part_distribution JSON;"))
+                            conn.commit()
+                    if "lesson" in tables:
+                        cols = [c["name"] for c in insp.get_columns("lesson")]
+                        if "skill_data" not in cols:
+                            conn.execute(text("ALTER TABLE lesson ADD COLUMN skill_data JSON;"))
+                            conn.commit()
+        except Exception:
+            pass
+
     @app.context_processor
     def inject_streak_event():
         from flask import session

@@ -56,18 +56,42 @@
       <span class="d-inline-flex align-items-center gap-1"><i class="ph-bold ph-shuffle text-secondary"></i> Kiểu chọn: <strong>{{ 'Ngẫu nhiên' if exam.selection_type=='random' else 'Thủ công' }}</strong></span>
     </div>
 
+    {% if exam.part_distribution %}
+    <div class="d-flex flex-wrap align-items-center gap-2 mb-3 pt-2 border-top">
+      <span class="small fw-semibold text-secondary">Phân bổ TOEIC:</span>
+      <span class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill px-2.5 py-1">Part 5: {{ exam.part_distribution.get('part5', 30) }} câu</span>
+      <span class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill px-2.5 py-1">Part 6: {{ exam.part_distribution.get('part6', 16) }} câu</span>
+      <span class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill px-2.5 py-1">Part 7: {{ exam.part_distribution.get('part7', 54) }} câu</span>
+    </div>
+    {% endif %}
+
     <div class="alert alert-info border-0 rounded-3 mb-0 d-flex align-items-center gap-2">
       <i class="ph-bold ph-info fs-5 flex-shrink-0"></i>
-      <div>Đây là giao diện xem trước cấu trúc câu hỏi của đề thi dành cho Admin. Nội dung câu hỏi sẽ được xáo trộn hoặc lấy từ Ngân hàng <strong>{{ exam.question_bank }}</strong> khi học viên bắt đầu thi.</div>
+      <div>Đây là giao diện xem trước cấu trúc câu hỏi của đề thi dành cho Admin. Nội dung câu hỏi được trích xuất trực tiếp từ các câu hỏi đã gán hoặc từ Ngân hàng <strong>{{ exam.question_bank }}</strong> tương ứng.</div>
     </div>
   </div>
 
   <!-- Questions List Preview -->
   <h5 class="fw-bold text-dark mb-3 d-flex align-items-center gap-2">
     <i class="ph-bold ph-list-bullets text-primary"></i>
-    <span>Danh Sách Câu Hỏi Trong Đề Thi ({{ questions|length }} câu hỏi xem trước)</span>
+    <span>Danh Sách Câu Hỏi Trong Đề Thi ({{ questions|length }} câu hỏi)</span>
   </h5>
 
+  {% if questions|length == 0 %}
+  <div class="card-modern p-5 text-center">
+    <div class="rounded-circle bg-secondary-subtle text-secondary mx-auto d-flex align-items-center justify-content-center mb-3" style="width: 64px; height: 64px;">
+      <i class="ph ph-file-dashed fs-2"></i>
+    </div>
+    <h5 class="fw-bold text-dark mb-1">Chưa Có Câu Hỏi Nào Trong Ngân Hàng</h5>
+    <p class="text-secondary small mb-3">Đề thi chưa liên kết với câu hỏi cụ thể hoặc ngân hàng câu hỏi hiện tại chưa có dữ liệu tương thích.</p>
+    <div>
+      <a href="{{ url_for('admin.exam_edit', exam_id=exam.id) }}" class="btn btn-outline-primary btn-sm rounded-pill px-3.5 py-1.5 fw-semibold d-inline-flex align-items-center gap-1.5">
+        <i class="ph-bold ph-pencil-simple"></i>
+        <span>Chỉnh sửa cấu hình đề thi</span>
+      </a>
+    </div>
+  </div>
+  {% else %}
   <div class="d-flex flex-column gap-3">
     {% for q in questions %}
     <div class="card-modern p-4">
@@ -95,6 +119,7 @@
     </div>
     {% endfor %}
   </div>
+  {% endif %}
 
 </div>
 {% endblock %}

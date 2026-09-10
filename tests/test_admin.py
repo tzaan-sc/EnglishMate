@@ -102,3 +102,69 @@ def test_admin_lesson_create_with_skill_data_json(client, app):
     assert "Listening Studio Practice Lesson".encode() in student_res.data
 
 
+def test_admin_exam_crud_and_toeic_distribution(client, app):
+    login(client, "admin@test.com", "admin123")
+
+    # 1. Create a TOEIC exam with Part 5, 6, 7 distribution
+    create_res = client.post("/admin/exams/new", data={
+        "title": "TOEIC Full Practice Test 2026",
+        "category": "TOEIC",
+        "difficulty": "Medium",
+        "duration_minutes": 75,
+        "question_count": 100,
+        "question_bank": "TOEIC Bank",
+        "selection_type": "random",
+        "part5_count": 30,
+        "part6_count": 16,
+        "part7_count": 54,
+        "is_published": "y"
+    }, follow_redirects=True)
+    assert create_res.status_code == 200
+
+    with app.app_context():
+        from app.modules.exams.models import Exam
+        exam = Exam.query.filter_by(title="TOEIC Full Practice Test 2026").first()
+        assert exam is not None
+        assert exam.part_distribution is not None
+        assert exam.part_distribution.get("part5") == 30
+        assert exam.part_distribution.get("part6") == 16
+        assert exam.part_distribution.get("part7") == 54
+        assert exam.question_count == 100
+        assert exam.is_published is True
+        exam_id = exam.id
+
+    # 2. Test AJAX toggle publish status
+    ajax_toggle = client.post(f"/admin/exams/{exam_id}/toggle-publish-ajax")
+    assert ajax_toggle.status_code == 200
+    toggle_data = ajax_toggle.get_json()
+    assert toggle_data["success"] is True
+    assert toggle_data["is_published"] is False
+    assert toggle_data["status_label"] == "Bản nháp"
+
+    # Toggle back
+    ajax_toggle2 = client.post(f"/admin/exams/{exam_id}/toggle-publish-ajax")
+    assert ajax_toggle2.status_code == 200
+    toggle_data2 = ajax_toggle2.get_json()
+    assert toggle_data2["is_published"] is True
+
+    # 3. Test AJAX quick preview endpoint
+    preview_res = client.get(f"/admin/exams/{exam_id}/quick-preview")
+    assert preview_res.status_code == 200
+    preview_data = preview_res.get_json()
+    assert preview_data["success"] is True
+    assert preview_data["title"] == "TOEIC Full Practice Test 2026"
+    assert preview_data["part_distribution"]["part5"] == 30
+
+    # 4. Test Zero State Analytics (no fake attempts borrowed)
+    stats_res = client.get(f"/admin/exams/{exam_id}/stats")
+    assert stats_res.status_code == 200
+    assert "Chưa Có Lượt Thi Nào Được Ghi Nhận".encode() in stats_res.data
+    assert "Tổng lượt làm bài".encode() in stats_res.data
+
+    # 5. Test Exam Filter Toolbar
+    filter_res = client.get("/admin/exams?category=TOEIC&difficulty=Medium&status=published")
+    assert filter_res.status_code == 200
+    assert "TOEIC Full Practice Test 2026".encode() in filter_res.data
+
+
+

@@ -595,27 +595,88 @@ def ensure_initial_admin_exams():
     db.session.commit()
 
 
+def _get_exam_questions(exam):
+    """Lấy danh sách câu hỏi chuẩn xác cho đề thi."""
+    # 1. Kiểm tra câu hỏi trực tiếp liên kết qua ExamQuestion
+    direct_questions = exam.questions.all()
+    if direct_questions:
+        return direct_questions
+
+    # 2. Kiểm tra danh sách ID được cấu hình trong selected_question_ids
+    if exam.selected_question_ids:
+        try:
+            ids = [int(x.strip()) for x in exam.selected_question_ids.split(",") if x.strip().isdigit()]
+            if ids:
+                matched = Question.query.filter(Question.id.in_(ids)).all()
+                if matched:
+                    return matched
+        except Exception:
+            pass
+
+    # 3. Lọc câu hỏi theo Question Bank hoặc Category
+    bank_name = exam.question_bank or exam.category
+    if bank_name and bank_name != "General":
+        matched_by_bank = Question.query.filter(Question.topic.ilike(f"%{bank_name}%")).limit(exam.question_count).all()
+        if matched_by_bank:
+            return matched_by_bank
+
+    # 4. Fallback theo độ khó
+    matched_by_diff = Question.query.filter(Question.level == exam.difficulty).limit(exam.question_count).all()
+    if matched_by_diff:
+        return matched_by_diff
+
+    return Question.query.limit(exam.question_count).all()
+
+
 @bp.route("/exams")
 @admin_required
 def exams_list():
     ensure_initial_admin_exams()
-    exams_data = Exam.query.order_by(Exam.id.desc()).all()
+    search = request.args.get("search", request.args.get("q", "")).strip()
+    category = request.args.get("category", "").strip()
+    difficulty = request.args.get("difficulty", "").strip()
+    status = request.args.get("status", "").strip()
 
-    total_exams = len(exams_data)
-    published_count = sum(1 for e in exams_data if e.is_published)
+    query = Exam.query.filter_by(is_active=True)
+    if search:
+        query = query.filter(Exam.title.ilike(f"%{search}%") | Exam.question_bank.ilike(f"%{search}%"))
+    if category and category != "All":
+        query = query.filter_by(category=category)
+    if difficulty and difficulty != "All":
+        query = query.filter_by(difficulty=difficulty)
+    if status == "published":
+        query = query.filter_by(is_published=True)
+    elif status == "draft":
+        query = query.filter_by(is_published=False)
+
+    total_exams = Exam.query.filter_by(is_active=True).count()
+    published_count = Exam.query.filter_by(is_active=True, is_published=True).count()
+    draft_count = total_exams - published_count
     total_attempts = QuizAttempt.query.count()
 
     stats_overview = {
         "total_exams": total_exams,
         "published_count": published_count,
-        "draft_count": total_exams - published_count,
+        "draft_count": draft_count,
         "total_attempts": total_attempts
     }
+
+    exams_data = query.order_by(Exam.id.desc()).all()
+
+    # Danh mục phong phú theo chuẩn hệ thống
+    default_categories = ["TOEIC", "IELTS", "TOEFL", "Placement", "Progress", "Timed", "Mock", "Custom"]
+    existing_cats = [c[0] for c in db.session.query(Exam.category).filter(Exam.is_active==True).distinct().all() if c[0]]
+    all_categories = sorted(list(set(default_categories + existing_cats)))
 
     return render_template(
         "admin/exams.html",
         exams=exams_data,
         stats=stats_overview,
+        search=search,
+        category=category,
+        difficulty=difficulty,
+        status=status,
+        all_categories=all_categories,
         form=ConfirmForm()
     )
 
@@ -634,9 +695,24 @@ def exam_create():
         question_count = int(request.form.get("question_count", 10))
         is_published = bool(request.form.get("is_published"))
 
+        # Cấu hình ma trận Part cho đề thi TOEIC
+        part_dist = None
+        if category == "TOEIC":
+            try:
+                p5 = int(request.form.get("part5_count", 30))
+                p6 = int(request.form.get("part6_count", 16))
+                p7 = int(request.form.get("part7_count", 54))
+                part_dist = {"part5": p5, "part6": p6, "part7": p7}
+                question_count = p5 + p6 + p7
+                if duration_minutes <= 15:
+                    duration_minutes = 75  # Chuẩn TOEIC Reading
+            except (ValueError, TypeError):
+                part_dist = {"part5": 30, "part6": 16, "part7": 54}
+                question_count = 100
+
         if not title:
             flash("Vui lòng nhập tiêu đề đề thi.", "danger")
-            return render_template("admin/exam_form.html", title="Tạo đề thi mới", form=ConfirmForm())
+            return render_template("admin/exam_form.html", title="Tạo đề thi mới", exam=None, form=ConfirmForm())
 
         exam = Exam(
             title=title,
@@ -646,6 +722,7 @@ def exam_create():
             question_bank=question_bank,
             selection_type=selection_type,
             selected_question_ids=selected_ids,
+            part_distribution=part_dist,
             question_count=question_count,
             is_published=is_published
         )
@@ -671,8 +748,19 @@ def exam_edit(exam_id):
         exam.question_bank = request.form.get("question_bank", exam.question_bank).strip()
         exam.selection_type = request.form.get("selection_type", exam.selection_type).strip()
         exam.selected_question_ids = request.form.get("selected_question_ids", "").strip()
-        exam.question_count = int(request.form.get("question_count", exam.question_count))
         exam.is_published = bool(request.form.get("is_published"))
+
+        if exam.category == "TOEIC":
+            try:
+                p5 = int(request.form.get("part5_count", 30))
+                p6 = int(request.form.get("part6_count", 16))
+                p7 = int(request.form.get("part7_count", 54))
+                exam.part_distribution = {"part5": p5, "part6": p6, "part7": p7}
+                exam.question_count = p5 + p6 + p7
+            except (ValueError, TypeError):
+                pass
+        else:
+            exam.question_count = int(request.form.get("question_count", exam.question_count))
 
         db.session.commit()
         flash(f"Đã cập nhật đề thi '{exam.title}'.", "success")
@@ -693,6 +781,69 @@ def exam_toggle_publish(exam_id):
     return redirect(url_for("admin.exams_list"))
 
 
+@bp.post("/exams/<int:exam_id>/toggle-publish-ajax")
+@admin_required
+def exam_toggle_publish_ajax(exam_id):
+    from flask import jsonify
+    exam = db.get_or_404(Exam, exam_id)
+    exam.is_published = not exam.is_published
+    db.session.commit()
+
+    total_exams = Exam.query.filter_by(is_active=True).count()
+    published_count = Exam.query.filter_by(is_active=True, is_published=True).count()
+    draft_count = total_exams - published_count
+
+    return jsonify({
+        "success": True,
+        "is_published": exam.is_published,
+        "status_label": "Đã xuất bản" if exam.is_published else "Bản nháp",
+        "total_exams": total_exams,
+        "published_count": published_count,
+        "draft_count": draft_count,
+        "msg": f"Đã xuất bản '{exam.title}'." if exam.is_published else f"Đã chuyển '{exam.title}' về trạng thái nháp."
+    })
+
+
+@bp.get("/exams/<int:exam_id>/quick-preview")
+@admin_required
+def exam_quick_preview(exam_id):
+    from flask import jsonify
+    exam = db.get_or_404(Exam, exam_id)
+    questions = _get_exam_questions(exam)
+
+    samples = []
+    for idx, q in enumerate(questions[:4]):
+        q_text = getattr(q, "question_text", None) or getattr(q, "question", "")
+        opt_a = getattr(q, "option_a", "")
+        opt_b = getattr(q, "option_b", "")
+        opt_c = getattr(q, "option_c", "")
+        opt_d = getattr(q, "option_d", "")
+        ans = getattr(q, "correct_answer", None) or getattr(q, "correct_option", "")
+        samples.append({
+            "idx": idx + 1,
+            "text": q_text,
+            "options": [opt_a, opt_b, opt_c, opt_d],
+            "correct": ans
+        })
+
+    return jsonify({
+        "success": True,
+        "id": exam.id,
+        "title": exam.title,
+        "category": exam.category,
+        "duration_minutes": exam.duration_minutes,
+        "difficulty": exam.difficulty,
+        "question_count": exam.question_count,
+        "is_published": exam.is_published,
+        "part_distribution": exam.part_distribution or {},
+        "total_fetched": len(questions),
+        "samples": samples,
+        "edit_url": url_for("admin.exam_edit", exam_id=exam.id),
+        "stats_url": url_for("admin.exam_stats_analytics", exam_id=exam.id),
+        "full_preview_url": url_for("admin.exam_detail_preview", exam_id=exam.id),
+    })
+
+
 @bp.post("/exams/<int:exam_id>/delete")
 @admin_required
 def exam_delete(exam_id):
@@ -709,7 +860,7 @@ def exam_delete(exam_id):
 @admin_required
 def exam_detail_preview(exam_id):
     exam = db.get_or_404(Exam, exam_id)
-    questions = Question.query.limit(exam.question_count).all()
+    questions = _get_exam_questions(exam)
 
     return render_template("admin/exam_preview.html", exam=exam, questions=questions)
 
@@ -718,26 +869,36 @@ def exam_detail_preview(exam_id):
 @admin_required
 def exam_stats_analytics(exam_id):
     exam = db.get_or_404(Exam, exam_id)
+    # Lấy chính xác các lượt làm bài cho đề thi này (không mượn bài khác)
     attempts = QuizAttempt.query.filter_by(topic=exam.title).order_by(QuizAttempt.created_at.desc()).all()
-    if not attempts:
-        attempts = QuizAttempt.query.order_by(QuizAttempt.created_at.desc()).limit(10).all()
 
     total_att = len(attempts)
-    avg_score = round(sum(a.score for a in attempts) / total_att, 1) if total_att > 0 else 0
-    total_q = sum(a.total_questions for a in attempts)
-    avg_acc = int((sum(a.score for a in attempts) / total_q) * 100) if total_q > 0 else 0
-    pass_count = sum(1 for a in attempts if (a.score / a.total_questions) >= 0.6) if total_q > 0 else 0
-    pass_rate = int((pass_count / total_att) * 100) if total_att > 0 else 0
-    avg_duration = int(sum(a.duration_seconds or 0 for a in attempts) / total_att) if total_att > 0 else 0
+    if total_att == 0:
+        # Zero State sạch sẽ: Không fake data!
+        analytics = {
+            "total_attempts": 0,
+            "avg_score": 0,
+            "avg_acc": 0,
+            "pass_count": 0,
+            "pass_rate": 0,
+            "avg_duration": 0
+        }
+    else:
+        avg_score = round(sum(a.score for a in attempts) / total_att, 1)
+        total_q = sum(a.total_questions for a in attempts)
+        avg_acc = int((sum(a.score for a in attempts) / total_q) * 100) if total_q > 0 else 0
+        pass_count = sum(1 for a in attempts if (a.score / a.total_questions) >= 0.6) if total_q > 0 else 0
+        pass_rate = int((pass_count / total_att) * 100)
+        avg_duration = int(sum(a.duration_seconds or 0 for a in attempts) / total_att)
 
-    analytics = {
-        "total_attempts": total_att,
-        "avg_score": avg_score,
-        "avg_acc": avg_acc,
-        "pass_count": pass_count,
-        "pass_rate": pass_rate,
-        "avg_duration": avg_duration
-    }
+        analytics = {
+            "total_attempts": total_att,
+            "avg_score": avg_score,
+            "avg_acc": avg_acc,
+            "pass_count": pass_count,
+            "pass_rate": pass_rate,
+            "avg_duration": avg_duration
+        }
 
     return render_template("admin/exam_stats.html", exam=exam, attempts=attempts, analytics=analytics)
 

@@ -23,11 +23,11 @@
   <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
     <div>
       <h4 class="fw-bold text-dark mb-1" style="font-size: 1.35rem; letter-spacing: -0.01em;">Quản Lý Đề Thi</h4>
-      <p class="text-secondary small mb-0">Quản trị danh mục đề thi TOEIC / IELTS, xuất bản bài thi và xem báo cáo phân tích</p>
+      <p class="text-secondary small mb-0">Quản trị danh mục đề thi TOEIC, IELTS, TOEFL, bài kiểm tra xếp lớp và xuất bản bài thi học viên</p>
     </div>
 
     <div class="d-flex gap-2">
-      <a href="{{ url_for('admin.exam_upload') }}" class="btn btn-light border fw-semibold text-secondary px-3 py-2 rounded-3 shadow-2xs d-inline-flex align-items-center gap-1.5" style="font-size: 0.88rem;">
+      <a href="{{ url_for('admin.exam_upload') }}" class="btn btn-light border fw-semibold text-secondary px-3.5 py-2 rounded-3 shadow-2xs d-inline-flex align-items-center gap-1.5" style="font-size: 0.88rem;">
         <i class="ph-bold ph-file-arrow-up text-primary"></i>
         <span>Upload đề thi từ file</span>
       </a>
@@ -43,19 +43,19 @@
     <div class="col-md-3 col-6">
       <div class="card-modern p-3.5 text-center">
         <span class="text-secondary small fw-bold d-block mb-1" style="font-size: 0.76rem;">Tổng đề thi</span>
-        <h3 class="fw-800 text-primary mb-0" style="font-size: 1.5rem;">{{ stats.total_exams }}</h3>
+        <h3 class="fw-800 text-primary mb-0" id="statTotalExams" style="font-size: 1.5rem;">{{ stats.total_exams }}</h3>
       </div>
     </div>
     <div class="col-md-3 col-6">
       <div class="card-modern p-3.5 text-center">
         <span class="text-secondary small fw-bold d-block mb-1" style="font-size: 0.76rem;">Đã xuất bản</span>
-        <h3 class="fw-800 text-success mb-0" style="font-size: 1.5rem;">{{ stats.published_count }}</h3>
+        <h3 class="fw-800 text-success mb-0" id="statPublishedExams" style="font-size: 1.5rem;">{{ stats.published_count }}</h3>
       </div>
     </div>
     <div class="col-md-3 col-6">
       <div class="card-modern p-3.5 text-center">
         <span class="text-secondary small fw-bold d-block mb-1" style="font-size: 0.76rem;">Bản nháp</span>
-        <h3 class="fw-800 text-warning mb-0" style="font-size: 1.5rem;">{{ stats.draft_count }}</h3>
+        <h3 class="fw-800 text-warning mb-0" id="statDraftExams" style="font-size: 1.5rem;">{{ stats.draft_count }}</h3>
       </div>
     </div>
     <div class="col-md-3 col-6">
@@ -66,74 +66,161 @@
     </div>
   </div>
 
+  <!-- Filter & Search Toolbar (No auto-reload to avoid jitter) -->
+  <div class="card-modern p-3.5 mb-4">
+    <form method="get" action="{{ url_for('admin.exams_list') }}" class="row g-2.5 align-items-center">
+      <!-- Search Input -->
+      <div class="col-12 col-lg-4">
+        <div class="input-group input-group-sm">
+          <span class="input-group-text bg-white border-end-0 text-muted ps-2.5">
+            <i class="ph-bold ph-magnifying-glass"></i>
+          </span>
+          <input type="text" name="search" value="{{ search }}" class="form-control border-start-0 ps-1" placeholder="Tìm theo tên đề thi, chủ đề...">
+          {% if search %}
+          <a href="{{ url_for('admin.exams_list', category=category, difficulty=difficulty, status=status) }}" class="btn btn-light border border-start-0 text-muted" title="Xóa từ khóa">
+            <i class="ph-bold ph-x"></i>
+          </a>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- Category Filter -->
+      <div class="col-6 col-md-3 col-lg-2">
+        <select name="category" class="form-select form-select-sm">
+          <option value="">Tất cả danh mục</option>
+          {% for cat in all_categories %}
+          <option value="{{ cat }}" {{ 'selected' if category == cat }}>{{ cat }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <!-- Difficulty Filter -->
+      <div class="col-6 col-md-3 col-lg-2">
+        <select name="difficulty" class="form-select form-select-sm">
+          <option value="">Tất cả độ khó</option>
+          <option value="Easy" {{ 'selected' if difficulty == 'Easy' }}>Easy (Dễ)</option>
+          <option value="Medium" {{ 'selected' if difficulty == 'Medium' }}>Medium (Trung bình)</option>
+          <option value="Hard" {{ 'selected' if difficulty == 'Hard' }}>Hard (Nâng cao)</option>
+        </select>
+      </div>
+
+      <!-- Status Filter -->
+      <div class="col-6 col-md-3 col-lg-2">
+        <select name="status" class="form-select form-select-sm">
+          <option value="">Tất cả trạng thái</option>
+          <option value="published" {{ 'selected' if status == 'published' }}>Đã xuất bản</option>
+          <option value="draft" {{ 'selected' if status == 'draft' }}>Bản nháp</option>
+        </select>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="col-6 col-md-3 col-lg-2 d-flex gap-1.5">
+        <button type="submit" class="btn btn-sm btn-dark fw-bold w-100 d-inline-flex align-items-center justify-content-center gap-1">
+          <i class="ph-bold ph-funnel"></i>
+          <span>Lọc</span>
+        </button>
+        {% if search or category or difficulty or status %}
+        <a href="{{ url_for('admin.exams_list') }}" class="btn btn-sm btn-light border text-secondary fw-semibold px-2.5" title="Đặt lại bộ lọc">
+          <i class="ph-bold ph-arrow-counter-clockwise"></i>
+        </a>
+        {% endif %}
+      </div>
+    </form>
+  </div>
+
   <!-- Exams Table Card -->
-  <div class="card-modern p-4">
-    <div class="table-responsive border rounded-3 overflow-hidden">
+  <div class="card-modern p-0 overflow-hidden">
+    <div class="table-responsive">
       <table class="table table-hover align-middle mb-0" style="font-size: 0.88rem;">
-        <thead class="table-light">
+        <thead class="table-light border-bottom">
           <tr>
-            <th class="ps-3" style="width: 80px;">ID</th>
-            <th style="min-width: 220px;">Tiêu đề đề thi</th>
-            <th class="text-center" style="width: 120px;">Danh mục</th>
-            <th class="text-center" style="width: 110px;">Thời lượng</th>
-            <th class="text-center" style="width: 100px;">Độ khó</th>
-            <th class="text-center" style="width: 100px;">Số câu</th>
-            <th class="text-center" style="width: 120px;">Trạng thái</th>
-            <th class="text-end pe-3" style="min-width: 160px;">Thao tác</th>
+            <th class="py-3 ps-3 text-center" style="width: 70px;">ID</th>
+            <th class="py-3" style="min-width: 250px;">Tiêu đề đề thi & Ma trận</th>
+            <th class="py-3 text-center" style="width: 120px;">Danh mục</th>
+            <th class="py-3 text-center" style="width: 110px;">Thời lượng</th>
+            <th class="py-3 text-center" style="width: 100px;">Độ khó</th>
+            <th class="py-3 text-center" style="width: 90px;">Số câu</th>
+            <th class="py-3 text-center" style="width: 130px;">Trạng thái</th>
+            <th class="py-3 text-end pe-3" style="min-width: 180px;">Thao tác</th>
           </tr>
         </thead>
         <tbody>
           {% for e in exams %}
-          <tr>
-            <td class="ps-3 font-monospace text-muted small">#{{ e.id }}</td>
-            <td>
-              <div class="fw-bold text-dark">{{ e.title }}</div>
-              <small class="text-muted font-monospace" style="font-size: 0.75rem;">Bank: {{ e.question_bank }}</small>
+          <tr id="examRow-{{ e.id }}">
+            <td class="ps-3 text-center">
+              <span class="badge bg-light text-secondary border rounded-pill px-2 py-1 font-monospace">#{{ e.id }}</span>
             </td>
-            <td class="text-center"><span class="badge bg-secondary-subtle text-secondary border rounded-pill px-2.5 py-1 font-semibold">{{ e.category }}</span></td>
-            <td class="text-center"><span class="fw-semibold text-secondary small">{{ e.duration_minutes }} phút</span></td>
+            <td>
+              <div class="fw-bold text-dark mb-0.5">{{ e.title }}</div>
+              <div class="d-flex align-items-center gap-1.5 flex-wrap">
+                {% if e.category == 'TOEIC' and e.part_distribution %}
+                <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle rounded-pill small" style="font-size: 0.72rem;">
+                  Part 5: {{ e.part_distribution.part5 or 30 }}q | Part 6: {{ e.part_distribution.part6 or 16 }}q | Part 7: {{ e.part_distribution.part7 or 54 }}q
+                </span>
+                {% elif e.question_bank and e.question_bank != 'General' %}
+                <span class="badge bg-light text-secondary border rounded-pill small font-monospace" style="font-size: 0.72rem;">Bank: {{ e.question_bank }}</span>
+                {% endif %}
+              </div>
+            </td>
+            <td class="text-center">
+              <span class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill px-2.5 py-1 font-semibold">
+                {{ e.category }}
+              </span>
+            </td>
+            <td class="text-center">
+              <span class="fw-semibold text-secondary small d-inline-flex align-items-center gap-1">
+                <i class="ph-bold ph-clock"></i>{{ e.duration_minutes }}p
+              </span>
+            </td>
             <td class="text-center">
               <span class="badge {{ 'bg-success-subtle text-success border border-success-subtle' if e.difficulty=='Easy' else ('bg-warning-subtle text-warning-emphasis border border-warning-subtle' if e.difficulty=='Medium' else 'bg-danger-subtle text-danger border border-danger-subtle') }} rounded-pill px-2.5 py-1 font-semibold">
                 {{ e.difficulty }}
               </span>
             </td>
-            <td class="text-center"><span class="fw-bold text-dark font-monospace">{{ e.question_count }}</span></td>
             <td class="text-center">
-              {% if e.is_published %}
-              <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-2.5 py-1 font-semibold">Đã xuất bản</span>
-              {% else %}
-              <span class="badge bg-secondary-subtle text-secondary border rounded-pill px-2.5 py-1 font-semibold">Bản nháp</span>
-              {% endif %}
+              <span class="fw-bold text-dark font-monospace">{{ e.question_count }}</span>
+            </td>
+            <td class="text-center">
+              <span id="statusBadge-{{ e.id }}" class="badge {{ 'bg-success-subtle text-success border border-success-subtle' if e.is_published else 'bg-secondary-subtle text-secondary border' }} rounded-pill px-2.5 py-1 font-semibold">
+                {{ 'Đã xuất bản' if e.is_published else 'Bản nháp' }}
+              </span>
             </td>
             <td class="text-end pe-3">
-              <div class="d-inline-flex gap-1">
-                <!-- Preview -->
-                <a href="{{ url_for('admin.exam_detail_preview', exam_id=e.id) }}" class="btn btn-sm btn-light border text-secondary shadow-2xs px-2" title="Xem trước đề thi">
-                  <i class="ph-bold ph-eye"></i>
-                </a>
+              <div class="d-inline-flex gap-1.5 align-items-center">
+                <!-- Quick Preview Modal Button (Zero reload, zero jump) -->
+                <button type="button" 
+                        class="btn btn-sm btn-light border text-secondary shadow-2xs px-2.5 py-1 d-inline-flex align-items-center gap-1 btn-exam-preview" 
+                        data-id="{{ e.id }}" 
+                        title="Xem nhanh nội dung đề thi">
+                  <i class="ph-bold ph-eye text-primary"></i>
+                  <span>Xem</span>
+                </button>
                 
                 <!-- Edit -->
-                <a href="{{ url_for('admin.exam_edit', exam_id=e.id) }}" class="btn btn-sm btn-light border text-primary shadow-2xs px-2" title="Chỉnh sửa">
+                <a href="{{ url_for('admin.exam_edit', exam_id=e.id) }}" class="btn btn-sm btn-light border text-primary shadow-2xs px-2.5 py-1 d-inline-flex align-items-center gap-1" title="Chỉnh sửa đề thi">
                   <i class="ph-bold ph-pencil-simple"></i>
+                  <span>Sửa</span>
                 </a>
                 
-                <!-- Toggle Publish -->
-                <form action="{{ url_for('admin.exam_toggle_publish', exam_id=e.id) }}" method="POST" class="d-inline m-0">
-                  {{ form.hidden_tag() }}
-                  <button type="submit" class="btn btn-sm btn-light border {% if e.is_published %}text-warning{% else %}text-success{% endif %} shadow-2xs px-2" title="{{ 'Ẩn đề thi' if e.is_published else 'Xuất bản' }}">
-                    <i class="ph-bold {% if e.is_published %}ph-lock{% else %}ph-globe{% endif %}"></i>
-                  </button>
-                </form>
+                <!-- Toggle Publish (AJAX smooth, no flicker) -->
+                <button type="button" 
+                        class="btn btn-sm btn-light border shadow-2xs px-2.5 py-1 d-inline-flex align-items-center gap-1 btn-toggle-publish"
+                        data-id="{{ e.id }}"
+                        data-url="{{ url_for('admin.exam_toggle_publish_ajax', exam_id=e.id) }}"
+                        title="Bật/Tắt trạng thái xuất bản">
+                  <i id="toggleIcon-{{ e.id }}" class="ph-bold {{ 'ph-check-circle text-success' if e.is_published else 'ph-pause-circle text-secondary' }}"></i>
+                  <span id="toggleText-{{ e.id }}">{{ 'Ẩn' if e.is_published else 'Mở' }}</span>
+                </button>
 
                 <!-- Stats Analytics -->
-                <a href="{{ url_for('admin.exam_stats_analytics', exam_id=e.id) }}" class="btn btn-sm btn-light border text-info shadow-2xs px-2" title="Xem thống kê">
+                <a href="{{ url_for('admin.exam_stats_analytics', exam_id=e.id) }}" class="btn btn-sm btn-light border text-info shadow-2xs px-2 py-1" title="Xem phân tích hiệu suất">
                   <i class="ph-bold ph-chart-line-up"></i>
                 </a>
 
                 <!-- Delete -->
-                <form action="{{ url_for('admin.exam_delete', exam_id=e.id) }}" method="POST" class="d-inline m-0" onsubmit="return confirm('Bạn có chắc chắn muốn xóa đề thi này?');">
+                <form action="{{ url_for('admin.exam_delete', exam_id=e.id) }}" method="POST" class="d-inline m-0" onsubmit="return confirm('Bạn có chắc chắn muốn xóa đề thi \'{{ e.title }}\'?');">
                   {{ form.hidden_tag() }}
-                  <button type="submit" class="btn btn-sm btn-light border text-danger shadow-2xs px-2" title="Xóa đề thi">
+                  <button type="submit" class="btn btn-sm btn-light border text-danger shadow-2xs px-2 py-1" title="Xóa đề thi">
                     <i class="ph-bold ph-trash"></i>
                   </button>
                 </form>
@@ -144,7 +231,13 @@
           <tr>
             <td colspan="8" class="text-center py-5 text-muted">
               <i class="ph-bold ph-folder-notch-open fs-2 d-block mb-2 text-secondary opacity-50"></i>
-              <span>Chưa có đề thi nào trong hệ thống.</span>
+              <div class="fw-semibold">Không tìm thấy đề thi nào phù hợp.</div>
+              {% if search or category or difficulty or status %}
+              <small class="text-muted d-block mt-1">Thử xóa bộ lọc hoặc tìm với từ khóa khác.</small>
+              <a href="{{ url_for('admin.exams_list') }}" class="btn btn-sm btn-outline-secondary rounded-pill px-3 mt-2">
+                <i class="ph-bold ph-arrow-counter-clockwise me-1"></i>Xóa bộ lọc
+              </a>
+              {% endif %}
             </td>
           </tr>
           {% endfor %}
@@ -154,4 +247,198 @@
   </div>
 
 </div>
+
+<!-- QUICK PREVIEW MODAL (ZERO RELOAD, ZERO JITTER) -->
+<div class="modal fade" id="adminExamPreviewModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+    <div class="modal-content border-0 shadow-lg rounded-4">
+      <div class="modal-header border-bottom py-3 px-4">
+        <div>
+          <div class="d-flex align-items-center gap-2 mb-1">
+            <span id="prevExamCategory" class="badge bg-primary-subtle text-primary border rounded-pill px-2.5 py-0.5 font-semibold">Category</span>
+            <span id="prevExamDifficulty" class="badge bg-light text-secondary border rounded-pill px-2.5 py-0.5 font-semibold">Difficulty</span>
+            <span id="prevExamDuration" class="badge bg-light text-dark border rounded-pill px-2.5 py-0.5 font-semibold">-- phút</span>
+          </div>
+          <h5 class="modal-title fw-bold text-dark mb-0" id="prevExamTitle">Tiêu đề đề thi</h5>
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+
+      <div class="modal-body p-4">
+        <!-- TOEIC Part Matrix Banner (If Applicable) -->
+        <div id="prevToeicMatrixBox" class="p-3 bg-light rounded-3 mb-3 border" style="display: none;">
+          <span class="text-muted small fw-bold text-uppercase d-block mb-1" style="font-size: 0.72rem; letter-spacing: 0.05em;">Ma trận cấu trúc phần thi TOEIC</span>
+          <div class="d-flex gap-2 flex-wrap" id="prevToeicMatrixBadges"></div>
+        </div>
+
+        <!-- Sample Questions Preview -->
+        <div>
+          <div class="d-flex justify-content-between align-items-center mb-2">
+            <span class="text-muted small fw-bold text-uppercase" style="font-size: 0.72rem; letter-spacing: 0.05em;">Câu hỏi mẫu trong đề</span>
+            <span id="prevTotalQuestionsCount" class="badge bg-light text-secondary border rounded-pill small">Tổng: -- câu</span>
+          </div>
+          <div id="prevQuestionsContainer" class="d-flex flex-column gap-3" style="max-height: 320px; overflow-y: auto;">
+            <p class="text-muted small mb-0">Đang tải câu hỏi...</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer border-top py-2.5 px-4 d-flex justify-content-between">
+        <button type="button" class="btn btn-light border rounded-pill px-3.5 py-1.5 fw-semibold text-secondary" data-bs-dismiss="modal">
+          Đóng
+        </button>
+        <div class="d-flex gap-2">
+          <a id="prevFullViewBtn" href="#" class="btn btn-outline-secondary rounded-pill px-3.5 py-1.5 fw-semibold d-inline-flex align-items-center gap-1.5">
+            <i class="ph-bold ph-arrow-square-out"></i>
+            <span>Xem trang đầy đủ</span>
+          </a>
+          <a id="prevEditBtn" href="#" class="btn btn-primary rounded-pill px-3.5 py-1.5 fw-bold shadow-xs d-inline-flex align-items-center gap-1.5">
+            <i class="ph-bold ph-pencil-simple"></i>
+            <span>Sửa đề thi</span>
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  document.addEventListener("DOMContentLoaded", function() {
+    // 1. QUICK PREVIEW MODAL LOGIC
+    const modalEl = document.getElementById('adminExamPreviewModal');
+    if (modalEl) {
+      const examModal = new bootstrap.Modal(modalEl);
+
+      document.querySelectorAll('.btn-exam-preview').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+          e.preventDefault();
+          const examId = this.dataset.id;
+
+          document.getElementById('prevExamTitle').textContent = 'Đang tải thông tin...';
+          document.getElementById('prevQuestionsContainer').innerHTML = '<p class="text-muted small">Đang tải câu hỏi...</p>';
+          document.getElementById('prevToeicMatrixBox').style.display = 'none';
+
+          examModal.show();
+
+          fetch(`/admin/exams/${examId}/quick-preview`)
+            .then(res => {
+              if (!res.ok) throw new Error('Không thể tải thông tin đề thi');
+              return res.json();
+            })
+            .then(data => {
+              document.getElementById('prevExamTitle').textContent = data.title;
+              document.getElementById('prevExamCategory').textContent = data.category;
+              document.getElementById('prevExamDifficulty').textContent = data.difficulty;
+              document.getElementById('prevExamDuration').textContent = data.duration_minutes + ' phút';
+              document.getElementById('prevTotalQuestionsCount').textContent = `Tổng: ${data.question_count} câu`;
+
+              document.getElementById('prevFullViewBtn').href = data.full_preview_url;
+              document.getElementById('prevEditBtn').href = data.edit_url;
+
+              // Check TOEIC Part Matrix
+              if (data.category === 'TOEIC' && data.part_distribution && Object.keys(data.part_distribution).length > 0) {
+                const matrixBox = document.getElementById('prevToeicMatrixBox');
+                const badgesBox = document.getElementById('prevToeicMatrixBadges');
+                badgesBox.innerHTML = `
+                  <span class="badge bg-white border text-dark font-monospace">Part 5: ${data.part_distribution.part5 || 30} câu</span>
+                  <span class="badge bg-white border text-dark font-monospace">Part 6: ${data.part_distribution.part6 || 16} câu</span>
+                  <span class="badge bg-white border text-dark font-monospace">Part 7: ${data.part_distribution.part7 || 54} câu</span>
+                `;
+                matrixBox.style.display = 'block';
+              }
+
+              // Render questions
+              const qContainer = document.getElementById('prevQuestionsContainer');
+              if (data.samples && data.samples.length > 0) {
+                qContainer.innerHTML = data.samples.map(q => `
+                  <div class="p-3 bg-light rounded-3 border">
+                    <div class="fw-bold text-dark small mb-2">Câu ${q.idx}: ${q.text || '(Chưa có nội dung câu hỏi)'}</div>
+                    <div class="row g-1.5 small text-secondary">
+                      ${q.options.filter(o => o).map((opt, i) => `
+                        <div class="col-6">
+                          <span class="badge ${opt === q.correct || ['A','B','C','D'][i] === q.correct ? 'bg-success text-white' : 'bg-white border text-dark'} me-1 font-monospace">
+                            ${['A','B','C','D'][i]}
+                          </span>
+                          ${opt}
+                        </div>
+                      `).join('')}
+                    </div>
+                  </div>
+                `).join('');
+              } else {
+                qContainer.innerHTML = '<p class="text-muted small mb-0">Chưa có câu hỏi mẫu nào được gán cho đề thi này.</p>';
+              }
+            })
+            .catch(err => {
+              console.warn('Preview error:', err);
+              document.getElementById('prevExamTitle').textContent = 'Lỗi tải đề thi';
+              document.getElementById('prevQuestionsContainer').innerHTML = '<p class="text-danger small">Không thể tải thông tin xem trước đề thi.</p>';
+            });
+        });
+      });
+    }
+
+    // 2. SMOOTH AJAX TOGGLE PUBLISH (ZERO PAGE RELOAD)
+    document.querySelectorAll('.btn-toggle-publish').forEach(btn => {
+      btn.addEventListener('click', function(e) {
+        e.preventDefault();
+        const examId = this.dataset.id;
+        const url = this.dataset.url;
+        btn.disabled = true;
+
+        fetch(url, {
+          method: 'POST',
+          headers: {
+            'X-Requested-With': 'XMLHttpRequest',
+            'Content-Type': 'application/json'
+          }
+        })
+        .then(res => {
+          if (!res.ok) throw new Error('Cập nhật trạng thái thất bại');
+          return res.json();
+        })
+        .then(data => {
+          btn.disabled = false;
+          // Update Badge in table
+          const badge = document.getElementById(`statusBadge-${examId}`);
+          if (badge) {
+            badge.textContent = data.status_label;
+            if (data.is_published) {
+              badge.className = 'badge bg-success-subtle text-success border border-success-subtle rounded-pill px-2.5 py-1 font-semibold';
+            } else {
+              badge.className = 'badge bg-secondary-subtle text-secondary border rounded-pill px-2.5 py-1 font-semibold';
+            }
+          }
+
+          // Update Button Icon & Text
+          const icon = document.getElementById(`toggleIcon-${examId}`);
+          const text = document.getElementById(`toggleText-${examId}`);
+          if (icon && text) {
+            if (data.is_published) {
+              icon.className = 'ph-bold ph-check-circle text-success';
+              text.textContent = 'Ẩn';
+            } else {
+              icon.className = 'ph-bold ph-pause-circle text-secondary';
+              text.textContent = 'Mở';
+            }
+          }
+
+          // Update KPI Counters
+          const statPub = document.getElementById('statPublishedExams');
+          const statDraft = document.getElementById('statDraftExams');
+          if (statPub && statDraft) {
+            statPub.textContent = data.published_count;
+            statDraft.textContent = data.draft_count;
+          }
+        })
+        .catch(err => {
+          btn.disabled = false;
+          alert('Không thể cập nhật trạng thái đề thi. Vui lòng thử lại.');
+        });
+      });
+    });
+  });
+</script>
 {% endblock %}

@@ -45,7 +45,7 @@
         <!-- Exam Category Selection -->
         <div class="col-md-6">
           <label class="form-label fw-semibold text-dark">Danh mục đề thi</label>
-          <select name="category" class="form-select form-select-lg rounded-3">
+          <select name="category" id="categorySelect" class="form-select form-select-lg rounded-3">
             <option value="TOEIC" {{ 'selected' if exam and exam.category=='TOEIC' }}>TOEIC Simulation</option>
             <option value="IELTS" {{ 'selected' if exam and exam.category=='IELTS' }}>IELTS Practice</option>
             <option value="TOEFL" {{ 'selected' if exam and exam.category=='TOEFL' }}>TOEFL Preparation</option>
@@ -66,17 +66,44 @@
         </div>
       </div>
 
+      <!-- TOEIC Specific Part Matrix Box -->
+      {% set part_dist = exam.part_distribution if exam and exam.part_distribution else {} %}
+      <div class="card border border-primary-subtle bg-primary-subtle bg-opacity-10 rounded-3 p-3 mb-4" id="toeicPartsBox" style="display: {{ 'block' if (exam and exam.category=='TOEIC') or not exam else 'none' }};">
+        <div class="d-flex align-items-center gap-2 mb-2">
+          <i class="ph-bold ph-newspaper text-primary fs-5"></i>
+          <h6 class="fw-bold text-dark mb-0">Cấu hình Ma trận TOEIC Reading (Parts 5, 6, 7)</h6>
+        </div>
+        <p class="text-secondary small mb-3">Tự động cấu hình số lượng câu hỏi theo chuẩn TOEIC Reading. Tổng số câu hỏi sẽ tự động đồng bộ.</p>
+        <div class="row g-3">
+          <div class="col-md-4">
+            <label class="form-label small fw-semibold text-secondary mb-1">Part 5 (Incomplete Sentences)</label>
+            <input type="number" name="part5_count" id="part5Count" class="form-control rounded-3" value="{{ part_dist.get('part5', 30) }}" min="0" max="100">
+            <small class="text-muted">Chuẩn: 30 câu</small>
+          </div>
+          <div class="col-md-4">
+            <label class="form-label small fw-semibold text-secondary mb-1">Part 6 (Text Completion)</label>
+            <input type="number" name="part6_count" id="part6Count" class="form-control rounded-3" value="{{ part_dist.get('part6', 16) }}" min="0" max="100">
+            <small class="text-muted">Chuẩn: 16 câu</small>
+          </div>
+          <div class="col-md-4">
+            <label class="form-label small fw-semibold text-secondary mb-1">Part 7 (Reading Comprehension)</label>
+            <input type="number" name="part7_count" id="part7Count" class="form-control rounded-3" value="{{ part_dist.get('part7', 54) }}" min="0" max="100">
+            <small class="text-muted">Chuẩn: 54 câu</small>
+          </div>
+        </div>
+      </div>
+
       <div class="row g-3 mb-4">
         <!-- Exam Duration Setting -->
         <div class="col-md-6">
           <label class="form-label fw-semibold text-dark">Thời lượng bài thi (Phút)</label>
-          <input type="number" name="duration_minutes" class="form-control form-control-lg rounded-3" value="{{ exam.duration_minutes if exam else 15 }}" min="1" max="300" required>
+          <input type="number" name="duration_minutes" id="durationInput" class="form-control form-control-lg rounded-3" value="{{ exam.duration_minutes if exam else 75 }}" min="1" max="300" required>
         </div>
 
         <!-- Question Count Setting -->
         <div class="col-md-6">
-          <label class="form-label fw-semibold text-dark">Số lượng câu hỏi</label>
-          <input type="number" name="question_count" class="form-control form-control-lg rounded-3" value="{{ exam.question_count if exam else 10 }}" min="1" max="200" required>
+          <label class="form-label fw-semibold text-dark">Tổng số lượng câu hỏi</label>
+          <input type="number" name="question_count" id="questionCountInput" class="form-control form-control-lg rounded-3" value="{{ exam.question_count if exam else 100 }}" min="1" max="200" required>
         </div>
       </div>
 
@@ -97,8 +124,8 @@
         <div class="col-md-6">
           <label class="form-label fw-semibold text-dark">Kiểu chọn câu hỏi</label>
           <select name="selection_type" id="selectionTypeSelect" class="form-select form-select-lg rounded-3">
-            <option value="random" {{ 'selected' if exam and exam.selection_type=='random' or not exam }}>🎲 Ngẫu nhiên từ hệ thống (Random)</option>
-            <option value="manual" {{ 'selected' if exam and exam.selection_type=='manual' }}>✋ Chọn thủ công theo ID câu hỏi (Manual)</option>
+            <option value="random" {{ 'selected' if exam and exam.selection_type=='random' or not exam }}>Ngẫu nhiên từ hệ thống (Random)</option>
+            <option value="manual" {{ 'selected' if exam and exam.selection_type=='manual' }}>Chọn thủ công theo ID câu hỏi (Manual)</option>
           </select>
         </div>
       </div>
@@ -117,8 +144,9 @@
 
       <div class="d-flex justify-content-end gap-2">
         <a href="{{ url_for('admin.exams_list') }}" class="btn btn-light rounded-pill px-4">Hủy bỏ</a>
-        <button type="submit" class="btn btn-primary rounded-pill px-5 fw-bold shadow-xs">
-          💾 {{ 'Lưu cập nhật' if exam else 'Tạo Đề Thi Mới' }}
+        <button type="submit" class="btn btn-primary rounded-pill px-5 fw-bold shadow-xs d-inline-flex align-items-center gap-2">
+          <i class="ph-bold ph-floppy-disk"></i>
+          <span>{{ 'Lưu cập nhật' if exam else 'Tạo Đề Thi Mới' }}</span>
         </button>
       </div>
     </form>
@@ -131,8 +159,44 @@
 document.addEventListener("DOMContentLoaded", function() {
   const sel = document.getElementById("selectionTypeSelect");
   const box = document.getElementById("manualIdsBox");
+  const catSel = document.getElementById("categorySelect");
+  const toeicBox = document.getElementById("toeicPartsBox");
+  const p5 = document.getElementById("part5Count");
+  const p6 = document.getElementById("part6Count");
+  const p7 = document.getElementById("part7Count");
+  const qCount = document.getElementById("questionCountInput");
+  const duration = document.getElementById("durationInput");
+
   sel.addEventListener("change", function() {
     box.style.display = (this.value === "manual") ? "block" : "none";
+  });
+
+  function updateToeicState() {
+    if (catSel.value === "TOEIC") {
+      toeicBox.style.display = "block";
+      const total = (parseInt(p5.value) || 0) + (parseInt(p6.value) || 0) + (parseInt(p7.value) || 0);
+      if (total > 0) {
+        qCount.value = total;
+      }
+    } else {
+      toeicBox.style.display = "none";
+    }
+  }
+
+  catSel.addEventListener("change", function() {
+    updateToeicState();
+    if (this.value === "TOEIC" && (parseInt(duration.value) <= 15)) {
+      duration.value = 75;
+    }
+  });
+
+  [p5, p6, p7].forEach(input => {
+    input.addEventListener("input", function() {
+      if (catSel.value === "TOEIC") {
+        const total = (parseInt(p5.value) || 0) + (parseInt(p6.value) || 0) + (parseInt(p7.value) || 0);
+        qCount.value = total;
+      }
+    });
   });
 });
 </script>
