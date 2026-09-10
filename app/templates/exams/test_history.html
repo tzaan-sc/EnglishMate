@@ -22,28 +22,24 @@
     </ol>
   </nav>
 
-  <!-- Sub-navigation Tabs -->
-  <div class="d-flex flex-wrap gap-2 mb-4">
-    <a href="{{ url_for('exams.exam_list') }}" class="btn btn-light border rounded-pill px-3.5 py-1.5 fw-semibold text-secondary d-inline-flex align-items-center gap-1.5" style="font-size: 0.85rem;">
-      <i class="ph-bold ph-files"></i>
-      <span>Tất cả đề thi</span>
-    </a>
-    <a href="{{ url_for('exams.toeic') }}" class="btn btn-light border rounded-pill px-3.5 py-1.5 fw-semibold text-secondary d-inline-flex align-items-center gap-1.5" style="font-size: 0.85rem;">
-      <i class="ph-bold ph-certificate"></i>
-      <span>Luyện thi TOEIC</span>
-    </a>
-    <a href="{{ url_for('exams.specialized_exams_hub') }}" class="btn btn-light border rounded-pill px-3.5 py-1.5 fw-semibold text-secondary d-inline-flex align-items-center gap-1.5" style="font-size: 0.85rem;">
-      <i class="ph-bold ph-graduation-cap"></i>
-      <span>Đề thi chuyên biệt & Xếp lớp</span>
-    </a>
-    <a href="{{ url_for('exams.test_history') }}" class="btn btn-primary rounded-pill px-3.5 py-1.5 fw-bold shadow-xs d-inline-flex align-items-center gap-1.5" style="font-size: 0.85rem;">
-      <i class="ph-bold ph-clock-counter-clockwise"></i>
-      <span>Lịch sử thi & So sánh</span>
-    </a>
-    <a href="{{ url_for('exams.exam_settings') }}" class="btn btn-light border rounded-pill px-3.5 py-1.5 fw-semibold text-secondary d-inline-flex align-items-center gap-1.5" style="font-size: 0.85rem;">
-      <i class="ph-bold ph-gear"></i>
-      <span>Cài đặt đề thi</span>
-    </a>
+  <!-- 2 CORE NAVIGATION TABS -->
+  <div class="d-flex flex-wrap gap-2 mb-4 align-items-center justify-content-between">
+    <div class="d-flex gap-2">
+      <a href="{{ url_for('exams.exam_list') }}" class="btn btn-light border rounded-pill px-4 py-2 fw-semibold text-secondary d-inline-flex align-items-center gap-1.5" style="font-size: 0.86rem;">
+        <i class="ph-bold ph-files"></i>
+        <span>Thư viện đề thi</span>
+      </a>
+      <a href="{{ url_for('exams.test_history') }}" class="btn btn-primary rounded-pill px-4 py-2 fw-bold shadow-xs d-inline-flex align-items-center gap-1.5" style="font-size: 0.86rem;">
+        <i class="ph-bold ph-clock-counter-clockwise"></i>
+        <span>Lịch sử & Phân tích</span>
+      </a>
+    </div>
+    <div>
+      <button type="button" class="btn btn-light border rounded-pill px-3.5 py-2 fw-semibold text-secondary d-inline-flex align-items-center gap-1.5 shadow-xs" data-bs-toggle="modal" data-bs-target="#examSettingsModal" style="font-size: 0.84rem;">
+        <i class="ph-bold ph-gear fs-6"></i>
+        <span>Cài đặt đề thi</span>
+      </button>
+    </div>
   </div>
 
   <!-- ZONE 1: HERO & STATS BANNER -->
@@ -269,4 +265,8 @@ document.addEventListener("DOMContentLoaded", function() {
   });
 });
 </script>
+
+<!-- Include Personal Exam Settings Modal -->
+{% include "exams/_settings_modal.html" %}
+
 {% endblock %}

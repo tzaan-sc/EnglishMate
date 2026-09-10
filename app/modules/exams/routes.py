@@ -161,28 +161,55 @@ import json
 @bp.get("/exam")
 @login_required
 def exam_list():
+    ensure_specialized_exams_seeded()
+
+    # Sync any ToeicTest into Exam table so they appear in unified library
+    toeic_tests = ToeicTest.query.all()
+    for tt in toeic_tests:
+        existing_exam = Exam.query.filter_by(title=tt.title).first()
+        if not existing_exam:
+            new_exam = Exam(
+                title=tt.title,
+                category="TOEIC",
+                duration=75,
+                duration_minutes=75,
+                difficulty="Medium",
+                question_bank="TOEIC Reading",
+                selection_type="fixed",
+                question_count=100,
+                is_published=True,
+                is_active=True
+            )
+            db.session.add(new_exam)
+    if toeic_tests:
+        db.session.commit()
+
     category = request.args.get("category")
     if category is None:
         category = current_user.exam_default_type or ""
-    skill = request.args.get("skill", "")
+    category = category.strip()
+    skill = request.args.get("skill", "").strip()
+    search = request.args.get("q", "").strip()
     
     query = Exam.query.filter_by(is_active=True)
-    if category:
+    if category and category.lower() != "all":
         query = query.filter_by(category=category)
-    
-    # Optional: if skill is provided, filter exams that have questions with this skill
+    if search:
+        query = query.filter(Exam.title.ilike(f"%{search}%"))
     if skill:
         query = query.join(ExamQuestion).filter(ExamQuestion.skill == skill)
         
-    exams = query.all()
+    exams = query.order_by(Exam.id.desc()).all()
     
     # Get user submissions
     submissions = ExamSubmission.query.filter_by(user_id=current_user.id).all()
     best_scores = {}
     for sub in submissions:
         if sub.status == 'COMPLETED':
-            if sub.exam_id not in best_scores or sub.total_score > best_scores[sub.exam_id]:
-                best_scores[sub.exam_id] = sub.total_score
+            score_val = f"{int(sub.total_score) if sub.total_score.is_integer() else sub.total_score}"
+            if sub.exam_id not in best_scores or sub.total_score > float(best_scores.get(f"{sub.exam_id}_raw", -1)):
+                best_scores[sub.exam_id] = score_val
+                best_scores[f"{sub.exam_id}_raw"] = sub.total_score
                 
     # Pull scores for TOEIC category exams from ToeicAttempt
     for exam in exams:
@@ -199,10 +226,58 @@ def exam_list():
                 if best_attempt:
                     best_scores[exam.id] = f"{best_attempt.score}/100"
 
-    categories = [r[0] for r in db.session.query(Exam.category).distinct().all()]
+    # Check for unfinished/in-progress attempt for Banner Call-to-Action
+    in_progress_exam = None
+    in_prog_sub = ExamSubmission.query.filter_by(
+        user_id=current_user.id,
+        status='IN_PROGRESS'
+    ).order_by(ExamSubmission.created_at.desc()).first()
+    if in_prog_sub and in_prog_sub.exam:
+        in_progress_exam = {
+            "title": in_prog_sub.exam.title,
+            "category": in_prog_sub.exam.category,
+            "resume_url": url_for("exams.attempt_exam", submission_id=in_prog_sub.id),
+            "type": "exam"
+        }
+    else:
+        in_prog_toeic = ToeicAttempt.query.filter_by(
+            user_id=current_user.id,
+            is_submitted=False
+        ).order_by(ToeicAttempt.created_at.desc()).first()
+        if in_prog_toeic and in_prog_toeic.test:
+            in_progress_exam = {
+                "title": in_prog_toeic.test.title,
+                "category": "TOEIC",
+                "resume_url": url_for("exams.toeic_attempt", attempt_id=in_prog_toeic.id),
+                "type": "toeic"
+            }
+
+    # Distinct categories sorted by priority
+    db_categories = [r[0] for r in db.session.query(Exam.category).filter(Exam.is_active == True).distinct().all()]
+    all_categories = []
+    priority_order = ["TOEIC", "IELTS", "TOEFL", "Placement", "Progress", "Timed", "Mock", "Custom"]
+    for p in priority_order:
+        if p in db_categories:
+            all_categories.append(p)
+    for c in db_categories:
+        if c not in all_categories:
+            all_categories.append(c)
+
+    total_exams_count = Exam.query.filter_by(is_active=True).count()
+    completed_count = len([k for k in best_scores if not str(k).endswith('_raw')])
     
-    return render_template("exams/list.html", exams=exams, best_scores=best_scores, 
-                           categories=categories, category=category, skill=skill, history=submissions)
+    return render_template(
+        "exams/list.html",
+        exams=exams,
+        best_scores=best_scores,
+        categories=all_categories,
+        category=category,
+        skill=skill,
+        search=search,
+        in_progress_exam=in_progress_exam,
+        total_exams_count=total_exams_count,
+        completed_count=completed_count
+    )
 
 
 @bp.route("/<int:exam_id>/start", methods=["GET", "POST"])
@@ -217,7 +292,10 @@ def start_exam(exam_id):
         if not toeic_test:
             toeic_test = ToeicTest.query.first()
         if toeic_test:
-            return redirect(url_for("exams.toeic_start", test_id=toeic_test.id), code=307)
+            attempt = ToeicAttempt(user_id=current_user.id, test_id=toeic_test.id, score=0, total_questions=100)
+            db.session.add(attempt)
+            db.session.commit()
+            return redirect(url_for("exams.toeic_attempt", attempt_id=attempt.id))
             
     submission = ExamSubmission(user_id=current_user.id, exam_id=exam.id, status='IN_PROGRESS', total_score=0)
     db.session.add(submission)
@@ -850,8 +928,8 @@ def test_delete_record(source, record_id):
 @login_required
 def exam_settings():
     if request.method == "POST":
-        current_user.exam_default_type = request.form.get("exam_default_type", "TOEIC")
-        current_user.exam_default_time_limit = int(request.form.get("exam_default_time_limit", 120))
+        current_user.exam_default_type = request.form.get("exam_default_type", "")
+        current_user.exam_default_time_limit = int(request.form.get("exam_default_time_limit", 60))
         current_user.exam_show_timer = request.form.get("exam_show_timer") == "on"
         current_user.exam_allow_pause = request.form.get("exam_allow_pause") == "on"
         current_user.exam_show_realtime_score = request.form.get("exam_show_realtime_score") == "on"
@@ -859,5 +937,8 @@ def exam_settings():
         current_user.exam_sound_effects = request.form.get("exam_sound_effects") == "on"
         db.session.commit()
         flash("Cài đặt đề thi đã được cập nhật thành công!", "success")
-        return redirect(url_for("exams.exam_settings"))
+        redirect_to = request.form.get("redirect_to")
+        if redirect_to and not redirect_to.startswith("/settings"):
+            return redirect(redirect_to)
+        return redirect(request.referrer or url_for("exams.exam_list"))
     return render_template("exams/settings.html")
