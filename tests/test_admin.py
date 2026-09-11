@@ -211,3 +211,9 @@ def test_admin_unified_pages_headers_and_stats(client):
     assert "Bản nháp".encode("utf-8") in res_exams.data
     assert "Tổng lượt thi".encode("utf-8") in res_exams.data
 
+    # Test filtering vocabulary by category (e.g. TOEIC, CEFR)
+    res_toeic = client.get("/admin/vocabulary?category=toeic")
+    assert res_toeic.status_code == 200
+    res_cefr = client.get("/admin/vocabulary?category=cefr")
+    assert res_cefr.status_code == 200
+

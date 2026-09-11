@@ -234,6 +234,7 @@ def lesson_delete(lesson_id):
 @admin_required
 def vocabulary():
     search = request.args.get("search", request.args.get("q", "")).strip()
+    category = request.args.get("category", "").strip()
     level = request.args.get("level", "").strip()
     topic = request.args.get("topic", "").strip()
     part_of_speech = request.args.get("part_of_speech", "").strip()
@@ -245,6 +246,8 @@ def vocabulary():
             Vocabulary.meaning_vi.ilike(f"%{search}%") |
             Vocabulary.pronunciation.ilike(f"%{search}%")
         )
+    if category and category != "All":
+        query = query.filter(Vocabulary.category.ilike(category))
     if level and level != "All":
         query = query.filter_by(level=level)
     if topic and topic != "All":
@@ -264,6 +267,9 @@ def vocabulary():
         "total_topics": total_topics,
     }
 
+    existing_cats = [c[0].lower() for c in db.session.query(Vocabulary.category).distinct().all() if c[0]]
+    all_categories = sorted(list(set(["cefr", "toeic", "ielts", "specialized"] + existing_cats)))
+
     all_topics = [t[0] for t in db.session.query(Vocabulary.topic).distinct().order_by(Vocabulary.topic).all() if t[0]]
     all_pos = [p[0] for p in db.session.query(Vocabulary.part_of_speech).distinct().order_by(Vocabulary.part_of_speech).all() if p[0]]
 
@@ -273,9 +279,11 @@ def vocabulary():
         words=words_list,
         stats=stats_overview,
         search=search,
+        category=category,
         level=level,
         topic=topic,
         part_of_speech=part_of_speech,
+        all_categories=all_categories,
         all_topics=all_topics,
         all_pos=all_pos,
         form=ConfirmForm()
