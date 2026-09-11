@@ -11,7 +11,7 @@ def is_nan(value):
     return pd.isna(value)
 
 
-def import_exam_from_dataframe(df, category, title, duration=120):
+def import_exam_from_dataframe(df, category, title, duration=120, difficulty="Medium"):
     """
     Import exam from a pandas DataFrame using Bulk Insert for maximum performance.
     
@@ -28,7 +28,15 @@ def import_exam_from_dataframe(df, category, title, duration=120):
     - Transcript
     - Explanation
     """
-    exam = Exam(category=category, title=title, duration=duration)
+    exam = Exam(
+        category=category,
+        title=title,
+        duration=duration,
+        duration_minutes=duration,
+        difficulty=difficulty,
+        question_count=len(df),
+        is_published=True
+    )
     db.session.add(exam)
     db.session.flush()  # to get exam.id
     

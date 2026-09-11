@@ -113,3 +113,59 @@ def test_admin_exam_preview_and_stats(client):
     res_stats = client.get(f"/admin/exams/{ex_id}/stats")
     assert res_stats.status_code == 200
     assert "PHÂN TÍCH HIỆU SUẤT ĐỀ THI".encode("utf-8") in res_stats.data
+
+
+def test_admin_exam_upload_flow(client):
+    import io
+    import json
+    ensure_admin_user(client)
+
+    # 1. GET page
+    res_get = client.get("/admin/exams/upload")
+    assert res_get.status_code == 200
+    assert "Upload Đề Thi Trọn Gói".encode("utf-8") in res_get.data
+    assert "Tải file mẫu chuẩn".encode("utf-8") in res_get.data
+
+    # 2. POST sample json exam data
+    sample_data = [
+        {
+            "Skill": "READING",
+            "Part": "Part 5",
+            "Type": "SINGLE_CHOICE",
+            "Question_Text": "Customer satisfaction is our top _____.",
+            "Option_A": "priority",
+            "Option_B": "prioritize",
+            "Option_C": "prior",
+            "Option_D": "prioritizing",
+            "Correct_Answer": "A",
+            "Explanation": "Priority là danh từ đứng sau tính từ sở hữu và tính từ top."
+        }
+    ]
+    file_bytes = io.BytesIO(json.dumps(sample_data).encode("utf-8"))
+
+    res_post = client.post(
+        "/admin/exams/upload",
+        data={
+            "category": "TOEIC",
+            "title": "Uploaded Test Via Automation",
+            "duration": "120",
+            "difficulty": "Hard",
+            "file": (file_bytes, "test_exam.json")
+        },
+        content_type="multipart/form-data",
+        follow_redirects=True
+    )
+    assert res_post.status_code == 200
+    assert "Đã import thành công".encode("utf-8") in res_post.data
+
+    with client.application.app_context():
+        uploaded_exam = Exam.query.filter_by(title="Uploaded Test Via Automation").first()
+        assert uploaded_exam is not None
+        assert uploaded_exam.category == "TOEIC"
+        assert uploaded_exam.duration_minutes == 120
+        assert uploaded_exam.difficulty == "Hard"
+        assert uploaded_exam.question_count == 1
+        assert uploaded_exam.questions.count() == 1
+        q = uploaded_exam.questions.first()
+        assert q.correct_answer == "A"
+

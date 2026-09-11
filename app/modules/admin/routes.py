@@ -691,6 +691,7 @@ def exam_upload():
         category = request.form.get("category", "TOEIC")
         title = request.form.get("title", "Đề thi mới")
         duration = int(request.form.get("duration", 120))
+        difficulty = request.form.get("difficulty", "Medium")
         
         if not file or file.filename == '':
             flash("Vui lòng chọn một file.", "danger")
@@ -706,7 +707,7 @@ def exam_upload():
             else:
                 df = pd.read_excel(filepath)
                 
-            exam = import_exam_from_dataframe(df, category, title, duration)
+            exam = import_exam_from_dataframe(df, category, title, duration, difficulty=difficulty)
             log_audit_action(current_user.id, "UPLOAD_EXAM", "Exam", exam.id, f"Tải lên đề thi '{exam.title}' ({category} - {len(df)} câu hỏi)")
             flash(f"Đã import thành công {len(df)} câu hỏi vào đề thi '{exam.title}'.", "success")
         except Exception as e:
