@@ -217,3 +217,23 @@ def test_admin_unified_pages_headers_and_stats(client):
     res_cefr = client.get("/admin/vocabulary?category=cefr")
     assert res_cefr.status_code == 200
 
+
+def test_admin_and_student_notifications(client):
+    # 1. Admin login -> Admin notifications dropdown
+    login(client, "admin@test.com", "admin123")
+    res_admin = client.get("/admin")
+    assert res_admin.status_code == 200
+    assert "Thông báo Quản trị".encode("utf-8") in res_admin.data
+    assert "An toàn tài khoản &amp; Học viên".encode("utf-8") in res_admin.data or "An toàn tài khoản & Học viên".encode("utf-8") in res_admin.data
+    assert "Xem toàn bộ Nhật ký Audit Log".encode("utf-8") in res_admin.data
+
+    # 2. Student login -> Student notifications dropdown
+    client.post("/auth/logout", follow_redirects=True)
+    login(client, "student@test.com", "user123")
+    res_student = client.get("/dashboard")
+    assert res_student.status_code == 200
+    assert "Thông báo học tập".encode("utf-8") in res_student.data
+    assert "Ôn tập từ vựng SRS".encode("utf-8") in res_student.data
+    assert "Duy trì Streak".encode("utf-8") in res_student.data
+    assert "Xem nhiệm vụ &amp; xếp hạng".encode("utf-8") in res_student.data or "Xem nhiệm vụ & xếp hạng".encode("utf-8") in res_student.data
+

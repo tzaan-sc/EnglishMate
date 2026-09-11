@@ -56,11 +56,68 @@
 
           <!-- Notification bell -->
           <div class="dropdown">
-            <button class="topbar-icon-btn position-relative" type="button" id="notifDropdown" data-bs-toggle="dropdown" aria-expanded="false" title="Thông báo học tập">
+            <button class="topbar-icon-btn position-relative" type="button" id="notifDropdown" data-bs-toggle="dropdown" aria-expanded="false" title="{{ 'Thông báo Quản trị' if current_user.is_admin else 'Thông báo học tập' }}">
               <i class="ph ph-bell" style="font-size: 1.1rem;"></i>
+              {% if (current_user.is_admin and admin_notif_data and admin_notif_data.locked_users > 0) or not current_user.is_admin %}
               <span class="position-absolute rounded-circle bg-danger" style="width: 8px; height: 8px; top: 6px; right: 6px;"></span>
+              {% endif %}
             </button>
-            <div class="dropdown-menu dropdown-menu-end notif-dropdown shadow border-0 rounded-4 p-0 overflow-hidden" aria-labelledby="notifDropdown" style="min-width: 320px;">
+            <div class="dropdown-menu dropdown-menu-end notif-dropdown shadow border-0 rounded-4 p-0 overflow-hidden" aria-labelledby="notifDropdown" style="min-width: 340px;">
+              {% if current_user.is_admin %}
+              <!-- ADMIN NOTIFICATIONS -->
+              <div class="notif-header d-flex justify-content-between align-items-center px-3 py-3 bg-light border-bottom">
+                <span class="fw-bold text-dark" style="font-size:0.88rem;">Thông báo Quản trị</span>
+                <span class="badge bg-success-subtle text-success rounded-pill small d-inline-flex align-items-center gap-1.5 font-semibold">
+                  <span class="rounded-circle bg-success" style="width: 6px; height: 6px;"></span>
+                  <span>Hệ thống sẵn sàng</span>
+                </span>
+              </div>
+              <div class="notif-body p-2.5">
+                <!-- 1. Security & Users Alert -->
+                <a href="{{ url_for('admin.users') }}" class="d-flex align-items-start gap-3 p-2.5 rounded-3 text-decoration-none hover-bg-light transition-all mb-2">
+                  <div class="rounded-circle {% if admin_notif_data and admin_notif_data.locked_users > 0 %}bg-danger-subtle text-danger{% else %}bg-success-subtle text-success{% endif %} d-flex align-items-center justify-content-center flex-shrink-0" style="width: 36px; height: 36px; font-size: 1.1rem;">
+                    <i class="ph-bold {% if admin_notif_data and admin_notif_data.locked_users > 0 %}ph-shield-warning{% else %}ph-shield-check{% endif %}"></i>
+                  </div>
+                  <div class="flex-grow-1">
+                    <span class="fw-bold text-dark small d-block mb-0.5">An toàn tài khoản & Học viên</span>
+                    {% if admin_notif_data and admin_notif_data.locked_users > 0 %}
+                    <span class="text-danger small fw-semibold" style="font-size: 0.76rem;">Có {{ admin_notif_data.locked_users }} tài khoản đang bị khóa/cảnh báo.</span>
+                    {% else %}
+                    <span class="text-muted small" style="font-size: 0.76rem;">Tất cả tài khoản học viên hoạt động an toàn.</span>
+                    {% endif %}
+                  </div>
+                </a>
+
+                <!-- 2. Exam & Submissions Alert -->
+                <a href="{{ url_for('admin.exams_list') }}" class="d-flex align-items-start gap-3 p-2.5 rounded-3 text-decoration-none hover-bg-light transition-all mb-2">
+                  <div class="rounded-circle bg-primary-subtle text-primary d-flex align-items-center justify-content-center flex-shrink-0" style="width: 36px; height: 36px; font-size: 1.1rem;">
+                    <i class="ph-bold ph-certificate"></i>
+                  </div>
+                  <div class="flex-grow-1">
+                    <span class="fw-bold text-dark small d-block mb-0.5">Lượt thi & Đánh giá</span>
+                    <span class="text-muted small" style="font-size: 0.76rem;">Đã ghi nhận {{ admin_notif_data.total_attempts if admin_notif_data else 0 }} lượt nộp bài thi TOEIC & Quiz.</span>
+                  </div>
+                </a>
+
+                <!-- 3. Audit Log Activity -->
+                <a href="{{ url_for('admin.audit_logs') }}" class="d-flex align-items-start gap-3 p-2.5 rounded-3 text-decoration-none hover-bg-light transition-all">
+                  <div class="rounded-circle bg-purple-subtle text-purple d-inline-flex align-items-center justify-content-center flex-shrink-0" style="width: 36px; height: 36px; font-size: 1.1rem;">
+                    <i class="ph-bold ph-clock-counter-clockwise"></i>
+                  </div>
+                  <div class="flex-grow-1">
+                    <span class="fw-bold text-dark small d-block mb-0.5">Nhật ký Hệ thống (Audit)</span>
+                    <span class="text-muted small text-truncate d-block" style="font-size: 0.76rem; max-width: 220px;">
+                      {{ admin_notif_data.latest_audit.details if admin_notif_data and admin_notif_data.latest_audit else 'Ghi nhận đầy đủ lịch sử quản trị.' }}
+                    </span>
+                  </div>
+                </a>
+              </div>
+              <div class="notif-footer border-top py-2.5 px-3 bg-light text-center">
+                <a href="{{ url_for('admin.audit_logs') }}" class="text-primary small fw-semibold text-decoration-none">Xem toàn bộ Nhật ký Audit Log →</a>
+              </div>
+
+              {% else %}
+              <!-- STUDENT NOTIFICATIONS (ORIGINAL) -->
               <div class="notif-header d-flex justify-content-between align-items-center px-3 py-3 bg-light border-bottom">
                 <span class="fw-bold text-dark" style="font-size:0.88rem;">Thông báo học tập</span>
                 <span class="badge bg-primary-subtle text-primary rounded-pill small">Hôm nay</span>
@@ -88,6 +145,7 @@
               <div class="notif-footer border-top py-2.5 px-3 bg-light text-center">
                 <a href="{{ url_for('learning.gamification_hub') }}" class="text-primary small fw-semibold text-decoration-none">Xem nhiệm vụ & xếp hạng →</a>
               </div>
+              {% endif %}
             </div>
           </div>
 

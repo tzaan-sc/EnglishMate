@@ -66,6 +66,28 @@ def create_app(config_object=Config):
         from flask import session
         return {"streak_activated_event": session.pop("streak_activated_popup", None)}
 
+    @app.context_processor
+    def inject_admin_notifications():
+        from flask_login import current_user
+        if not current_user.is_authenticated or not getattr(current_user, "is_admin", False):
+            return {"admin_notif_data": None}
+        try:
+            from .modules.auth.models import User
+            from .modules.learning.models import QuizAttempt
+            from .modules.admin.models import AuditLog
+            locked_users = User.query.filter((User.failed_login_attempts >= 5) | (User.is_active == False)).count()
+            total_attempts = QuizAttempt.query.count()
+            latest_audit = AuditLog.query.order_by(AuditLog.id.desc()).first()
+            return {
+                "admin_notif_data": {
+                    "locked_users": locked_users,
+                    "total_attempts": total_attempts,
+                    "latest_audit": latest_audit,
+                }
+            }
+        except Exception:
+            return {"admin_notif_data": None}
+
     @app.errorhandler(403)
     def forbidden(_error):
         return render_template("errors/403.html"), 403
