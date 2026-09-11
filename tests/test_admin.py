@@ -167,4 +167,15 @@ def test_admin_exam_crud_and_toeic_distribution(client, app):
     assert "TOEIC Full Practice Test 2026".encode() in filter_res.data
 
 
+def test_admin_redirected_to_admin_dashboard(client):
+    # Test admin accessing /dashboard is redirected to /admin/
+    login(client, "admin@test.com", "admin123")
+    res = client.get("/dashboard", follow_redirects=False)
+    assert res.status_code == 302
+    assert res.headers["Location"].rstrip("/").endswith("/admin")
 
+    # Test admin logging in without next_url is redirected to /admin/
+    client.get("/auth/logout")
+    res_login = client.post("/auth/login", data={"email": "admin@test.com", "password": "admin123"}, follow_redirects=False)
+    assert res_login.status_code == 302
+    assert res_login.headers["Location"].rstrip("/").endswith("/admin")

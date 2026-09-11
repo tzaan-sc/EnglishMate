@@ -31,7 +31,7 @@
           </button>
           
           <!-- Logo Brand Text (Keep Original Name EnglishMate with Green accent) -->
-          <a class="navbar-brand d-flex align-items-center gap-2 text-decoration-none" href="{{ url_for('main.dashboard') }}">
+          <a class="navbar-brand d-flex align-items-center gap-2 text-decoration-none" href="{{ url_for('admin.dashboard') if current_user.is_authenticated and current_user.is_admin else url_for('main.dashboard') }}">
             <span class="brand-mark">E</span><span>English<span class="brand-accent">Mate</span></span>
           </a>
         </div>

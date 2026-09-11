@@ -24,6 +24,9 @@ def index():
 @bp.get("/dashboard")
 @login_required
 def dashboard():
+    if current_user.is_admin:
+        return redirect(url_for("admin.dashboard"))
+
     current_user.get_current_streak()
 
     completed = LessonProgress.query.filter_by(user_id=current_user.id).count()

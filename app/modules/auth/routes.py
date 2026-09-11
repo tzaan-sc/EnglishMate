@@ -391,7 +391,8 @@ def facebook_callback():
 @bp.route("/login", methods=["GET", "POST"])
 def login():
     if current_user.is_authenticated:
-        return redirect(url_for("main.dashboard"))
+        target = "admin.dashboard" if current_user.is_admin else "main.dashboard"
+        return redirect(url_for(target))
     form = LoginForm()
     if form.validate_on_submit():
         email = form.email.data.strip().lower()
@@ -413,7 +414,8 @@ def login():
                 login_user(user, remember=form.remember.data)
                 flash(f"Chào mừng {user.username} trở lại!", "success")
                 next_url = request.args.get("next")
-                return redirect(next_url if next_url and is_safe_url(next_url) else url_for("main.dashboard"))
+                default_target = "admin.dashboard" if user.is_admin else "main.dashboard"
+                return redirect(next_url if next_url and is_safe_url(next_url) else url_for(default_target))
             else:
                 attempts = user.record_failed_login()
                 db.session.commit()
