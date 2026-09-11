@@ -12,7 +12,7 @@ from ..exams.models import Exam
 from ..learning.models import Lesson, Question, QuizAttempt, Vocabulary, GrammarTopic
 from . import bp
 from .forms import ConfirmForm, LessonForm, VocabularyForm
-from .importer import parse_and_validate_excel, commit_import_records, CONTENT_SCHEMAS
+from .importer import parse_and_validate_excel, parse_and_validate_file, commit_import_records, CONTENT_SCHEMAS
 from .models import AuditLog, Permission, Role, RolePermission, UserRole
 from .utils import log_audit_action, permission_required, has_permission
 
@@ -681,7 +681,148 @@ from app.modules.exams.services import import_exam_from_dataframe
 from flask import jsonify
 
 UPLOAD_FOLDER = os.path.join('app', 'static', 'uploads')
-os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+# --- CONTENT UPLOAD SUITE (VOCABULARY, LESSONS, EXAMS) ---
+
+@bp.route("/vocabulary/upload", methods=["GET", "POST"])
+@admin_required
+def vocabulary_upload():
+    if request.method == "POST":
+        file = request.files.get("file")
+        category_override = request.form.get("category", "").strip()
+        level_override = request.form.get("level", "").strip()
+        topic_override = request.form.get("topic", "").strip()
+
+        if not file or file.filename == '':
+            flash("Vui lòng chọn một file dữ liệu để tải lên.", "danger")
+            return redirect(url_for("admin.vocabulary_upload"))
+
+        filename = secure_filename(file.filename)
+        filepath = os.path.join(UPLOAD_FOLDER, filename)
+        file.save(filepath)
+
+        try:
+            with open(filepath, "rb") as f:
+                res = parse_and_validate_file(f, filename, "vocabulary")
+
+            if not res["success"]:
+                flash(f"Lỗi phân tích file: {res.get('error', 'Định dạng dữ liệu không hợp lệ')}", "danger")
+                return redirect(url_for("admin.vocabulary_upload"))
+
+            valid_records = res.get("valid_records", [])
+            if not valid_records:
+                flash("Không tìm thấy dòng dữ liệu hợp lệ nào trong file.", "warning")
+                return redirect(url_for("admin.vocabulary_upload"))
+
+            # Apply form override values if supplied
+            for rec in valid_records:
+                d = rec.get("data", {})
+                if category_override:
+                    d["category"] = category_override
+                if level_override:
+                    d["level"] = level_override
+                if topic_override and not d.get("topic"):
+                    d["topic"] = topic_override
+
+            commit_res = commit_import_records(
+                content_type="vocabulary",
+                valid_records=valid_records,
+                user_id=current_user.id,
+                mode="insert_or_update"
+            )
+
+            created_cnt = commit_res.get("inserted_count", 0)
+            updated_cnt = commit_res.get("updated_count", 0)
+            log_audit_action(
+                current_user.id,
+                "UPLOAD_VOCABULARY",
+                "Vocabulary",
+                None,
+                f"Tải lên bộ từ vựng: {created_cnt} mới, {updated_cnt} cập nhật"
+            )
+            flash(f"Upload thành công! Đã nạp {created_cnt} từ vựng mới và cập nhật {updated_cnt} từ.", "success")
+            return redirect(url_for("admin.vocabulary"))
+        except Exception as e:
+            flash(f"Lỗi khi xử lý file từ vựng: {str(e)}", "danger")
+        finally:
+            if os.path.exists(filepath):
+                try:
+                    os.remove(filepath)
+                except Exception:
+                    pass
+
+        return redirect(url_for("admin.vocabulary_upload"))
+
+    return render_template("admin/vocabulary_upload.html")
+
+
+@bp.route("/lessons/upload", methods=["GET", "POST"])
+@admin_required
+def lesson_upload():
+    if request.method == "POST":
+        file = request.files.get("file")
+        skill_override = request.form.get("skill", "").strip()
+        level_override = request.form.get("level", "").strip()
+
+        if not file or file.filename == '':
+            flash("Vui lòng chọn một file dữ liệu để tải lên.", "danger")
+            return redirect(url_for("admin.lesson_upload"))
+
+        filename = secure_filename(file.filename)
+        filepath = os.path.join(UPLOAD_FOLDER, filename)
+        file.save(filepath)
+
+        try:
+            with open(filepath, "rb") as f:
+                res = parse_and_validate_file(f, filename, "lessons")
+
+            if not res["success"]:
+                flash(f"Lỗi phân tích file: {res.get('error', 'Định dạng dữ liệu không hợp lệ')}", "danger")
+                return redirect(url_for("admin.lesson_upload"))
+
+            valid_records = res.get("valid_records", [])
+            if not valid_records:
+                flash("Không tìm thấy dòng bài học hợp lệ nào trong file.", "warning")
+                return redirect(url_for("admin.lesson_upload"))
+
+            # Apply form override values if supplied
+            for rec in valid_records:
+                d = rec.get("data", {})
+                if skill_override:
+                    d["skill"] = skill_override
+                if level_override:
+                    d["level"] = level_override
+
+            commit_res = commit_import_records(
+                content_type="lessons",
+                valid_records=valid_records,
+                user_id=current_user.id,
+                mode="insert_or_update"
+            )
+
+            created_cnt = commit_res.get("inserted_count", 0)
+            updated_cnt = commit_res.get("updated_count", 0)
+            log_audit_action(
+                current_user.id,
+                "UPLOAD_LESSON",
+                "Lesson",
+                None,
+                f"Tải lên danh mục bài học: {created_cnt} mới, {updated_cnt} cập nhật"
+            )
+            flash(f"Upload thành công! Đã nạp {created_cnt} bài học mới và cập nhật {updated_cnt} bài.", "success")
+            return redirect(url_for("admin.lessons"))
+        except Exception as e:
+            flash(f"Lỗi khi xử lý file bài học: {str(e)}", "danger")
+        finally:
+            if os.path.exists(filepath):
+                try:
+                    os.remove(filepath)
+                except Exception:
+                    pass
+
+        return redirect(url_for("admin.lesson_upload"))
+
+    return render_template("admin/lesson_upload.html")
+
 
 @bp.route("/exams/upload", methods=["GET", "POST"])
 @admin_required

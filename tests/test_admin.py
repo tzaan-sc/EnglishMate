@@ -237,3 +237,76 @@ def test_admin_and_student_notifications(client):
     assert "Duy trì Streak".encode("utf-8") in res_student.data
     assert "Xem nhiệm vụ &amp; xếp hạng".encode("utf-8") in res_student.data or "Xem nhiệm vụ & xếp hạng".encode("utf-8") in res_student.data
 
+
+def test_admin_vocabulary_and_lesson_upload_pages(client, app):
+    import io
+    import json
+    login(client, "admin@test.com", "admin123")
+
+    # 1. Test GET /admin/vocabulary/upload
+    res_v_get = client.get("/admin/vocabulary/upload")
+    assert res_v_get.status_code == 200
+    assert "Upload Bộ Từ Vựng".encode("utf-8") in res_v_get.data
+
+    # 2. Test POST /admin/vocabulary/upload with JSON data
+    vocab_payload = [
+        {
+            "word": "serendipity",
+            "pronunciation": "/ˌser.ənˈdɪp.ə.ti/",
+            "part_of_speech": "noun",
+            "meaning_vi": "sự tình cờ may mắn",
+            "example_en": "Finding this cafe was pure serendipity.",
+            "example_vi": "Tìm thấy quán cà phê này thực sự là một sự tình cờ may mắn.",
+            "topic": "Life",
+            "level": "C1"
+        }
+    ]
+    vocab_file = (io.BytesIO(json.dumps(vocab_payload).encode("utf-8")), "vocab_test.json")
+    res_v_post = client.post("/admin/vocabulary/upload", data={
+        "file": vocab_file,
+        "category": "CEFR",
+        "level": "C1",
+        "topic": "Life"
+    }, follow_redirects=True)
+    assert res_v_post.status_code == 200
+    assert "Upload thành công".encode("utf-8") in res_v_post.data
+
+    with app.app_context():
+        from app.modules.learning.models import Vocabulary
+        w = Vocabulary.query.filter_by(word="serendipity").first()
+        assert w is not None
+        assert w.level == "C1"
+
+    # 3. Test GET /admin/lessons/upload
+    res_l_get = client.get("/admin/lessons/upload")
+    assert res_l_get.status_code == 200
+    assert "Upload Bài Học".encode("utf-8") in res_l_get.data
+
+    # 4. Test POST /admin/lessons/upload with JSON data
+    lesson_payload = [
+        {
+            "title": "Mastering English Collocations in Daily Speaking",
+            "level": "B2",
+            "skill": "Speaking",
+            "short_description": "Enhance fluency with natural collocations.",
+            "content": "Use strong collocations in everyday conversation.",
+            "examples": "make a decision|ra quyết định"
+        }
+    ]
+    lesson_file = (io.BytesIO(json.dumps(lesson_payload).encode("utf-8")), "lesson_test.json")
+    res_l_post = client.post("/admin/lessons/upload", data={
+        "file": lesson_file,
+        "skill": "Speaking",
+        "level": "B2"
+    }, follow_redirects=True)
+    assert res_l_post.status_code == 200
+    assert "Upload thành công".encode("utf-8") in res_l_post.data
+
+    with app.app_context():
+        from app.modules.learning.models import Lesson
+        les = Lesson.query.filter_by(title="Mastering English Collocations in Daily Speaking").first()
+        assert les is not None
+        assert les.skill == "Speaking"
+        assert les.level == "B2"
+
+

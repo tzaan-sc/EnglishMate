@@ -1,0 +1,276 @@
+{% extends "base.html" %}
+{% block title %}Upload Bài Học · EnglishMate Admin{% endblock %}
+
+{% block content %}
+<div class="container-fluid max-w-7xl py-4">
+
+  <!-- Breadcrumb Navigation -->
+  <nav class="app-breadcrumb mb-3" aria-label="breadcrumb">
+    <ol class="breadcrumb mb-0 align-items-center flex-wrap">
+      <li class="breadcrumb-item">
+        <a href="{{ url_for('admin.dashboard') }}" class="d-inline-flex align-items-center gap-1">
+          <i class="ph-bold ph-shield-check"></i>
+          <span>Quản trị Hệ thống</span>
+        </a>
+      </li>
+      <li class="breadcrumb-item">
+        <a href="{{ url_for('admin.lessons') }}">Quản lý Bài học</a>
+      </li>
+      <li class="breadcrumb-item active" aria-current="page">
+        <span>Upload Bài Học</span>
+      </li>
+    </ol>
+  </nav>
+
+  <!-- Header -->
+  <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
+    <div class="d-flex align-items-center gap-3">
+      <div class="rounded-3 bg-primary-subtle text-primary border border-primary-subtle d-inline-flex align-items-center justify-content-center flex-shrink-0" style="width: 48px; height: 48px; font-size: 1.45rem;">
+        <i class="ph-bold ph-books"></i>
+      </div>
+      <div>
+        <h3 class="fw-bold text-dark mb-0.5" style="letter-spacing: -0.01em;">Upload Bài Học Trọn Gói</h3>
+        <p class="text-secondary small mb-0">Nạp hàng loạt bài học 4 kỹ năng, giải thích nội dung, audio và bài tập tương tác</p>
+      </div>
+    </div>
+    <a href="{{ url_for('admin.lessons') }}" class="btn btn-light border fw-semibold text-secondary px-3.5 py-2 rounded-3 shadow-2xs d-inline-flex align-items-center gap-1.5" style="font-size: 0.88rem;">
+      <i class="ph-bold ph-arrow-left"></i>
+      <span>Quay lại danh sách</span>
+    </a>
+  </div>
+
+  <div class="row g-4">
+    <!-- Form Upload -->
+    <div class="col-lg-5">
+      <div class="card-modern p-4 h-100">
+        <h6 class="fw-bold text-dark mb-3 d-flex align-items-center gap-2">
+          <i class="ph-bold ph-sliders-horizontal text-primary fs-5"></i>
+          <span>Cấu hình thông tin Bài học</span>
+        </h6>
+
+        <!-- Template Download Banner -->
+        <div class="p-3 rounded-3 bg-primary-subtle border border-primary-subtle mb-3">
+          <div class="d-flex flex-column flex-sm-row align-items-sm-center justify-content-between gap-2">
+            <div>
+              <span class="fw-bold text-dark small d-block mb-0.5">Tải file mẫu chuẩn:</span>
+              <span class="text-secondary" style="font-size: 0.76rem;">Điền tiêu đề, kỹ năng, nội dung & ví dụ</span>
+            </div>
+            <div class="d-flex gap-1.5 flex-wrap">
+              <a href="{{ url_for('admin.download_import_template', content_type='lessons', format='xlsx') }}" class="btn btn-sm btn-light border fw-bold text-success shadow-2xs d-inline-flex align-items-center gap-1 px-2.5 py-1" title="Tải file Excel mẫu">
+                <i class="ph-bold ph-file-xls fs-6"></i>
+                <span>Excel</span>
+              </a>
+              <a href="{{ url_for('admin.download_import_template', content_type='lessons', format='csv') }}" class="btn btn-sm btn-light border fw-semibold text-secondary shadow-2xs d-inline-flex align-items-center gap-1 px-2.5 py-1" title="Tải file CSV mẫu">
+                <i class="ph-bold ph-file-csv fs-6 text-warning"></i>
+                <span>CSV</span>
+              </a>
+              <a href="{{ url_for('admin.download_import_template', content_type='lessons', format='json') }}" class="btn btn-sm btn-light border fw-semibold text-secondary shadow-2xs d-inline-flex align-items-center gap-1 px-2.5 py-1" title="Tải file JSON mẫu">
+                <i class="ph-bold ph-file-code fs-6 text-primary"></i>
+                <span>JSON</span>
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <form action="{{ url_for('admin.lesson_upload') }}" method="post" enctype="multipart/form-data" id="uploadForm">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+          <div class="row g-2 mb-3">
+            <div class="col-6">
+              <label class="form-label fw-semibold small text-dark mb-1">Kỹ năng mặc định</label>
+              <select class="form-select rounded-3 py-2 shadow-none" name="skill">
+                <option value="">Theo file</option>
+                <option value="Grammar">Grammar (Ngữ pháp)</option>
+                <option value="Vocabulary">Vocabulary (Từ vựng)</option>
+                <option value="Listening">Listening (Nghe)</option>
+                <option value="Reading">Reading (Đọc)</option>
+                <option value="Speaking">Speaking (Nói)</option>
+                <option value="Writing">Writing (Viết)</option>
+                <option value="General">Tổng hợp (General)</option>
+              </select>
+            </div>
+            <div class="col-6">
+              <label class="form-label fw-semibold small text-dark mb-1">Cấp độ mặc định</label>
+              <select class="form-select rounded-3 py-2 shadow-none" name="level">
+                <option value="">Theo file</option>
+                <option value="A1">A1 - Sơ cấp</option>
+                <option value="A2">A2 - Tiền trung cấp</option>
+                <option value="B1">B1 - Trung cấp</option>
+                <option value="B2">B2 - Trung cao cấp</option>
+                <option value="C1">C1 - Cao cấp</option>
+                <option value="C2">C2 - Thành thạo</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="mb-4">
+            <label class="form-label fw-semibold small text-dark mb-1">File dữ liệu (.xlsx, .csv, .json) <span class="text-danger">*</span></label>
+            <div class="border rounded-3 p-4 text-center bg-light transition-hover" id="dropZone" style="cursor: pointer; border-style: dashed !important; border-color: var(--border-light) !important;">
+              <i class="ph-bold ph-cloud-arrow-up fs-1 text-primary mb-2 d-block"></i>
+              <p class="mb-1 fw-semibold small text-dark">Kéo thả file vào đây hoặc click để chọn</p>
+              <small class="text-muted" style="font-size: 0.76rem;">Hỗ trợ định dạng .xlsx, .xls, .csv, .json (tối đa 10MB)</small>
+              <input type="file" name="file" id="fileInput" class="d-none" accept=".xlsx,.xls,.csv,.json" required>
+            </div>
+            <div id="fileInfo" class="mt-2 text-success small fw-bold d-none"></div>
+          </div>
+
+          <button type="submit" class="btn btn-primary w-100 py-2.5 rounded-3 fw-bold shadow-xs d-inline-flex align-items-center justify-content-center gap-2" id="submitBtn" disabled>
+            <i class="ph-bold ph-check-circle fs-5"></i>
+            <span>Xác nhận Nạp Bài Học</span>
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <!-- Preview Table -->
+    <div class="col-lg-7">
+      <div class="card-modern p-4 h-100 d-flex flex-column">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <h6 class="fw-bold text-dark mb-0 d-flex align-items-center gap-2">
+            <i class="ph-bold ph-eye text-primary fs-5"></i>
+            <span>Xem trước dữ liệu (Live Preview)</span>
+          </h6>
+          <span class="badge bg-light text-muted border rounded-pill px-2.5 py-1" id="totalRows">Chưa có dữ liệu</span>
+        </div>
+
+        <div class="table-responsive border rounded-3 flex-grow-1" style="max-height: 480px; overflow-y: auto;">
+          <table class="table table-hover table-striped align-middle small mb-0" id="previewTable">
+            <thead class="table-light sticky-top">
+              <tr>
+                <th style="width: 45px;">#</th>
+                <th>Tiêu đề bài học</th>
+                <th>Kỹ năng</th>
+                <th>Cấp độ</th>
+                <th>Mô tả ngắn</th>
+              </tr>
+            </thead>
+            <tbody id="previewBody">
+              <tr>
+                <td colspan="5" class="text-center py-5 text-muted">
+                  <i class="ph-bold ph-file-text fs-2 d-block mb-2 text-secondary opacity-50"></i>
+                  <span>Vui lòng chọn file để xem trước nội dung bài học.</span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    const dropZone = document.getElementById("dropZone");
+    const fileInput = document.getElementById("fileInput");
+    const fileInfo = document.getElementById("fileInfo");
+    const submitBtn = document.getElementById("submitBtn");
+    const previewBody = document.getElementById("previewBody");
+    const totalRows = document.getElementById("totalRows");
+
+    dropZone.addEventListener("click", () => fileInput.click());
+
+    dropZone.addEventListener("dragover", (e) => {
+        e.preventDefault();
+        dropZone.classList.add("bg-primary-subtle");
+    });
+
+    dropZone.addEventListener("dragleave", () => {
+        dropZone.classList.remove("bg-primary-subtle");
+    });
+
+    dropZone.addEventListener("drop", (e) => {
+        e.preventDefault();
+        dropZone.classList.remove("bg-primary-subtle");
+        if (e.dataTransfer.files.length > 0) {
+            fileInput.files = e.dataTransfer.files;
+            handleFile(fileInput.files[0]);
+        }
+    });
+
+    fileInput.addEventListener("change", (e) => {
+        if (e.target.files.length > 0) {
+            handleFile(e.target.files[0]);
+        }
+    });
+
+    function handleFile(file) {
+        fileInfo.textContent = "Đã chọn: " + file.name + " (" + (file.size / 1024).toFixed(1) + " KB)";
+        fileInfo.classList.remove("d-none");
+        submitBtn.disabled = false;
+
+        const ext = file.name.split('.').pop().toLowerCase();
+        const reader = new FileReader();
+
+        if (ext === 'json') {
+            reader.onload = function(e) {
+                try {
+                    let data = JSON.parse(e.target.result);
+                    if (data && !Array.isArray(data)) {
+                        data = data.items || data.data || data.records || data.lessons || [data];
+                    }
+                    renderPreview(data);
+                } catch (err) {
+                    alert("File JSON không hợp lệ: " + err.message);
+                }
+            };
+            reader.readAsText(file);
+        } else if (ext === 'csv') {
+            reader.onload = function(e) {
+                try {
+                    const text = e.target.result;
+                    const workbook = XLSX.read(text, { type: 'string' });
+                    const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+                    const jsonData = XLSX.utils.sheet_to_json(firstSheet);
+                    renderPreview(jsonData);
+                } catch (err) {
+                    alert("Không thể đọc file CSV!");
+                }
+            };
+            reader.readAsText(file);
+        } else if (ext === 'xlsx' || ext === 'xls') {
+            reader.onload = function(e) {
+                try {
+                    const data = new Uint8Array(e.target.result);
+                    const workbook = XLSX.read(data, { type: 'array' });
+                    const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+                    const jsonData = XLSX.utils.sheet_to_json(firstSheet);
+                    renderPreview(jsonData);
+                } catch (err) {
+                    alert("Không thể đọc file Excel!");
+                }
+            };
+            reader.readAsArrayBuffer(file);
+        }
+    }
+
+    function renderPreview(data) {
+        previewBody.innerHTML = "";
+        totalRows.textContent = data.length + " bài học";
+
+        if (!data || data.length === 0) {
+            previewBody.innerHTML = '<tr><td colspan="5" class="text-center text-muted">File không có dữ liệu</td></tr>';
+            return;
+        }
+
+        data.slice(0, 15).forEach((row, idx) => {
+            const tr = document.createElement("tr");
+            const title = row.title || row.Title || row["Tiêu đề"] || "";
+            const skill = row.skill || row.Skill || row["Kỹ năng"] || "General";
+            const level = (row.level || row.Level || "A1").toUpperCase();
+            const desc = row.short_description || row.description || row["Mô tả"] || "";
+
+            tr.innerHTML = `
+                <td class="font-monospace text-muted">${idx + 1}</td>
+                <td><span class="fw-bold text-dark">${title || '---'}</span></td>
+                <td><span class="badge bg-primary-subtle text-primary border border-primary-subtle">${skill}</span></td>
+                <td><span class="badge bg-secondary-subtle text-secondary border font-monospace fw-bold">${level}</span></td>
+                <td><div class="text-truncate" style="max-width: 250px;" title="${desc}">${desc || '---'}</div></td>
+            `;
+            previewBody.appendChild(tr);
+        });
+    }
+});
+</script>
+{% endblock %}
