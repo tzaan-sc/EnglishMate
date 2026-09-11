@@ -7,6 +7,17 @@
   <!-- Breadcrumb Navigation -->
   <nav class="app-breadcrumb mb-3" aria-label="breadcrumb">
     <ol class="breadcrumb mb-0 align-items-center flex-wrap">
+      {% if current_user.is_admin %}
+      <li class="breadcrumb-item">
+        <a href="{{ url_for('admin.dashboard') }}" class="d-inline-flex align-items-center gap-1">
+          <i class="ph-bold ph-shield-check"></i>
+          <span>Quản trị Hệ thống</span>
+        </a>
+      </li>
+      <li class="breadcrumb-item active" aria-current="page">
+        <span>Hồ sơ Quản trị viên</span>
+      </li>
+      {% else %}
       <li class="breadcrumb-item">
         <a href="{{ url_for('main.dashboard') }}" class="d-inline-flex align-items-center gap-1">
           <i class="ph ph-house"></i>
@@ -16,10 +27,125 @@
       <li class="breadcrumb-item active" aria-current="page">
         <span>Hồ Sơ Cá Nhân & Cài Đặt</span>
       </li>
+      {% endif %}
     </ol>
   </nav>
 
   <!-- ZONE 1: HERO & STATS BANNER -->
+  {% if current_user.is_admin %}
+  <!-- ADMIN HERO BANNER -->
+  <div class="hero-brand-card p-4 p-lg-4 mb-4 shadow-sm" style="background: linear-gradient(135deg, #1e1b4b 0%, #172554 50%, #0f172a 100%);">
+    <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3 mb-3 position-relative" style="z-index: 2;">
+      <!-- User Identity Block -->
+      <div class="d-flex align-items-center gap-3.5">
+        <div class="position-relative flex-shrink-0">
+          <div class="rounded-circle overflow-hidden shadow-sm d-flex align-items-center justify-content-center bg-white text-primary border border-3 border-white-50"
+               style="width: 82px; height: 82px; font-size: 2.2rem; font-weight: 800; box-shadow: 0 4px 16px rgba(0,0,0,0.25);">
+            {% if current_user.avatar and current_user.avatar != 'default_avatar.png' %}
+            <img src="{{ url_for('static', filename='uploads/avatars/' + current_user.avatar) }}" class="w-100 h-100 object-fit-cover" alt="Avatar">
+            {% else %}
+            {{ current_user.username[0].upper() }}
+            {% endif %}
+          </div>
+          {% if current_user.is_email_verified %}
+          <span class="position-absolute bottom-0 end-0 bg-success text-white rounded-circle d-flex align-items-center justify-content-center border border-2 border-white"
+                style="width: 24px; height: 24px; font-size: 0.75rem;" title="Email đã xác minh">
+            <i class="ph-bold ph-check"></i>
+          </span>
+          {% endif %}
+        </div>
+
+        <div>
+          <div class="d-inline-flex align-items-center gap-1.5 px-2.5 py-0.5 rounded-pill mb-1.5" style="background: rgba(129, 140, 248, 0.22); border: 1px solid rgba(165, 180, 252, 0.3); font-size: 0.74rem; font-weight: 700; color: #c7d2fe;">
+            <i class="ph-bold ph-shield-check"></i>
+            <span>TÀI KHOẢN QUẢN TRỊ VIÊN HỆ THỐNG</span>
+          </div>
+          <h3 class="fw-bold text-white mb-1 d-flex align-items-center gap-2" style="letter-spacing: -0.01em;">
+            {{ current_user.full_name or current_user.username }}
+          </h3>
+          <div class="d-flex align-items-center gap-2 flex-wrap">
+            <span class="text-white-50 small">@{{ current_user.username }}</span>
+            <span class="text-white-50 small">·</span>
+            <span class="badge bg-danger text-white rounded-pill px-2.5 py-0.5" style="font-size: 0.72rem;">
+              <i class="ph-bold ph-shield-check me-1"></i>Administrator
+            </span>
+            <span class="badge rounded-pill px-2.5 py-0.5 text-white" style="background: rgba(139, 92, 246, 0.4); border: 1px solid rgba(167, 139, 250, 0.4); font-size: 0.72rem;">
+              <i class="ph-bold ph-key me-1"></i>Toàn quyền Hệ thống (Root)
+            </span>
+            {% if current_user.is_email_verified %}
+            <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-2.5 py-0.5" style="font-size: 0.72rem;">✓ Đã xác minh Email</span>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+
+      <!-- Action Buttons Hub for Admin -->
+      <div class="d-flex gap-2 align-items-center flex-wrap">
+        <a href="{{ url_for('admin.dashboard') }}" class="btn btn-light rounded-pill px-3.5 py-1.5 fw-bold text-primary shadow-xs d-inline-flex align-items-center gap-1.5" style="font-size: 0.84rem;">
+          <i class="ph-bold ph-gauge fs-6"></i>
+          <span>Bảng điều khiển Admin</span>
+        </a>
+        <a href="{{ url_for('admin.audit_logs') }}" class="btn btn-outline-light rounded-pill px-3.5 py-1.5 fw-semibold d-inline-flex align-items-center gap-1.5" style="font-size: 0.84rem; background: rgba(255,255,255,0.08); border-color: rgba(255,255,255,0.25);">
+          <i class="ph-bold ph-clock-counter-clockwise fs-6"></i>
+          <span>Nhật ký Kiểm tra</span>
+        </a>
+        <a href="{{ url_for('admin.users') }}" class="btn btn-outline-light rounded-pill px-3.5 py-1.5 fw-semibold d-inline-flex align-items-center gap-1.5" style="font-size: 0.84rem; background: rgba(255,255,255,0.08); border-color: rgba(255,255,255,0.25);">
+          <i class="ph-bold ph-users-three fs-6"></i>
+          <span>Quản lý Tài khoản</span>
+        </a>
+      </div>
+    </div>
+
+    <!-- 4 Clean Stat Pills for Admin -->
+    <div class="row g-3 g-lg-4 pt-4 mt-3 border-top" style="border-color: rgba(255, 255, 255, 0.15) !important; position: relative; z-index: 2;">
+      <div class="col-6 col-md-3">
+        <div class="d-flex align-items-center gap-3 p-3 px-3.5 rounded-4" style="background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.12); backdrop-filter: blur(4px);">
+          <div class="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0" style="width: 40px; height: 40px; background: rgba(255, 255, 255, 0.2);">
+            <i class="ph-bold ph-envelope text-white fs-5"></i>
+          </div>
+          <div class="overflow-hidden">
+            <span class="text-white-50 d-block text-truncate" style="font-size: 0.74rem;">Email Quản trị</span>
+            <strong class="text-white fs-6 text-truncate d-block" title="{{ current_user.email }}">{{ current_user.email }}</strong>
+          </div>
+        </div>
+      </div>
+      <div class="col-6 col-md-3">
+        <div class="d-flex align-items-center gap-3 p-3 px-3.5 rounded-4" style="background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.12); backdrop-filter: blur(4px);">
+          <div class="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0" style="width: 40px; height: 40px; background: rgba(255, 255, 255, 0.2);">
+            <i class="ph-bold ph-calendar-blank fs-5" style="color: #6ee7b7;"></i>
+          </div>
+          <div>
+            <span class="text-white-50 d-block" style="font-size: 0.74rem;">Ngày tham gia</span>
+            <strong class="text-white fs-6">{{ current_user.created_at.strftime('%d/%m/%Y') if current_user.created_at else '---' }}</strong>
+          </div>
+        </div>
+      </div>
+      <div class="col-6 col-md-3">
+        <div class="d-flex align-items-center gap-3 p-3 px-3.5 rounded-4" style="background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.12); backdrop-filter: blur(4px);">
+          <div class="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0" style="width: 40px; height: 40px; background: rgba(255, 255, 255, 0.2);">
+            <i class="ph-bold ph-clock fs-5" style="color: #93c5fd;"></i>
+          </div>
+          <div>
+            <span class="text-white-50 d-block" style="font-size: 0.74rem;">Đăng nhập gần nhất</span>
+            <strong class="text-white fs-6">{{ current_user.last_login_at.strftime('%d/%m/%Y %H:%M') if current_user.last_login_at else 'Lần đầu' }}</strong>
+          </div>
+        </div>
+      </div>
+      <div class="col-6 col-md-3">
+        <div class="d-flex align-items-center gap-3 p-3 px-3.5 rounded-4" style="background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.12); backdrop-filter: blur(4px);">
+          <div class="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0" style="width: 40px; height: 40px; background: rgba(255, 255, 255, 0.2);">
+            <i class="ph-bold ph-activity fs-5" style="color: #f43f5e;"></i>
+          </div>
+          <div>
+            <span class="text-white-50 d-block" style="font-size: 0.74rem;">Hành động quản trị</span>
+            <strong class="text-white fs-6">{{ admin_audit_count }} thao tác 🛡️</strong>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  {% else %}
+  <!-- STUDENT HERO BANNER -->
   <div class="hero-brand-card p-4 p-lg-4 mb-4 shadow-sm">
     <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3 mb-3 position-relative" style="z-index: 2;">
       <!-- User Identity Block -->
@@ -52,11 +178,7 @@
           <div class="d-flex align-items-center gap-2 flex-wrap">
             <span class="text-white-50 small">@{{ current_user.username }}</span>
             <span class="text-white-50 small">·</span>
-            {% if current_user.is_admin %}
-            <span class="badge bg-danger text-white rounded-pill px-2.5 py-0.5" style="font-size: 0.72rem;">Quản trị viên</span>
-            {% else %}
             <span class="badge bg-white text-dark rounded-pill px-2.5 py-0.5 fw-bold" style="font-size: 0.72rem;">Học viên chính thức</span>
-            {% endif %}
             {% if current_user.is_email_verified %}
             <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-2.5 py-0.5" style="font-size: 0.72rem;">✓ Đã xác minh Email</span>
             {% else %}
@@ -66,7 +188,7 @@
         </div>
       </div>
 
-      <!-- Action Buttons Hub -->
+      <!-- Action Buttons Hub for Student -->
       <div class="d-flex gap-2 align-items-center flex-wrap">
         <a href="{{ url_for('learning.progress') }}" class="btn btn-light rounded-pill px-3.5 py-1.5 fw-bold text-primary shadow-xs d-inline-flex align-items-center gap-1.5" style="font-size: 0.84rem;">
           <i class="ph-bold ph-chart-line-up fs-6"></i>
@@ -79,7 +201,7 @@
       </div>
     </div>
 
-    <!-- 4 Clean Stat Pills -->
+    <!-- 4 Clean Stat Pills for Student -->
     <div class="row g-3 g-lg-4 pt-4 mt-3 border-top" style="border-color: rgba(255, 255, 255, 0.15) !important; position: relative; z-index: 2;">
       <div class="col-6 col-md-3">
         <div class="d-flex align-items-center gap-3 p-3 px-3.5 rounded-4" style="background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.12); backdrop-filter: blur(4px);">
@@ -127,6 +249,7 @@
       </div>
     </div>
   </div>
+  {% endif %}
 
   <!-- ZONE 2: NAVIGATION PILLS -->
   <div class="d-flex gap-2 flex-wrap mb-4 align-items-center" id="profileTabNav" role="tablist">
@@ -135,6 +258,20 @@
       <i class="ph-bold ph-user-gear"></i>
       <span>Thông tin cá nhân</span>
     </button>
+    {% if current_user.is_admin %}
+    <button class="btn btn-light border text-secondary rounded-pill px-3.5 py-1.5 fw-semibold d-inline-flex align-items-center gap-1.5 profile-tab-btn"
+            id="tab-roles-btn" data-bs-toggle="pill" data-bs-target="#tab-roles" type="button" role="tab" style="font-size: 0.84rem;">
+      <i class="ph-bold ph-shield-check"></i>
+      <span>Quyền hạn & Vai trò</span>
+      <span class="badge rounded-pill bg-info-subtle text-info border border-info-subtle" style="font-size: 0.7rem;">{{ assigned_roles|length if assigned_roles else 1 }}</span>
+    </button>
+    <button class="btn btn-light border text-secondary rounded-pill px-3.5 py-1.5 fw-semibold d-inline-flex align-items-center gap-1.5 profile-tab-btn"
+            id="tab-audit-btn" data-bs-toggle="pill" data-bs-target="#tab-audit" type="button" role="tab" style="font-size: 0.84rem;">
+      <i class="ph-bold ph-clock-counter-clockwise"></i>
+      <span>Nhật ký của tôi</span>
+      <span class="badge rounded-pill bg-purple-subtle text-purple border border-purple-subtle" style="font-size: 0.7rem;">{{ admin_audit_count }}</span>
+    </button>
+    {% endif %}
     <button class="btn btn-light border text-secondary rounded-pill px-3.5 py-1.5 fw-semibold d-inline-flex align-items-center gap-1.5 profile-tab-btn"
             id="tab-email-btn" data-bs-toggle="pill" data-bs-target="#tab-email" type="button" role="tab" style="font-size: 0.84rem;">
       <i class="ph-bold ph-envelope-simple-open"></i>
@@ -154,7 +291,7 @@
     <button class="btn btn-light border text-danger rounded-pill px-3.5 py-1.5 fw-semibold d-inline-flex align-items-center gap-1.5 profile-tab-btn ms-lg-auto"
             id="tab-danger-btn" data-bs-toggle="pill" data-bs-target="#tab-danger" type="button" role="tab" style="font-size: 0.84rem;">
       <i class="ph-bold ph-warning-octagon"></i>
-      <span>Quản lý rủi ro</span>
+      <span>{{ 'Bảo vệ tài khoản' if current_user.is_admin else 'Quản lý rủi ro' }}</span>
     </button>
   </div>
 
@@ -215,7 +352,205 @@
       </div>
     </div>
 
-    <!-- TAB 2: THAY ĐỔI EMAIL -->
+    {% if current_user.is_admin %}
+    <!-- TAB: QUYỀN HẠN & VAI TRÒ (RBAC) -->
+    <div class="tab-pane fade" id="tab-roles" role="tabpanel">
+      <div class="card card-modern p-4 p-lg-5 mb-4">
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4 pb-3 border-bottom">
+          <div class="d-flex align-items-center gap-2.5">
+            <div class="rounded-3 d-inline-flex align-items-center justify-content-center bg-info-subtle text-info" style="width: 38px; height: 38px; font-size: 1.2rem;">
+              <i class="ph-bold ph-shield-check"></i>
+            </div>
+            <div>
+              <h5 class="fw-bold mb-0 text-dark">Quyền hạn & Vai trò Hệ thống (RBAC)</h5>
+              <span class="text-secondary small">Ma trận phân quyền và các module chức năng bạn được phép can thiệp.</span>
+            </div>
+          </div>
+          <a href="{{ url_for('admin.roles') }}" class="btn btn-outline-primary btn-sm rounded-pill px-3.5 py-1.5 fw-semibold d-inline-flex align-items-center gap-1.5">
+            <i class="ph-bold ph-sliders-horizontal"></i>
+            <span>Cấu hình Ma trận Vai trò</span>
+          </a>
+        </div>
+
+        <!-- Role Overview Banner -->
+        <div class="p-3.5 rounded-4 border bg-light-subtle mb-4">
+          <div class="d-flex flex-column flex-sm-row justify-content-between align-items-sm-center gap-2">
+            <div>
+              <span class="small fw-semibold text-secondary d-block mb-1">Cấp bậc tài khoản hiện tại:</span>
+              <div class="d-flex align-items-center gap-2 flex-wrap">
+                {% if assigned_roles %}
+                  {% for r in assigned_roles %}
+                  <span class="badge bg-primary rounded-pill px-3 py-1.5 fw-bold" style="font-size: 0.82rem;">
+                    <i class="ph-bold ph-shield-check me-1"></i>{{ r.name }}
+                  </span>
+                  {% endfor %}
+                {% else %}
+                  <span class="badge bg-danger rounded-pill px-3 py-1.5 fw-bold" style="font-size: 0.82rem;">
+                    <i class="ph-bold ph-shield-check me-1"></i>SUPERADMIN (Toàn quyền Hệ thống)
+                  </span>
+                {% endif %}
+              </div>
+            </div>
+            <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-3 py-1.5 small fw-semibold d-inline-flex align-items-center gap-1.5">
+              <span class="rounded-circle bg-success" style="width: 6px; height: 6px;"></span>
+              <span>Đang hoạt động ổn định</span>
+            </span>
+          </div>
+        </div>
+
+        <!-- Capability Matrix Grid -->
+        <h6 class="fw-bold text-dark mb-3">Phạm vi quyền hạn được kích hoạt:</h6>
+        <div class="row g-3">
+          <div class="col-md-6 col-lg-4">
+            <div class="p-3.5 rounded-4 border h-100 bg-white">
+              <div class="d-flex align-items-center gap-2 mb-2">
+                <div class="rounded-3 bg-primary-subtle text-primary p-2 d-inline-flex align-items-center justify-content-center" style="width: 34px; height: 34px;">
+                  <i class="ph-bold ph-books fs-5"></i>
+                </div>
+                <h6 class="fw-bold text-dark mb-0" style="font-size: 0.95rem;">Quản lý Bài học</h6>
+              </div>
+              <p class="text-secondary small mb-2">Toàn quyền soạn thảo, sửa đổi, ẩn/hiện và cấu hình bài giảng đa kỹ năng.</p>
+              <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-2.5 py-0.5" style="font-size: 0.72rem;">✓ Full Access</span>
+            </div>
+          </div>
+
+          <div class="col-md-6 col-lg-4">
+            <div class="p-3.5 rounded-4 border h-100 bg-white">
+              <div class="d-flex align-items-center gap-2 mb-2">
+                <div class="rounded-3 bg-success-subtle text-success p-2 d-inline-flex align-items-center justify-content-center" style="width: 34px; height: 34px;">
+                  <i class="ph-bold ph-translate fs-5"></i>
+                </div>
+                <h6 class="fw-bold text-dark mb-0" style="font-size: 0.95rem;">Quản lý Từ vựng</h6>
+              </div>
+              <p class="text-secondary small mb-2">Thêm từ mới, phiên âm IPA, giải nghĩa và phân loại theo khóa học (TOEIC, IELTS...).</p>
+              <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-2.5 py-0.5" style="font-size: 0.72rem;">✓ Full Access</span>
+            </div>
+          </div>
+
+          <div class="col-md-6 col-lg-4">
+            <div class="p-3.5 rounded-4 border h-100 bg-white">
+              <div class="d-flex align-items-center gap-2 mb-2">
+                <div class="rounded-3 bg-purple-subtle text-purple p-2 d-inline-flex align-items-center justify-content-center" style="width: 34px; height: 34px;">
+                  <i class="ph-bold ph-certificate fs-5"></i>
+                </div>
+                <h6 class="fw-bold text-dark mb-0" style="font-size: 0.95rem;">Ngân hàng Đề thi</h6>
+              </div>
+              <p class="text-secondary small mb-2">Tạo đề thi, upload đề trọn gói, xuất bản và phân tích biểu đồ hiệu suất học viên.</p>
+              <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-2.5 py-0.5" style="font-size: 0.72rem;">✓ Full Access</span>
+            </div>
+          </div>
+
+          <div class="col-md-6 col-lg-4">
+            <div class="p-3.5 rounded-4 border h-100 bg-white">
+              <div class="d-flex align-items-center gap-2 mb-2">
+                <div class="rounded-3 bg-info-subtle text-info p-2 d-inline-flex align-items-center justify-content-center" style="width: 34px; height: 34px;">
+                  <i class="ph-bold ph-users-three fs-5"></i>
+                </div>
+                <h6 class="fw-bold text-dark mb-0" style="font-size: 0.95rem;">Tài khoản & Phân quyền</h6>
+              </div>
+              <p class="text-secondary small mb-2">Quản lý danh sách học viên, khóa tài khoản vi phạm và bổ nhiệm vai trò quản trị.</p>
+              <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-2.5 py-0.5" style="font-size: 0.72rem;">✓ Full Access</span>
+            </div>
+          </div>
+
+          <div class="col-md-6 col-lg-4">
+            <div class="p-3.5 rounded-4 border h-100 bg-white">
+              <div class="d-flex align-items-center gap-2 mb-2">
+                <div class="rounded-3 bg-warning-subtle text-warning p-2 d-inline-flex align-items-center justify-content-center" style="width: 34px; height: 34px;">
+                  <i class="ph-bold ph-clock-counter-clockwise fs-5"></i>
+                </div>
+                <h6 class="fw-bold text-dark mb-0" style="font-size: 0.95rem;">Giám sát & Nhật ký Audit</h6>
+              </div>
+              <p class="text-secondary small mb-2">Truy vết mọi lịch sử thao tác dữ liệu, bảo mật tài khoản và xuất file CSV kiểm toán.</p>
+              <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-2.5 py-0.5" style="font-size: 0.72rem;">✓ Full Access</span>
+            </div>
+          </div>
+
+          <div class="col-md-6 col-lg-4">
+            <div class="p-3.5 rounded-4 border h-100 bg-white">
+              <div class="d-flex align-items-center gap-2 mb-2">
+                <div class="rounded-3 bg-success-subtle text-success p-2 d-inline-flex align-items-center justify-content-center" style="width: 34px; height: 34px;">
+                  <i class="ph-bold ph-file-arrow-down fs-5"></i>
+                </div>
+                <h6 class="fw-bold text-dark mb-0" style="font-size: 0.95rem;">Import Dữ liệu Học tập</h6>
+              </div>
+              <p class="text-secondary small mb-2">Nạp hàng loạt câu hỏi, đề thi và từ vựng thông qua file Excel, CSV và JSON.</p>
+              <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-2.5 py-0.5" style="font-size: 0.72rem;">✓ Full Access</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB: NHẬT KÝ THAO TÁC CỦA TÔI -->
+    <div class="tab-pane fade" id="tab-audit" role="tabpanel">
+      <div class="card card-modern p-4 p-lg-5 mb-4">
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4 pb-3 border-bottom">
+          <div class="d-flex align-items-center gap-2.5">
+            <div class="rounded-3 d-inline-flex align-items-center justify-content-center bg-purple-subtle text-purple" style="width: 38px; height: 38px; font-size: 1.2rem;">
+              <i class="ph-bold ph-clock-counter-clockwise"></i>
+            </div>
+            <div>
+              <h5 class="fw-bold mb-0 text-dark">Nhật ký Thao tác của Tôi</h5>
+              <span class="text-secondary small">15 hành động quản trị gần nhất do chính bạn thực hiện trên hệ thống.</span>
+            </div>
+          </div>
+          <a href="{{ url_for('admin.audit_logs') }}" class="btn btn-outline-purple btn-sm rounded-pill px-3.5 py-1.5 fw-semibold d-inline-flex align-items-center gap-1.5">
+            <i class="ph-bold ph-arrow-square-out"></i>
+            <span>Xem Toàn bộ Nhật ký Hệ thống</span>
+          </a>
+        </div>
+
+        {% if admin_audit_logs %}
+        <div class="table-responsive rounded-4 border overflow-hidden">
+          <table class="table table-hover align-middle mb-0" style="font-size: 0.88rem;">
+            <thead class="table-light">
+              <tr>
+                <th style="width: 170px;">Thời gian</th>
+                <th style="width: 140px;">Hành động</th>
+                <th style="width: 130px;">Đối tượng</th>
+                <th>Chi tiết thao tác</th>
+                <th style="width: 130px;" class="text-end">Địa chỉ IP</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for log in admin_audit_logs %}
+              <tr>
+                <td class="text-secondary small font-monospace">
+                  {{ log.created_at_vn.strftime('%d/%m/%Y %H:%M') if log.created_at_vn else log.created_at.strftime('%d/%m/%Y %H:%M') }}
+                </td>
+                <td>
+                  <span class="badge {{ 'bg-success-subtle text-success border border-success-subtle' if 'CREATE' in log.action or 'ADD' in log.action or 'IMPORT' in log.action else ('bg-danger-subtle text-danger border border-danger-subtle' if 'DELETE' in log.action or 'LOCK' in log.action else 'bg-primary-subtle text-primary border border-primary-subtle') }} rounded-pill px-2.5 py-1 fw-bold font-monospace" style="font-size: 0.74rem;">
+                    {{ log.action }}
+                  </span>
+                </td>
+                <td>
+                  <span class="badge bg-light text-secondary border rounded-pill px-2.5 py-1 font-monospace" style="font-size: 0.74rem;">
+                    {{ log.target_type or 'System' }}{% if log.target_id %} #{{ log.target_id }}{% endif %}
+                  </span>
+                </td>
+                <td class="text-dark small text-break">
+                  {{ log.details or '---' }}
+                </td>
+                <td class="text-end text-muted small font-monospace">
+                  {{ log.ip_address or '127.0.0.1' }}
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        {% else %}
+        <div class="p-4 text-center text-muted small border rounded-4 bg-light-subtle">
+          <i class="ph-bold ph-info fs-3 d-block mb-1 text-secondary"></i>
+          <span>Bạn chưa thực hiện hành động ghi nhận nhật ký nào gần đây.</span>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+    {% endif %}
+
+    <!-- TAB: THAY ĐỔI EMAIL -->
     <div class="tab-pane fade" id="tab-email" role="tabpanel">
       <div class="card card-modern p-4 p-lg-5 mb-4">
         <div class="d-flex align-items-center gap-2.5 mb-4 pb-3 border-bottom">
@@ -410,6 +745,37 @@
 
     <!-- TAB 5: VÙNG NGUY HIỂM / QUẢN LÝ RỦI RO -->
     <div class="tab-pane fade" id="tab-danger" role="tabpanel">
+      {% if current_user.is_admin %}
+      <div class="card card-modern p-4 p-lg-5 mb-4 border-start border-4 border-info">
+        <div class="d-flex align-items-center gap-2.5 mb-3 pb-3 border-bottom">
+          <div class="rounded-3 d-inline-flex align-items-center justify-content-center bg-info-subtle text-info" style="width: 38px; height: 38px; font-size: 1.2rem;">
+            <i class="ph-bold ph-shield-check"></i>
+          </div>
+          <div>
+            <h5 class="fw-bold mb-0 text-dark">Bảo vệ Tài khoản Quản trị viên</h5>
+            <span class="text-secondary small">Cơ chế bảo mật ngăn ngừa gián đoạn hoạt động hệ thống.</span>
+          </div>
+        </div>
+
+        <div class="p-4 rounded-4 border border-info-subtle bg-info-subtle bg-opacity-10 d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3">
+          <div class="d-flex align-items-center gap-3">
+            <div class="rounded-circle p-2.5 d-flex align-items-center justify-content-center bg-white text-info shadow-2xs flex-shrink-0" style="width: 52px; height: 52px; font-size: 1.6rem;">
+              <i class="ph-bold ph-shield-check"></i>
+            </div>
+            <div>
+              <h6 class="fw-bold text-dark mb-1">Tài khoản Quản trị viên được khóa bảo vệ nghiêm ngặt</h6>
+              <p class="text-secondary small mb-0">
+                Nhằm phòng ngừa sự cố vận hành và bảo vệ tính liên tục của hệ thống, tài khoản Administrator không thể tự kích hoạt tính năng vô hiệu hóa hoặc xóa vĩnh viễn trực tiếp từ trang cá nhân. Nếu cần chuyển giao quyền, vui lòng phân quyền tài khoản quản trị mới trước.
+              </p>
+            </div>
+          </div>
+          <a href="{{ url_for('admin.users') }}" class="btn btn-primary btn-sm rounded-pill px-3.5 py-2 fw-semibold flex-shrink-0 d-inline-flex align-items-center gap-1.5 shadow-xs">
+            <i class="ph-bold ph-users-three"></i>
+            <span>Quản lý Tài khoản & Phân quyền</span>
+          </a>
+        </div>
+      </div>
+      {% else %}
       <div class="card card-modern p-4 p-lg-5 mb-4 border-start border-4 border-danger">
         <div class="d-flex align-items-center gap-2.5 mb-3 pb-3 border-bottom">
           <div class="rounded-3 d-inline-flex align-items-center justify-content-center bg-danger-subtle text-danger" style="width: 38px; height: 38px; font-size: 1.2rem;">
@@ -457,6 +823,7 @@
           </div>
         </div>
       </div>
+      {% endif %}
     </div>
 
   </div>

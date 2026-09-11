@@ -294,6 +294,15 @@ def profile():
     current_session_id = session.get("session_key")
     active_sessions = UserSession.query.filter_by(user_id=current_user.id, is_active=True).order_by(UserSession.last_activity.desc()).all()
 
+    admin_audit_logs = []
+    admin_audit_count = 0
+    assigned_roles = []
+    if current_user.is_admin:
+        from app.modules.admin.models import AuditLog
+        admin_audit_logs = AuditLog.query.filter_by(user_id=current_user.id).order_by(AuditLog.created_at.desc()).limit(15).all()
+        admin_audit_count = AuditLog.query.filter_by(user_id=current_user.id).count()
+        assigned_roles = [ur.role for ur in current_user.user_assigned_roles.all() if ur.role]
+
     return render_template(
         "main/profile.html",
         profile_form=profile_form,
@@ -304,6 +313,9 @@ def profile():
         show_verify_modal=show_verify_modal,
         active_sessions=active_sessions,
         current_session_id=current_session_id,
+        admin_audit_logs=admin_audit_logs,
+        admin_audit_count=admin_audit_count,
+        assigned_roles=assigned_roles,
     )
 
 
@@ -406,6 +418,10 @@ def profile_deactivate():
 @bp.post("/profile/delete")
 @login_required
 def profile_delete_account():
+    if current_user.is_admin:
+        flash("Tài khoản Quản trị viên (Admin) được khóa bảo vệ và không thể tự xóa.", "danger")
+        return redirect(url_for("main.profile"))
+
     form = DeleteAccountForm()
     if form.validate_on_submit():
         if not current_user.check_password(form.confirm_password.data):

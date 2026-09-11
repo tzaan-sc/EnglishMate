@@ -99,3 +99,43 @@ def test_delete_account_profile(client):
     with client.application.app_context():
         user = User.query.filter_by(email="student@test.com").first()
         assert user is None
+
+
+def test_admin_profile_view(client):
+    # Setup admin user
+    with client.application.app_context():
+        admin = User.query.filter_by(email="admin_profile@test.com").first()
+        if not admin:
+            admin = User(username="admin_prof", email="admin_profile@test.com", role="ADMIN")
+            admin.set_password("AdminPass123!")
+            db.session.add(admin)
+            db.session.commit()
+
+    client.post("/auth/login", data={"email": "admin_profile@test.com", "password": "AdminPass123!"}, follow_redirects=True)
+    res = client.get("/profile")
+    assert res.status_code == 200
+    assert "TÀI KHOẢN QUẢN TRỊ VIÊN HỆ THỐNG".encode("utf-8") in res.data
+    assert "Bảng điều khiển Admin".encode("utf-8") in res.data
+    assert "Quyền hạn & Vai trò".encode("utf-8") in res.data
+    assert "Nhật ký của tôi".encode("utf-8") in res.data
+    assert "Hành động quản trị".encode("utf-8") in res.data
+
+
+def test_admin_cannot_delete_account(client):
+    with client.application.app_context():
+        admin = User.query.filter_by(email="admin_profile@test.com").first()
+        if not admin:
+            admin = User(username="admin_prof", email="admin_profile@test.com", role="ADMIN")
+            admin.set_password("AdminPass123!")
+            db.session.add(admin)
+            db.session.commit()
+
+    client.post("/auth/login", data={"email": "admin_profile@test.com", "password": "AdminPass123!"}, follow_redirects=True)
+    res = client.post("/profile/delete", data={"confirm_password": "AdminPass123!"}, follow_redirects=True)
+    assert res.status_code == 200
+    assert "không thể tự xóa".encode("utf-8") in res.data
+
+    with client.application.app_context():
+        admin = User.query.filter_by(email="admin_profile@test.com").first()
+        assert admin is not None
+
