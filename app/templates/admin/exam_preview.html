@@ -23,31 +23,37 @@
   </nav>
 
   <div class="d-flex flex-column flex-sm-row justify-content-between align-items-sm-center gap-3 mb-4">
-    <a href="{{ url_for('admin.exams_list') }}" class="btn btn-light border rounded-pill px-3.5 py-1.5 text-secondary fw-semibold shadow-2xs d-inline-flex align-items-center gap-1.5" style="font-size: 0.88rem;">
+    <a href="{{ url_for('admin.exams_list') }}" class="btn btn-light border fw-semibold text-secondary px-3.5 py-2 rounded-3 shadow-2xs d-inline-flex align-items-center gap-1.5" style="font-size: 0.88rem;">
       <i class="ph-bold ph-arrow-left"></i>
-      <span>Quay lại danh sách đề thi</span>
+      <span>Quay lại danh sách</span>
     </a>
 
     <div class="d-flex gap-2">
-      <a href="{{ url_for('admin.exam_edit', exam_id=exam.id) }}" class="btn btn-outline-primary rounded-pill px-3.5 py-1.5 fw-bold shadow-2xs d-inline-flex align-items-center gap-1.5" style="font-size: 0.88rem;">
+      <a href="{{ url_for('admin.exam_edit', exam_id=exam.id) }}" class="btn btn-outline-primary fw-bold px-3.5 py-2 rounded-3 shadow-2xs d-inline-flex align-items-center gap-1.5" style="font-size: 0.88rem;">
         <i class="ph-bold ph-pencil-simple"></i>
         <span>Chỉnh sửa đề thi</span>
       </a>
-      <a href="{{ url_for('admin.exam_stats_analytics', exam_id=exam.id) }}" class="btn btn-outline-success rounded-pill px-3.5 py-1.5 fw-bold shadow-2xs d-inline-flex align-items-center gap-1.5" style="font-size: 0.88rem;">
+      <a href="{{ url_for('admin.exam_stats_analytics', exam_id=exam.id) }}" class="btn btn-outline-success fw-bold px-3.5 py-2 rounded-3 shadow-2xs d-inline-flex align-items-center gap-1.5" style="font-size: 0.88rem;">
         <i class="ph-bold ph-chart-line-up"></i>
-        <span>Xem phân tích hiệu suất</span>
+        <span>Xem phân tích</span>
       </a>
     </div>
   </div>
 
   <!-- Exam Header Banner -->
-  <div class="card-modern p-4 p-md-5 mb-4">
-    <span class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill px-3 py-1.5 align-self-start mb-2 fw-bold d-inline-flex align-items-center gap-1.5">
-      <i class="ph-bold ph-eye"></i>
-      <span>CHẾ ĐỘ XEM TRƯỚC (EXAM PREVIEW)</span>
-    </span>
-
-    <h2 class="fw-bold text-dark mb-2" style="letter-spacing: -0.01em;">{{ exam.title }}</h2>
+  <div class="card-modern p-4 mb-4">
+    <div class="d-flex align-items-center gap-3 mb-3">
+      <div class="rounded-3 bg-purple-subtle text-purple border border-purple-subtle d-inline-flex align-items-center justify-content-center flex-shrink-0" style="width: 48px; height: 48px; font-size: 1.45rem;">
+        <i class="ph-bold ph-eye"></i>
+      </div>
+        <div>
+          <div class="d-flex align-items-center gap-2 mb-1">
+            <span class="badge bg-purple-subtle text-purple border border-purple-subtle rounded-pill px-2.5 py-0.5 fw-bold" style="font-size: 0.72rem;">CHẾ ĐỘ XEM TRƯỚC</span>
+          </div>
+          <h3 class="fw-bold text-dark mb-0.5" style="letter-spacing: -0.01em;">{{ exam.title }}</h3>
+          <p class="text-secondary small mb-0">Xem trước cấu trúc đề thi và phân bổ câu hỏi</p>
+        </div>
+    </div>
     <div class="d-flex flex-wrap gap-3 text-secondary small mb-3">
       <span class="d-inline-flex align-items-center gap-1"><i class="ph-bold ph-folder text-primary"></i> Danh mục: <strong>{{ exam.category }}</strong></span>
       <span class="d-inline-flex align-items-center gap-1"><i class="ph-bold ph-timer text-warning"></i> Thời lượng: <strong>{{ exam.duration_minutes }} phút</strong></span>

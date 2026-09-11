@@ -184,28 +184,28 @@ def test_admin_redirected_to_admin_dashboard(client):
 def test_admin_unified_pages_headers_and_stats(client):
     login(client, "admin@test.com", "admin123")
 
-    # Test Lessons page has badge and 4 stat cards
+    # Test Lessons page has 4 stat cards
     res_lessons = client.get("/admin/lessons")
     assert res_lessons.status_code == 200
-    assert "Hệ thống Quản trị Học tập".encode("utf-8") in res_lessons.data
+    assert "Quản lý Bài học".encode("utf-8") in res_lessons.data
     assert "Tổng bài học".encode("utf-8") in res_lessons.data
     assert "Đang mở".encode("utf-8") in res_lessons.data
     assert "Đã ẩn".encode("utf-8") in res_lessons.data
     assert "Câu hỏi Quiz".encode("utf-8") in res_lessons.data
 
-    # Test Vocabulary page has badge, 4 stat cards, and filter toolbar
+    # Test Vocabulary page has 4 stat cards, and filter toolbar
     res_vocab = client.get("/admin/vocabulary")
     assert res_vocab.status_code == 200
-    assert "Kho Từ vựng &amp; Flashcards".encode("utf-8") in res_vocab.data or "Kho Từ vựng & Flashcards".encode("utf-8") in res_vocab.data
+    assert "Kho Từ vựng Hệ thống".encode("utf-8") in res_vocab.data
     assert "Tổng từ vựng".encode("utf-8") in res_vocab.data
     assert "Cơ bản (A1 - B1)".encode("utf-8") in res_vocab.data
     assert "Nâng cao (B2 - C2)".encode("utf-8") in res_vocab.data
     assert "Tổng chủ đề".encode("utf-8") in res_vocab.data
 
-    # Test Exams page has badge and 4 stat cards
+    # Test Exams page has 4 stat cards
     res_exams = client.get("/admin/exams")
     assert res_exams.status_code == 200
-    assert "Hệ thống Khảo thí &amp; Đề thi".encode("utf-8") in res_exams.data or "Hệ thống Khảo thí & Đề thi".encode("utf-8") in res_exams.data
+    assert "Quản Lý Đề Thi".encode("utf-8") in res_exams.data
     assert "Tổng đề thi".encode("utf-8") in res_exams.data
     assert "Đã xuất bản".encode("utf-8") in res_exams.data
     assert "Bản nháp".encode("utf-8") in res_exams.data
