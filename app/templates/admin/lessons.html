@@ -19,100 +19,120 @@
     </ol>
   </nav>
 
-  <!-- Header Card with Stats & Action -->
-  <div class="card-modern p-4 mb-4">
-    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
-      <div>
-        <div class="d-inline-flex align-items-center gap-1.5 px-2.5 py-0.5 rounded-pill bg-primary-subtle text-primary border border-primary-subtle small fw-bold mb-2">
-          <i class="ph-bold ph-books"></i>
-          <span>Hệ thống Quản trị Học tập</span>
-        </div>
-        <h3 class="fw-bold text-dark mb-1" style="letter-spacing: -0.01em;">Quản lý Bài học</h3>
-        <p class="text-secondary small mb-0">
-          Tổng cộng <strong>{{ total_count }}</strong> bài học 
-          <span class="text-muted mx-1">·</span> 
-          <span class="text-success fw-semibold"><i class="ph-bold ph-check-circle me-0.5"></i>{{ active_count }} Đang mở</span> 
-          <span class="text-muted mx-1">·</span> 
-          <span class="text-secondary fw-semibold"><i class="ph-bold ph-eye-slash me-0.5"></i>{{ hidden_count }} Đã ẩn</span>
-        </p>
+  <!-- Header -->
+  <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
+    <div>
+      <div class="d-inline-flex align-items-center gap-1.5 px-2.5 py-0.5 rounded-pill bg-primary-subtle text-primary border border-primary-subtle small fw-bold mb-2">
+        <i class="ph-bold ph-books"></i>
+        <span>Hệ thống Quản trị Học tập</span>
       </div>
-
-      <div class="d-flex align-items-center gap-2">
-        <a class="btn btn-outline-primary fw-bold px-3.5 py-2 rounded-3 shadow-2xs d-inline-flex align-items-center gap-1.5" href="{{ url_for('admin.import_hub', type='lessons') }}" style="font-size: 0.88rem;">
-          <i class="ph-bold ph-file-arrow-up fs-5"></i>
-          <span>Import từ file</span>
-        </a>
-        <a class="btn btn-primary fw-bold px-3.5 py-2 rounded-3 shadow-xs d-inline-flex align-items-center gap-1.5" href="{{ url_for('admin.lesson_create') }}" style="font-size: 0.88rem;">
-          <i class="ph-bold ph-plus-circle fs-5"></i>
-          <span>Thêm bài học mới</span>
-        </a>
-      </div>
+      <h3 class="fw-bold text-dark mb-1" style="letter-spacing: -0.01em;">Quản lý Bài học</h3>
+      <p class="text-secondary small mb-0">Soạn thảo bài học 4 kỹ năng, quản lý nội dung ngữ pháp và trạng thái hiển thị</p>
     </div>
 
-    <!-- Filter & Search Toolbar (No auto-reload on select to avoid jitter) -->
-    <div class="pt-3 mt-3 border-top">
-      <form method="get" action="{{ url_for('admin.lessons') }}" class="row g-2.5 align-items-center">
-        <!-- Search Input -->
-        <div class="col-12 col-lg-4">
-          <div class="input-group input-group-sm">
-            <span class="input-group-text bg-white border-end-0 text-muted ps-2.5">
-              <i class="ph-bold ph-magnifying-glass"></i>
-            </span>
-            <input type="text" name="search" value="{{ search }}" class="form-control border-start-0 ps-1" placeholder="Tìm theo tiêu đề, mô tả bài học...">
-            {% if search %}
-            <a href="{{ url_for('admin.lessons', skill=skill, level=level, status=status) }}" class="btn btn-light border border-start-0 text-muted" title="Xóa từ khóa">
-              <i class="ph-bold ph-x"></i>
-            </a>
-            {% endif %}
-          </div>
-        </div>
+    <div class="d-flex align-items-center gap-2">
+      <a class="btn btn-outline-primary fw-bold px-3.5 py-2 rounded-3 shadow-2xs d-inline-flex align-items-center gap-1.5" href="{{ url_for('admin.import_hub', type='lessons') }}" style="font-size: 0.88rem;">
+        <i class="ph-bold ph-file-arrow-up fs-5"></i>
+        <span>Import từ file</span>
+      </a>
+      <a class="btn btn-primary fw-bold px-3.5 py-2 rounded-3 shadow-xs d-inline-flex align-items-center gap-1.5" href="{{ url_for('admin.lesson_create') }}" style="font-size: 0.88rem;">
+        <i class="ph-bold ph-plus-circle fs-5"></i>
+        <span>Thêm bài học mới</span>
+      </a>
+    </div>
+  </div>
 
-        <!-- Skill Select -->
-        <div class="col-6 col-md-3 col-lg-2">
-          <select name="skill" class="form-select form-select-sm">
-            <option value="">Tất cả kỹ năng</option>
-            <option value="Listening" {{ 'selected' if skill == 'Listening' }}>Listening</option>
-            <option value="Reading" {{ 'selected' if skill == 'Reading' }}>Reading</option>
-            <option value="Speaking" {{ 'selected' if skill == 'Speaking' }}>Speaking</option>
-            <option value="Writing" {{ 'selected' if skill == 'Writing' }}>Writing</option>
-            <option value="Grammar" {{ 'selected' if skill == 'Grammar' }}>Grammar</option>
-            <option value="Vocabulary" {{ 'selected' if skill == 'Vocabulary' }}>Vocabulary</option>
-          </select>
-        </div>
+  <!-- 4 Stat Overview Cards -->
+  <div class="row g-3 mb-4">
+    <div class="col-md-3 col-6">
+      <div class="card-modern p-3.5 text-center">
+        <span class="text-secondary small fw-bold d-block mb-1" style="font-size: 0.76rem;">Tổng bài học</span>
+        <h3 class="fw-800 text-primary mb-0" style="font-size: 1.5rem;">{{ stats.total_lessons }}</h3>
+      </div>
+    </div>
+    <div class="col-md-3 col-6">
+      <div class="card-modern p-3.5 text-center">
+        <span class="text-secondary small fw-bold d-block mb-1" style="font-size: 0.76rem;">Đang mở</span>
+        <h3 class="fw-800 text-success mb-0" style="font-size: 1.5rem;">{{ stats.active_count }}</h3>
+      </div>
+    </div>
+    <div class="col-md-3 col-6">
+      <div class="card-modern p-3.5 text-center">
+        <span class="text-secondary small fw-bold d-block mb-1" style="font-size: 0.76rem;">Đã ẩn</span>
+        <h3 class="fw-800 text-warning mb-0" style="font-size: 1.5rem;">{{ stats.hidden_count }}</h3>
+      </div>
+    </div>
+    <div class="col-md-3 col-6">
+      <div class="card-modern p-3.5 text-center">
+        <span class="text-secondary small fw-bold d-block mb-1" style="font-size: 0.76rem;">Câu hỏi Quiz</span>
+        <h3 class="fw-800 text-info mb-0" style="font-size: 1.5rem;">{{ stats.total_questions }}</h3>
+      </div>
+    </div>
+  </div>
 
-        <!-- Level Select -->
-        <div class="col-6 col-md-3 col-lg-2">
-          <select name="level" class="form-select form-select-sm">
-            <option value="">Tất cả Level</option>
-            {% for lvl in ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'] %}
-            <option value="{{ lvl }}" {{ 'selected' if level == lvl }}>Level {{ lvl }}</option>
-            {% endfor %}
-          </select>
-        </div>
-
-        <!-- Status Select -->
-        <div class="col-6 col-md-3 col-lg-2">
-          <select name="status" class="form-select form-select-sm">
-            <option value="">Tất cả trạng thái</option>
-            <option value="active" {{ 'selected' if status == 'active' }}>Đang mở</option>
-            <option value="hidden" {{ 'selected' if status == 'hidden' }}>Đã ẩn</option>
-          </select>
-        </div>
-
-        <!-- Buttons -->
-        <div class="col-6 col-md-3 col-lg-2 d-flex gap-1.5">
-          <button type="submit" class="btn btn-sm btn-dark fw-bold w-100 d-inline-flex align-items-center justify-content-center gap-1">
-            <i class="ph-bold ph-funnel"></i>
-            <span>Lọc</span>
-          </button>
-          {% if search or skill or level or status %}
-          <a href="{{ url_for('admin.lessons') }}" class="btn btn-sm btn-light border text-secondary fw-semibold px-2.5" title="Đặt lại bộ lọc">
-            <i class="ph-bold ph-arrow-counter-clockwise"></i>
+  <!-- Filter & Search Toolbar (No auto-reload on select to avoid jitter) -->
+  <div class="card-modern p-3.5 mb-4">
+    <form method="get" action="{{ url_for('admin.lessons') }}" class="row g-2.5 align-items-center">
+      <!-- Search Input -->
+      <div class="col-12 col-lg-4">
+        <div class="input-group input-group-sm">
+          <span class="input-group-text bg-white border-end-0 text-muted ps-2.5">
+            <i class="ph-bold ph-magnifying-glass"></i>
+          </span>
+          <input type="text" name="search" value="{{ search }}" class="form-control border-start-0 ps-1" placeholder="Tìm theo tiêu đề, mô tả bài học...">
+          {% if search %}
+          <a href="{{ url_for('admin.lessons', skill=skill, level=level, status=status) }}" class="btn btn-light border border-start-0 text-muted" title="Xóa từ khóa">
+            <i class="ph-bold ph-x"></i>
           </a>
           {% endif %}
         </div>
-      </form>
-    </div>
+      </div>
+
+      <!-- Skill Select -->
+      <div class="col-6 col-md-3 col-lg-2">
+        <select name="skill" class="form-select form-select-sm">
+          <option value="">Tất cả kỹ năng</option>
+          <option value="Listening" {{ 'selected' if skill == 'Listening' }}>Listening</option>
+          <option value="Reading" {{ 'selected' if skill == 'Reading' }}>Reading</option>
+          <option value="Speaking" {{ 'selected' if skill == 'Speaking' }}>Speaking</option>
+          <option value="Writing" {{ 'selected' if skill == 'Writing' }}>Writing</option>
+          <option value="Grammar" {{ 'selected' if skill == 'Grammar' }}>Grammar</option>
+          <option value="Vocabulary" {{ 'selected' if skill == 'Vocabulary' }}>Vocabulary</option>
+        </select>
+      </div>
+
+      <!-- Level Select -->
+      <div class="col-6 col-md-3 col-lg-2">
+        <select name="level" class="form-select form-select-sm">
+          <option value="">Tất cả Level</option>
+          {% for lvl in ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'] %}
+          <option value="{{ lvl }}" {{ 'selected' if level == lvl }}>Level {{ lvl }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <!-- Status Select -->
+      <div class="col-6 col-md-3 col-lg-2">
+        <select name="status" class="form-select form-select-sm">
+          <option value="">Tất cả trạng thái</option>
+          <option value="active" {{ 'selected' if status == 'active' }}>Đang mở</option>
+          <option value="hidden" {{ 'selected' if status == 'hidden' }}>Đã ẩn</option>
+        </select>
+      </div>
+
+      <!-- Buttons -->
+      <div class="col-6 col-md-3 col-lg-2 d-flex gap-1.5">
+        <button type="submit" class="btn btn-sm btn-dark fw-bold w-100 d-inline-flex align-items-center justify-content-center gap-1">
+          <i class="ph-bold ph-funnel"></i>
+          <span>Lọc</span>
+        </button>
+        {% if search or skill or level or status %}
+        <a href="{{ url_for('admin.lessons') }}" class="btn btn-sm btn-light border text-secondary fw-semibold px-2.5" title="Đặt lại bộ lọc">
+          <i class="ph-bold ph-arrow-counter-clockwise"></i>
+        </a>
+        {% endif %}
+      </div>
+    </form>
   </div>
 
   <!-- Lessons Data Table -->

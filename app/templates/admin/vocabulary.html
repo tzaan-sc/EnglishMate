@@ -19,38 +19,123 @@
     </ol>
   </nav>
 
-  <div class="card-modern p-4">
-    <!-- Header with Search & Actions -->
-    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
-      <div>
-        <h4 class="fw-bold text-dark mb-1" style="font-size: 1.35rem; letter-spacing: -0.01em;">Kho Từ vựng Hệ thống</h4>
-        <p class="text-secondary small mb-0">Tất cả {{ words|length }} từ vựng đang phục vụ học viên ôn luyện</p>
+  <!-- Header -->
+  <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
+    <div>
+      <div class="d-inline-flex align-items-center gap-1.5 px-2.5 py-0.5 rounded-pill bg-primary-subtle text-primary border border-primary-subtle small fw-bold mb-2">
+        <i class="ph-bold ph-translate"></i>
+        <span>Kho Từ vựng & Flashcards</span>
       </div>
-
-      <div class="d-flex gap-2 flex-wrap">
-        <form method="get" class="d-flex gap-1.5" style="min-width: 260px;">
-          <div class="input-group input-group-sm">
-            <span class="input-group-text bg-white border-end-0 text-muted ps-2.5">
-              <i class="ph-bold ph-magnifying-glass"></i>
-            </span>
-            <input type="text" name="q" value="{{ search }}" class="form-control border-start-0 ps-1" placeholder="Tìm từ vựng...">
-            <button type="submit" class="btn btn-dark fw-semibold px-3">Tìm</button>
-          </div>
-        </form>
-
-        <a class="btn btn-outline-primary fw-bold px-3 py-1.5 rounded-3 shadow-2xs d-inline-flex align-items-center gap-1.5" href="{{ url_for('admin.import_hub', type='vocabulary') }}" style="font-size: 0.88rem;">
-          <i class="ph-bold ph-file-arrow-up fs-5"></i>
-          <span>Import từ file</span>
-        </a>
-        <a class="btn btn-primary fw-bold px-3 py-1.5 rounded-3 shadow-xs d-inline-flex align-items-center gap-1.5" href="{{ url_for('admin.vocabulary_create') }}" style="font-size: 0.88rem;">
-          <i class="ph-bold ph-plus-circle fs-5"></i>
-          <span>Thêm từ mới</span>
-        </a>
-      </div>
+      <h3 class="fw-bold text-dark mb-1" style="letter-spacing: -0.01em;">Kho Từ vựng Hệ thống</h3>
+      <p class="text-secondary small mb-0">Quản lý ngân hàng từ vựng, phiên âm IPA, cấp độ CEFR và bộ Flashcards học viên</p>
     </div>
 
-    <!-- Table -->
-    <div class="table-responsive border rounded-3 overflow-hidden">
+    <div class="d-flex align-items-center gap-2">
+      <a class="btn btn-outline-primary fw-bold px-3.5 py-2 rounded-3 shadow-2xs d-inline-flex align-items-center gap-1.5" href="{{ url_for('admin.import_hub', type='vocabulary') }}" style="font-size: 0.88rem;">
+        <i class="ph-bold ph-file-arrow-up fs-5"></i>
+        <span>Import từ file</span>
+      </a>
+      <a class="btn btn-primary fw-bold px-3.5 py-2 rounded-3 shadow-xs d-inline-flex align-items-center gap-1.5" href="{{ url_for('admin.vocabulary_create') }}" style="font-size: 0.88rem;">
+        <i class="ph-bold ph-plus-circle fs-5"></i>
+        <span>Thêm từ mới</span>
+      </a>
+    </div>
+  </div>
+
+  <!-- 4 Stat Overview Cards -->
+  <div class="row g-3 mb-4">
+    <div class="col-md-3 col-6">
+      <div class="card-modern p-3.5 text-center">
+        <span class="text-secondary small fw-bold d-block mb-1" style="font-size: 0.76rem;">Tổng từ vựng</span>
+        <h3 class="fw-800 text-primary mb-0" style="font-size: 1.5rem;">{{ stats.total_words }}</h3>
+      </div>
+    </div>
+    <div class="col-md-3 col-6">
+      <div class="card-modern p-3.5 text-center">
+        <span class="text-secondary small fw-bold d-block mb-1" style="font-size: 0.76rem;">Cơ bản (A1 - B1)</span>
+        <h3 class="fw-800 text-success mb-0" style="font-size: 1.5rem;">{{ stats.basic_words }}</h3>
+      </div>
+    </div>
+    <div class="col-md-3 col-6">
+      <div class="card-modern p-3.5 text-center">
+        <span class="text-secondary small fw-bold d-block mb-1" style="font-size: 0.76rem;">Nâng cao (B2 - C2)</span>
+        <h3 class="fw-800 text-warning mb-0" style="font-size: 1.5rem;">{{ stats.advanced_words }}</h3>
+      </div>
+    </div>
+    <div class="col-md-3 col-6">
+      <div class="card-modern p-3.5 text-center">
+        <span class="text-secondary small fw-bold d-block mb-1" style="font-size: 0.76rem;">Tổng chủ đề</span>
+        <h3 class="fw-800 text-info mb-0" style="font-size: 1.5rem;">{{ stats.total_topics }}</h3>
+      </div>
+    </div>
+  </div>
+
+  <!-- Filter & Search Toolbar (No auto-reload on select to avoid jitter) -->
+  <div class="card-modern p-3.5 mb-4">
+    <form method="get" action="{{ url_for('admin.vocabulary') }}" class="row g-2.5 align-items-center">
+      <!-- Search Input -->
+      <div class="col-12 col-lg-4">
+        <div class="input-group input-group-sm">
+          <span class="input-group-text bg-white border-end-0 text-muted ps-2.5">
+            <i class="ph-bold ph-magnifying-glass"></i>
+          </span>
+          <input type="text" name="search" value="{{ search }}" class="form-control border-start-0 ps-1" placeholder="Tìm từ vựng, phiên âm, nghĩa tiếng Việt...">
+          {% if search %}
+          <a href="{{ url_for('admin.vocabulary', level=level, topic=topic, part_of_speech=part_of_speech) }}" class="btn btn-light border border-start-0 text-muted" title="Xóa từ khóa">
+            <i class="ph-bold ph-x"></i>
+          </a>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- Level Select -->
+      <div class="col-6 col-md-3 col-lg-2">
+        <select name="level" class="form-select form-select-sm">
+          <option value="">Tất cả Level</option>
+          {% for lvl in ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'] %}
+          <option value="{{ lvl }}" {{ 'selected' if level == lvl }}>Level {{ lvl }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <!-- Part of Speech Select -->
+      <div class="col-6 col-md-3 col-lg-2">
+        <select name="part_of_speech" class="form-select form-select-sm">
+          <option value="">Tất cả từ loại</option>
+          {% for pos in all_pos or ['noun', 'verb', 'adjective', 'adverb', 'preposition', 'conjunction', 'phrase', 'idiom'] %}
+          <option value="{{ pos }}" {{ 'selected' if part_of_speech == pos }}>{{ pos }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <!-- Topic Select -->
+      <div class="col-6 col-md-3 col-lg-2">
+        <select name="topic" class="form-select form-select-sm">
+          <option value="">Tất cả chủ đề</option>
+          {% for top in all_topics %}
+          <option value="{{ top }}" {{ 'selected' if topic == top }}>{{ top }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <!-- Buttons -->
+      <div class="col-6 col-md-3 col-lg-2 d-flex gap-1.5">
+        <button type="submit" class="btn btn-sm btn-dark fw-bold w-100 d-inline-flex align-items-center justify-content-center gap-1">
+          <i class="ph-bold ph-funnel"></i>
+          <span>Lọc</span>
+        </button>
+        {% if search or level or topic or part_of_speech %}
+        <a href="{{ url_for('admin.vocabulary') }}" class="btn btn-sm btn-light border text-secondary fw-semibold px-2.5" title="Đặt lại bộ lọc">
+          <i class="ph-bold ph-arrow-counter-clockwise"></i>
+        </a>
+        {% endif %}
+      </div>
+    </form>
+  </div>
+
+  <!-- Table Card -->
+  <div class="card-modern p-0 overflow-hidden">
+    <div class="table-responsive">
       <table class="table table-hover align-middle mb-0" style="font-size: 0.88rem;">
         <thead class="table-light">
           <tr>

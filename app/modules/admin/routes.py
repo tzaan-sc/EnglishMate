@@ -59,6 +59,14 @@ def lessons():
     total_count = Lesson.query.count()
     active_count = Lesson.query.filter_by(is_active=True).count()
     hidden_count = total_count - active_count
+    total_questions = Question.query.count()
+
+    stats_overview = {
+        "total_lessons": total_count,
+        "active_count": active_count,
+        "hidden_count": hidden_count,
+        "total_questions": total_questions,
+    }
 
     lessons_list = query.order_by(Lesson.id.desc()).all()
     return render_template(
@@ -72,6 +80,7 @@ def lessons():
         total_count=total_count,
         active_count=active_count,
         hidden_count=hidden_count,
+        stats=stats_overview,
     )
 
 
@@ -224,14 +233,53 @@ def lesson_delete(lesson_id):
 @bp.get("/vocabulary")
 @admin_required
 def vocabulary():
-    search, level = request.args.get("q", "").strip(), request.args.get("level", "")
+    search = request.args.get("search", request.args.get("q", "")).strip()
+    level = request.args.get("level", "").strip()
+    topic = request.args.get("topic", "").strip()
+    part_of_speech = request.args.get("part_of_speech", "").strip()
+
     query = Vocabulary.query
     if search:
-        query = query.filter(Vocabulary.word.ilike(f"%{search}%"))
-    if level:
+        query = query.filter(
+            Vocabulary.word.ilike(f"%{search}%") |
+            Vocabulary.meaning_vi.ilike(f"%{search}%") |
+            Vocabulary.pronunciation.ilike(f"%{search}%")
+        )
+    if level and level != "All":
         query = query.filter_by(level=level)
-    return render_template("admin/vocabulary.html", words=query.order_by(Vocabulary.id.desc()).all(),
-                           search=search, level=level, form=ConfirmForm())
+    if topic and topic != "All":
+        query = query.filter_by(topic=topic)
+    if part_of_speech and part_of_speech != "All":
+        query = query.filter_by(part_of_speech=part_of_speech)
+
+    total_words = Vocabulary.query.count()
+    basic_words = Vocabulary.query.filter(Vocabulary.level.in_(["A1", "A2", "B1"])).count()
+    advanced_words = Vocabulary.query.filter(Vocabulary.level.in_(["B2", "C1", "C2"])).count()
+    total_topics = db.session.query(Vocabulary.topic).distinct().count()
+
+    stats_overview = {
+        "total_words": total_words,
+        "basic_words": basic_words,
+        "advanced_words": advanced_words,
+        "total_topics": total_topics,
+    }
+
+    all_topics = [t[0] for t in db.session.query(Vocabulary.topic).distinct().order_by(Vocabulary.topic).all() if t[0]]
+    all_pos = [p[0] for p in db.session.query(Vocabulary.part_of_speech).distinct().order_by(Vocabulary.part_of_speech).all() if p[0]]
+
+    words_list = query.order_by(Vocabulary.id.desc()).all()
+    return render_template(
+        "admin/vocabulary.html",
+        words=words_list,
+        stats=stats_overview,
+        search=search,
+        level=level,
+        topic=topic,
+        part_of_speech=part_of_speech,
+        all_topics=all_topics,
+        all_pos=all_pos,
+        form=ConfirmForm()
+    )
 
 
 @bp.route("/vocabulary/new", methods=["GET", "POST"])
