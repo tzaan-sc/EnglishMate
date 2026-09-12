@@ -257,32 +257,166 @@
   </div>
 
   <!-- ========================================== -->
-  <!-- 4. BOTTOM ACTION BAR (GỌN GÀNG)            -->
+  <!-- 4. BOTTOM ACTION BAR (3 TRẠNG THÁI LINH HOẠT) -->
   <!-- ========================================== -->
   {% set cur_learned = selected_unit.learned if selected_unit else course_learned_words %}
   {% set cur_total = selected_unit.total if selected_unit else course_total_words %}
+  {% set study_base_url = url_for('learning.study_vocabulary', cat=cat_key, subcat=subcat_key, unit=selected_unit.id if selected_unit else unit_filter) %}
+  {% set delim = '&' if '?' in study_base_url else '?' %}
 
   <div class="sticky-bottom py-2 mt-4" style="bottom: 1.25rem; z-index: 50; pointer-events: none;">
     <div class="bg-white border rounded-pill shadow-lg p-2 px-3 mx-auto d-flex align-items-center justify-content-center gap-2.5" 
-         style="max-width: 400px; pointer-events: auto;">
+         style="max-width: {% if cur_learned == 0 %}380px{% else %}520px{% endif %}; pointer-events: auto;">
       
-      <!-- Primary Action: Học từ mới / Luyện tập (Dynamic theo Cài đặt) -->
-      {% if cur_learned >= cur_total %}
-      <a href="{{ url_for('learning.study_vocabulary', cat=cat_key, subcat=subcat_key, unit=selected_unit.id if selected_unit else unit_filter, mode='practice') }}" 
-         id="mainStudyActionBtn"
-         class="btn btn-primary flex-grow-1 py-2.5 fw-bold rounded-pill shadow-none d-flex align-items-center justify-content-center gap-2 text-white" 
-         style="font-size: 0.92rem;">
-        <i class="ph-bold ph-lightning fs-5"></i>
-        <span>Luyện tập phản xạ</span>
-      </a>
-      {% else %}
-      <a href="{{ url_for('learning.study_vocabulary', cat=cat_key, subcat=subcat_key, unit=selected_unit.id if selected_unit else unit_filter, mode='learn') }}" 
+      {% if cur_learned == 0 %}
+      <!-- 1. CHƯA HỌC: Chỉ có 1 nút Học từ mới -->
+      <a href="{{ study_base_url }}{{ delim }}mode=learn" 
          id="mainStudyActionBtn"
          class="btn btn-primary flex-grow-1 py-2.5 fw-bold rounded-pill shadow-none d-flex align-items-center justify-content-center gap-2 text-white" 
          style="font-size: 0.92rem;">
         <i class="ph-bold ph-book-open fs-5"></i>
-        <span>{% if cur_learned > 0 %}Học tiếp{% else %}Học từ mới{% endif %}</span>
+        <span>Học từ mới</span>
       </a>
+
+      {% elif cur_learned < cur_total %}
+      <!-- 2. HỌC CHƯA XONG: Có nút Học tiếp và nút Luyện tập (các dạng) -->
+      <a href="{{ study_base_url }}{{ delim }}mode=learn" 
+         id="mainStudyActionBtn"
+         class="btn btn-primary flex-grow-1 py-2.5 fw-bold rounded-pill shadow-none d-flex align-items-center justify-content-center gap-2 text-white" 
+         style="font-size: 0.9rem;">
+        <i class="ph-bold ph-book-open fs-5"></i>
+        <span>Học tiếp ({{ cur_learned }}/{{ cur_total }})</span>
+      </a>
+
+      <!-- Dropup Luyện tập các dạng -->
+      <div class="dropup flex-grow-1">
+        <button type="button" class="btn btn-light border w-100 py-2.5 fw-bold rounded-pill shadow-none d-flex align-items-center justify-content-center gap-1.5 dropdown-toggle text-dark" 
+                data-bs-toggle="dropdown" aria-expanded="false" style="font-size: 0.9rem;">
+          <i class="ph-bold ph-lightning text-warning fs-5"></i>
+          <span>Luyện tập</span>
+        </button>
+        <ul class="dropdown-menu dropdown-menu-end shadow-lg rounded-4 p-2 border mb-2" style="min-width: 275px; z-index: 1050;">
+          <li>
+            <div class="px-2.5 py-1 text-muted small fw-bold text-uppercase" style="font-size: 0.7rem; letter-spacing: 0.04em;">
+              Chọn dạng luyện tập
+            </div>
+          </li>
+          <li>
+            <a class="dropdown-item rounded-3 py-2 px-2.5 d-flex align-items-center gap-2.5" href="{{ study_base_url }}{{ delim }}mode=practice">
+              <div class="rounded-circle bg-warning-subtle text-warning d-flex align-items-center justify-content-center flex-shrink-0" style="width: 32px; height: 32px;">
+                <i class="ph-bold ph-lightning fs-6"></i>
+              </div>
+              <div>
+                <div class="fw-bold small text-dark">Luyện tập phản xạ</div>
+                <small class="text-muted d-block" style="font-size: 0.72rem;">Trắc nghiệm 4 đáp án & Đúng/Sai</small>
+              </div>
+            </a>
+          </li>
+          <li>
+            <a class="dropdown-item rounded-3 py-2 px-2.5 d-flex align-items-center gap-2.5" href="{{ study_base_url }}{{ delim }}mode=flashcard">
+              <div class="rounded-circle bg-info-subtle text-info d-flex align-items-center justify-content-center flex-shrink-0" style="width: 32px; height: 32px;">
+                <i class="ph-bold ph-cards fs-6"></i>
+              </div>
+              <div>
+                <div class="fw-bold small text-dark">Thẻ Flashcard 3D</div>
+                <small class="text-muted d-block" style="font-size: 0.72rem;">Lướt thẻ từ vựng & phát âm</small>
+              </div>
+            </a>
+          </li>
+          <li>
+            <a class="dropdown-item rounded-3 py-2 px-2.5 d-flex align-items-center gap-2.5" href="{{ study_base_url }}{{ delim }}mode=true_false">
+              <div class="rounded-circle bg-success-subtle text-success d-flex align-items-center justify-content-center flex-shrink-0" style="width: 32px; height: 32px;">
+                <i class="ph-bold ph-check-square-offset fs-6"></i>
+              </div>
+              <div>
+                <div class="fw-bold small text-dark">Chỉ Kiểm tra Đúng / Sai</div>
+                <small class="text-muted d-block" style="font-size: 0.72rem;">Phản xạ nhanh nghĩa từ</small>
+              </div>
+            </a>
+          </li>
+          <li>
+            <a class="dropdown-item rounded-3 py-2 px-2.5 d-flex align-items-center gap-2.5" href="{{ study_base_url }}{{ delim }}mode=typing">
+              <div class="rounded-circle bg-secondary-subtle text-secondary d-flex align-items-center justify-content-center flex-shrink-0" style="width: 32px; height: 32px;">
+                <i class="ph-bold ph-keyboard fs-6"></i>
+              </div>
+              <div>
+                <div class="fw-bold small text-dark">Chỉ Luyện gõ từ vựng</div>
+                <small class="text-muted d-block" style="font-size: 0.72rem;">Luyện viết chính tả tiếng Anh</small>
+              </div>
+            </a>
+          </li>
+        </ul>
+      </div>
+
+      {% else %}
+      <!-- 3. ĐÃ HỌC XONG: Không còn nút Học từ mới, chỉ hiện các dạng luyện tập -->
+      <a href="{{ study_base_url }}{{ delim }}mode=practice" 
+         id="mainStudyActionBtn"
+         class="btn btn-primary flex-grow-1 py-2.5 fw-bold rounded-pill shadow-none d-flex align-items-center justify-content-center gap-2 text-white" 
+         style="font-size: 0.9rem;">
+        <i class="ph-bold ph-lightning fs-5"></i>
+        <span>Luyện tập phản xạ</span>
+      </a>
+
+      <!-- Dropup Chọn dạng ôn tập khác -->
+      <div class="dropup flex-grow-1">
+        <button type="button" class="btn btn-light border w-100 py-2.5 fw-bold rounded-pill shadow-none d-flex align-items-center justify-content-center gap-1.5 dropdown-toggle text-dark" 
+                data-bs-toggle="dropdown" aria-expanded="false" style="font-size: 0.9rem;">
+          <i class="ph-bold ph-cards text-primary fs-5"></i>
+          <span>Các dạng khác</span>
+        </button>
+        <ul class="dropdown-menu dropdown-menu-end shadow-lg rounded-4 p-2 border mb-2" style="min-width: 275px; z-index: 1050;">
+          <li>
+            <div class="px-2.5 py-1 text-muted small fw-bold text-uppercase" style="font-size: 0.7rem; letter-spacing: 0.04em;">
+              Chọn dạng ôn tập
+            </div>
+          </li>
+          <li>
+            <a class="dropdown-item rounded-3 py-2 px-2.5 d-flex align-items-center gap-2.5" href="{{ study_base_url }}{{ delim }}mode=practice">
+              <div class="rounded-circle bg-warning-subtle text-warning d-flex align-items-center justify-content-center flex-shrink-0" style="width: 32px; height: 32px;">
+                <i class="ph-bold ph-lightning fs-6"></i>
+              </div>
+              <div>
+                <div class="fw-bold small text-dark">Luyện tập phản xạ</div>
+                <small class="text-muted d-block" style="font-size: 0.72rem;">Trắc nghiệm 4 đáp án & Đúng/Sai</small>
+              </div>
+            </a>
+          </li>
+          <li>
+            <a class="dropdown-item rounded-3 py-2 px-2.5 d-flex align-items-center gap-2.5" href="{{ study_base_url }}{{ delim }}mode=flashcard">
+              <div class="rounded-circle bg-info-subtle text-info d-flex align-items-center justify-content-center flex-shrink-0" style="width: 32px; height: 32px;">
+                <i class="ph-bold ph-cards fs-6"></i>
+              </div>
+              <div>
+                <div class="fw-bold small text-dark">Thẻ Flashcard 3D</div>
+                <small class="text-muted d-block" style="font-size: 0.72rem;">Lướt thẻ từ vựng & phát âm</small>
+              </div>
+            </a>
+          </li>
+          <li>
+            <a class="dropdown-item rounded-3 py-2 px-2.5 d-flex align-items-center gap-2.5" href="{{ study_base_url }}{{ delim }}mode=true_false">
+              <div class="rounded-circle bg-success-subtle text-success d-flex align-items-center justify-content-center flex-shrink-0" style="width: 32px; height: 32px;">
+                <i class="ph-bold ph-check-square-offset fs-6"></i>
+              </div>
+              <div>
+                <div class="fw-bold small text-dark">Chỉ Kiểm tra Đúng / Sai</div>
+                <small class="text-muted d-block" style="font-size: 0.72rem;">Phản xạ nhanh nghĩa từ</small>
+              </div>
+            </a>
+          </li>
+          <li>
+            <a class="dropdown-item rounded-3 py-2 px-2.5 d-flex align-items-center gap-2.5" href="{{ study_base_url }}{{ delim }}mode=typing">
+              <div class="rounded-circle bg-secondary-subtle text-secondary d-flex align-items-center justify-content-center flex-shrink-0" style="width: 32px; height: 32px;">
+                <i class="ph-bold ph-keyboard fs-6"></i>
+              </div>
+              <div>
+                <div class="fw-bold small text-dark">Chỉ Luyện gõ từ vựng</div>
+                <small class="text-muted d-block" style="font-size: 0.72rem;">Luyện viết chính tả tiếng Anh</small>
+              </div>
+            </a>
+          </li>
+        </ul>
+      </div>
       {% endif %}
 
       <!-- Settings Button: Cài đặt phiên học -->
@@ -742,31 +876,41 @@ function applyStudyModeToButtons(mode) {
   const mainBtn = document.getElementById('mainStudyActionBtn');
   if (!mainBtn) return;
   const baseUrl = "{{ url_for('learning.study_vocabulary', cat=cat_key, subcat=subcat_key, unit=selected_unit.id if selected_unit else unit_filter) }}";
-  mainBtn.href = `${baseUrl}${baseUrl.includes('?') ? '&' : '?'}mode=${mode}`;
-  
-  const iconEl = mainBtn.querySelector('i');
-  const textEl = mainBtn.querySelector('span');
-  if (mode === 'practice') {
-    if (iconEl) iconEl.className = 'ph-bold ph-lightning fs-5';
-    if (textEl) textEl.textContent = 'Luyện tập phản xạ';
-  } else if (mode === 'flashcard') {
-    if (iconEl) iconEl.className = 'ph-bold ph-cards fs-5';
-    if (textEl) textEl.textContent = 'Thẻ Flashcard 3D';
-  } else if (mode === 'true_false') {
-    if (iconEl) iconEl.className = 'ph-bold ph-check-square-offset fs-5';
-    if (textEl) textEl.textContent = 'Kiểm tra Đúng / Sai';
-  } else if (mode === 'typing') {
-    if (iconEl) iconEl.className = 'ph-bold ph-keyboard fs-5';
-    if (textEl) textEl.textContent = 'Luyện gõ từ vựng';
-  } else {
+  const curLearned = {{ cur_learned }};
+  const curTotal = {{ cur_total }};
+
+  if (curLearned === 0) {
+    // 1. Khi chưa học từ nào: Nút là Học từ mới
+    mainBtn.href = `${baseUrl}${baseUrl.includes('?') ? '&' : '?'}mode=learn`;
+    const iconEl = mainBtn.querySelector('i');
+    const textEl = mainBtn.querySelector('span');
     if (iconEl) iconEl.className = 'ph-bold ph-book-open fs-5';
-    const curLearned = {{ cur_learned }};
-    const curTotal = {{ cur_total }};
-    if (curLearned >= curTotal) {
+    if (textEl) textEl.textContent = 'Học từ mới';
+  } else if (curLearned < curTotal) {
+    // 2. Khi học chưa xong: Nút chính là Học tiếp
+    mainBtn.href = `${baseUrl}${baseUrl.includes('?') ? '&' : '?'}mode=learn`;
+    const iconEl = mainBtn.querySelector('i');
+    const textEl = mainBtn.querySelector('span');
+    if (iconEl) iconEl.className = 'ph-bold ph-book-open fs-5';
+    if (textEl) textEl.textContent = `Học tiếp (${curLearned}/${curTotal})`;
+  } else {
+    // 3. Khi đã học xong: Hiện các dạng luyện tập
+    const targetMode = (mode === 'learn') ? 'practice' : mode;
+    mainBtn.href = `${baseUrl}${baseUrl.includes('?') ? '&' : '?'}mode=${targetMode}`;
+    const iconEl = mainBtn.querySelector('i');
+    const textEl = mainBtn.querySelector('span');
+    if (targetMode === 'flashcard') {
+      if (iconEl) iconEl.className = 'ph-bold ph-cards fs-5';
+      if (textEl) textEl.textContent = 'Thẻ Flashcard 3D';
+    } else if (targetMode === 'true_false') {
+      if (iconEl) iconEl.className = 'ph-bold ph-check-square-offset fs-5';
+      if (textEl) textEl.textContent = 'Kiểm tra Đúng / Sai';
+    } else if (targetMode === 'typing') {
+      if (iconEl) iconEl.className = 'ph-bold ph-keyboard fs-5';
+      if (textEl) textEl.textContent = 'Luyện gõ từ vựng';
+    } else {
       if (iconEl) iconEl.className = 'ph-bold ph-lightning fs-5';
       if (textEl) textEl.textContent = 'Luyện tập phản xạ';
-    } else {
-      if (textEl) textEl.textContent = curLearned > 0 ? 'Học tiếp' : 'Học từ mới';
     }
   }
 }
