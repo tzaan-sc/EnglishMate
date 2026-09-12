@@ -3,12 +3,12 @@
 
 {% block content %}
 <style>
-  .study-wrapper {
-    max-width: 720px;
+  .study-card-wrapper {
+    max-width: 740px;
     margin: 0 auto;
   }
 
-  /* 3D Real Flashcard Flip */
+  /* 3D Real Flashcard Flip with Dynamic/Flexible Height */
   .flashcard-scene {
     perspective: 1200px;
     width: 100%;
@@ -17,12 +17,11 @@
 
   .flashcard-card {
     width: 100%;
-    height: 410px;
+    min-height: 410px;
     position: relative;
     transform-style: preserve-3d;
     -webkit-transform-style: preserve-3d;
     transition: transform 0.55s cubic-bezier(0.4, 0, 0.2, 1);
-    cursor: pointer;
   }
 
   .flashcard-card.is-flipped {
@@ -34,11 +33,11 @@
     top: 0;
     left: 0;
     width: 100%;
-    height: 100%;
+    min-height: 100%;
     backface-visibility: hidden;
     -webkit-backface-visibility: hidden;
     border-radius: 20px;
-    padding: 28px 32px;
+    padding: 24px 28px;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
@@ -46,6 +45,8 @@
     background: #ffffff;
     box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.06), 0 4px 10px -3px rgba(15, 23, 42, 0.03);
     transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    cursor: pointer;
+    overflow-y: auto;
   }
 
   .flashcard-front {
@@ -66,15 +67,16 @@
   /* Pronunciation Pills */
   .btn-audio-pill {
     background: #f8fafc;
-    border: 1px solid #e2e8f0;
+    border: 1.5px solid #e2e8f0;
     border-radius: 9999px;
-    padding: 6px 14px;
-    font-size: 0.85rem;
+    padding: 7px 16px;
+    font-size: 0.88rem;
     color: #1e293b;
     display: inline-flex;
     align-items: center;
-    gap: 6px;
+    gap: 7px;
     transition: all 0.15s ease;
+    cursor: pointer;
   }
   .btn-audio-pill:hover {
     background: #f1f5f9;
@@ -83,7 +85,7 @@
     transform: translateY(-1px);
   }
 
-  /* Assessment Rating Buttons */
+  /* Assessment Rating Buttons (Orderly 1 - 2 - 3 from Left to Right) */
   .btn-rate {
     border-radius: 16px;
     padding: 12px 10px;
@@ -106,10 +108,10 @@
     color: #475569;
   }
   .btn-rate-unknown:hover {
-    background: #f1f5f9;
-    border-color: #cbd5e1;
-    color: #1e293b;
-    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.06);
+    background: #fee2e2;
+    border-color: #fca5a5;
+    color: #991b1b;
+    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.12);
   }
   .btn-rate-review {
     background: #fffbeb;
@@ -162,10 +164,26 @@
     color: #7f1d1d !important;
   }
 
-  /* Fixed height cards for Exercises to avoid layout shifting */
+  /* Exercise Flexible Cards */
   .exercise-fixed-card {
     min-height: 410px;
     border-radius: 20px;
+  }
+
+  /* Toast Notification Pill */
+  .feedback-toast {
+    position: fixed;
+    bottom: 28px;
+    left: 50%;
+    transform: translateX(-50%) translateY(60px);
+    opacity: 0;
+    pointer-events: none;
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    z-index: 1050;
+  }
+  .feedback-toast.show {
+    transform: translateX(-50%) translateY(0);
+    opacity: 1;
   }
 
   .shortcut-tag {
@@ -176,101 +194,249 @@
   .hide-shortcuts .rate-kbd {
     display: none !important;
   }
+
+  /* Settings Modal Mode Cards */
+  .study-mode-option {
+    cursor: pointer;
+    background: #ffffff;
+    border: 1.5px solid #e2e8f0;
+    border-radius: 12px;
+    transition: all 0.15s ease;
+  }
+  .study-mode-option:hover {
+    border-color: #cbd5e1;
+    background: #f8fafc;
+  }
+  .study-mode-option:has(input:checked) {
+    border-color: #059669 !important;
+    background: #ecfdf5 !important;
+  }
 </style>
 
-<div class="container-fluid py-3" id="studyApp">
-  <div class="study-wrapper">
+<div class="container-fluid max-w-7xl py-3 pb-5" id="studyApp">
 
-    <!-- ========================================== -->
-    <!-- 1. BREADCRUMB NAVIGATION                  -->
-    <!-- ========================================== -->
-    <nav class="app-breadcrumb mb-2.5" aria-label="breadcrumb">
-      <ol class="breadcrumb mb-0 align-items-center flex-wrap">
-        <li class="breadcrumb-item">
-          <a href="{{ url_for('main.dashboard') }}" class="d-inline-flex align-items-center gap-1">
-            <i class="ph ph-house"></i>
-            <span>Trang Chủ</span>
-          </a>
-        </li>
-        <li class="breadcrumb-item">
-          <a href="{{ url_for('learning.vocabulary') }}">Từ Vựng</a>
-        </li>
-        {% if cat and subcat %}
-        <li class="breadcrumb-item">
-          <a href="{{ back_url }}">{{ course_title or subcat }}</a>
-        </li>
-        {% endif %}
-        <li class="breadcrumb-item active text-truncate" aria-current="page" style="max-width: 280px;" title="{{ unit_title }}">
-          <span>{{ unit_title or 'Học từ vựng' }}</span>
-        </li>
-      </ol>
-    </nav>
+  <!-- ========================================== -->
+  <!-- 1. BREADCRUMB NAVIGATION                  -->
+  <!-- ========================================== -->
+  <nav class="app-breadcrumb mb-3" aria-label="breadcrumb">
+    <ol class="breadcrumb mb-0 align-items-center flex-wrap">
+      <li class="breadcrumb-item">
+        <a href="{{ url_for('main.dashboard') }}" class="d-inline-flex align-items-center gap-1">
+          <i class="ph ph-house"></i>
+          <span>Trang Chủ</span>
+        </a>
+      </li>
+      <li class="breadcrumb-item">
+        <a href="{{ url_for('learning.vocabulary') }}">Từ Vựng</a>
+      </li>
+      {% if cat and subcat %}
+      <li class="breadcrumb-item">
+        <a href="{{ url_for('learning.vocab_course_detail', cat_key=cat, subcat_key=subcat) }}">{{ course_title or subcat }}</a>
+      </li>
+      {% endif %}
+      {% if unit_title %}
+      <li class="breadcrumb-item text-truncate" style="max-width: 260px;" title="{{ unit_title }}">
+        <a href="{{ back_url }}">{{ unit_title }}</a>
+      </li>
+      {% endif %}
+      <li class="breadcrumb-item active" aria-current="page">
+        <span>Học từ vựng</span>
+      </li>
+    </ol>
+  </nav>
 
-    <!-- ========================================== -->
-    <!-- 2. TOP HEADER TOOLBAR & SLIM PROGRESS BAR  -->
-    <!-- ========================================== -->
-    <div class="card border-0 shadow-2xs rounded-4 p-3 bg-white mb-3 position-relative overflow-hidden">
-      <div class="d-flex flex-wrap justify-content-between align-items-center gap-2">
-        
-        <!-- Left: Back Button & Lesson Info -->
-        <div class="d-flex align-items-center gap-2.5">
-          <a href="{{ back_url }}" class="btn btn-light rounded-circle d-flex align-items-center justify-content-center text-dark flex-shrink-0 border"
-             style="width: 38px; height: 38px;" title="Quay lại danh sách bài học (Esc)">
-            <i class="ph-bold ph-caret-left fs-5"></i>
-          </a>
-          <div>
-            <div class="d-flex align-items-center gap-2">
-              <h5 class="fw-bold text-dark mb-0" id="activityTitle">Học Từ Vựng Tương Tác</h5>
-              <span class="badge bg-primary-subtle text-primary border rounded-pill px-2.5 py-0.5 small fw-semibold" id="activityWordIndex">
-                1 / {{ total_words }}
-              </span>
-            </div>
-            <small class="text-muted text-truncate d-block" style="max-width: 320px;">
-              {{ course_title }}{% if course_title and unit_title %} • {% endif %}{{ unit_title }}
-            </small>
+  <!-- ========================================== -->
+  <!-- 2. STREAMLINED TOOLBAR WITH SETTINGS POPUP -->
+  <!-- ========================================== -->
+  <div class="card border-0 shadow-2xs rounded-4 p-3 bg-white mb-4 position-relative">
+    <div class="d-flex justify-content-between align-items-center gap-3">
+      
+      <!-- Left: Back Button & Title -->
+      <div class="d-flex align-items-center gap-3">
+        <a href="{{ back_url }}" class="btn btn-light rounded-circle d-flex align-items-center justify-content-center text-dark flex-shrink-0 border"
+           style="width: 40px; height: 40px;" title="Quay lại bài học (Esc)">
+          <i class="ph-bold ph-caret-left fs-5"></i>
+        </a>
+        <div>
+          <div class="d-flex align-items-center gap-2 flex-wrap">
+            <h5 class="fw-bold text-dark mb-0" id="activityTitle">Học Từ Vựng Tương Tác</h5>
+            <span class="badge bg-primary-subtle text-primary border rounded-pill px-2.5 py-0.5 small fw-bold" id="activityWordIndex">
+              0 / {{ total_words }} đã thuộc
+            </span>
           </div>
+          <small class="text-muted d-block mt-0.5">
+            {{ course_title }}{% if course_title and unit_title %} • {% endif %}{{ unit_title }}
+          </small>
         </div>
-
-        <!-- Right: Toggles & Exit -->
-        <div class="d-flex align-items-center gap-2">
-          <!-- Auto-play Audio Switch -->
-          <div class="form-check form-switch bg-light border rounded-pill px-3 py-1 mb-0 d-inline-flex align-items-center gap-2 shadow-2xs" title="Tự động phát âm thanh khi đổi từ">
-            <input class="form-check-input mt-0 cursor-pointer" type="checkbox" id="autoplayToggle" {% if autoplay or autoplay is not defined %}checked{% endif %}>
-            <label class="form-check-label small text-secondary fw-semibold cursor-pointer mb-0" for="autoplayToggle">Tự động đọc 🔊</label>
-          </div>
-
-          <!-- Shortcuts Toggle -->
-          <button type="button" class="btn btn-sm btn-light border rounded-pill px-2.5 py-1 text-secondary small fw-semibold shadow-2xs" 
-                  id="toggleShortcutsBtn" onclick="toggleShortcuts()" title="Ẩn/Hiện gợi ý phím tắt">
-            <i class="ph-bold ph-keyboard me-1"></i><span id="shortcutBtnText">Phím tắt</span>
-          </button>
-
-          <!-- Close / Exit Button -->
-          <a href="{{ back_url }}" class="btn btn-sm btn-light border rounded-circle d-flex align-items-center justify-content-center text-secondary shadow-2xs" 
-             style="width: 34px; height: 34px;" title="Thoát bài học (Esc)">
-            <i class="ph-bold ph-x fs-6"></i>
-          </a>
-        </div>
-
       </div>
 
-      <!-- Integrated Slim Emerald Progress Bar -->
-      <div class="progress rounded-pill mt-3" style="height: 5px; background: #e2e8f0;">
-        <div class="progress-bar bg-success rounded-pill" id="studyProgressBar" role="progressbar" style="width: 0%; transition: width 0.3s ease;"></div>
+      <!-- Right: Settings Modal Trigger & Close Button -->
+      <div class="d-flex align-items-center gap-2">
+        <!-- Prominent Settings Button -->
+        <button type="button" class="btn btn-light border rounded-pill px-3 py-1.5 d-flex align-items-center gap-2 text-dark shadow-2xs fw-semibold small" 
+                data-bs-toggle="modal" data-bs-target="#studySettingsModal" title="Cài đặt phiên học">
+          <i class="ph-bold ph-gear text-secondary fs-5"></i>
+          <span class="d-none d-sm-inline">Cài đặt phiên học</span>
+        </button>
+
+        <!-- Close / Exit Button -->
+        <a href="{{ back_url }}" class="btn btn-light border rounded-circle d-flex align-items-center justify-content-center text-secondary shadow-2xs" 
+           style="width: 38px; height: 38px;" title="Thoát bài học (Esc)">
+          <i class="ph-bold ph-x fs-6"></i>
+        </a>
       </div>
+
     </div>
 
-    <!-- ========================================== -->
-    <!-- 3. MAIN STUDY AREA (3D FLASHCARD / CHECKS) -->
-    <!-- ========================================== -->
+    <!-- Integrated Slim Emerald Progress Bar -->
+    <div class="progress rounded-pill mt-3" style="height: 5px; background: #e2e8f0;">
+      <div class="progress-bar bg-success rounded-pill" id="studyProgressBar" role="progressbar" style="width: 0%; transition: width 0.3s ease;"></div>
+    </div>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- MODAL: CÀI ĐẶT PHIÊN HỌC                  -->
+  <!-- ========================================== -->
+  <div class="modal fade" id="studySettingsModal" tabindex="-1" aria-labelledby="studySettingsModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" style="max-width: 500px;">
+      <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
+        <div class="modal-header border-bottom py-3 px-4 bg-light bg-opacity-50">
+          <div class="d-flex align-items-center gap-2">
+            <div class="rounded-circle bg-primary-subtle text-primary d-flex align-items-center justify-content-center" style="width: 36px; height: 36px;">
+              <i class="ph-bold ph-gear fs-5"></i>
+            </div>
+            <div>
+              <h6 class="modal-title fw-bold text-dark mb-0" id="studySettingsModalLabel">Cài đặt phiên học</h6>
+              <small class="text-muted" style="font-size: 0.76rem;">Tùy chỉnh chế độ học & âm thanh phản hồi</small>
+            </div>
+          </div>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+
+        <div class="modal-body p-4">
+          <!-- 1. Chế độ học tập -->
+          <div class="mb-4">
+            <label class="form-label fw-bold text-dark small text-uppercase tracking-wider mb-2 d-flex justify-content-between">
+              <span>Chế độ học</span>
+              <span class="badge bg-success-subtle text-success rounded-pill small" style="font-size: 0.7rem;">Tự động lưu</span>
+            </label>
+            <div class="d-flex flex-column gap-2" id="studyModeSelector">
+              <label class="study-mode-option d-flex align-items-center gap-3 p-2.5">
+                <input type="radio" name="studyMode" value="mixed" class="form-check-input mt-0" checked onchange="changeStudyMode('mixed')">
+                <div class="flex-grow-1">
+                  <div class="fw-bold text-dark small">🔀 Trộn kết hợp (Đề xuất)</div>
+                  <div class="text-muted small" style="font-size: 0.76rem;">Học Thẻ Flashcard 3D xen kẽ Kiểm tra Đúng/Sai để nhớ từ</div>
+                </div>
+              </label>
+
+              <label class="study-mode-option d-flex align-items-center gap-3 p-2.5">
+                <input type="radio" name="studyMode" value="flashcard" class="form-check-input mt-0" onchange="changeStudyMode('flashcard')">
+                <div class="flex-grow-1">
+                  <div class="fw-bold text-dark small">🗂️ Chỉ Thẻ Flashcard 3D</div>
+                  <div class="text-muted small" style="font-size: 0.76rem;">Lật thẻ xem nghĩa và tự đánh giá (Chưa biết / Nhớ tạm / Đã học)</div>
+                </div>
+              </label>
+
+              <label class="study-mode-option d-flex align-items-center gap-3 p-2.5">
+                <input type="radio" name="studyMode" value="true_false" class="form-check-input mt-0" onchange="changeStudyMode('true_false')">
+                <div class="flex-grow-1">
+                  <div class="fw-bold text-dark small">⚡ Chỉ Kiểm tra Đúng / Sai</div>
+                  <div class="text-muted small" style="font-size: 0.76rem;">Hiện Đúng/Sai kèm âm thanh thông báo và giải thích tức thì</div>
+                </div>
+              </label>
+
+              <label class="study-mode-option d-flex align-items-center gap-3 p-2.5">
+                <input type="radio" name="studyMode" value="typing" class="form-check-input mt-0" onchange="changeStudyMode('typing')">
+                <div class="flex-grow-1">
+                  <div class="fw-bold text-dark small">✍️ Chỉ Luyện gõ từ vựng</div>
+                  <div class="text-muted small" style="font-size: 0.76rem;">Luyện viết chính tả tiếng Anh từ định nghĩa tiếng Việt</div>
+                </div>
+              </label>
+            </div>
+          </div>
+
+          <hr class="my-3 text-muted opacity-25">
+
+          <!-- 2. Âm thanh & Trợ năng -->
+          <label class="form-label fw-bold text-dark small text-uppercase tracking-wider mb-2">
+            Âm thanh & Tương tác
+          </label>
+          
+          <div class="d-flex flex-column gap-2">
+            <div class="form-check form-switch d-flex align-items-center justify-content-between p-2.5 rounded-3 bg-light bg-opacity-50">
+              <div>
+                <label class="form-check-label fw-semibold text-dark small cursor-pointer d-block" for="autoplayToggle">
+                  Tự động đọc 🔊
+                </label>
+                <small class="text-muted d-block" style="font-size: 0.74rem;">Tự động đọc giọng chuẩn bản xứ khi chuyển sang từ mới</small>
+              </div>
+              <input class="form-check-input ms-2 cursor-pointer" type="checkbox" id="autoplayToggle" checked onchange="saveSetting('study_autoplay', this.checked)">
+            </div>
+
+            <div class="p-2.5 rounded-3 bg-light bg-opacity-50">
+              <div class="form-check form-switch d-flex align-items-center justify-content-between mb-1.5">
+                <div>
+                  <label class="form-check-label fw-semibold text-dark small cursor-pointer d-block" for="sfxToggle">
+                    Hiệu ứng âm thanh 🔔
+                  </label>
+                  <small class="text-muted d-block" style="font-size: 0.74rem;">Phát tiếng chuông khi làm Đúng, còi báo khi làm Sai và tiếng lật thẻ</small>
+                </div>
+                <input class="form-check-input ms-2 cursor-pointer" type="checkbox" id="sfxToggle" checked onchange="saveSetting('study_sfx', this.checked)">
+              </div>
+              <div class="d-flex align-items-center gap-2 pt-1 border-top border-light">
+                <span class="text-muted small" style="font-size: 0.7rem;">Nghe thử:</span>
+                <button type="button" class="btn btn-outline-success btn-sm rounded-pill px-2.5 py-0.5 fw-bold" style="font-size: 0.73rem;" onclick="playSfx('correct', true)">
+                  <i class="ph-bold ph-check"></i> Tiếng Đúng 🔔
+                </button>
+                <button type="button" class="btn btn-outline-danger btn-sm rounded-pill px-2.5 py-0.5 fw-bold" style="font-size: 0.73rem;" onclick="playSfx('wrong', true)">
+                  <i class="ph-bold ph-x"></i> Tiếng Sai ✕
+                </button>
+              </div>
+            </div>
+
+            <div class="form-check form-switch d-flex align-items-center justify-content-between p-2.5 rounded-3 bg-light bg-opacity-50">
+              <div>
+                <label class="form-check-label fw-semibold text-dark small cursor-pointer d-block" for="shortcutsToggle">
+                  Gợi ý phím tắt ⌨️
+                </label>
+                <small class="text-muted d-block" style="font-size: 0.74rem;">Hiển thị nhãn phím tắt (1, 2, 3, Space) trên màn hình</small>
+              </div>
+              <input class="form-check-input ms-2 cursor-pointer" type="checkbox" id="shortcutsToggle" checked onchange="toggleShortcuts(this.checked); saveSetting('study_shortcuts', this.checked);">
+            </div>
+
+            <div class="form-check form-switch d-flex align-items-center justify-content-between p-2.5 rounded-3 bg-light bg-opacity-50">
+              <div>
+                <label class="form-check-label fw-semibold text-dark small cursor-pointer d-block" for="requeueToggle">
+                  Lặp lại từ chưa nhớ 🔄
+                </label>
+                <small class="text-muted d-block" style="font-size: 0.74rem;">Từ bạn chọn "Chưa biết" sẽ xuất hiện lại sau vài thẻ để ghi nhớ</small>
+              </div>
+              <input class="form-check-input ms-2 cursor-pointer" type="checkbox" id="requeueToggle" checked onchange="saveSetting('study_requeue', this.checked)">
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-footer border-top py-3 px-4 bg-light bg-opacity-50">
+          <button type="button" class="btn btn-primary rounded-pill w-100 py-2.5 fw-bold text-white shadow-xs" data-bs-dismiss="modal">
+            Áp dụng & Tiếp tục học
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- 3. MAIN STUDY AREA (3D FLASHCARD / CHECKS) -->
+  <!-- ========================================== -->
+  <div class="study-card-wrapper">
 
     <!-- ACTIVITY 1: FLASHCARD WITH REAL 3D FLIP -->
     <div id="exerciseFlashcard" style="display: none;">
       <div class="flashcard-scene mb-3">
-        <div class="flashcard-card" id="flashcardBox" onclick="flipCard()" title="Nhấp để lật thẻ">
+        <div class="flashcard-card" id="flashcardBox">
           
           <!-- FRONT FACE (TIẾNG ANH) -->
-          <div class="flashcard-face flashcard-front">
+          <div class="flashcard-face flashcard-front" onclick="handleCardFaceClick(event)">
             <!-- Top bar -->
             <div class="d-flex justify-content-between align-items-center w-100">
               <span class="badge bg-primary-subtle text-primary border rounded-pill px-3 py-1.5 fw-semibold small" id="cardModeBadge">
@@ -282,20 +448,20 @@
             </div>
 
             <!-- Center Content -->
-            <div class="d-flex flex-column align-items-center justify-content-center my-auto py-2">
+            <div class="d-flex flex-column align-items-center justify-content-center my-auto py-3">
               <h1 class="fw-extrabold text-dark mb-3" id="frontWordText" style="font-size: 2.8rem; letter-spacing: -0.02em;">
                 word
               </h1>
 
-              <!-- Pronunciation Pills (Click does not flip card) -->
-              <div class="d-flex align-items-center justify-content-center gap-2 flex-wrap">
-                <button type="button" class="btn btn-audio-pill" 
+              <!-- Pronunciation Pills (Event propagation strictly stopped) -->
+              <div class="d-flex align-items-center justify-content-center gap-2 flex-wrap" onclick="event.stopPropagation();">
+                <button type="button" class="btn btn-audio-pill shadow-2xs" 
                         onclick="event.stopPropagation(); playCurrentAudio('en-US');" title="Nghe phát âm US">
                   <i class="ph-fill ph-speaker-high text-primary fs-6"></i>
                   <span class="fw-bold">US</span>
                   <span class="text-muted font-monospace" id="frontPronUS">/pron/</span>
                 </button>
-                <button type="button" class="btn btn-audio-pill" 
+                <button type="button" class="btn btn-audio-pill shadow-2xs" 
                         onclick="event.stopPropagation(); playCurrentAudio('en-GB');" title="Nghe phát âm UK">
                   <i class="ph-fill ph-speaker-high text-primary fs-6"></i>
                   <span class="fw-bold">UK</span>
@@ -304,15 +470,22 @@
               </div>
             </div>
 
-            <!-- Bottom Hint -->
-            <div class="text-center text-muted small">
-              <i class="ph-bold ph-arrow-counter-clockwise text-primary me-1"></i>
-              <span>Nhấp vào thẻ hoặc nhấn <kbd class="bg-light text-dark border px-1.5 py-0.5 rounded shadow-2xs">Space</kbd> để lật xem nghĩa</span>
+            <!-- Bottom Actions: Dedicated Flip Trigger -->
+            <div class="d-flex justify-content-between align-items-center w-100 pt-2 border-top">
+              <span class="text-muted small">
+                <i class="ph-bold ph-cursor-click text-primary me-1"></i>Chạm thẻ để lật
+              </span>
+              <button type="button" class="btn btn-sm btn-light border rounded-pill px-3 py-1 shadow-2xs text-secondary d-inline-flex align-items-center gap-1.5" 
+                      onclick="event.stopPropagation(); flipCard();" title="Lật thẻ (Space)">
+                <i class="ph-bold ph-arrows-clockwise text-primary"></i>
+                <span class="fw-semibold small">Lật xem nghĩa</span>
+                <kbd class="rate-kbd ms-1">Space</kbd>
+              </button>
             </div>
           </div>
 
-          <!-- BACK FACE (TIẾNG VIỆT & VÍ DỤ) - PROPERLY ORIENTED, NOT INVERTED -->
-          <div class="flashcard-face flashcard-back">
+          <!-- BACK FACE (TIẾNG VIỆT & VÍ DỤ) - PROPERLY ORIENTED, NEVER INVERTED -->
+          <div class="flashcard-face flashcard-back" onclick="handleCardFaceClick(event)">
             <!-- Top bar -->
             <div class="d-flex justify-content-between align-items-center w-100">
               <div class="d-flex align-items-center gap-2">
@@ -340,44 +513,52 @@
               </div>
             </div>
 
-            <!-- Bottom Hint -->
-            <div class="text-center text-muted small">
-              <i class="ph-bold ph-arrow-counter-clockwise text-primary me-1"></i>
-              <span>Nhấn <kbd class="bg-light text-dark border px-1.5 py-0.5 rounded shadow-2xs">Space</kbd> hoặc nhấp thẻ để lật lại</span>
+            <!-- Bottom Actions -->
+            <div class="d-flex justify-content-between align-items-center w-100 pt-2 border-top">
+              <span class="text-muted small">
+                <i class="ph-bold ph-cursor-click text-primary me-1"></i>Chạm thẻ để lật lại
+              </span>
+              <button type="button" class="btn btn-sm btn-light border rounded-pill px-3 py-1 shadow-2xs text-secondary d-inline-flex align-items-center gap-1.5" 
+                      onclick="event.stopPropagation(); flipCard();" title="Lật lại mặt trước (Space)">
+                <i class="ph-bold ph-arrows-clockwise text-primary"></i>
+                <span class="fw-semibold small">Mặt trước</span>
+                <kbd class="rate-kbd ms-1">Space</kbd>
+              </button>
             </div>
           </div>
 
         </div>
       </div>
 
-      <!-- 3 HARMONIZED ASSESSMENT BUTTONS -->
+      <!-- 3 HARMONIZED ASSESSMENT BUTTONS (INTUITIVE 1 - 2 - 3 ORDER) -->
       <div class="card border-0 shadow-2xs rounded-4 p-3 bg-white text-center" id="assessmentSection">
-        <div class="small text-muted fw-semibold mb-2">Bạn thuộc từ này ở mức nào?</div>
+        <div class="small text-muted fw-semibold mb-2">Đánh giá mức độ ghi nhớ:</div>
         <div class="row g-2 justify-content-center">
-          <!-- 1. Chưa biết -->
+          
+          <!-- 1. Chưa biết (Left -> Key 1) -->
           <div class="col-4">
-            <button type="button" class="btn btn-rate btn-rate-unknown w-100" onclick="submitAssessment('unknown')" title="Chưa biết từ này (Phím Enter)">
+            <button type="button" class="btn btn-rate btn-rate-unknown w-100" onclick="submitAssessment('unknown')" title="Chưa biết từ này (Phím 1 hoặc ←)">
               <i class="ph-bold ph-arrow-counter-clockwise fs-6"></i>
               <span>Chưa biết</span>
-              <span class="rate-kbd">Enter</span>
+              <span class="rate-kbd">Phím 1</span>
             </button>
           </div>
 
-          <!-- 2. Nhớ tạm -->
+          <!-- 2. Nhớ tạm (Middle -> Key 2) -->
           <div class="col-4">
-            <button type="button" class="btn btn-rate btn-rate-review w-100" onclick="submitAssessment('review')" title="Nhớ mang máng, cần ôn tập (Phím 3)">
+            <button type="button" class="btn btn-rate btn-rate-review w-100" onclick="submitAssessment('review')" title="Nhớ mang máng, cần ôn thêm (Phím 2 hoặc ↓)">
               <i class="ph-bold ph-clock fs-6"></i>
               <span>Nhớ tạm</span>
-              <span class="rate-kbd">Phím 3</span>
+              <span class="rate-kbd">Phím 2</span>
             </button>
           </div>
 
-          <!-- 3. Đã thuộc -->
+          <!-- 3. Đã học (Right -> Key 3 or Enter) -->
           <div class="col-4">
-            <button type="button" class="btn btn-rate btn-rate-mastered w-100" onclick="submitAssessment('mastered')" title="Đã thuộc từ này (Phím 1)">
+            <button type="button" class="btn btn-rate btn-rate-mastered w-100" onclick="submitAssessment('mastered')" title="Đã thuộc từ này (Phím 3, → hoặc Enter)">
               <i class="ph-bold ph-check fs-6"></i>
               <span>✓ Đã học từ này</span>
-              <span class="rate-kbd">Phím 1</span>
+              <span class="rate-kbd">Phím 3</span>
             </button>
           </div>
         </div>
@@ -407,10 +588,11 @@
           </h1>
         </div>
 
-        <div class="row g-3 justify-content-center mt-3" style="max-width: 440px; margin: 0 auto; width: 100%;">
+        <!-- Choice buttons -->
+        <div class="row g-3 justify-content-center mt-3" style="max-width: 440px; margin: 0 auto; width: 100%;" id="tfActionRow">
           <div class="col-6">
             <button type="button" class="btn btn-outline-danger w-100 py-2.5 rounded-3 fw-bold shadow-2xs d-flex align-items-center justify-content-center gap-1.5" 
-                    onclick="submitTrueFalse(false)">
+                    id="tfBtnFalse" onclick="submitTrueFalse(false)">
               <i class="ph-bold ph-x"></i>
               <span>Sai</span>
               <span class="shortcut-tag badge bg-danger-subtle text-danger ms-1">1</span>
@@ -418,12 +600,25 @@
           </div>
           <div class="col-6">
             <button type="button" class="btn btn-outline-success w-100 py-2.5 rounded-3 fw-bold shadow-2xs d-flex align-items-center justify-content-center gap-1.5" 
-                    onclick="submitTrueFalse(true)">
+                    id="tfBtnTrue" onclick="submitTrueFalse(true)">
               <i class="ph-bold ph-check"></i>
               <span>Đúng</span>
               <span class="shortcut-tag badge bg-success-subtle text-success ms-1">2</span>
             </button>
           </div>
+        </div>
+
+        <!-- Feedback Result Drawer for True/False -->
+        <div class="p-3 rounded-3 mt-3 border text-start mx-auto w-100" id="tfFeedbackDrawer" style="display: none; max-width: 460px;">
+          <div class="d-flex justify-content-between align-items-center mb-1">
+            <strong class="fw-bold" id="tfFeedbackTitle"></strong>
+            <span class="fw-bold fs-6 font-monospace" id="tfFeedbackWord"></span>
+          </div>
+          <div class="small text-secondary mb-2" id="tfFeedbackExplain"></div>
+          <button type="button" class="btn w-100 py-2 fw-bold rounded-pill text-white shadow-xs" id="tfNextBtn" 
+                  onclick="advanceTrueFalse()">
+            Tiếp tục <span class="shortcut-tag badge bg-white bg-opacity-25 text-white ms-1">Space</span>
+          </button>
         </div>
 
       </div>
@@ -512,6 +707,14 @@
   </div>
 </div>
 
+<!-- Floating Toast Notification -->
+<div class="feedback-toast" id="feedbackToast">
+  <div class="bg-dark text-white rounded-pill px-4 py-2 shadow-lg small fw-semibold d-flex align-items-center gap-2" id="feedbackToastText">
+    <i class="ph-bold ph-arrows-clockwise text-warning"></i>
+    <span>Thông báo</span>
+  </div>
+</div>
+
 <script>
 const rawWordsData = {{ words_data|tojson }};
 let sessionEarnedXP = 0;
@@ -522,35 +725,221 @@ let currentActivityIndex = 0;
 let isFlipped = false;
 let currentFeedbackState = null;
 let typingHintIndex = 1;
+let tfFeedbackPending = false;
+let currentStudyMode = 'mixed'; // 'mixed', 'flashcard', 'true_false', 'typing'
 
+// ==========================================
+// 1. Bulletproof Web Audio Synthesizer
+// ==========================================
+let audioCtx = null;
+
+function getAudioContext() {
+  try {
+    const AudioCtxClass = window.AudioContext || window.webkitAudioContext;
+    if (!AudioCtxClass) return null;
+    if (!audioCtx) {
+      audioCtx = new AudioCtxClass();
+    }
+    if (audioCtx.state === 'suspended') {
+      audioCtx.resume();
+    }
+    return audioCtx;
+  } catch (e) {
+    console.warn("AudioContext error:", e);
+    return null;
+  }
+}
+
+// Pre-unlock AudioContext on first gesture
+document.addEventListener('click', () => { getAudioContext(); }, { once: true });
+document.addEventListener('keydown', () => { getAudioContext(); }, { once: true });
+
+function playSfx(type, forcePlay = false) {
+  const sfxToggle = document.getElementById('sfxToggle');
+  if (!forcePlay && sfxToggle && !sfxToggle.checked) return;
+
+  try {
+    const ctx = getAudioContext();
+    if (!ctx) return;
+    const now = ctx.currentTime;
+
+    if (type === 'correct') {
+      // Crisp, energetic major chord chime (C5 523Hz -> E5 659Hz -> G5 784Hz -> C6 1046Hz)
+      const freqs = [523.25, 659.25, 783.99, 1046.50];
+      freqs.forEach((freq, idx) => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(freq, now + idx * 0.07);
+        gain.gain.setValueAtTime(0.28, now + idx * 0.07);
+        gain.gain.exponentialRampToValueAtTime(0.0001, now + idx * 0.07 + 0.35);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start(now + idx * 0.07);
+        osc.stop(now + idx * 0.07 + 0.35);
+      });
+    } else if (type === 'wrong') {
+      // Gentle, friendly 2-note descending tap (Warm acoustic / Duolingo style)
+      const notes = [
+        { freq: 329.63, delay: 0.0, dur: 0.18, vol: 0.25 }, // E4
+        { freq: 220.00, delay: 0.11, dur: 0.28, vol: 0.28 }  // A3
+      ];
+      notes.forEach(({ freq, delay, dur, vol }) => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'triangle'; // Warm, rounded marimba-like tone
+        osc.frequency.setValueAtTime(freq, now + delay);
+        osc.frequency.exponentialRampToValueAtTime(freq * 0.92, now + delay + dur);
+
+        gain.gain.setValueAtTime(vol, now + delay);
+        gain.gain.exponentialRampToValueAtTime(0.0001, now + delay + dur);
+
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+
+        osc.start(now + delay);
+        osc.stop(now + delay + dur);
+      });
+    } else if (type === 'flip') {
+      // Smooth card swoosh
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(320, now);
+      osc.frequency.exponentialRampToValueAtTime(620, now + 0.09);
+      gain.gain.setValueAtTime(0.12, now);
+      gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.09);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start(now);
+      osc.stop(now + 0.09);
+    } else if (type === 'complete') {
+      // Victory fanfare
+      const notes = [523.25, 659.25, 783.99, 1046.50];
+      notes.forEach((freq, idx) => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(freq, now + idx * 0.09);
+        gain.gain.setValueAtTime(0.22, now + idx * 0.09);
+        gain.gain.exponentialRampToValueAtTime(0.0001, now + idx * 0.09 + 0.35);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start(now + idx * 0.09);
+        osc.stop(now + idx * 0.09 + 0.35);
+      });
+    }
+  } catch (e) {
+    console.warn("SFX error:", e);
+  }
+}
+
+// ==========================================
+// 2. Speech Synthesis (Pronunciation)
+// ==========================================
+function playAudioText(text, lang = 'en-US') {
+  if (!('speechSynthesis' in window)) return;
+  try {
+    window.speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(text);
+    u.lang = lang;
+    u.rate = 0.88;
+    if (window.speechSynthesis.paused) {
+      window.speechSynthesis.resume();
+    }
+    window.speechSynthesis.speak(u);
+  } catch (e) {
+    console.warn("TTS error:", e);
+  }
+}
+
+function playCurrentAudio(lang = 'en-US') {
+  const act = activities[currentActivityIndex];
+  if (!act) return;
+  const word = act.word || act.targetWord || act.displayCandidateWord;
+  if (word && word.word) playAudioText(word.word, lang);
+}
+
+// ==========================================
+// 3. Activity Queue & Session Modes
+// ==========================================
 function buildActivityQueue() {
   activities = [];
-  rawWordsData.forEach((word) => {
-    activities.push({ type: 'flashcard', word: word });
-    
-    // 1 short check (true/false or typing)
-    if (Math.random() > 0.5 && rawWordsData.length > 1) {
-      const otherWords = rawWordsData.filter(w => w.id !== word.id);
-      const isTrue = Math.random() > 0.5;
-      const candidate = isTrue ? word : otherWords[Math.floor(Math.random() * otherWords.length)];
+  if (!rawWordsData || rawWordsData.length === 0) return;
+
+  if (currentStudyMode === 'flashcard') {
+    // Pure 3D Flashcard mode
+    rawWordsData.forEach((w) => {
+      activities.push({ type: 'flashcard', word: w, id: w.id, originWord: w });
+    });
+  } else if (currentStudyMode === 'true_false') {
+    // Pure True / False questions
+    rawWordsData.forEach((w) => {
+      const isCorrect = Math.random() > 0.45;
+      let displayWord = w;
+      if (!isCorrect && rawWordsData.length > 1) {
+        const others = rawWordsData.filter(x => x.id !== w.id);
+        displayWord = others[Math.floor(Math.random() * others.length)];
+      }
       activities.push({
         type: 'true_false',
-        targetWord: word,
-        displayCandidateWord: candidate,
-        isCorrectAnswer: (candidate.id === word.id)
+        targetWord: w,
+        displayCandidateWord: displayWord,
+        isCorrectAnswer: (displayWord.id === w.id),
+        word: w
       });
-    } else {
-      activities.push({ type: 'typing', word: word });
-    }
-  });
+    });
+  } else if (currentStudyMode === 'typing') {
+    // Pure Typing practice
+    rawWordsData.forEach((w) => {
+      activities.push({ type: 'typing', word: w, id: w.id, originWord: w });
+    });
+  } else {
+    // Default 'mixed': Flashcard 3D + immediate True/False check for each word!
+    rawWordsData.forEach((w) => {
+      // 1. Learn via 3D Flashcard
+      activities.push({ type: 'flashcard', word: w, id: w.id, originWord: w });
+      
+      // 2. Immediately verify memory with True / False check
+      const isCorrect = Math.random() > 0.4;
+      let displayWord = w;
+      if (!isCorrect && rawWordsData.length > 1) {
+        const others = rawWordsData.filter(x => x.id !== w.id);
+        displayWord = others[Math.floor(Math.random() * others.length)];
+      }
+      activities.push({
+        type: 'true_false',
+        targetWord: w,
+        displayCandidateWord: displayWord,
+        isCorrectAnswer: (displayWord.id === w.id),
+        word: w
+      });
+    });
+  }
 }
 
 function initStudySession() {
+  loadSavedSettings();
   buildActivityQueue();
   currentActivityIndex = 0;
   sessionEarnedXP = 0;
   sessionMasteredCount = 0;
   renderCurrentActivity();
+}
+
+function changeStudyMode(mode) {
+  currentStudyMode = mode;
+  saveSetting('study_mode', mode);
+  
+  // Re-sync radio input inside modal
+  const radios = document.querySelectorAll('input[name="studyMode"]');
+  radios.forEach(r => {
+    r.checked = (r.value === mode);
+  });
+
+  // Re-build session with selected mode
+  initStudySession();
+  showToast(`<i class="ph-bold ph-sliders text-success"></i> <span>Đã chuyển sang chế độ học mới!</span>`);
 }
 
 function renderCurrentActivity() {
@@ -565,13 +954,14 @@ function renderCurrentActivity() {
   document.getElementById('exerciseTyping').style.display = 'none';
   document.getElementById('completionCard').style.display = 'none';
 
-  const progressPct = Math.round(((currentActivityIndex + 1) / activities.length) * 100);
-  document.getElementById('studyProgressBar').style.width = `${Math.max(5, progressPct)}%`;
+  // Progress bar calculation
+  const totalSteps = activities.length;
+  const progressPct = Math.round(((currentActivityIndex) / Math.max(1, totalSteps)) * 100);
+  document.getElementById('studyProgressBar').style.width = `${Math.min(100, Math.max(5, progressPct))}%`;
 
-  const wordIdx = Math.min(rawWordsData.length, Math.floor(currentActivityIndex / 2) + 1);
   const badgeEl = document.getElementById('activityWordIndex');
   if (badgeEl) {
-    badgeEl.textContent = `${wordIdx} / ${rawWordsData.length}`;
+    badgeEl.textContent = `${sessionMasteredCount} / ${rawWordsData.length} đã thuộc`;
   }
 
   if (act.type === 'flashcard') {
@@ -583,6 +973,9 @@ function renderCurrentActivity() {
   }
 }
 
+// ==========================================
+// 4. Flashcard 3D Activity
+// ==========================================
 function renderFlashcard(word) {
   document.getElementById('exerciseFlashcard').style.display = 'block';
   document.getElementById('activityTitle').textContent = "Học Từ Vựng Tương Tác";
@@ -616,6 +1009,13 @@ function renderFlashcard(word) {
   }
 }
 
+function handleCardFaceClick(e) {
+  if (e.target.closest('.btn-audio-pill') || e.target.closest('button') || e.target.closest('a')) {
+    return;
+  }
+  flipCard();
+}
+
 function flipCard() {
   isFlipped = !isFlipped;
   const cardBox = document.getElementById('flashcardBox');
@@ -625,6 +1025,17 @@ function flipCard() {
     } else {
       cardBox.classList.remove('is-flipped');
     }
+    playSfx('flip');
+  }
+}
+
+function showToast(htmlContent) {
+  const toast = document.getElementById('feedbackToast');
+  const textEl = document.getElementById('feedbackToastText');
+  if (toast && textEl) {
+    textEl.innerHTML = htmlContent;
+    toast.classList.add('show');
+    setTimeout(() => toast.classList.remove('show'), 2200);
   }
 }
 
@@ -632,6 +1043,7 @@ function submitAssessment(rating) {
   const act = activities[currentActivityIndex];
   if (!act || act.type !== 'flashcard') return;
 
+  // Rating API call
   fetch(`/vocabulary/${act.word.id}/rate`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
@@ -646,17 +1058,64 @@ function submitAssessment(rating) {
   })
   .catch(err => console.error("Error rating word:", err));
 
-  if (rating === 'mastered') sessionMasteredCount++;
+  const requeueEnabled = document.getElementById('requeueToggle')?.checked ?? true;
+
+  if (rating === 'mastered') {
+    playSfx('correct');
+    sessionMasteredCount = Math.min(rawWordsData.length, sessionMasteredCount + 1);
+    showToast(`<i class="ph-bold ph-check-circle text-success fs-5"></i> <span>✓ Đã học từ này (+5 XP)</span>`);
+  } else if (rating === 'unknown') {
+    playSfx('wrong');
+    if (requeueEnabled) {
+      showToast(`<i class="ph-bold ph-arrow-counter-clockwise text-warning fs-5"></i> <span>Chưa nhớ - Đã thêm lại vào hàng chờ ôn tập!</span>`);
+      const insertOffset = Math.min(activities.length, currentActivityIndex + 3);
+      activities.splice(insertOffset, 0, {
+        type: 'flashcard',
+        word: act.word,
+        id: act.word.id,
+        originWord: act.word
+      });
+    }
+  } else if (rating === 'review') {
+    playSfx('flip');
+    showToast(`<i class="ph-bold ph-clock text-info fs-5"></i> <span>Đã ghi nhận - Cần ôn thêm!</span>`);
+    if (requeueEnabled) {
+      const insertOffset = Math.min(activities.length, currentActivityIndex + 4);
+      activities.splice(insertOffset, 0, {
+        type: 'true_false',
+        targetWord: act.word,
+        displayCandidateWord: act.word,
+        isCorrectAnswer: true,
+        word: act.word
+      });
+    }
+  }
+
   currentActivityIndex++;
   renderCurrentActivity();
 }
 
+// ==========================================
+// 5. True / False Exercise (With Instant Feedback & Sound)
+// ==========================================
 function renderTrueFalse(act) {
   document.getElementById('exerciseTrueFalse').style.display = 'block';
   document.getElementById('activityTitle').textContent = "Kiểm tra đúng hay sai?";
+  tfFeedbackPending = false;
+
   document.getElementById('tfPartOfSpeech').textContent = act.targetWord.part_of_speech ? `(${act.targetWord.part_of_speech.toLowerCase()})` : '';
   document.getElementById('tfMeaning').textContent = act.targetWord.meaning_vi;
   document.getElementById('tfWord').textContent = act.displayCandidateWord.word;
+
+  const btnTrue = document.getElementById('tfBtnTrue');
+  const btnFalse = document.getElementById('tfBtnFalse');
+  btnTrue.disabled = false;
+  btnFalse.disabled = false;
+  btnTrue.className = "btn btn-outline-success w-100 py-2.5 rounded-3 fw-bold shadow-2xs d-flex align-items-center justify-content-center gap-1.5";
+  btnFalse.className = "btn btn-outline-danger w-100 py-2.5 rounded-3 fw-bold shadow-2xs d-flex align-items-center justify-content-center gap-1.5";
+  
+  document.getElementById('tfActionRow').style.display = 'flex';
+  document.getElementById('tfFeedbackDrawer').style.display = 'none';
 
   const autoplaySwitch = document.getElementById('autoplayToggle');
   if (autoplaySwitch && autoplaySwitch.checked) {
@@ -665,16 +1124,67 @@ function renderTrueFalse(act) {
 }
 
 function submitTrueFalse(userSaidTrue) {
+  if (tfFeedbackPending) return;
   const act = activities[currentActivityIndex];
   if (!act || act.type !== 'true_false') return;
 
-  if (userSaidTrue === act.isCorrectAnswer) {
-    sessionEarnedXP += 2;
+  const isCorrect = (userSaidTrue === act.isCorrectAnswer);
+  tfFeedbackPending = true;
+
+  const btnTrue = document.getElementById('tfBtnTrue');
+  const btnFalse = document.getElementById('tfBtnFalse');
+  btnTrue.disabled = true;
+  btnFalse.disabled = true;
+
+  const drawer = document.getElementById('tfFeedbackDrawer');
+  const title = document.getElementById('tfFeedbackTitle');
+  const wordEl = document.getElementById('tfFeedbackWord');
+  const explain = document.getElementById('tfFeedbackExplain');
+  const nextBtn = document.getElementById('tfNextBtn');
+
+  wordEl.textContent = act.displayCandidateWord.word;
+
+  if (isCorrect) {
+    // Correct answer -> Chime sound & vibrant green card
+    playSfx('correct');
+    drawer.className = 'p-3 rounded-3 mt-3 border border-success bg-success-subtle text-start mx-auto w-100 shadow-sm';
+    title.innerHTML = `<i class="ph-bold ph-check-circle me-1 text-success fs-5"></i> Chính xác! 🎉 (+3 XP)`;
+    title.className = "fw-bold text-success d-flex align-items-center";
+    wordEl.className = "fw-bold fs-6 font-monospace text-success-emphasis";
+    nextBtn.className = "btn w-100 py-2 fw-bold rounded-pill btn-success text-white shadow-xs";
+    explain.textContent = act.isCorrectAnswer 
+      ? `"${act.displayCandidateWord.word}" có đúng nghĩa là: ${act.targetWord.meaning_vi}` 
+      : `Đúng vậy! Nghĩa "${act.targetWord.meaning_vi}" không phải của từ "${act.displayCandidateWord.word}".`;
+    sessionEarnedXP += 3;
+    sessionMasteredCount = Math.min(rawWordsData.length, sessionMasteredCount + 1);
+  } else {
+    // Incorrect answer -> Buzzer sound & vibrant red card
+    playSfx('wrong');
+    drawer.className = 'p-3 rounded-3 mt-3 border border-danger bg-danger-subtle text-start mx-auto w-100 shadow-sm';
+    title.innerHTML = `<i class="ph-bold ph-x-circle me-1 text-danger fs-5"></i> Chưa chính xác! ✕`;
+    title.className = "fw-bold text-danger d-flex align-items-center";
+    wordEl.className = "fw-bold fs-6 font-monospace text-danger-emphasis";
+    nextBtn.className = "btn w-100 py-2 fw-bold rounded-pill btn-danger text-white shadow-xs";
+    explain.textContent = act.isCorrectAnswer
+      ? `Từ "${act.displayCandidateWord.word}" có nghĩa là: ${act.targetWord.meaning_vi}`
+      : `Từ "${act.targetWord.word}" mới có nghĩa là: ${act.targetWord.meaning_vi}`;
   }
+
+  drawer.style.display = 'block';
+  setTimeout(() => {
+    playAudioText(act.displayCandidateWord.word, 'en-US');
+  }, 380);
+}
+
+function advanceTrueFalse() {
+  tfFeedbackPending = false;
   currentActivityIndex++;
   renderCurrentActivity();
 }
 
+// ==========================================
+// 6. Typing Exercise
+// ==========================================
 function renderTyping(word) {
   document.getElementById('exerciseTyping').style.display = 'block';
   document.getElementById('activityTitle').textContent = "Luyện gõ từ vựng";
@@ -693,7 +1203,7 @@ function renderTyping(word) {
   document.getElementById('typingFeedbackDrawer').style.display = 'none';
   document.getElementById('typingActionRow').style.display = 'flex';
 
-  setTimeout(() => inputEl.focus(), 50);
+  setTimeout(() => inputEl.focus(), 60);
 }
 
 function giveTypingHint() {
@@ -741,26 +1251,31 @@ function checkTypingAnswer() {
   fbMeaning.textContent = act.word.meaning_vi;
 
   if (isCorrect) {
+    playSfx('correct');
     inputEl.className = 'form-control form-control-lg text-center fw-bold rounded-pill study-typing-input is-correct';
-    drawer.className = 'p-3 rounded-3 mt-3 border border-success bg-success-subtle text-start mx-auto w-100';
-    fbTitle.textContent = "Chính xác! 🎉";
-    fbTitle.className = "fw-bold text-success";
+    drawer.className = 'p-3 rounded-3 mt-3 border border-success bg-success-subtle text-start mx-auto w-100 shadow-sm';
+    fbTitle.innerHTML = `<i class="ph-bold ph-check-circle me-1 text-success fs-5"></i> Chính xác! 🎉 (+5 XP)`;
+    fbTitle.className = "fw-bold text-success d-flex align-items-center";
     fbWord.className = "fw-bold fs-6 font-monospace text-success-emphasis";
     fbNextBtn.className = "btn w-100 py-2 fw-bold rounded-pill btn-success text-white shadow-xs";
-    sessionEarnedXP += 3;
+    sessionEarnedXP += 5;
+    sessionMasteredCount = Math.min(rawWordsData.length, sessionMasteredCount + 1);
   } else {
+    playSfx('wrong');
     inputEl.className = 'form-control form-control-lg text-center fw-bold rounded-pill study-typing-input is-wrong';
-    drawer.className = 'p-3 rounded-3 mt-3 border border-danger bg-danger-subtle text-start mx-auto w-100';
+    drawer.className = 'p-3 rounded-3 mt-3 border border-danger bg-danger-subtle text-start mx-auto w-100 shadow-sm';
     document.getElementById('typingCorrectionBox').style.display = 'block';
     document.getElementById('typingCorrectAnswer').textContent = act.word.word;
-    fbTitle.textContent = "Chưa chính xác";
-    fbTitle.className = "fw-bold text-danger";
+    fbTitle.innerHTML = `<i class="ph-bold ph-x-circle me-1 text-danger fs-5"></i> Chưa chính xác!`;
+    fbTitle.className = "fw-bold text-danger d-flex align-items-center";
     fbWord.className = "fw-bold fs-6 font-monospace text-danger-emphasis";
     fbNextBtn.className = "btn w-100 py-2 fw-bold rounded-pill btn-danger text-white shadow-xs";
   }
 
   drawer.style.display = 'block';
-  playAudioText(act.word.word, 'en-US');
+  setTimeout(() => {
+    playAudioText(act.word.word, 'en-US');
+  }, 380);
 }
 
 function advanceAfterFeedback() {
@@ -769,7 +1284,11 @@ function advanceAfterFeedback() {
   renderCurrentActivity();
 }
 
+// ==========================================
+// 7. Completion & Summary
+// ==========================================
 function showCompletionSummary() {
+  playSfx('complete');
   document.getElementById('exerciseFlashcard').style.display = 'none';
   document.getElementById('exerciseTrueFalse').style.display = 'none';
   document.getElementById('exerciseTyping').style.display = 'none';
@@ -779,48 +1298,74 @@ function showCompletionSummary() {
   document.getElementById('statPracticedWords').textContent = rawWordsData.length;
   document.getElementById('statTotalXP').innerHTML = `<i class="ph-fill ph-lightning"></i> +${Math.max(10, sessionEarnedXP)} XP`;
 
-  // Auto redirect after 3 seconds if user does nothing
   setTimeout(() => {
     if (document.getElementById('completionCard').style.display === 'block') {
       window.location.href = "{{ back_url }}";
     }
-  }, 3000);
+  }, 4000);
 }
 
 function restartSession() {
   initStudySession();
 }
 
-function playAudioText(text, lang = 'en-US') {
-  if ('speechSynthesis' in window) {
-    window.speechSynthesis.cancel();
-    const u = new SpeechSynthesisUtterance(text);
-    u.lang = lang;
-    u.rate = 0.9;
-    window.speechSynthesis.speak(u);
-  }
-}
-
-function playCurrentAudio(lang = 'en-US') {
-  const act = activities[currentActivityIndex];
-  if (!act) return;
-  const word = act.word || act.targetWord || act.displayCandidateWord;
-  if (word && word.word) playAudioText(word.word, lang);
-}
-
-function toggleShortcuts() {
-  shortcutsVisible = !shortcutsVisible;
+// ==========================================
+// 8. Settings Storage & Shortcuts
+// ==========================================
+function toggleShortcuts(show) {
   const appEl = document.getElementById('studyApp');
-  const btnText = document.getElementById('shortcutBtnText');
-  if (shortcutsVisible) {
+  if (show) {
     appEl.classList.remove('hide-shortcuts');
-    btnText.textContent = 'Phím tắt';
   } else {
     appEl.classList.add('hide-shortcuts');
-    btnText.textContent = 'Hiện phím';
   }
 }
 
+function saveSetting(key, value) {
+  try {
+    if (typeof value === 'boolean') {
+      localStorage.setItem(key, value ? '1' : '0');
+    } else {
+      localStorage.setItem(key, value);
+    }
+  } catch(e) {}
+}
+
+function loadSavedSettings() {
+  try {
+    const savedMode = localStorage.getItem('study_mode');
+    if (savedMode) {
+      currentStudyMode = savedMode;
+      const radios = document.querySelectorAll('input[name="studyMode"]');
+      radios.forEach(r => {
+        r.checked = (r.value === savedMode);
+      });
+    }
+
+    const autoplay = localStorage.getItem('study_autoplay');
+    if (autoplay !== null) {
+      document.getElementById('autoplayToggle').checked = (autoplay === '1');
+    }
+    const sfx = localStorage.getItem('study_sfx');
+    if (sfx !== null) {
+      document.getElementById('sfxToggle').checked = (sfx === '1');
+    }
+    const shortcuts = localStorage.getItem('study_shortcuts');
+    if (shortcuts !== null) {
+      const isChecked = (shortcuts === '1');
+      document.getElementById('shortcutsToggle').checked = isChecked;
+      toggleShortcuts(isChecked);
+    }
+    const requeue = localStorage.getItem('study_requeue');
+    if (requeue !== null) {
+      document.getElementById('requeueToggle').checked = (requeue === '1');
+    }
+  } catch(e) {}
+}
+
+// ==========================================
+// 9. Global Keyboard Controls
+// ==========================================
 document.addEventListener('keydown', (e) => {
   if (e.key === 'Escape') {
     window.location.href = "{{ back_url }}";
@@ -832,29 +1377,43 @@ document.addEventListener('keydown', (e) => {
   if (!act) return;
 
   if (act.type === 'flashcard') {
+    // Space flips 3D card
     if (e.code === 'Space') {
       e.preventDefault();
       flipCard();
-    } else if (e.key === '1') {
-      e.preventDefault();
-      submitAssessment('mastered');
-    } else if (e.key === '3') {
-      e.preventDefault();
-      submitAssessment('review');
-    } else if (e.key === 'Enter') {
+    } 
+    // Key 1 or ArrowLeft -> Chưa biết
+    else if (e.key === '1' || e.key === 'ArrowLeft') {
       e.preventDefault();
       submitAssessment('unknown');
+    } 
+    // Key 2 or ArrowDown -> Nhớ tạm
+    else if (e.key === '2' || e.key === 'ArrowDown') {
+      e.preventDefault();
+      submitAssessment('review');
+    } 
+    // Key 3 or ArrowRight or Enter -> Đã học từ này
+    else if (e.key === '3' || e.key === 'ArrowRight' || e.key === 'Enter') {
+      e.preventDefault();
+      submitAssessment('mastered');
     }
   } else if (act.type === 'true_false') {
-    if (e.key === '1') {
-      e.preventDefault();
-      submitTrueFalse(false);
-    } else if (e.key === '2') {
-      e.preventDefault();
-      submitTrueFalse(true);
+    if (tfFeedbackPending) {
+      if (e.code === 'Space' || e.key === 'Enter') {
+        e.preventDefault();
+        advanceTrueFalse();
+      }
+    } else {
+      if (e.key === '1' || e.key === 'ArrowLeft') {
+        e.preventDefault();
+        submitTrueFalse(false);
+      } else if (e.key === '2' || e.key === 'ArrowRight') {
+        e.preventDefault();
+        submitTrueFalse(true);
+      }
     }
   } else if (act.type === 'typing') {
-    if (currentFeedbackState && e.code === 'Space') {
+    if (currentFeedbackState && (e.code === 'Space' || e.key === 'Enter')) {
       e.preventDefault();
       advanceAfterFeedback();
     }
