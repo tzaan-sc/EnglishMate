@@ -3893,3 +3893,148 @@ a:hover {
     border-radius: 16px;
     padding: 1rem 1.25rem;
 }
+
+/* ============================================================
+   PAGE HEADER CARDS (Themed Pastel Tints & Subtle Gradients)
+   ============================================================ */
+.page-header-card {
+    background: #ffffff;
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    padding: 1.2rem 1.5rem;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
+    position: relative;
+    overflow: hidden;
+}
+
+.page-header-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.45rem;
+    flex-shrink: 0;
+    transition: transform 0.2s ease;
+}
+
+.page-header-card:hover .page-header-icon {
+    transform: translateY(-2px);
+}
+
+.page-header-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    border-radius: 20px;
+    padding: 2px 10px;
+    line-height: 1.4;
+}
+
+/* Emerald Theme (Vocabulary & Flashcards) */
+.page-header-card--emerald {
+    background: linear-gradient(135deg, rgba(16, 185, 129, 0.08) 0%, rgba(255, 255, 255, 0.98) 55%);
+    border-color: rgba(16, 185, 129, 0.25);
+}
+.page-header-card--emerald .page-header-icon {
+    background: #ecfdf5;
+    color: #059669;
+    border: 1px solid #a7f3d0;
+    box-shadow: 0 4px 14px rgba(16, 185, 129, 0.15);
+}
+.page-header-card--emerald .page-header-badge {
+    background: #ecfdf5;
+    color: #059669;
+    border: 1px solid #a7f3d0;
+}
+
+/* Blue Theme (Lessons & 4 Skills) */
+.page-header-card--blue {
+    background: linear-gradient(135deg, rgba(37, 99, 235, 0.08) 0%, rgba(255, 255, 255, 0.98) 55%);
+    border-color: rgba(37, 99, 235, 0.22);
+}
+.page-header-card--blue .page-header-icon {
+    background: #eff6ff;
+    color: #2563eb;
+    border: 1px solid #bfdbfe;
+    box-shadow: 0 4px 14px rgba(37, 99, 235, 0.15);
+}
+.page-header-card--blue .page-header-badge {
+    background: #eff6ff;
+    color: #2563eb;
+    border: 1px solid #bfdbfe;
+}
+
+/* Purple Theme (Grammar Topics) */
+.page-header-card--purple {
+    background: linear-gradient(135deg, rgba(124, 58, 237, 0.08) 0%, rgba(255, 255, 255, 0.98) 55%);
+    border-color: rgba(124, 58, 237, 0.22);
+}
+.page-header-card--purple .page-header-icon {
+    background: #f5f3ff;
+    color: #7c3aed;
+    border: 1px solid #ddd6fe;
+    box-shadow: 0 4px 14px rgba(124, 58, 237, 0.15);
+}
+.page-header-card--purple .page-header-badge {
+    background: #f5f3ff;
+    color: #7c3aed;
+    border: 1px solid #ddd6fe;
+}
+
+/* Amber Theme (Exams & Test Archive) */
+.page-header-card--amber {
+    background: linear-gradient(135deg, rgba(245, 158, 11, 0.08) 0%, rgba(255, 255, 255, 0.98) 55%);
+    border-color: rgba(245, 158, 11, 0.24);
+}
+.page-header-card--amber .page-header-icon {
+    background: #fffbeb;
+    color: #d97706;
+    border: 1px solid #fde68a;
+    box-shadow: 0 4px 14px rgba(245, 158, 11, 0.15);
+}
+.page-header-card--amber .page-header-badge {
+    background: #fffbeb;
+    color: #d97706;
+    border: 1px solid #fde68a;
+}
+
+/* Teal Theme (Progress & Reports) */
+.page-header-card--teal {
+    background: linear-gradient(135deg, rgba(13, 148, 136, 0.08) 0%, rgba(255, 255, 255, 0.98) 55%);
+    border-color: rgba(13, 148, 136, 0.22);
+}
+.page-header-card--teal .page-header-icon {
+    background: #f0fdfa;
+    color: #0d9488;
+    border: 1px solid #99f6e4;
+    box-shadow: 0 4px 14px rgba(13, 148, 136, 0.15);
+}
+.page-header-card--teal .page-header-badge {
+    background: #f0fdfa;
+    color: #0d9488;
+    border: 1px solid #99f6e4;
+}
+
+/* Indigo Theme (Quiz Evaluation) */
+.page-header-card--indigo {
+    background: linear-gradient(135deg, rgba(79, 70, 229, 0.08) 0%, rgba(255, 255, 255, 0.98) 55%);
+    border-color: rgba(79, 70, 229, 0.22);
+}
+.page-header-card--indigo .page-header-icon {
+    background: #eef2ff;
+    color: #4f46e5;
+    border: 1px solid #c7d2fe;
+    box-shadow: 0 4px 14px rgba(79, 70, 229, 0.15);
+}
+.page-header-card--indigo .page-header-badge {
+    background: #eef2ff;
+    color: #4f46e5;
+    border: 1px solid #c7d2fe;
+}
