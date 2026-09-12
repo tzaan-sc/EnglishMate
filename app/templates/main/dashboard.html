@@ -13,22 +13,21 @@
         <!-- Media Container Background for Custom Banner -->
         <div id="bannerMediaContainer" class="position-absolute w-100 h-100 top-0 start-0" style="z-index: 1; pointer-events: none;"></div>
         
-        <!-- Permanent Smart Gradient Scrim (Protects text readability against any image) -->
-        <div class="position-absolute w-100 h-100 top-0 start-0" style="z-index: 1; background: linear-gradient(90deg, rgba(15, 23, 42, 0.92) 0%, rgba(15, 23, 42, 0.68) 55%, rgba(15, 23, 42, 0.3) 100%); pointer-events: none;"></div>
-        <div id="bannerOverlay" class="position-absolute w-100 h-100 top-0 start-0 d-none" style="z-index: 1; background: rgba(15, 23, 42, 0.45); pointer-events: none;"></div>
+        <!-- Custom Media Smart Scrim Overlay (Only shown when custom banner is loaded) -->
+        <div id="bannerOverlay" class="position-absolute w-100 h-100 top-0 start-0 d-none" style="z-index: 1; background: linear-gradient(90deg, rgba(15, 23, 42, 0.92) 0%, rgba(15, 23, 42, 0.70) 55%, rgba(15, 23, 42, 0.3) 100%); pointer-events: none;"></div>
         <div id="bannerPlaceholder" class="d-none" style="z-index: 2; pointer-events: none;"></div>
 
         <!-- Custom Banner Controls (Top Right) -->
         <div class="position-absolute d-flex align-items-center gap-2" style="top: 16px; right: 16px; z-index: 10;">
           <button id="btnResetBanner"
-            class="btn btn-sm btn-light border-0 d-none d-flex align-items-center justify-content-center shadow-sm"
-            style="border-radius: 50%; width: 32px; height: 32px; background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(8px); color: #dc2626;"
+            class="btn btn-sm btn-light border d-none d-flex align-items-center justify-content-center shadow-2xs"
+            style="border-radius: 50%; width: 34px; height: 34px; color: #dc2626;"
             title="Khôi phục nền mặc định">
             <i class="ph-bold ph-x fs-6"></i>
           </button>
           <button id="btnChangeBanner"
-            class="btn btn-sm btn-light border-0 d-flex align-items-center justify-content-center shadow-sm"
-            style="border-radius: 50%; width: 32px; height: 32px; background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(8px); color: #334155;"
+            class="btn btn-sm btn-light border d-flex align-items-center justify-content-center shadow-2xs"
+            style="border-radius: 50%; width: 34px; height: 34px; color: #64748b;"
             title="Tùy chỉnh ảnh/video nền">
             <i class="ph-bold ph-image fs-6"></i>
           </button>
@@ -36,48 +35,48 @@
         <input type="file" id="bannerFileInput" accept="image/*,video/*" class="d-none">
 
         <!-- Hero Content (Greeting & Subtitle) -->
-        <div class="position-relative" style="z-index: 2; max-width: 540px;">
-          <div class="d-inline-flex align-items-center gap-2 px-3 py-1 rounded-pill mb-3" style="background: rgba(255, 255, 255, 0.18); backdrop-filter: blur(8px); font-size: 0.76rem; font-weight: 700; color: #a7f3d0;">
+        <div class="position-relative" style="z-index: 2; max-width: 580px;">
+          <div class="d-inline-flex align-items-center gap-2 px-3 py-1 rounded-pill mb-3" style="background: #ecfdf5; border: 1px solid #a7f3d0; font-size: 0.76rem; font-weight: 700; color: #059669;">
             <i class="ph-bold ph-target"></i>
             <span>Mục tiêu hôm nay</span>
-            <span style="opacity: 0.6;">•</span>
+            <span style="opacity: 0.5;">•</span>
             <span>1 bài học & 10 từ vựng</span>
           </div>
-          <h2 class="fw-bold mb-2 text-white" style="font-size: 1.85rem; letter-spacing: -0.02em;">
+          <h2 class="hero-title-greeting fw-bold mb-2 text-dark" style="font-size: 1.85rem; letter-spacing: -0.02em;">
             Chào mừng trở lại, {{ current_user.full_name or current_user.username }}! 👋
           </h2>
-          <p class="text-white-50 mb-0" style="font-size: 0.92rem; line-height: 1.55;">
+          <p class="hero-subtitle-greeting text-secondary mb-0" style="font-size: 0.92rem; line-height: 1.55;">
             Mỗi ngày một chút kiến thức để làm chủ tiếng Anh tự tin và tự nhiên hơn.
           </p>
         </div>
 
         <!-- Hero Actions / CTAs -->
-        <div class="d-flex flex-wrap align-items-center gap-3 pt-4 mt-2 position-relative" style="z-index: 2; gap: 14px !important;">
+        <div class="d-flex flex-wrap align-items-center gap-2.5 pt-4 mt-2 position-relative" style="z-index: 2;">
           {% if next_lesson %}
-          <a href="{{ next_lesson.url }}" class="btn btn-light fw-bold px-4 py-2.5 text-primary d-inline-flex align-items-center gap-2 shadow-sm rounded-3">
+          <a href="{{ next_lesson.url }}" class="btn btn-primary fw-bold px-4 py-2.5 rounded-pill shadow-xs d-inline-flex align-items-center gap-2" style="font-size: 0.9rem;">
             <i class="ph-bold ph-play-circle fs-5"></i>
             <span>Tiếp tục: {{ next_lesson.title|truncate(24) }}</span>
           </a>
           {% else %}
-          <a href="{{ url_for('learning.lessons') }}" class="btn btn-primary fw-bold px-4 py-2.5 d-inline-flex align-items-center gap-2 shadow-sm rounded-3">
+          <a href="{{ url_for('learning.lessons') }}" class="btn btn-primary fw-bold px-4 py-2.5 rounded-pill shadow-xs d-inline-flex align-items-center gap-2" style="font-size: 0.9rem;">
             <i class="ph-bold ph-play-circle fs-5"></i>
             <span>Khám phá bài học</span>
           </a>
           {% endif %}
           
           {% if srs_due_count > 0 %}
-          <a href="{{ url_for('learning.game_lobby') }}" class="btn btn-warning text-dark fw-bold px-4 py-2.5 d-inline-flex align-items-center gap-2 shadow-sm rounded-3">
+          <a href="{{ url_for('learning.game_lobby') }}" class="btn btn-warning text-dark fw-bold px-4 py-2.5 rounded-pill shadow-2xs d-inline-flex align-items-center gap-2" style="font-size: 0.9rem;">
             <i class="ph-bold ph-lightning fs-5"></i>
             <span>Ôn {{ srs_due_count }} từ đến hạn</span>
           </a>
           {% endif %}
           
-          <a href="{{ url_for('learning.vocabulary') }}" class="btn btn-light text-dark fw-bold px-4 py-2.5 d-inline-flex align-items-center gap-2 rounded-3 shadow-sm">
-            <i class="ph-bold ph-book-bookmark fs-5 text-primary"></i>
+          <a href="{{ url_for('learning.vocabulary') }}" class="btn btn-light border fw-bold px-4 py-2.5 rounded-pill shadow-2xs text-dark d-inline-flex align-items-center gap-2" style="font-size: 0.9rem;">
+            <i class="ph-bold ph-cards fs-5 text-primary"></i>
             <span>Từ vựng</span>
           </a>
-          <a href="{{ url_for('learning.game_lobby') }}" class="btn btn-outline-light fw-semibold px-4 py-2.5 d-inline-flex align-items-center gap-2 rounded-3" style="border-color: rgba(255, 255, 255, 0.45); backdrop-filter: blur(4px);">
-            <i class="ph-bold ph-game-controller fs-5"></i>
+          <a href="{{ url_for('learning.game_lobby') }}" class="btn btn-light border fw-bold px-4 py-2.5 rounded-pill shadow-2xs text-dark d-inline-flex align-items-center gap-2" style="font-size: 0.9rem;">
+            <i class="ph-bold ph-game-controller fs-5 text-primary"></i>
             <span>Luyện Game</span>
           </a>
         </div>
@@ -724,8 +723,8 @@
           bannerPlaceholder.classList.add('d-none');
           btnResetBanner.classList.remove('d-none');
 
-          // Apply filled layout state
           // Apply custom media state
+          welcomeBanner.classList.add('has-custom-media');
           welcomeBanner.style.background = '#0f172a';
           bannerOverlay.classList.remove('d-none');
           bannerOverlay.style.background = 'linear-gradient(90deg, rgba(15, 23, 42, 0.92) 0%, rgba(15, 23, 42, 0.70) 55%, rgba(15, 23, 42, 0.3) 100%)';
@@ -778,6 +777,7 @@
           btnResetBanner.classList.add('d-none');
 
           // Keep modern Hero gradient default
+          welcomeBanner.classList.remove('has-custom-media');
           welcomeBanner.style.background = '';
           welcomeBanner.style.borderStyle = '';
           welcomeBanner.style.borderColor = '';

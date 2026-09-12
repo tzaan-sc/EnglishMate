@@ -40,7 +40,7 @@
       <div class="d-flex align-items-center gap-2 flex-wrap">
         {% if due_words_count > 0 %}
         <a href="{{ url_for('learning.review_vocabulary') }}"
-           class="btn btn-warning fw-bold px-3.5 py-2 rounded-3 shadow-2xs d-inline-flex align-items-center gap-1.5"
+           class="btn btn-warning fw-bold px-3.5 py-2 rounded-pill shadow-2xs d-inline-flex align-items-center gap-1.5"
            style="font-size: 0.88rem;">
           <i class="ph-bold ph-alarm"></i>
           <span>Ôn {{ due_words_count }} từ đến hạn</span>
@@ -48,26 +48,26 @@
         {% endif %}
         {% if is_flashcards_tab %}
         <a href="{{ url_for('learning.flashcard_set_create') }}"
-           class="btn btn-primary fw-bold px-3.5 py-2 rounded-3 shadow-xs d-inline-flex align-items-center gap-1.5"
+           class="btn btn-primary fw-bold px-3.5 py-2 rounded-pill shadow-xs d-inline-flex align-items-center gap-1.5"
            style="font-size: 0.88rem;">
           <i class="ph-bold ph-plus"></i>
           <span>Tạo bộ thẻ</span>
         </a>
         {% endif %}
         <a href="{{ url_for('learning.vocabulary_stats') }}"
-           class="btn btn-light border fw-bold px-3 py-2 rounded-3 shadow-2xs text-dark d-inline-flex align-items-center gap-1.5"
+           class="btn btn-light border fw-bold px-3.5 py-2 rounded-pill shadow-2xs text-dark d-inline-flex align-items-center gap-1.5"
            style="font-size: 0.88rem;" title="Thống kê học tập">
           <i class="ph-bold ph-chart-line-up text-primary"></i>
           <span>Thống kê</span>
         </a>
         <a href="{{ url_for('learning.manage_vocabulary') }}"
-           class="btn btn-light border fw-bold px-3 py-2 rounded-3 shadow-2xs text-dark d-inline-flex align-items-center gap-1.5"
+           class="btn btn-light border fw-bold px-3.5 py-2 rounded-pill shadow-2xs text-dark d-inline-flex align-items-center gap-1.5"
            style="font-size: 0.88rem;" title="Quản lý từ vựng">
           <i class="ph-bold ph-sliders-horizontal text-secondary"></i>
           <span>Quản lý</span>
         </a>
         <a href="{{ url_for('learning.vocabulary_settings') }}"
-           class="btn btn-light border p-2 rounded-3 shadow-2xs text-secondary d-inline-flex align-items-center justify-content-center"
+           class="btn btn-light border p-2 rounded-circle shadow-2xs text-secondary d-inline-flex align-items-center justify-content-center"
            style="width: 38px; height: 38px;" title="Cài đặt từ vựng">
           <i class="ph-bold ph-gear fs-5"></i>
         </a>
