@@ -19,78 +19,88 @@
     </ol>
   </nav>
 
-  <!-- ZONE 1: HERO & STATS BANNER -->
-  <div class="hero-brand-card p-4 p-lg-4 mb-4 shadow-sm">
-    <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3 mb-3 position-relative" style="z-index: 2;">
-      <div>
-        <div class="d-inline-flex align-items-center gap-1.5 px-2.5 py-0.5 rounded-pill mb-2" style="background: rgba(255, 255, 255, 0.18); backdrop-filter: blur(8px); font-size: 0.74rem; font-weight: 700; color: #a7f3d0;">
-          <i class="ph-bold ph-chart-polar"></i>
-          <span>HỆ THỐNG KIỂM TRA & ĐÁNH GIÁ NĂNG LỰC</span>
-        </div>
-        <h3 class="fw-bold text-white mb-1 d-flex align-items-center gap-2" style="letter-spacing: -0.01em;">
-          Bảng Điều Khiển Quiz & Đánh Giá
-        </h3>
-        <p class="text-white-50 mb-0 small">
-          Theo dõi kết quả bài test, tỷ lệ chính xác %, chuỗi ngày làm quiz và nhận diện điểm yếu cần cải thiện.
-        </p>
+  <!-- Header (Admin-style) -->
+  <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
+    <div class="d-flex align-items-center gap-3">
+      <div class="rounded-3 bg-primary-subtle text-primary border border-primary-subtle d-inline-flex align-items-center justify-content-center flex-shrink-0" style="width: 48px; height: 48px; font-size: 1.45rem;">
+        <i class="ph-bold ph-chart-polar"></i>
       </div>
-
-      <!-- Action Buttons Hub -->
-      <div class="d-flex gap-2 align-items-center flex-wrap">
-        <a href="{{ url_for('learning.quiz_list') }}" class="btn btn-light rounded-pill px-3.5 py-1.5 fw-bold text-primary shadow-xs d-inline-flex align-items-center gap-1.5" style="font-size: 0.84rem;">
-          <i class="ph-bold ph-list-magnifying-glass fs-6"></i>
-          <span>Khám phá bài Quiz</span>
-        </a>
-        <a href="{{ url_for('learning.grammar_exercises_setup') }}" class="btn btn-outline-light rounded-pill px-3.5 py-1.5 fw-semibold d-inline-flex align-items-center gap-1.5" style="font-size: 0.84rem; background: rgba(255,255,255,0.06); border-color: rgba(255,255,255,0.25);">
-          <i class="ph-bold ph-pencil-simple-line fs-6"></i>
-          <span>Luyện tập chuyên đề</span>
-        </a>
+      <div>
+        <h3 class="fw-bold text-dark mb-0.5" style="letter-spacing: -0.01em;">Bảng Điều Khiển Quiz & Đánh Giá</h3>
+        <p class="text-secondary small mb-0">Theo dõi kết quả bài test, tỷ lệ chính xác %, chuỗi ngày làm quiz và nhận diện điểm yếu cần cải thiện</p>
       </div>
     </div>
 
-    <!-- 4 Clean Stat Pills -->
-    <div class="row g-3 g-lg-4 pt-4 mt-3 border-top" style="border-color: rgba(255, 255, 255, 0.15) !important; position: relative; z-index: 2;">
-      <div class="col-6 col-md-3">
-        <div class="d-flex align-items-center gap-3 p-3 px-3.5 rounded-4" style="background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.12); backdrop-filter: blur(4px);">
-          <div class="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0" style="width: 40px; height: 40px; background: rgba(255, 255, 255, 0.2);">
-            <i class="ph-bold ph-trophy text-white fs-5"></i>
+    <!-- Action Buttons Hub -->
+    <div class="d-flex align-items-center gap-2 flex-wrap">
+      <a href="{{ url_for('learning.quiz_list') }}" class="btn btn-primary fw-bold px-3.5 py-2 rounded-3 shadow-xs d-inline-flex align-items-center gap-1.5" style="font-size: 0.88rem;">
+        <i class="ph-bold ph-list-magnifying-glass fs-5"></i>
+        <span>Khám phá bài Quiz</span>
+      </a>
+      <a href="{{ url_for('learning.grammar_exercises_setup') }}" class="btn btn-light border fw-bold px-3 py-2 rounded-3 shadow-2xs text-dark d-inline-flex align-items-center gap-1.5" style="font-size: 0.88rem;">
+        <i class="ph-bold ph-pencil-simple-line text-primary"></i>
+        <span>Luyện tập chuyên đề</span>
+      </a>
+    </div>
+  </div>
+
+  <!-- 4 Stat Cards Grid (Admin-style) -->
+  <div class="row g-3 mb-4">
+    <!-- Stat 1: Tổng điểm Quiz -->
+    <div class="col-6 col-md-3">
+      <div class="card-modern p-3.5 h-100">
+        <div class="d-flex align-items-center gap-3">
+          <div class="rounded-3 bg-primary-subtle text-primary border border-primary-subtle d-inline-flex align-items-center justify-content-center flex-shrink-0" style="width: 44px; height: 44px; font-size: 1.25rem;">
+            <i class="ph-bold ph-trophy"></i>
           </div>
           <div>
-            <span class="text-white-50 d-block" style="font-size: 0.74rem;">Tổng điểm Quiz</span>
-            <strong class="text-white fs-6">{{ metrics.overall_score }}/{{ metrics.total_questions }} câu</strong>
+            <h4 class="fw-800 text-dark mb-0" style="font-size: 1.35rem; letter-spacing: -0.02em;">{{ metrics.overall_score }}/{{ metrics.total_questions }}</h4>
+            <span class="text-secondary small" style="font-size: 0.8rem;">Tổng câu trả lời đúng</span>
           </div>
         </div>
       </div>
-      <div class="col-6 col-md-3">
-        <div class="d-flex align-items-center gap-3 p-3 px-3.5 rounded-4" style="background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.12); backdrop-filter: blur(4px);">
-          <div class="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0" style="width: 40px; height: 40px; background: rgba(255, 255, 255, 0.2);">
-            <i class="ph-bold ph-target fs-5" style="color: #6ee7b7;"></i>
+    </div>
+
+    <!-- Stat 2: Tỷ lệ chính xác % -->
+    <div class="col-6 col-md-3">
+      <div class="card-modern p-3.5 h-100">
+        <div class="d-flex align-items-center gap-3">
+          <div class="rounded-3 bg-success-subtle text-success border border-success-subtle d-inline-flex align-items-center justify-content-center flex-shrink-0" style="width: 44px; height: 44px; font-size: 1.25rem;">
+            <i class="ph-bold ph-target"></i>
           </div>
           <div>
-            <span class="text-white-50 d-block" style="font-size: 0.74rem;">Tỷ lệ chính xác %</span>
-            <strong class="text-white fs-6">{{ metrics.accuracy_rate }}% thành công</strong>
+            <h4 class="fw-800 text-dark mb-0" style="font-size: 1.35rem; letter-spacing: -0.02em;">{{ metrics.accuracy_rate }}%</h4>
+            <span class="text-secondary small" style="font-size: 0.8rem;">Tỷ lệ chính xác</span>
           </div>
         </div>
       </div>
-      <div class="col-6 col-md-3">
-        <div class="d-flex align-items-center gap-3 p-3 px-3.5 rounded-4" style="background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.12); backdrop-filter: blur(4px);">
-          <div class="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0" style="width: 40px; height: 40px; background: rgba(255, 255, 255, 0.2);">
-            <i class="ph-bold ph-flame fs-5" style="color: #fde047;"></i>
+    </div>
+
+    <!-- Stat 3: Chuỗi ngày luyện Quiz -->
+    <div class="col-6 col-md-3">
+      <div class="card-modern p-3.5 h-100">
+        <div class="d-flex align-items-center gap-3">
+          <div class="rounded-3 bg-warning-subtle text-warning border border-warning-subtle d-inline-flex align-items-center justify-content-center flex-shrink-0" style="width: 44px; height: 44px; font-size: 1.25rem;">
+            <i class="ph-bold ph-flame"></i>
           </div>
           <div>
-            <span class="text-white-50 d-block" style="font-size: 0.74rem;">Chuỗi ngày luyện Quiz</span>
-            <strong class="text-white fs-6">{{ metrics.quiz_streak }} ngày liên tiếp 🔥</strong>
+            <h4 class="fw-800 text-dark mb-0" style="font-size: 1.35rem; letter-spacing: -0.02em;">{{ metrics.quiz_streak }} ngày</h4>
+            <span class="text-secondary small" style="font-size: 0.8rem;">Chuỗi ngày liên tiếp 🔥</span>
           </div>
         </div>
       </div>
-      <div class="col-6 col-md-3">
-        <div class="d-flex align-items-center gap-3 p-3 px-3.5 rounded-4" style="background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.12); backdrop-filter: blur(4px);">
-          <div class="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0" style="width: 40px; height: 40px; background: rgba(255, 255, 255, 0.2);">
-            <i class="ph-bold ph-check-circle fs-5" style="color: #93c5fd;"></i>
+    </div>
+
+    <!-- Stat 4: Đã hoàn thành -->
+    <div class="col-6 col-md-3">
+      <div class="card-modern p-3.5 h-100">
+        <div class="d-flex align-items-center gap-3">
+          <div class="rounded-3 bg-info-subtle text-info border border-info-subtle d-inline-flex align-items-center justify-content-center flex-shrink-0" style="width: 44px; height: 44px; font-size: 1.25rem;">
+            <i class="ph-bold ph-check-circle"></i>
           </div>
           <div>
-            <span class="text-white-50 d-block" style="font-size: 0.74rem;">Đã hoàn thành</span>
-            <strong class="text-white fs-6">{{ metrics.total_quizzes_completed }} bài (TB {{ metrics.avg_time_seconds }}s)</strong>
+            <h4 class="fw-800 text-dark mb-0" style="font-size: 1.35rem; letter-spacing: -0.02em;">{{ metrics.total_quizzes_completed }}</h4>
+            <span class="text-secondary small" style="font-size: 0.8rem;">Bài hoàn thành (TB {{ metrics.avg_time_seconds }}s)</span>
           </div>
         </div>
       </div>

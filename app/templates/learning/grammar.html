@@ -19,78 +19,88 @@
     </ol>
   </nav>
 
-  <!-- ZONE 1: HERO & STATS BANNER -->
-  <div class="hero-brand-card p-4 p-lg-4 mb-4 shadow-sm">
-    <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3 mb-3 position-relative" style="z-index: 2;">
-      <div>
-        <div class="d-inline-flex align-items-center gap-1.5 px-2.5 py-0.5 rounded-pill mb-2" style="background: rgba(255, 255, 255, 0.18); backdrop-filter: blur(8px); font-size: 0.74rem; font-weight: 700; color: #a7f3d0;">
-          <i class="ph-bold ph-textbox"></i>
-          <span>HỆ THỐNG NGỮ PHÁP CHUẨN KHUNG CEFR</span>
-        </div>
-        <h3 class="fw-bold text-white mb-1 d-flex align-items-center gap-2" style="letter-spacing: -0.01em;">
-          Chủ đề Ngữ pháp Tiếng Anh
-        </h3>
-        <p class="text-white-50 mb-0 small">
-          Nắm vững quy tắc ngữ pháp, cấu trúc câu, ví dụ minh họa và mẹo làm bài chuẩn xác từ <strong>A1 đến C2</strong>.
-        </p>
+  <!-- Header (Admin-style) -->
+  <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
+    <div class="d-flex align-items-center gap-3">
+      <div class="rounded-3 bg-primary-subtle text-primary border border-primary-subtle d-inline-flex align-items-center justify-content-center flex-shrink-0" style="width: 48px; height: 48px; font-size: 1.45rem;">
+        <i class="ph-bold ph-textbox"></i>
       </div>
-
-      <!-- Action Buttons Hub -->
-      <div class="d-flex gap-2 align-items-center flex-wrap">
-        <a href="{{ url_for('learning.grammar_exercises_setup') }}" class="btn btn-light rounded-pill px-3.5 py-1.5 fw-bold text-primary shadow-xs d-inline-flex align-items-center gap-1.5" style="font-size: 0.84rem;">
-          <i class="ph-bold ph-pencil-simple-line fs-6"></i>
-          <span>Luyện bài tập</span>
-        </a>
-        <a href="{{ url_for('learning.grammar_reference_index') }}" class="btn btn-outline-light rounded-pill px-3.5 py-1.5 fw-semibold d-inline-flex align-items-center gap-1.5" style="font-size: 0.84rem; background: rgba(255,255,255,0.06); border-color: rgba(255,255,255,0.25);">
-          <i class="ph-bold ph-bookmark-simple fs-6"></i>
-          <span>Sổ tay tra cứu</span>
-        </a>
+      <div>
+        <h3 class="fw-bold text-dark mb-0.5" style="letter-spacing: -0.01em;">Chủ đề Ngữ pháp Tiếng Anh</h3>
+        <p class="text-secondary small mb-0">Nắm vững quy tắc ngữ pháp, cấu trúc câu, ví dụ minh họa và mẹo làm bài chuẩn xác từ A1 đến C2</p>
       </div>
     </div>
 
-    <!-- 4 Clean Stat Pills -->
-    <div class="row g-3 g-lg-4 pt-4 mt-3 border-top" style="border-color: rgba(255, 255, 255, 0.15) !important; position: relative; z-index: 2;">
-      <div class="col-6 col-md-3">
-        <div class="d-flex align-items-center gap-3 p-3 px-3.5 rounded-4" style="background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.12); backdrop-filter: blur(4px);">
-          <div class="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0" style="width: 40px; height: 40px; background: rgba(255, 255, 255, 0.2);">
-            <i class="ph-bold ph-book-open text-white fs-5"></i>
+    <!-- Action Buttons Hub -->
+    <div class="d-flex align-items-center gap-2 flex-wrap">
+      <a href="{{ url_for('learning.grammar_exercises_setup') }}" class="btn btn-primary fw-bold px-3.5 py-2 rounded-3 shadow-xs d-inline-flex align-items-center gap-1.5" style="font-size: 0.88rem;">
+        <i class="ph-bold ph-pencil-simple-line fs-5"></i>
+        <span>Luyện bài tập</span>
+      </a>
+      <a href="{{ url_for('learning.grammar_reference_index') }}" class="btn btn-light border fw-bold px-3 py-2 rounded-3 shadow-2xs text-dark d-inline-flex align-items-center gap-1.5" style="font-size: 0.88rem;">
+        <i class="ph-bold ph-bookmark-simple text-primary"></i>
+        <span>Sổ tay tra cứu</span>
+      </a>
+    </div>
+  </div>
+
+  <!-- 4 Stat Cards Grid (Admin-style) -->
+  <div class="row g-3 mb-4">
+    <!-- Stat 1: Tổng số chủ đề -->
+    <div class="col-6 col-md-3">
+      <div class="card-modern p-3.5 h-100">
+        <div class="d-flex align-items-center gap-3">
+          <div class="rounded-3 bg-primary-subtle text-primary border border-primary-subtle d-inline-flex align-items-center justify-content-center flex-shrink-0" style="width: 44px; height: 44px; font-size: 1.25rem;">
+            <i class="ph-bold ph-book-open"></i>
           </div>
           <div>
-            <span class="text-white-50 d-block" style="font-size: 0.74rem;">Tổng số chủ đề</span>
-            <strong class="text-white fs-6">{{ total_topics }} chủ đề</strong>
+            <h4 class="fw-800 text-dark mb-0" style="font-size: 1.35rem; letter-spacing: -0.02em;">{{ total_topics }}</h4>
+            <span class="text-secondary small" style="font-size: 0.8rem;">Tổng số chủ đề</span>
           </div>
         </div>
       </div>
-      <div class="col-6 col-md-3">
-        <div class="d-flex align-items-center gap-3 p-3 px-3.5 rounded-4" style="background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.12); backdrop-filter: blur(4px);">
-          <div class="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0" style="width: 40px; height: 40px; background: rgba(255, 255, 255, 0.2);">
-            <i class="ph-bold ph-check-circle fs-5" style="color: #6ee7b7;"></i>
+    </div>
+
+    <!-- Stat 2: Đã hoàn thành -->
+    <div class="col-6 col-md-3">
+      <div class="card-modern p-3.5 h-100">
+        <div class="d-flex align-items-center gap-3">
+          <div class="rounded-3 bg-success-subtle text-success border border-success-subtle d-inline-flex align-items-center justify-content-center flex-shrink-0" style="width: 44px; height: 44px; font-size: 1.25rem;">
+            <i class="ph-bold ph-check-circle"></i>
           </div>
           <div>
-            <span class="text-white-50 d-block" style="font-size: 0.74rem;">Đã hoàn thành</span>
-            <strong class="text-white fs-6">{{ completed_count }} chủ đề</strong>
+            <h4 class="fw-800 text-dark mb-0" style="font-size: 1.35rem; letter-spacing: -0.02em;">{{ completed_count }}</h4>
+            <span class="text-secondary small" style="font-size: 0.8rem;">Đã hoàn thành</span>
           </div>
         </div>
       </div>
-      <div class="col-6 col-md-3">
-        <div class="d-flex align-items-center gap-3 p-3 px-3.5 rounded-4" style="background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.12); backdrop-filter: blur(4px);">
-          <div class="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0" style="width: 40px; height: 40px; background: rgba(255, 255, 255, 0.2);">
-            <i class="ph-bold ph-heart fs-5" style="color: #fca5a5;"></i>
+    </div>
+
+    <!-- Stat 3: Yêu thích -->
+    <div class="col-6 col-md-3">
+      <div class="card-modern p-3.5 h-100">
+        <div class="d-flex align-items-center gap-3">
+          <div class="rounded-3 bg-danger-subtle text-danger border border-danger-subtle d-inline-flex align-items-center justify-content-center flex-shrink-0" style="width: 44px; height: 44px; font-size: 1.25rem;">
+            <i class="ph-bold ph-heart"></i>
           </div>
           <div>
-            <span class="text-white-50 d-block" style="font-size: 0.74rem;">Yêu thích</span>
-            <strong class="text-white fs-6">{{ favorite_count }} chủ đề</strong>
+            <h4 class="fw-800 text-dark mb-0" style="font-size: 1.35rem; letter-spacing: -0.02em;">{{ favorite_count }}</h4>
+            <span class="text-secondary small" style="font-size: 0.8rem;">Yêu thích</span>
           </div>
         </div>
       </div>
-      <div class="col-6 col-md-3">
-        <div class="d-flex align-items-center gap-3 p-3 px-3.5 rounded-4" style="background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.12); backdrop-filter: blur(4px);">
-          <div class="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0" style="width: 40px; height: 40px; background: rgba(255, 255, 255, 0.2);">
-            <i class="ph-bold ph-chart-line-up fs-5" style="color: #93c5fd;"></i>
+    </div>
+
+    <!-- Stat 4: Tỷ lệ thành thạo -->
+    <div class="col-6 col-md-3">
+      <div class="card-modern p-3.5 h-100">
+        <div class="d-flex align-items-center gap-3">
+          <div class="rounded-3 bg-info-subtle text-info border border-info-subtle d-inline-flex align-items-center justify-content-center flex-shrink-0" style="width: 44px; height: 44px; font-size: 1.25rem;">
+            <i class="ph-bold ph-chart-line-up"></i>
           </div>
           <div>
-            <span class="text-white-50 d-block" style="font-size: 0.74rem;">Tỷ lệ thành thạo</span>
-            <strong class="text-white fs-6">{{ (completed_count / total_topics * 100)|round|int if total_topics > 0 else 0 }}%</strong>
+            <h4 class="fw-800 text-dark mb-0" style="font-size: 1.35rem; letter-spacing: -0.02em;">{{ (completed_count / total_topics * 100)|round|int if total_topics > 0 else 0 }}%</h4>
+            <span class="text-secondary small" style="font-size: 0.8rem;">Tỷ lệ thành thạo</span>
           </div>
         </div>
       </div>
