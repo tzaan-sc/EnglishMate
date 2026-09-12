@@ -5,7 +5,7 @@ from flask import abort, flash, jsonify, redirect, render_template, request, ses
 from flask_login import current_user, login_required
 from sqlalchemy import func
 
-from ...extensions import db
+from ...extensions import db, csrf
 from ..auth.models import record_daily_activity
 from .models import (Badge, Challenge, GrammarErrorLog, GrammarExerciseAttempt, GrammarProgress, GrammarRule,
                        GrammarRuleBookmark, GrammarTopic, Lesson, LessonBookmark, LessonFavorite,
@@ -1230,6 +1230,34 @@ def learn_word(word_id):
     return redirect(request.referrer or url_for("learning.vocabulary"))
 
 
+@bp.post("/vocabulary/<int:word_id>/toggle-learned")
+@login_required
+@csrf.exempt
+def toggle_word_learned(word_id):
+    word = db.get_or_404(Vocabulary, word_id)
+    progress = VocabularyProgress.query.filter_by(user_id=current_user.id, vocabulary_id=word.id).first()
+    if not progress:
+        progress = VocabularyProgress(user_id=current_user.id, vocabulary_id=word.id, learned_count=0, review_count=0, srs_level=1)
+        db.session.add(progress)
+    
+    is_currently_learned = (progress.learned_count > 0 or progress.review_count > 0)
+    if is_currently_learned:
+        progress.learned_count = 0
+        progress.review_count = 0
+        new_status = False
+    else:
+        progress.learned_count = (progress.learned_count or 0) + 1
+        progress.last_reviewed_at = func.now()
+        new_status = True
+
+    db.session.commit()
+    return jsonify({
+        "success": True,
+        "word_id": word.id,
+        "is_learned": new_status
+    })
+
+
 @bp.post("/vocabulary/<int:word_id>/unlearn")
 @login_required
 def unlearn_word(word_id):
@@ -1423,6 +1451,7 @@ def study_vocabulary():
 
 @bp.post("/vocabulary/<int:word_id>/rate")
 @login_required
+@csrf.exempt
 def rate_word_study(word_id):
     word = db.get_or_404(Vocabulary, word_id)
     rating = request.json.get("rating") if request.is_json and request.json else request.form.get("rating", "mastered")
@@ -1467,6 +1496,7 @@ def rate_word_study(word_id):
 
 @bp.post("/vocabulary/<int:word_id>/favorite")
 @login_required
+@csrf.exempt
 def favorite_word(word_id):
     word = db.get_or_404(Vocabulary, word_id)
     progress = VocabularyProgress.query.filter_by(user_id=current_user.id, vocabulary_id=word.id).first()
@@ -1476,6 +1506,8 @@ def favorite_word(word_id):
 
     progress.is_favorite = not progress.is_favorite
     db.session.commit()
+    if request.is_json or request.headers.get("X-Requested-With") == "XMLHttpRequest":
+        return jsonify({"success": True, "is_favorite": progress.is_favorite})
     msg = f"Đã thêm “{word.word}” vào mục yêu thích." if progress.is_favorite else f"Đã bỏ “{word.word}” khỏi danh sách yêu thích."
     flash(msg, "success")
     return redirect(request.referrer or url_for("learning.vocabulary"))

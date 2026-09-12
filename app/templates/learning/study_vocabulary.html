@@ -211,6 +211,61 @@
     border-color: #059669 !important;
     background: #ecfdf5 !important;
   }
+
+  /* Multiple Choice Options */
+  .btn-mc-option {
+    background: #ffffff;
+    border: 1.5px solid #e2e8f0;
+    border-radius: 16px;
+    padding: 13px 18px;
+    text-align: left;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    font-weight: 600;
+    font-size: 0.92rem;
+    color: #1e293b;
+    transition: all 0.15s ease;
+    cursor: pointer;
+  }
+  .btn-mc-option:hover:not(:disabled) {
+    border-color: #059669;
+    background: #f0fdf4;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(5, 150, 105, 0.12);
+  }
+  .btn-mc-option.is-correct {
+    border-color: #059669 !important;
+    background: #ecfdf5 !important;
+    color: #065f46 !important;
+  }
+  .btn-mc-option.is-wrong {
+    border-color: #ef4444 !important;
+    background: #fef2f2 !important;
+    color: #991b1b !important;
+  }
+  .mc-kbd {
+    width: 26px;
+    height: 26px;
+    border-radius: 8px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: #f1f5f9;
+    font-size: 0.76rem;
+    font-weight: 700;
+    color: #64748b;
+    flex-shrink: 0;
+  }
+  .btn-mc-option.is-correct .mc-kbd {
+    background: #059669;
+    color: #ffffff;
+  }
+  .btn-mc-option.is-wrong .mc-kbd {
+    background: #ef4444;
+    color: #ffffff;
+  }
 </style>
 
 <div class="container-fluid max-w-7xl py-3 pb-5" id="studyApp">
@@ -322,10 +377,18 @@
             </label>
             <div class="d-flex flex-column gap-2" id="studyModeSelector">
               <label class="study-mode-option d-flex align-items-center gap-3 p-2.5">
-                <input type="radio" name="studyMode" value="mixed" class="form-check-input mt-0" checked onchange="changeStudyMode('mixed')">
+                <input type="radio" name="studyMode" value="learn" class="form-check-input mt-0" checked onchange="changeStudyMode('learn')">
                 <div class="flex-grow-1">
-                  <div class="fw-bold text-dark small">🔀 Trộn kết hợp (Đề xuất)</div>
-                  <div class="text-muted small" style="font-size: 0.76rem;">Học Thẻ Flashcard 3D xen kẽ Kiểm tra Đúng/Sai để nhớ từ</div>
+                  <div class="fw-bold text-dark small">📖 Học từ mới (Learn Mode)</div>
+                  <div class="text-muted small" style="font-size: 0.76rem;">Thẻ Flashcard 3D đầy đủ phát âm, lật xem nghĩa & tự đánh giá nhớ từ</div>
+                </div>
+              </label>
+
+              <label class="study-mode-option d-flex align-items-center gap-3 p-2.5">
+                <input type="radio" name="studyMode" value="practice" class="form-check-input mt-0" onchange="changeStudyMode('practice')">
+                <div class="flex-grow-1">
+                  <div class="fw-bold text-dark small">⚡ Luyện tập phản xạ (Practice Mode)</div>
+                  <div class="text-muted small" style="font-size: 0.76rem;">Vào thẳng Trắc nghiệm 4 đáp án, Đúng/Sai & Gõ từ (KHÔNG lộ thẻ bài trước)</div>
                 </div>
               </label>
 
@@ -333,7 +396,7 @@
                 <input type="radio" name="studyMode" value="flashcard" class="form-check-input mt-0" onchange="changeStudyMode('flashcard')">
                 <div class="flex-grow-1">
                   <div class="fw-bold text-dark small">🗂️ Chỉ Thẻ Flashcard 3D</div>
-                  <div class="text-muted small" style="font-size: 0.76rem;">Lật thẻ xem nghĩa và tự đánh giá (Chưa biết / Nhớ tạm / Đã học)</div>
+                  <div class="text-muted small" style="font-size: 0.76rem;">Lướt xem thẻ từ vựng và tự đánh giá (Chưa biết / Nhớ tạm / Đã học)</div>
                 </div>
               </label>
 
@@ -341,7 +404,7 @@
                 <input type="radio" name="studyMode" value="true_false" class="form-check-input mt-0" onchange="changeStudyMode('true_false')">
                 <div class="flex-grow-1">
                   <div class="fw-bold text-dark small">⚡ Chỉ Kiểm tra Đúng / Sai</div>
-                  <div class="text-muted small" style="font-size: 0.76rem;">Hiện Đúng/Sai kèm âm thanh thông báo và giải thích tức thì</div>
+                  <div class="text-muted small" style="font-size: 0.76rem;">Kiểm tra phản xạ Đúng/Sai kèm âm thanh thông báo tức thì</div>
                 </div>
               </label>
 
@@ -565,6 +628,48 @@
       </div>
     </div>
 
+    <!-- ACTIVITY: MULTIPLE CHOICE (4 ĐÁP ÁN) -->
+    <div id="exerciseMultipleChoice" style="display: none;">
+      <div class="card border rounded-4 shadow-sm bg-white p-4 p-md-5 d-flex flex-column justify-content-between text-center exercise-fixed-card mb-3">
+        
+        <div class="d-flex justify-content-center mb-2">
+          <span class="badge bg-primary-subtle text-primary border rounded-pill px-3 py-1 fw-bold small">
+            🎯 Trắc nghiệm: Chọn nghĩa đúng
+          </span>
+        </div>
+
+        <div class="my-auto py-2">
+          <div class="d-flex align-items-center justify-content-center gap-2 mb-2">
+            <h1 class="fw-extrabold text-dark mb-0" id="mcWord" style="font-size: 2.6rem; letter-spacing: -0.02em;">
+              word
+            </h1>
+            <button type="button" class="btn btn-light rounded-circle p-2 text-primary border shadow-2xs" onclick="playCurrentAudio('en-US')" title="Nghe phát âm">
+              <i class="ph-fill ph-speaker-high fs-5"></i>
+            </button>
+          </div>
+          <div class="text-muted fst-italic small mb-4" id="mcPartOfSpeech">(noun)</div>
+
+          <!-- 4 Options Grid -->
+          <div class="row g-2.5 justify-content-center mx-auto w-100" style="max-width: 580px;" id="mcOptionsRow">
+            <!-- Dynamically populated options -->
+          </div>
+        </div>
+
+        <!-- Feedback Result Drawer -->
+        <div class="p-3 rounded-3 mt-3 border text-start mx-auto w-100 shadow-sm" id="mcFeedbackDrawer" style="display: none; max-width: 580px;">
+          <div class="d-flex justify-content-between align-items-center mb-1">
+            <strong class="fw-bold" id="mcFeedbackTitle"></strong>
+            <span class="fw-bold fs-6 font-monospace" id="mcFeedbackWord"></span>
+          </div>
+          <div class="small text-secondary mb-2" id="mcFeedbackExplain"></div>
+          <button type="button" class="btn w-100 py-2 fw-bold rounded-pill text-white shadow-xs" id="mcNextBtn" onclick="advanceMultipleChoice()">
+            Tiếp tục <span class="shortcut-tag badge bg-white bg-opacity-25 text-white ms-1">Space</span>
+          </button>
+        </div>
+
+      </div>
+    </div>
+
     <!-- ACTIVITY 2: TRUE / FALSE -->
     <div id="exerciseTrueFalse" style="display: none;">
       <div class="card border rounded-4 shadow-sm bg-white p-4 p-md-5 d-flex flex-column justify-content-between text-center exercise-fixed-card mb-3">
@@ -687,8 +792,8 @@
     <!-- ========================================== -->
     <div class="card border rounded-4 shadow-sm bg-white p-4 p-md-5 text-center exercise-fixed-card my-auto" id="completionCard" style="display: none;">
       <div class="fs-1 mb-2" id="completionEmoji">🎉</div>
-      <h3 class="fw-extrabold text-dark mb-1">Hoàn thành bài học!</h3>
-      <p class="text-secondary small mb-3">Bạn vừa luyện tập xong toàn bộ <strong class="text-dark" id="statPracticedWords">12</strong> từ vựng của bài học.</p>
+      <h3 class="fw-extrabold text-dark mb-1" id="completionHeading">Hoàn thành bài học!</h3>
+      <p class="text-secondary small mb-3" id="completionDesc">Bạn vừa hoàn thành toàn bộ <strong class="text-dark" id="statPracticedWords">12</strong> từ vựng của bài học.</p>
 
       <div class="d-inline-flex align-items-center gap-2 px-3.5 py-1.5 rounded-pill bg-warning-subtle border border-warning-subtle text-warning-emphasis fw-bold mb-4 shadow-2xs" id="statTotalXP">
         <i class="ph-fill ph-lightning"></i> +15 XP
@@ -716,6 +821,7 @@
 </div>
 
 <script>
+const csrfToken = "{{ csrf_token() }}";
 const rawWordsData = {{ words_data|tojson }};
 let sessionEarnedXP = 0;
 let sessionMasteredCount = 0;
@@ -726,7 +832,8 @@ let isFlipped = false;
 let currentFeedbackState = null;
 let typingHintIndex = 1;
 let tfFeedbackPending = false;
-let currentStudyMode = 'mixed'; // 'mixed', 'flashcard', 'true_false', 'typing'
+let mcFeedbackPending = false;
+let currentStudyMode = 'learn'; // 'learn', 'practice', 'flashcard', 'true_false', 'typing'
 
 // ==========================================
 // 1. Bulletproof Web Audio Synthesizer
@@ -861,13 +968,65 @@ function playCurrentAudio(lang = 'en-US') {
 }
 
 // ==========================================
-// 3. Activity Queue & Session Modes
+// 3. Activity Generators & Queue Management
 // ==========================================
+function createMultipleChoiceActivity(w) {
+  let options = [{ text: w.meaning_vi, isCorrect: true, word: w }];
+  if (rawWordsData.length > 1) {
+    let others = rawWordsData.filter(x => x.id !== w.id);
+    for (let i = others.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [others[i], others[j]] = [others[j], others[i]];
+    }
+    const distractors = others.slice(0, 3);
+    distractors.forEach(d => {
+      options.push({ text: d.meaning_vi, isCorrect: false, word: d });
+    });
+  }
+  for (let i = options.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [options[i], options[j]] = [options[j], options[i]];
+  }
+  return {
+    type: 'multiple_choice',
+    word: w,
+    options: options
+  };
+}
+
+function createTrueFalseActivity(w) {
+  const isCorrect = Math.random() > 0.45;
+  let displayWord = w;
+  if (!isCorrect && rawWordsData.length > 1) {
+    const others = rawWordsData.filter(x => x.id !== w.id);
+    displayWord = others[Math.floor(Math.random() * others.length)];
+  }
+  return {
+    type: 'true_false',
+    targetWord: w,
+    displayCandidateWord: displayWord,
+    isCorrectAnswer: (displayWord.id === w.id),
+    word: w
+  };
+}
+
 function buildActivityQueue() {
   activities = [];
   if (!rawWordsData || rawWordsData.length === 0) return;
 
-  if (currentStudyMode === 'flashcard') {
+  if (currentStudyMode === 'practice') {
+    // 100% Practice Reflex Mode: Multiple Choice (4 options) + True/False
+    // Strictly NO flashcard upfront!
+    const mcActivities = rawWordsData.map(w => createMultipleChoiceActivity(w));
+    const tfActivities = rawWordsData.map(w => createTrueFalseActivity(w));
+    activities = [...mcActivities, ...tfActivities];
+
+    // Shuffle queue for engaging practice
+    for (let i = activities.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [activities[i], activities[j]] = [activities[j], activities[i]];
+    }
+  } else if (currentStudyMode === 'flashcard') {
     // Pure 3D Flashcard mode
     rawWordsData.forEach((w) => {
       activities.push({ type: 'flashcard', word: w, id: w.id, originWord: w });
@@ -875,19 +1034,7 @@ function buildActivityQueue() {
   } else if (currentStudyMode === 'true_false') {
     // Pure True / False questions
     rawWordsData.forEach((w) => {
-      const isCorrect = Math.random() > 0.45;
-      let displayWord = w;
-      if (!isCorrect && rawWordsData.length > 1) {
-        const others = rawWordsData.filter(x => x.id !== w.id);
-        displayWord = others[Math.floor(Math.random() * others.length)];
-      }
-      activities.push({
-        type: 'true_false',
-        targetWord: w,
-        displayCandidateWord: displayWord,
-        isCorrectAnswer: (displayWord.id === w.id),
-        word: w
-      });
+      activities.push(createTrueFalseActivity(w));
     });
   } else if (currentStudyMode === 'typing') {
     // Pure Typing practice
@@ -895,25 +1042,9 @@ function buildActivityQueue() {
       activities.push({ type: 'typing', word: w, id: w.id, originWord: w });
     });
   } else {
-    // Default 'mixed': Flashcard 3D + immediate True/False check for each word!
+    // Default 'learn' mode: 3D Flashcard for thorough learning & rating
     rawWordsData.forEach((w) => {
-      // 1. Learn via 3D Flashcard
       activities.push({ type: 'flashcard', word: w, id: w.id, originWord: w });
-      
-      // 2. Immediately verify memory with True / False check
-      const isCorrect = Math.random() > 0.4;
-      let displayWord = w;
-      if (!isCorrect && rawWordsData.length > 1) {
-        const others = rawWordsData.filter(x => x.id !== w.id);
-        displayWord = others[Math.floor(Math.random() * others.length)];
-      }
-      activities.push({
-        type: 'true_false',
-        targetWord: w,
-        displayCandidateWord: displayWord,
-        isCorrectAnswer: (displayWord.id === w.id),
-        word: w
-      });
     });
   }
 }
@@ -924,6 +1055,9 @@ function initStudySession() {
   currentActivityIndex = 0;
   sessionEarnedXP = 0;
   sessionMasteredCount = 0;
+  mcFeedbackPending = false;
+  tfFeedbackPending = false;
+  currentFeedbackState = null;
   renderCurrentActivity();
 }
 
@@ -931,7 +1065,7 @@ function changeStudyMode(mode) {
   currentStudyMode = mode;
   saveSetting('study_mode', mode);
   
-  // Re-sync radio input inside modal
+  // Re-sync radio inputs inside modal
   const radios = document.querySelectorAll('input[name="studyMode"]');
   radios.forEach(r => {
     r.checked = (r.value === mode);
@@ -939,7 +1073,8 @@ function changeStudyMode(mode) {
 
   // Re-build session with selected mode
   initStudySession();
-  showToast(`<i class="ph-bold ph-sliders text-success"></i> <span>Đã chuyển sang chế độ học mới!</span>`);
+  const label = mode === 'practice' ? 'Luyện tập phản xạ ⚡' : 'Học từ mới 📖';
+  showToast(`<i class="ph-bold ph-sliders text-success"></i> <span>Đã chuyển sang: ${label}!</span>`);
 }
 
 function renderCurrentActivity() {
@@ -950,6 +1085,7 @@ function renderCurrentActivity() {
 
   const act = activities[currentActivityIndex];
   document.getElementById('exerciseFlashcard').style.display = 'none';
+  document.getElementById('exerciseMultipleChoice').style.display = 'none';
   document.getElementById('exerciseTrueFalse').style.display = 'none';
   document.getElementById('exerciseTyping').style.display = 'none';
   document.getElementById('completionCard').style.display = 'none';
@@ -961,11 +1097,17 @@ function renderCurrentActivity() {
 
   const badgeEl = document.getElementById('activityWordIndex');
   if (badgeEl) {
-    badgeEl.textContent = `${sessionMasteredCount} / ${rawWordsData.length} đã thuộc`;
+    if (currentStudyMode === 'practice') {
+      badgeEl.textContent = `Câu ${currentActivityIndex + 1} / ${activities.length}`;
+    } else {
+      badgeEl.textContent = `${sessionMasteredCount} / ${rawWordsData.length} đã thuộc`;
+    }
   }
 
   if (act.type === 'flashcard') {
     renderFlashcard(act.word);
+  } else if (act.type === 'multiple_choice') {
+    renderMultipleChoice(act);
   } else if (act.type === 'true_false') {
     renderTrueFalse(act);
   } else if (act.type === 'typing') {
@@ -1046,7 +1188,7 @@ function submitAssessment(rating) {
   // Rating API call
   fetch(`/vocabulary/${act.word.id}/rate`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+    headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrfToken, 'X-Requested-With': 'XMLHttpRequest' },
     body: JSON.stringify({ rating: rating })
   })
   .then(res => res.json())
@@ -1096,11 +1238,129 @@ function submitAssessment(rating) {
 }
 
 // ==========================================
-// 5. True / False Exercise (With Instant Feedback & Sound)
+// 5. Multiple Choice Activity (4 Options Quiz)
+// ==========================================
+function renderMultipleChoice(act) {
+  document.getElementById('exerciseMultipleChoice').style.display = 'block';
+  document.getElementById('activityTitle').textContent = "Trắc nghiệm: Chọn nghĩa đúng 🎯";
+  mcFeedbackPending = false;
+
+  document.getElementById('mcWord').textContent = act.word.word;
+  document.getElementById('mcPartOfSpeech').textContent = act.word.part_of_speech ? `(${act.word.part_of_speech.toLowerCase()})` : '';
+
+  const optionsContainer = document.getElementById('mcOptionsRow');
+  optionsContainer.innerHTML = '';
+
+  act.options.forEach((opt, idx) => {
+    const col = document.createElement('div');
+    col.className = 'col-12 col-md-6';
+
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'btn btn-mc-option w-100 text-start d-flex align-items-center justify-content-between p-3';
+    btn.id = `mcOptionBtn_${idx}`;
+    btn.onclick = () => submitMultipleChoice(idx);
+
+    btn.innerHTML = `
+      <div class="d-flex align-items-center gap-2.5">
+        <span class="mc-kbd">${idx + 1}</span>
+        <span class="fw-semibold text-dark small">${opt.text}</span>
+      </div>
+      <i class="ph-bold ph-arrow-right text-muted opacity-50 mc-indicator"></i>
+    `;
+    col.appendChild(btn);
+    optionsContainer.appendChild(col);
+  });
+
+  document.getElementById('mcFeedbackDrawer').style.display = 'none';
+
+  const autoplaySwitch = document.getElementById('autoplayToggle');
+  if (autoplaySwitch && autoplaySwitch.checked) {
+    playAudioText(act.word.word, 'en-US');
+  }
+}
+
+function submitMultipleChoice(selectedIdx) {
+  if (mcFeedbackPending) return;
+  const act = activities[currentActivityIndex];
+  if (!act || act.type !== 'multiple_choice') return;
+
+  mcFeedbackPending = true;
+  const selectedOption = act.options[selectedIdx];
+  const isCorrect = selectedOption && selectedOption.isCorrect;
+
+  // Visual highlights on all options
+  act.options.forEach((opt, idx) => {
+    const btn = document.getElementById(`mcOptionBtn_${idx}`);
+    if (btn) {
+      btn.disabled = true;
+      if (opt.isCorrect) {
+        btn.classList.add('is-correct');
+      } else if (idx === selectedIdx && !isCorrect) {
+        btn.classList.add('is-wrong');
+      }
+    }
+  });
+
+  const drawer = document.getElementById('mcFeedbackDrawer');
+  const title = document.getElementById('mcFeedbackTitle');
+  const wordEl = document.getElementById('mcFeedbackWord');
+  const explain = document.getElementById('mcFeedbackExplain');
+  const nextBtn = document.getElementById('mcNextBtn');
+
+  wordEl.textContent = act.word.word;
+
+  if (isCorrect) {
+    playSfx('correct');
+    drawer.className = 'p-3 rounded-3 mt-3 border border-success bg-success-subtle text-start mx-auto w-100 shadow-sm';
+    title.innerHTML = `<i class="ph-bold ph-check-circle me-1 text-success fs-5"></i> Chính xác! 🎉 (+3 XP)`;
+    title.className = "fw-bold text-success d-flex align-items-center";
+    wordEl.className = "fw-bold fs-6 font-monospace text-success-emphasis";
+    nextBtn.className = "btn w-100 py-2 fw-bold rounded-pill btn-success text-white shadow-xs";
+    explain.textContent = `"${act.word.word}" có nghĩa là: ${act.word.meaning_vi}`;
+    sessionEarnedXP += 3;
+    sessionMasteredCount = Math.min(rawWordsData.length, sessionMasteredCount + 1);
+
+    // Rate mastered on server
+    fetch(`/vocabulary/${act.word.id}/rate`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrfToken, 'X-Requested-With': 'XMLHttpRequest' },
+      body: JSON.stringify({ rating: 'mastered' })
+    }).catch(e => console.warn(e));
+  } else {
+    playSfx('wrong');
+    drawer.className = 'p-3 rounded-3 mt-3 border border-danger bg-danger-subtle text-start mx-auto w-100 shadow-sm';
+    title.innerHTML = `<i class="ph-bold ph-x-circle me-1 text-danger fs-5"></i> Chưa chính xác! ✕`;
+    title.className = "fw-bold text-danger d-flex align-items-center";
+    wordEl.className = "fw-bold fs-6 font-monospace text-danger-emphasis";
+    nextBtn.className = "btn w-100 py-2 fw-bold rounded-pill btn-danger text-white shadow-xs";
+    explain.textContent = `Đáp án đúng của "${act.word.word}" là: ${act.word.meaning_vi}`;
+
+    const requeueEnabled = document.getElementById('requeueToggle')?.checked ?? true;
+    if (requeueEnabled) {
+      const insertOffset = Math.min(activities.length, currentActivityIndex + 3);
+      activities.splice(insertOffset, 0, createMultipleChoiceActivity(act.word));
+    }
+  }
+
+  drawer.style.display = 'block';
+  setTimeout(() => {
+    playAudioText(act.word.word, 'en-US');
+  }, 280);
+}
+
+function advanceMultipleChoice() {
+  mcFeedbackPending = false;
+  currentActivityIndex++;
+  renderCurrentActivity();
+}
+
+// ==========================================
+// 6. True / False Exercise
 // ==========================================
 function renderTrueFalse(act) {
   document.getElementById('exerciseTrueFalse').style.display = 'block';
-  document.getElementById('activityTitle').textContent = "Kiểm tra đúng hay sai?";
+  document.getElementById('activityTitle').textContent = "Kiểm tra đúng hay sai? ⚡";
   tfFeedbackPending = false;
 
   document.getElementById('tfPartOfSpeech').textContent = act.targetWord.part_of_speech ? `(${act.targetWord.part_of_speech.toLowerCase()})` : '';
@@ -1145,7 +1405,6 @@ function submitTrueFalse(userSaidTrue) {
   wordEl.textContent = act.displayCandidateWord.word;
 
   if (isCorrect) {
-    // Correct answer -> Chime sound & vibrant green card
     playSfx('correct');
     drawer.className = 'p-3 rounded-3 mt-3 border border-success bg-success-subtle text-start mx-auto w-100 shadow-sm';
     title.innerHTML = `<i class="ph-bold ph-check-circle me-1 text-success fs-5"></i> Chính xác! 🎉 (+3 XP)`;
@@ -1157,8 +1416,15 @@ function submitTrueFalse(userSaidTrue) {
       : `Đúng vậy! Nghĩa "${act.targetWord.meaning_vi}" không phải của từ "${act.displayCandidateWord.word}".`;
     sessionEarnedXP += 3;
     sessionMasteredCount = Math.min(rawWordsData.length, sessionMasteredCount + 1);
+
+    if (act.isCorrectAnswer) {
+      fetch(`/vocabulary/${act.targetWord.id}/rate`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrfToken, 'X-Requested-With': 'XMLHttpRequest' },
+        body: JSON.stringify({ rating: 'mastered' })
+      }).catch(e => console.warn(e));
+    }
   } else {
-    // Incorrect answer -> Buzzer sound & vibrant red card
     playSfx('wrong');
     drawer.className = 'p-3 rounded-3 mt-3 border border-danger bg-danger-subtle text-start mx-auto w-100 shadow-sm';
     title.innerHTML = `<i class="ph-bold ph-x-circle me-1 text-danger fs-5"></i> Chưa chính xác! ✕`;
@@ -1168,12 +1434,18 @@ function submitTrueFalse(userSaidTrue) {
     explain.textContent = act.isCorrectAnswer
       ? `Từ "${act.displayCandidateWord.word}" có nghĩa là: ${act.targetWord.meaning_vi}`
       : `Từ "${act.targetWord.word}" mới có nghĩa là: ${act.targetWord.meaning_vi}`;
+
+    const requeueEnabled = document.getElementById('requeueToggle')?.checked ?? true;
+    if (requeueEnabled && currentStudyMode === 'practice') {
+      const insertOffset = Math.min(activities.length, currentActivityIndex + 3);
+      activities.splice(insertOffset, 0, createTrueFalseActivity(act.targetWord));
+    }
   }
 
   drawer.style.display = 'block';
   setTimeout(() => {
     playAudioText(act.displayCandidateWord.word, 'en-US');
-  }, 380);
+  }, 280);
 }
 
 function advanceTrueFalse() {
@@ -1183,11 +1455,11 @@ function advanceTrueFalse() {
 }
 
 // ==========================================
-// 6. Typing Exercise
+// 7. Typing Exercise
 // ==========================================
 function renderTyping(word) {
   document.getElementById('exerciseTyping').style.display = 'block';
-  document.getElementById('activityTitle').textContent = "Luyện gõ từ vựng";
+  document.getElementById('activityTitle').textContent = "Luyện gõ từ vựng ✍️";
   typingHintIndex = 1;
   currentFeedbackState = null;
 
@@ -1260,13 +1532,19 @@ function checkTypingAnswer() {
     fbNextBtn.className = "btn w-100 py-2 fw-bold rounded-pill btn-success text-white shadow-xs";
     sessionEarnedXP += 5;
     sessionMasteredCount = Math.min(rawWordsData.length, sessionMasteredCount + 1);
+
+    fetch(`/vocabulary/${act.word.id}/rate`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrfToken, 'X-Requested-With': 'XMLHttpRequest' },
+      body: JSON.stringify({ rating: 'mastered' })
+    }).catch(e => console.warn(e));
   } else {
     playSfx('wrong');
     inputEl.className = 'form-control form-control-lg text-center fw-bold rounded-pill study-typing-input is-wrong';
     drawer.className = 'p-3 rounded-3 mt-3 border border-danger bg-danger-subtle text-start mx-auto w-100 shadow-sm';
     document.getElementById('typingCorrectionBox').style.display = 'block';
     document.getElementById('typingCorrectAnswer').textContent = act.word.word;
-    fbTitle.innerHTML = `<i class="ph-bold ph-x-circle me-1 text-danger fs-5"></i> Chưa chính xác!`;
+    fbTitle.innerHTML = `<i class="ph-bold ph-x-circle me-1 text-danger fs-5"></i> Chưa chính xác! ✕`;
     fbTitle.className = "fw-bold text-danger d-flex align-items-center";
     fbWord.className = "fw-bold fs-6 font-monospace text-danger-emphasis";
     fbNextBtn.className = "btn w-100 py-2 fw-bold rounded-pill btn-danger text-white shadow-xs";
@@ -1275,7 +1553,7 @@ function checkTypingAnswer() {
   drawer.style.display = 'block';
   setTimeout(() => {
     playAudioText(act.word.word, 'en-US');
-  }, 380);
+  }, 280);
 }
 
 function advanceAfterFeedback() {
@@ -1285,24 +1563,36 @@ function advanceAfterFeedback() {
 }
 
 // ==========================================
-// 7. Completion & Summary
+// 8. Completion & Summary Screen
 // ==========================================
 function showCompletionSummary() {
   playSfx('complete');
   document.getElementById('exerciseFlashcard').style.display = 'none';
+  document.getElementById('exerciseMultipleChoice').style.display = 'none';
   document.getElementById('exerciseTrueFalse').style.display = 'none';
   document.getElementById('exerciseTyping').style.display = 'none';
   document.getElementById('completionCard').style.display = 'block';
   document.getElementById('studyProgressBar').style.width = '100%';
 
-  document.getElementById('statPracticedWords').textContent = rawWordsData.length;
+  const isPractice = (currentStudyMode === 'practice');
+  const headingEl = document.getElementById('completionHeading');
+  const descEl = document.getElementById('completionDesc');
+  if (headingEl) {
+    headingEl.textContent = isPractice ? "Hoàn thành bài Luyện tập! ⚡" : "Hoàn thành bài học! 🎉";
+  }
+  if (descEl) {
+    descEl.innerHTML = isPractice
+      ? `Bạn vừa luyện phản xạ xuất sắc <strong class="text-dark" id="statPracticedWords">${rawWordsData.length}</strong> từ vựng của bài học.`
+      : `Bạn vừa hoàn thành toàn bộ <strong class="text-dark" id="statPracticedWords">${rawWordsData.length}</strong> từ vựng của bài học.`;
+  }
+
   document.getElementById('statTotalXP').innerHTML = `<i class="ph-fill ph-lightning"></i> +${Math.max(10, sessionEarnedXP)} XP`;
 
   setTimeout(() => {
     if (document.getElementById('completionCard').style.display === 'block') {
       window.location.href = "{{ back_url }}";
     }
-  }, 4000);
+  }, 4500);
 }
 
 function restartSession() {
@@ -1310,7 +1600,7 @@ function restartSession() {
 }
 
 // ==========================================
-// 8. Settings Storage & Shortcuts
+// 9. Settings Storage & Shortcuts
 // ==========================================
 function toggleShortcuts(show) {
   const appEl = document.getElementById('studyApp');
@@ -1333,14 +1623,25 @@ function saveSetting(key, value) {
 
 function loadSavedSettings() {
   try {
+    const urlParams = new URLSearchParams(window.location.search);
+    const urlMode = urlParams.get('mode') || "{{ mode or '' }}";
     const savedMode = localStorage.getItem('study_mode');
-    if (savedMode) {
-      currentStudyMode = savedMode;
-      const radios = document.querySelectorAll('input[name="studyMode"]');
-      radios.forEach(r => {
-        r.checked = (r.value === savedMode);
-      });
+
+    // Priority: Explicit URL parameter > localStorage > default ('learn')
+    let activeMode = 'learn';
+    if (urlMode && ['learn', 'practice', 'flashcard', 'true_false', 'typing'].includes(urlMode)) {
+      activeMode = urlMode;
+    } else if (savedMode && ['learn', 'practice', 'flashcard', 'true_false', 'typing'].includes(savedMode)) {
+      activeMode = savedMode;
     }
+
+    currentStudyMode = activeMode;
+    saveSetting('study_mode', activeMode);
+
+    const radios = document.querySelectorAll('input[name="studyMode"]');
+    radios.forEach(r => {
+      r.checked = (r.value === activeMode);
+    });
 
     const autoplay = localStorage.getItem('study_autoplay');
     if (autoplay !== null) {
@@ -1360,11 +1661,13 @@ function loadSavedSettings() {
     if (requeue !== null) {
       document.getElementById('requeueToggle').checked = (requeue === '1');
     }
-  } catch(e) {}
+  } catch(e) {
+    console.warn("loadSavedSettings error:", e);
+  }
 }
 
 // ==========================================
-// 9. Global Keyboard Controls
+// 10. Global Keyboard Controls
 // ==========================================
 document.addEventListener('keydown', (e) => {
   if (e.key === 'Escape') {
@@ -1376,7 +1679,22 @@ document.addEventListener('keydown', (e) => {
   const act = activities[currentActivityIndex];
   if (!act) return;
 
-  if (act.type === 'flashcard') {
+  if (act.type === 'multiple_choice') {
+    if (mcFeedbackPending) {
+      if (e.code === 'Space' || e.key === 'Enter') {
+        e.preventDefault();
+        advanceMultipleChoice();
+      }
+    } else {
+      if (['1', '2', '3', '4'].includes(e.key)) {
+        e.preventDefault();
+        const optIdx = parseInt(e.key, 10) - 1;
+        if (optIdx >= 0 && optIdx < act.options.length) {
+          submitMultipleChoice(optIdx);
+        }
+      }
+    }
+  } else if (act.type === 'flashcard') {
     // Space flips 3D card
     if (e.code === 'Space') {
       e.preventDefault();

@@ -261,12 +261,21 @@
          style="max-width: 500px; pointer-events: auto;">
       
       <!-- Button 1: Học từ mới / Luyện tập -->
-      <a href="{{ url_for('learning.study_vocabulary', cat=cat_key, subcat=subcat_key, unit=selected_unit.id if selected_unit else unit_filter) }}" 
+      {% if cur_learned >= cur_total %}
+      <a href="{{ url_for('learning.study_vocabulary', cat=cat_key, subcat=subcat_key, unit=selected_unit.id if selected_unit else unit_filter, mode='practice') }}" 
          class="btn btn-primary flex-grow-1 py-2.5 fw-bold rounded-pill shadow-none d-flex align-items-center justify-content-center gap-2 text-white" 
          style="font-size: 0.9rem;">
-        <i class="ph-bold {% if cur_learned >= cur_total %}ph-lightning{% else %}ph-book-open{% endif %} fs-5"></i>
-        <span>{% if cur_learned >= cur_total %}Luyện tập{% elif cur_learned > 0 %}Học tiếp{% else %}Học từ mới{% endif %}</span>
+        <i class="ph-bold ph-lightning fs-5"></i>
+        <span>Luyện tập phản xạ</span>
       </a>
+      {% else %}
+      <a href="{{ url_for('learning.study_vocabulary', cat=cat_key, subcat=subcat_key, unit=selected_unit.id if selected_unit else unit_filter, mode='learn') }}" 
+         class="btn btn-primary flex-grow-1 py-2.5 fw-bold rounded-pill shadow-none d-flex align-items-center justify-content-center gap-2 text-white" 
+         style="font-size: 0.9rem;">
+        <i class="ph-bold ph-book-open fs-5"></i>
+        <span>{% if cur_learned > 0 %}Học tiếp{% else %}Học từ mới{% endif %}</span>
+      </a>
+      {% endif %}
 
       <!-- Button 2: Thẻ ghi nhớ -->
       <a href="{{ url_for('learning.study_vocabulary', cat=cat_key, subcat=subcat_key, unit=selected_unit.id if selected_unit else unit_filter, mode='flashcard') }}" 
@@ -430,7 +439,10 @@ function toggleWordLearnedCard(wordId, e) {
 
   fetch(`/vocabulary/${wordId}/toggle-learned`, {
     method: 'POST',
-    headers: { 'X-Requested-With': 'XMLHttpRequest' }
+    headers: {
+      'X-CSRFToken': '{{ csrf_token() }}',
+      'X-Requested-With': 'XMLHttpRequest'
+    }
   })
   .then(res => res.json())
   .then(res => {
@@ -488,7 +500,10 @@ function toggleModalFavorite() {
   if (!currentWordModalData) return;
   fetch(`/vocabulary/${currentWordModalData.id}/favorite`, {
     method: 'POST',
-    headers: { 'X-Requested-With': 'XMLHttpRequest' }
+    headers: {
+      'X-CSRFToken': '{{ csrf_token() }}',
+      'X-Requested-With': 'XMLHttpRequest'
+    }
   })
   .then(() => {
     currentWordModalData.is_favorite = !currentWordModalData.is_favorite;
