@@ -3,21 +3,146 @@
 
 {% block content %}
 <style>
-  .study-container {
-    max-width: 780px;
+  .study-wrapper {
+    max-width: 720px;
     margin: 0 auto;
   }
-  .study-main-card {
-    min-height: 380px;
-    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+
+  /* 3D Real Flashcard Flip */
+  .flashcard-scene {
+    perspective: 1200px;
+    width: 100%;
+    margin: 0 auto;
   }
-  .study-main-card.clickable-card {
+
+  .flashcard-card {
+    width: 100%;
+    height: 410px;
+    position: relative;
+    transform-style: preserve-3d;
+    -webkit-transform-style: preserve-3d;
+    transition: transform 0.55s cubic-bezier(0.4, 0, 0.2, 1);
     cursor: pointer;
   }
-  .study-main-card.clickable-card:hover {
-    border-color: var(--primary) !important;
-    box-shadow: var(--shadow-hover) !important;
+
+  .flashcard-card.is-flipped {
+    transform: rotateY(180deg);
   }
+
+  .flashcard-face {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+    border-radius: 20px;
+    padding: 28px 32px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    border: 1.5px solid var(--line);
+    background: #ffffff;
+    box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.06), 0 4px 10px -3px rgba(15, 23, 42, 0.03);
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  }
+
+  .flashcard-front {
+    transform: rotateY(0deg);
+  }
+
+  .flashcard-front:hover {
+    border-color: #cbd5e1;
+    box-shadow: 0 14px 30px -5px rgba(15, 23, 42, 0.09), 0 6px 12px -3px rgba(15, 23, 42, 0.04);
+  }
+
+  .flashcard-back {
+    transform: rotateY(180deg);
+    background: linear-gradient(175deg, #ffffff 0%, #f0fdf4 100%);
+    border-color: #a7f3d0;
+  }
+
+  /* Pronunciation Pills */
+  .btn-audio-pill {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 9999px;
+    padding: 6px 14px;
+    font-size: 0.85rem;
+    color: #1e293b;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.15s ease;
+  }
+  .btn-audio-pill:hover {
+    background: #f1f5f9;
+    border-color: #cbd5e1;
+    color: #0f172a;
+    transform: translateY(-1px);
+  }
+
+  /* Assessment Rating Buttons */
+  .btn-rate {
+    border-radius: 16px;
+    padding: 12px 10px;
+    font-weight: 700;
+    font-size: 0.88rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+    border: 1.5px solid transparent;
+  }
+  .btn-rate:hover {
+    transform: translateY(-2px);
+  }
+  .btn-rate-unknown {
+    background: #f8fafc;
+    border-color: #e2e8f0;
+    color: #475569;
+  }
+  .btn-rate-unknown:hover {
+    background: #f1f5f9;
+    border-color: #cbd5e1;
+    color: #1e293b;
+    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.06);
+  }
+  .btn-rate-review {
+    background: #fffbeb;
+    border-color: #fde68a;
+    color: #b45309;
+  }
+  .btn-rate-review:hover {
+    background: #fef3c7;
+    border-color: #fcd34d;
+    color: #92400e;
+    box-shadow: 0 4px 12px rgba(245, 158, 11, 0.15);
+  }
+  .btn-rate-mastered {
+    background: #ecfdf5;
+    border-color: #a7f3d0;
+    color: #047857;
+  }
+  .btn-rate-mastered:hover {
+    background: #d1fae5;
+    border-color: #6ee7b7;
+    color: #065f46;
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.18);
+  }
+  .rate-kbd {
+    font-size: 0.72rem;
+    padding: 2px 7px;
+    border-radius: 6px;
+    background: rgba(0, 0, 0, 0.06);
+    font-weight: 600;
+    opacity: 0.85;
+  }
+
+  /* Typing Input */
   .study-typing-input {
     border: 2px solid var(--line);
     transition: border-color 0.15s ease, box-shadow 0.15s ease;
@@ -36,332 +161,356 @@
     background-color: var(--danger-subtle) !important;
     color: #7f1d1d !important;
   }
+
+  /* Fixed height cards for Exercises to avoid layout shifting */
+  .exercise-fixed-card {
+    min-height: 410px;
+    border-radius: 20px;
+  }
+
   .shortcut-tag {
     font-size: 0.72rem;
     font-weight: 600;
   }
-  .hide-shortcuts .shortcut-tag {
+  .hide-shortcuts .shortcut-tag,
+  .hide-shortcuts .rate-kbd {
     display: none !important;
   }
 </style>
 
-<div class="study-container py-3" id="studyApp">
+<div class="container-fluid py-3" id="studyApp">
+  <div class="study-wrapper">
 
-  <!-- ========================================== -->
-  <!-- 1. BREADCRUMB NAVIGATION                  -->
-  <!-- ========================================== -->
-  <nav class="app-breadcrumb mb-3" aria-label="breadcrumb">
-    <ol class="breadcrumb mb-0 align-items-center flex-wrap">
-      <li class="breadcrumb-item">
-        <a href="{{ url_for('main.dashboard') }}" class="d-inline-flex align-items-center gap-1">
-          <i class="ph ph-house"></i>
-          <span>Trang Chủ</span>
-        </a>
-      </li>
-      <li class="breadcrumb-item">
-        <a href="{{ url_for('learning.vocabulary') }}">Từ Vựng</a>
-      </li>
-      {% if cat and subcat %}
-      <li class="breadcrumb-item">
-        <a href="{{ back_url }}">{{ course_title or subcat }}</a>
-      </li>
-      {% endif %}
-      <li class="breadcrumb-item active text-truncate" aria-current="page" style="max-width: 260px;" title="{{ unit_title }}">
-        <span>{{ unit_title or 'Học từ vựng' }}</span>
-      </li>
-    </ol>
-  </nav>
+    <!-- ========================================== -->
+    <!-- 1. BREADCRUMB NAVIGATION                  -->
+    <!-- ========================================== -->
+    <nav class="app-breadcrumb mb-2.5" aria-label="breadcrumb">
+      <ol class="breadcrumb mb-0 align-items-center flex-wrap">
+        <li class="breadcrumb-item">
+          <a href="{{ url_for('main.dashboard') }}" class="d-inline-flex align-items-center gap-1">
+            <i class="ph ph-house"></i>
+            <span>Trang Chủ</span>
+          </a>
+        </li>
+        <li class="breadcrumb-item">
+          <a href="{{ url_for('learning.vocabulary') }}">Từ Vựng</a>
+        </li>
+        {% if cat and subcat %}
+        <li class="breadcrumb-item">
+          <a href="{{ back_url }}">{{ course_title or subcat }}</a>
+        </li>
+        {% endif %}
+        <li class="breadcrumb-item active text-truncate" aria-current="page" style="max-width: 280px;" title="{{ unit_title }}">
+          <span>{{ unit_title or 'Học từ vựng' }}</span>
+        </li>
+      </ol>
+    </nav>
 
-  <!-- ========================================== -->
-  <!-- 2. TOP HEADER & PROGRESS BAR               -->
-  <!-- ========================================== -->
-  <div class="card border-0 shadow-2xs rounded-4 p-3 bg-white mb-3">
-    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2">
-      
-      <!-- Left: Back Button & Activity Title -->
-      <div class="d-flex align-items-center gap-2.5">
-        <a href="{{ back_url }}" class="btn btn-light rounded-circle d-flex align-items-center justify-content-center text-dark flex-shrink-0 border"
-           style="width: 38px; height: 38px;" title="Quay lại danh sách bài học (Esc)">
-          <i class="ph-bold ph-caret-left fs-5"></i>
-        </a>
-        <div>
-          <div class="d-flex align-items-center gap-2">
-            <h5 class="fw-bold text-dark mb-0" id="activityTitle">Học Từ Vựng Tương Tác</h5>
-            <span class="badge bg-primary-subtle text-primary border rounded-pill px-2.5 py-0.5 small fw-semibold" id="activityWordIndex">
-              1 / {{ total_words }}
-            </span>
+    <!-- ========================================== -->
+    <!-- 2. TOP HEADER TOOLBAR & SLIM PROGRESS BAR  -->
+    <!-- ========================================== -->
+    <div class="card border-0 shadow-2xs rounded-4 p-3 bg-white mb-3 position-relative overflow-hidden">
+      <div class="d-flex flex-wrap justify-content-between align-items-center gap-2">
+        
+        <!-- Left: Back Button & Lesson Info -->
+        <div class="d-flex align-items-center gap-2.5">
+          <a href="{{ back_url }}" class="btn btn-light rounded-circle d-flex align-items-center justify-content-center text-dark flex-shrink-0 border"
+             style="width: 38px; height: 38px;" title="Quay lại danh sách bài học (Esc)">
+            <i class="ph-bold ph-caret-left fs-5"></i>
+          </a>
+          <div>
+            <div class="d-flex align-items-center gap-2">
+              <h5 class="fw-bold text-dark mb-0" id="activityTitle">Học Từ Vựng Tương Tác</h5>
+              <span class="badge bg-primary-subtle text-primary border rounded-pill px-2.5 py-0.5 small fw-semibold" id="activityWordIndex">
+                1 / {{ total_words }}
+              </span>
+            </div>
+            <small class="text-muted text-truncate d-block" style="max-width: 320px;">
+              {{ course_title }}{% if course_title and unit_title %} • {% endif %}{{ unit_title }}
+            </small>
           </div>
-          <small class="text-muted text-truncate d-block" style="max-width: 320px;">
-            {{ course_title }}{% if course_title and unit_title %} • {% endif %}{{ unit_title }}
-          </small>
-        </div>
-      </div>
-
-      <!-- Right: Toggles & Exit -->
-      <div class="d-flex align-items-center gap-2">
-        <!-- Auto-play Audio Switch -->
-        <div class="form-check form-switch bg-light border rounded-pill px-3 py-1 mb-0 d-inline-flex align-items-center gap-2 shadow-2xs" title="Tự động phát âm thanh khi đổi từ">
-          <input class="form-check-input mt-0 cursor-pointer" type="checkbox" id="autoplayToggle" {% if autoplay or autoplay is not defined %}checked{% endif %}>
-          <label class="form-check-label small text-secondary fw-semibold cursor-pointer mb-0" for="autoplayToggle">Tự động đọc 🔊</label>
         </div>
 
-        <!-- Toggle Shortcuts Button -->
-        <button type="button" class="btn btn-sm btn-light border rounded-pill px-2.5 py-1 text-secondary small fw-semibold shadow-2xs" 
-                id="toggleShortcutsBtn" onclick="toggleShortcuts()" title="Ẩn/Hiện gợi ý phím tắt">
-          <i class="ph-bold ph-keyboard me-1"></i><span id="shortcutBtnText">Phím tắt</span>
-        </button>
+        <!-- Right: Toggles & Exit -->
+        <div class="d-flex align-items-center gap-2">
+          <!-- Auto-play Audio Switch -->
+          <div class="form-check form-switch bg-light border rounded-pill px-3 py-1 mb-0 d-inline-flex align-items-center gap-2 shadow-2xs" title="Tự động phát âm thanh khi đổi từ">
+            <input class="form-check-input mt-0 cursor-pointer" type="checkbox" id="autoplayToggle" {% if autoplay or autoplay is not defined %}checked{% endif %}>
+            <label class="form-check-label small text-secondary fw-semibold cursor-pointer mb-0" for="autoplayToggle">Tự động đọc 🔊</label>
+          </div>
 
-        <!-- Close / Exit Button -->
-        <a href="{{ back_url }}" class="btn btn-sm btn-light border rounded-circle d-flex align-items-center justify-content-center text-secondary shadow-2xs" 
-           style="width: 32px; height: 32px;" title="Thoát bài học (Esc)">
-          <i class="ph-bold ph-x fs-6"></i>
-        </a>
-      </div>
-
-    </div>
-
-    <!-- Slim Emerald Progress Bar -->
-    <div class="progress rounded-pill mt-3" style="height: 6px; background: #e2e8f0;">
-      <div class="progress-bar bg-success rounded-pill" id="studyProgressBar" role="progressbar" style="width: 0%; transition: width 0.25s ease;"></div>
-    </div>
-  </div>
-
-  <!-- ========================================== -->
-  <!-- 3. MAIN INTERACTIVE STUDY CARDS            -->
-  <!-- ========================================== -->
-
-  <!-- EXERCISE 1: FLASHCARD -->
-  <div id="exerciseFlashcard" style="display: none;">
-    <div class="card border rounded-4 shadow-sm bg-white p-4 p-md-5 d-flex flex-column justify-content-between text-center position-relative study-main-card clickable-card" 
-         onclick="flipCard()">
-      
-      <!-- Card Badge Top -->
-      <div class="d-flex justify-content-between align-items-center mb-3">
-        <span class="badge bg-primary-subtle text-primary border rounded-pill px-3 py-1 fw-semibold small" id="cardModeBadge">
-          Từ mới
-        </span>
-        <span class="badge bg-light text-muted border rounded-pill px-2.5 py-0.5 small" id="cardTopicBadge">
-          {{ unit_title or 'Chủ đề' }}
-        </span>
-      </div>
-
-      <!-- Front Face: Tiếng Anh -->
-      <div id="cardFaceFront" class="d-flex flex-column justify-content-center align-items-center my-auto py-3">
-        <h1 class="fw-extrabold text-dark mb-3" id="frontWordText" style="font-size: 2.6rem; letter-spacing: -0.02em;">
-          word
-        </h1>
-
-        <!-- Pronunciation Buttons (US / UK) -->
-        <div class="d-flex align-items-center justify-content-center gap-2.5 flex-wrap">
-          <button type="button" class="btn btn-sm btn-light border rounded-pill px-3 py-1.5 d-inline-flex align-items-center gap-1.5 shadow-2xs text-dark hover-bg-light-subtle" 
-                  onclick="event.stopPropagation(); playCurrentAudio('en-US');" title="Nghe phát âm chuẩn US">
-            <i class="ph-fill ph-speaker-high text-primary fs-6"></i>
-            <span class="fw-bold small">US</span>
-            <span class="text-muted font-monospace small" id="frontPronUS">/pron/</span>
+          <!-- Shortcuts Toggle -->
+          <button type="button" class="btn btn-sm btn-light border rounded-pill px-2.5 py-1 text-secondary small fw-semibold shadow-2xs" 
+                  id="toggleShortcutsBtn" onclick="toggleShortcuts()" title="Ẩn/Hiện gợi ý phím tắt">
+            <i class="ph-bold ph-keyboard me-1"></i><span id="shortcutBtnText">Phím tắt</span>
           </button>
-          <button type="button" class="btn btn-sm btn-light border rounded-pill px-3 py-1.5 d-inline-flex align-items-center gap-1.5 shadow-2xs text-dark hover-bg-light-subtle" 
-                  onclick="event.stopPropagation(); playCurrentAudio('en-GB');" title="Nghe phát âm chuẩn UK">
-            <i class="ph-fill ph-speaker-high text-primary fs-6"></i>
-            <span class="fw-bold small">UK</span>
-            <span class="text-muted font-monospace small" id="frontPronUK">/pron/</span>
-          </button>
+
+          <!-- Close / Exit Button -->
+          <a href="{{ back_url }}" class="btn btn-sm btn-light border rounded-circle d-flex align-items-center justify-content-center text-secondary shadow-2xs" 
+             style="width: 34px; height: 34px;" title="Thoát bài học (Esc)">
+            <i class="ph-bold ph-x fs-6"></i>
+          </a>
         </div>
+
       </div>
 
-      <!-- Back Face: Tiếng Việt & Ví dụ -->
-      <div id="cardFaceBack" class="d-flex flex-column justify-content-center align-items-center my-auto py-2" style="display: none !important;">
-        <span class="badge bg-secondary-subtle text-secondary border rounded-pill px-3 py-1 small fw-bold text-uppercase mb-2" id="backPartOfSpeech">
-          noun
-        </span>
-        <h3 class="fw-extrabold text-primary mb-3" id="backMeaningVi" style="font-size: 1.65rem;">
-          Nghĩa tiếng Việt
-        </h3>
-
-        <!-- Example Box -->
-        <div class="bg-light-subtle border rounded-3 p-3 text-start w-100 mb-2" style="max-width: 520px;">
-          <div class="small text-dark fw-semibold fst-italic mb-1" id="backExampleEn">"Example sentence"</div>
-          <div class="small text-secondary" id="backExampleVi">"Bản dịch ví dụ"</div>
-        </div>
-      </div>
-
-      <!-- Bottom Hint -->
-      <div class="pt-3 mt-auto small text-muted">
-        <i class="ph-bold ph-cards text-primary me-1"></i>
-        <span>Nhấp vào thẻ hoặc nhấn <kbd class="bg-light text-dark border px-1.5 py-0.5 rounded shadow-2xs">Space</kbd> để lật thẻ</span>
+      <!-- Integrated Slim Emerald Progress Bar -->
+      <div class="progress rounded-pill mt-3" style="height: 5px; background: #e2e8f0;">
+        <div class="progress-bar bg-success rounded-pill" id="studyProgressBar" role="progressbar" style="width: 0%; transition: width 0.3s ease;"></div>
       </div>
     </div>
 
-    <!-- 3 Assessment Buttons -->
-    <div class="card border-0 shadow-2xs rounded-4 p-3 bg-white text-center mt-3" id="assessmentSection">
-      <div class="small text-secondary fw-semibold mb-2">Bạn thuộc từ này ở mức nào?</div>
-      <div class="row g-2 justify-content-center">
-        <!-- 1. Mastered / Thuộc -->
-        <div class="col-4">
-          <button type="button" class="btn btn-outline-success w-100 py-2.5 rounded-3 fw-bold d-flex flex-column align-items-center justify-content-center gap-0.5 shadow-2xs" 
-                  onclick="submitAssessment('mastered')" title="Đã thuộc từ này (Phím 1)">
-            <span class="d-inline-flex align-items-center gap-1">
-              <i class="ph-bold ph-check"></i>✓ Đã học từ này
-            </span>
-            <span class="shortcut-tag text-success opacity-75">Nhấn 1</span>
-          </button>
-        </div>
+    <!-- ========================================== -->
+    <!-- 3. MAIN STUDY AREA (3D FLASHCARD / CHECKS) -->
+    <!-- ========================================== -->
 
-        <!-- 2. Review / Nhớ tạm -->
-        <div class="col-4">
-          <button type="button" class="btn btn-outline-warning text-dark-emphasis w-100 py-2.5 rounded-3 fw-bold d-flex flex-column align-items-center justify-content-center gap-0.5 shadow-2xs" 
-                  onclick="submitAssessment('review')" title="Cần ôn lại thêm (Phím 3)">
-            <span class="d-inline-flex align-items-center gap-1">
-              <i class="ph-bold ph-clock"></i>Nhớ tạm
-            </span>
-            <span class="shortcut-tag text-muted">Nhấn 3</span>
-          </button>
-        </div>
+    <!-- ACTIVITY 1: FLASHCARD WITH REAL 3D FLIP -->
+    <div id="exerciseFlashcard" style="display: none;">
+      <div class="flashcard-scene mb-3">
+        <div class="flashcard-card" id="flashcardBox" onclick="flipCard()" title="Nhấp để lật thẻ">
+          
+          <!-- FRONT FACE (TIẾNG ANH) -->
+          <div class="flashcard-face flashcard-front">
+            <!-- Top bar -->
+            <div class="d-flex justify-content-between align-items-center w-100">
+              <span class="badge bg-primary-subtle text-primary border rounded-pill px-3 py-1.5 fw-semibold small" id="cardModeBadge">
+                Từ mới
+              </span>
+              <span class="badge bg-light text-muted border rounded-pill px-3 py-1 small fw-semibold" id="cardTopicBadge">
+                {{ unit_title or 'Chủ đề' }}
+              </span>
+            </div>
 
-        <!-- 3. Unknown / Chưa biết -->
-        <div class="col-4">
-          <button type="button" class="btn btn-primary text-white w-100 py-2.5 rounded-3 fw-bold d-flex flex-column align-items-center justify-content-center gap-0.5 shadow-2xs" 
-                  onclick="submitAssessment('unknown')" title="Chưa thuộc từ này (Phím Enter)">
-            <span class="d-inline-flex align-items-center gap-1">
-              <i class="ph-bold ph-arrow-counter-clockwise"></i>Chưa biết
-            </span>
-            <span class="shortcut-tag text-white-50">Nhấn Enter</span>
-          </button>
+            <!-- Center Content -->
+            <div class="d-flex flex-column align-items-center justify-content-center my-auto py-2">
+              <h1 class="fw-extrabold text-dark mb-3" id="frontWordText" style="font-size: 2.8rem; letter-spacing: -0.02em;">
+                word
+              </h1>
+
+              <!-- Pronunciation Pills (Click does not flip card) -->
+              <div class="d-flex align-items-center justify-content-center gap-2 flex-wrap">
+                <button type="button" class="btn btn-audio-pill" 
+                        onclick="event.stopPropagation(); playCurrentAudio('en-US');" title="Nghe phát âm US">
+                  <i class="ph-fill ph-speaker-high text-primary fs-6"></i>
+                  <span class="fw-bold">US</span>
+                  <span class="text-muted font-monospace" id="frontPronUS">/pron/</span>
+                </button>
+                <button type="button" class="btn btn-audio-pill" 
+                        onclick="event.stopPropagation(); playCurrentAudio('en-GB');" title="Nghe phát âm UK">
+                  <i class="ph-fill ph-speaker-high text-primary fs-6"></i>
+                  <span class="fw-bold">UK</span>
+                  <span class="text-muted font-monospace" id="frontPronUK">/pron/</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Bottom Hint -->
+            <div class="text-center text-muted small">
+              <i class="ph-bold ph-arrow-counter-clockwise text-primary me-1"></i>
+              <span>Nhấp vào thẻ hoặc nhấn <kbd class="bg-light text-dark border px-1.5 py-0.5 rounded shadow-2xs">Space</kbd> để lật xem nghĩa</span>
+            </div>
+          </div>
+
+          <!-- BACK FACE (TIẾNG VIỆT & VÍ DỤ) - PROPERLY ORIENTED, NOT INVERTED -->
+          <div class="flashcard-face flashcard-back">
+            <!-- Top bar -->
+            <div class="d-flex justify-content-between align-items-center w-100">
+              <div class="d-flex align-items-center gap-2">
+                <span class="fw-bold text-dark font-monospace fs-6" id="backWordMini">word</span>
+                <span class="badge bg-secondary-subtle text-secondary border rounded-pill px-2.5 py-0.5 text-uppercase fw-bold small" id="backPartOfSpeech">
+                  noun
+                </span>
+              </div>
+              <button type="button" class="btn btn-sm btn-light border rounded-circle d-flex align-items-center justify-content-center text-muted hover-text-primary shadow-2xs" 
+                      style="width: 32px; height: 32px;" onclick="event.stopPropagation(); playCurrentAudio('en-US');" title="Nghe lại phát âm">
+                <i class="ph-fill ph-speaker-high"></i>
+              </button>
+            </div>
+
+            <!-- Center Content -->
+            <div class="d-flex flex-column align-items-center justify-content-center my-auto py-2 w-100">
+              <h2 class="fw-extrabold text-success mb-3 text-center" id="backMeaningVi" style="font-size: 1.8rem;">
+                Nghĩa tiếng Việt
+              </h2>
+
+              <!-- Clean Example Box -->
+              <div class="bg-white border rounded-3 p-3 text-start w-100 shadow-2xs mb-1" style="max-width: 540px;">
+                <div class="small text-dark fw-semibold fst-italic mb-1" id="backExampleEn">"Example sentence"</div>
+                <div class="small text-secondary" id="backExampleVi">"Bản dịch ví dụ"</div>
+              </div>
+            </div>
+
+            <!-- Bottom Hint -->
+            <div class="text-center text-muted small">
+              <i class="ph-bold ph-arrow-counter-clockwise text-primary me-1"></i>
+              <span>Nhấn <kbd class="bg-light text-dark border px-1.5 py-0.5 rounded shadow-2xs">Space</kbd> hoặc nhấp thẻ để lật lại</span>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- 3 HARMONIZED ASSESSMENT BUTTONS -->
+      <div class="card border-0 shadow-2xs rounded-4 p-3 bg-white text-center" id="assessmentSection">
+        <div class="small text-muted fw-semibold mb-2">Bạn thuộc từ này ở mức nào?</div>
+        <div class="row g-2 justify-content-center">
+          <!-- 1. Chưa biết -->
+          <div class="col-4">
+            <button type="button" class="btn btn-rate btn-rate-unknown w-100" onclick="submitAssessment('unknown')" title="Chưa biết từ này (Phím Enter)">
+              <i class="ph-bold ph-arrow-counter-clockwise fs-6"></i>
+              <span>Chưa biết</span>
+              <span class="rate-kbd">Enter</span>
+            </button>
+          </div>
+
+          <!-- 2. Nhớ tạm -->
+          <div class="col-4">
+            <button type="button" class="btn btn-rate btn-rate-review w-100" onclick="submitAssessment('review')" title="Nhớ mang máng, cần ôn tập (Phím 3)">
+              <i class="ph-bold ph-clock fs-6"></i>
+              <span>Nhớ tạm</span>
+              <span class="rate-kbd">Phím 3</span>
+            </button>
+          </div>
+
+          <!-- 3. Đã thuộc -->
+          <div class="col-4">
+            <button type="button" class="btn btn-rate btn-rate-mastered w-100" onclick="submitAssessment('mastered')" title="Đã thuộc từ này (Phím 1)">
+              <i class="ph-bold ph-check fs-6"></i>
+              <span>✓ Đã học từ này</span>
+              <span class="rate-kbd">Phím 1</span>
+            </button>
+          </div>
         </div>
       </div>
     </div>
-  </div>
 
-  <!-- EXERCISE 2: TRUE / FALSE -->
-  <div id="exerciseTrueFalse" style="display: none;">
-    <div class="card border rounded-4 shadow-sm bg-white p-4 p-md-5 d-flex flex-column justify-content-between text-center study-main-card">
-      
-      <div class="d-flex justify-content-center mb-2">
-        <span class="badge bg-primary-subtle text-primary border rounded-pill px-3 py-1 fw-bold small">
-          ⚡ Kiểm tra nhanh: Đúng hay Sai?
-        </span>
-      </div>
-
-      <div class="my-auto py-3">
-        <div class="text-muted fst-italic small mb-1" id="tfPartOfSpeech">(noun)</div>
-        <h4 class="fw-bold text-dark mb-2" id="tfMeaning" style="font-size: 1.35rem;">
-          định nghĩa
-        </h4>
-        <div class="badge bg-light text-secondary border rounded-pill px-3 py-1 my-3 shadow-2xs small">
-          có phải là nghĩa của từ
-        </div>
-        <h1 class="fw-extrabold text-primary mb-0" id="tfWord" style="font-size: 2.4rem;">
-          word
-        </h1>
-      </div>
-
-      <div class="row g-3 justify-content-center mt-3" style="max-width: 440px; margin: 0 auto; width: 100%;">
-        <div class="col-6">
-          <button type="button" class="btn btn-outline-danger w-100 py-2.5 rounded-3 fw-bold shadow-2xs d-flex align-items-center justify-content-center gap-1.5" 
-                  onclick="submitTrueFalse(false)">
-            <i class="ph-bold ph-x"></i>
-            <span>Sai</span>
-            <span class="shortcut-tag badge bg-danger-subtle text-danger ms-1">1</span>
-          </button>
-        </div>
-        <div class="col-6">
-          <button type="button" class="btn btn-outline-success w-100 py-2.5 rounded-3 fw-bold shadow-2xs d-flex align-items-center justify-content-center gap-1.5" 
-                  onclick="submitTrueFalse(true)">
-            <i class="ph-bold ph-check"></i>
-            <span>Đúng</span>
-            <span class="shortcut-tag badge bg-success-subtle text-success ms-1">2</span>
-          </button>
-        </div>
-      </div>
-
-    </div>
-  </div>
-
-  <!-- EXERCISE 3: TYPING -->
-  <div id="exerciseTyping" style="display: none;">
-    <div class="card border rounded-4 shadow-sm bg-white p-4 p-md-5 d-flex flex-column justify-content-between text-center study-main-card">
-      
-      <div class="d-flex justify-content-center mb-2">
-        <span class="badge bg-primary-subtle text-primary border rounded-pill px-3 py-1 fw-bold small">
-          ✍️ Luyện gõ từ vựng
-        </span>
-      </div>
-
-      <div class="my-auto py-2">
-        <div class="text-muted fst-italic small mb-1" id="typingPos">(noun)</div>
-        <h4 class="fw-bold text-dark mb-4" id="typingMeaning" style="font-size: 1.35rem;">
-          định nghĩa
-        </h4>
-
-        <!-- Input Field -->
-        <div class="mx-auto mb-3" style="max-width: 420px;">
-          <input type="text" id="typingInput" class="form-control form-control-lg text-center fw-bold rounded-pill study-typing-input shadow-2xs" 
-                 placeholder="Gõ từ tiếng Anh..." autocomplete="off" spellcheck="false"
-                 onkeydown="handleTypingKeydown(event)">
-        </div>
-
-        <!-- Answer Correction Box -->
-        <div class="small fw-semibold mb-2" id="typingCorrectionBox" style="display: none;">
-          <span class="text-muted">Đáp án chính xác:</span> 
-          <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-3 py-1 font-monospace fs-6" id="typingCorrectAnswer">
-            word
+    <!-- ACTIVITY 2: TRUE / FALSE -->
+    <div id="exerciseTrueFalse" style="display: none;">
+      <div class="card border rounded-4 shadow-sm bg-white p-4 p-md-5 d-flex flex-column justify-content-between text-center exercise-fixed-card mb-3">
+        
+        <div class="d-flex justify-content-center mb-2">
+          <span class="badge bg-primary-subtle text-primary border rounded-pill px-3 py-1 fw-bold small">
+            ⚡ Kiểm tra nhanh: Đúng hay Sai?
           </span>
         </div>
-      </div>
 
-      <!-- Action Buttons -->
-      <div class="d-flex justify-content-center gap-2 mx-auto w-100" id="typingActionRow" style="max-width: 420px;">
-        <button type="button" class="btn btn-light border rounded-pill px-3.5 py-2 fw-semibold text-secondary small shadow-2xs" onclick="giveTypingHint()">
-          💡 Gợi ý <span class="shortcut-tag badge bg-light text-muted border ms-1">Shift</span>
-        </button>
-        <button type="button" class="btn btn-primary rounded-pill px-4 py-2 fw-bold text-white shadow-2xs flex-grow-1" onclick="checkTypingAnswer()">
-          Kiểm tra <span class="shortcut-tag badge bg-white bg-opacity-25 text-white ms-1">Enter</span>
-        </button>
-      </div>
-
-      <!-- Feedback Result Drawer -->
-      <div class="p-3 rounded-3 mt-3 border text-start mx-auto w-100" id="typingFeedbackDrawer" style="display: none; max-width: 460px;">
-        <div class="d-flex justify-content-between align-items-center mb-1">
-          <strong class="fw-bold" id="feedbackTitle">Chính xác</strong>
-          <span class="fw-bold fs-6 font-monospace" id="feedbackWord">word</span>
+        <div class="my-auto py-3">
+          <div class="text-muted fst-italic small mb-1" id="tfPartOfSpeech">(noun)</div>
+          <h4 class="fw-bold text-dark mb-2" id="tfMeaning" style="font-size: 1.35rem;">
+            định nghĩa
+          </h4>
+          <div class="badge bg-light text-secondary border rounded-pill px-3 py-1 my-3 shadow-2xs small">
+            có phải là nghĩa của từ
+          </div>
+          <h1 class="fw-extrabold text-primary mb-0" id="tfWord" style="font-size: 2.4rem;">
+            word
+          </h1>
         </div>
-        <div class="small text-secondary mb-2" id="feedbackMeaning">meaning</div>
-        <button type="button" class="btn w-100 py-2 fw-bold rounded-pill text-white shadow-xs" id="feedbackNextBtn" 
-                onclick="advanceAfterFeedback()">
-          Tiếp tục <span class="shortcut-tag badge bg-white bg-opacity-25 text-white ms-1">Space</span>
-        </button>
+
+        <div class="row g-3 justify-content-center mt-3" style="max-width: 440px; margin: 0 auto; width: 100%;">
+          <div class="col-6">
+            <button type="button" class="btn btn-outline-danger w-100 py-2.5 rounded-3 fw-bold shadow-2xs d-flex align-items-center justify-content-center gap-1.5" 
+                    onclick="submitTrueFalse(false)">
+              <i class="ph-bold ph-x"></i>
+              <span>Sai</span>
+              <span class="shortcut-tag badge bg-danger-subtle text-danger ms-1">1</span>
+            </button>
+          </div>
+          <div class="col-6">
+            <button type="button" class="btn btn-outline-success w-100 py-2.5 rounded-3 fw-bold shadow-2xs d-flex align-items-center justify-content-center gap-1.5" 
+                    onclick="submitTrueFalse(true)">
+              <i class="ph-bold ph-check"></i>
+              <span>Đúng</span>
+              <span class="shortcut-tag badge bg-success-subtle text-success ms-1">2</span>
+            </button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ACTIVITY 3: TYPING -->
+    <div id="exerciseTyping" style="display: none;">
+      <div class="card border rounded-4 shadow-sm bg-white p-4 p-md-5 d-flex flex-column justify-content-between text-center exercise-fixed-card mb-3">
+        
+        <div class="d-flex justify-content-center mb-2">
+          <span class="badge bg-primary-subtle text-primary border rounded-pill px-3 py-1 fw-bold small">
+            ✍️ Luyện gõ từ vựng
+          </span>
+        </div>
+
+        <div class="my-auto py-2">
+          <div class="text-muted fst-italic small mb-1" id="typingPos">(noun)</div>
+          <h4 class="fw-bold text-dark mb-4" id="typingMeaning" style="font-size: 1.35rem;">
+            định nghĩa
+          </h4>
+
+          <!-- Input Field -->
+          <div class="mx-auto mb-3" style="max-width: 420px;">
+            <input type="text" id="typingInput" class="form-control form-control-lg text-center fw-bold rounded-pill study-typing-input shadow-2xs" 
+                   placeholder="Gõ từ tiếng Anh..." autocomplete="off" spellcheck="false"
+                   onkeydown="handleTypingKeydown(event)">
+          </div>
+
+          <!-- Answer Correction Box -->
+          <div class="small fw-semibold mb-2" id="typingCorrectionBox" style="display: none;">
+            <span class="text-muted">Đáp án chính xác:</span> 
+            <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-3 py-1 font-monospace fs-6" id="typingCorrectAnswer">
+              word
+            </span>
+          </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="d-flex justify-content-center gap-2 mx-auto w-100" id="typingActionRow" style="max-width: 420px;">
+          <button type="button" class="btn btn-light border rounded-pill px-3.5 py-2 fw-semibold text-secondary small shadow-2xs" onclick="giveTypingHint()">
+            💡 Gợi ý <span class="shortcut-tag badge bg-light text-muted border ms-1">Shift</span>
+          </button>
+          <button type="button" class="btn btn-primary rounded-pill px-4 py-2 fw-bold text-white shadow-2xs flex-grow-1" onclick="checkTypingAnswer()">
+            Kiểm tra <span class="shortcut-tag badge bg-white bg-opacity-25 text-white ms-1">Enter</span>
+          </button>
+        </div>
+
+        <!-- Feedback Result Drawer -->
+        <div class="p-3 rounded-3 mt-3 border text-start mx-auto w-100" id="typingFeedbackDrawer" style="display: none; max-width: 460px;">
+          <div class="d-flex justify-content-between align-items-center mb-1">
+            <strong class="fw-bold" id="feedbackTitle">Chính xác</strong>
+            <span class="fw-bold fs-6 font-monospace" id="feedbackWord">word</span>
+          </div>
+          <div class="small text-secondary mb-2" id="feedbackMeaning">meaning</div>
+          <button type="button" class="btn w-100 py-2 fw-bold rounded-pill text-white shadow-xs" id="feedbackNextBtn" 
+                  onclick="advanceAfterFeedback()">
+            Tiếp tục <span class="shortcut-tag badge bg-white bg-opacity-25 text-white ms-1">Space</span>
+          </button>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- 4. SUMMARY / COMPLETION SCREEN             -->
+    <!-- ========================================== -->
+    <div class="card border rounded-4 shadow-sm bg-white p-4 p-md-5 text-center exercise-fixed-card my-auto" id="completionCard" style="display: none;">
+      <div class="fs-1 mb-2" id="completionEmoji">🎉</div>
+      <h3 class="fw-extrabold text-dark mb-1">Hoàn thành bài học!</h3>
+      <p class="text-secondary small mb-3">Bạn vừa luyện tập xong toàn bộ <strong class="text-dark" id="statPracticedWords">12</strong> từ vựng của bài học.</p>
+
+      <div class="d-inline-flex align-items-center gap-2 px-3.5 py-1.5 rounded-pill bg-warning-subtle border border-warning-subtle text-warning-emphasis fw-bold mb-4 shadow-2xs" id="statTotalXP">
+        <i class="ph-fill ph-lightning"></i> +15 XP
       </div>
 
+      <div class="d-flex justify-content-center gap-3 flex-wrap">
+        <a href="{{ back_url }}" class="btn btn-light border rounded-pill px-4 py-2.5 fw-bold text-dark shadow-2xs">
+          <i class="ph-bold ph-arrow-left me-1.5"></i>Về danh sách bài học
+        </a>
+        <button type="button" class="btn btn-primary rounded-pill px-4 py-2.5 fw-bold text-white shadow-xs" onclick="restartSession()">
+          <i class="ph-bold ph-arrow-counter-clockwise me-1.5"></i>Học lại bài này
+        </button>
+      </div>
     </div>
+
   </div>
-
-  <!-- ========================================== -->
-  <!-- 4. SUMMARY / COMPLETION SCREEN             -->
-  <!-- ========================================== -->
-  <div class="card border rounded-4 shadow-sm bg-white p-4 p-md-5 text-center study-main-card my-auto" id="completionCard" style="display: none;">
-    <div class="fs-1 mb-2" id="completionEmoji">🎉</div>
-    <h3 class="fw-extrabold text-dark mb-1">Hoàn thành bài học!</h3>
-    <p class="text-secondary small mb-3">Bạn vừa luyện tập xong toàn bộ <strong class="text-dark" id="statPracticedWords">12</strong> từ vựng của bài học.</p>
-
-    <div class="d-inline-flex align-items-center gap-2 px-3.5 py-1.5 rounded-pill bg-warning-subtle border border-warning-subtle text-warning-emphasis fw-bold mb-4 shadow-2xs" id="statTotalXP">
-      <i class="ph-fill ph-lightning"></i> +15 XP
-    </div>
-
-    <div class="d-flex justify-content-center gap-3 flex-wrap">
-      <a href="{{ back_url }}" class="btn btn-light border rounded-pill px-4 py-2.5 fw-bold text-dark shadow-2xs">
-        <i class="ph-bold ph-arrow-left me-1.5"></i>Về danh sách bài học
-      </a>
-      <button type="button" class="btn btn-primary rounded-pill px-4 py-2.5 fw-bold text-white shadow-xs" onclick="restartSession()">
-        <i class="ph-bold ph-arrow-counter-clockwise me-1.5"></i>Học lại bài này
-      </button>
-    </div>
-  </div>
-
 </div>
-
-<!-- Hidden action form for csrf compatibility -->
-<form id="studyActionForm" style="display:none;">
-  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-</form>
 
 <script>
 const rawWordsData = {{ words_data|tojson }};
@@ -442,18 +591,24 @@ function renderFlashcard(word) {
     document.getElementById('cardTopicBadge').textContent = word.topic;
   }
 
+  // Reset 3D flip to front
   isFlipped = false;
+  const cardBox = document.getElementById('flashcardBox');
+  if (cardBox) {
+    cardBox.classList.remove('is-flipped');
+  }
+
+  // Populate Front
   document.getElementById('frontWordText').textContent = word.word;
   document.getElementById('frontPronUS').textContent = word.pronunciation || `/${word.word}/`;
   document.getElementById('frontPronUK').textContent = word.pronunciation || `/${word.word}/`;
 
+  // Populate Back
+  document.getElementById('backWordMini').textContent = word.word;
   document.getElementById('backPartOfSpeech').textContent = word.part_of_speech ? word.part_of_speech.toLowerCase() : 'word';
   document.getElementById('backMeaningVi').textContent = word.meaning_vi;
   document.getElementById('backExampleEn').textContent = word.example_en ? `"${word.example_en}"` : `Example for ${word.word}.`;
   document.getElementById('backExampleVi').textContent = word.example_vi || '';
-
-  document.getElementById('cardFaceFront').style.setProperty('display', 'flex', 'important');
-  document.getElementById('cardFaceBack').style.setProperty('display', 'none', 'important');
 
   const autoplaySwitch = document.getElementById('autoplayToggle');
   if (autoplaySwitch && autoplaySwitch.checked) {
@@ -463,12 +618,13 @@ function renderFlashcard(word) {
 
 function flipCard() {
   isFlipped = !isFlipped;
-  if (isFlipped) {
-    document.getElementById('cardFaceFront').style.setProperty('display', 'none', 'important');
-    document.getElementById('cardFaceBack').style.setProperty('display', 'flex', 'important');
-  } else {
-    document.getElementById('cardFaceFront').style.setProperty('display', 'flex', 'important');
-    document.getElementById('cardFaceBack').style.setProperty('display', 'none', 'important');
+  const cardBox = document.getElementById('flashcardBox');
+  if (cardBox) {
+    if (isFlipped) {
+      cardBox.classList.add('is-flipped');
+    } else {
+      cardBox.classList.remove('is-flipped');
+    }
   }
 }
 
