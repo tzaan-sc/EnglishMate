@@ -328,10 +328,10 @@
       <!-- Right: Settings Modal Trigger & Close Button -->
       <div class="d-flex align-items-center gap-2">
         <!-- Prominent Settings Button -->
-        <button type="button" class="btn btn-light border rounded-pill px-3 py-1.5 d-flex align-items-center gap-2 text-dark shadow-2xs fw-semibold small" 
+        <button type="button" class="btn btn-light border rounded-pill px-3 py-1.5 d-flex align-items-center gap-1.5 text-dark shadow-2xs fw-semibold small" 
                 data-bs-toggle="modal" data-bs-target="#studySettingsModal" title="Cài đặt phiên học">
           <i class="ph-bold ph-gear text-secondary fs-5"></i>
-          <span class="d-none d-sm-inline">Cài đặt phiên học</span>
+          <span class="d-none d-sm-inline">Cài đặt</span>
         </button>
 
         <!-- Close / Exit Button -->
@@ -376,42 +376,57 @@
               <span class="badge bg-success-subtle text-success rounded-pill small" style="font-size: 0.7rem;">Tự động lưu</span>
             </label>
             <div class="d-flex flex-column gap-2" id="studyModeSelector">
-              <label class="study-mode-option d-flex align-items-center gap-3 p-2.5">
+              <label class="study-mode-option d-flex align-items-center gap-3 p-2.5 rounded-3 border">
                 <input type="radio" name="studyMode" value="learn" class="form-check-input mt-0" checked onchange="changeStudyMode('learn')">
                 <div class="flex-grow-1">
-                  <div class="fw-bold text-dark small">📖 Học từ mới (Learn Mode)</div>
+                  <div class="fw-bold text-dark small d-flex align-items-center gap-1.5">
+                    <i class="ph-bold ph-book-open text-primary"></i>
+                    <span>Học từ mới (Learn Mode)</span>
+                  </div>
                   <div class="text-muted small" style="font-size: 0.76rem;">Thẻ Flashcard 3D đầy đủ phát âm, lật xem nghĩa & tự đánh giá nhớ từ</div>
                 </div>
               </label>
 
-              <label class="study-mode-option d-flex align-items-center gap-3 p-2.5">
+              <label class="study-mode-option d-flex align-items-center gap-3 p-2.5 rounded-3 border">
                 <input type="radio" name="studyMode" value="practice" class="form-check-input mt-0" onchange="changeStudyMode('practice')">
                 <div class="flex-grow-1">
-                  <div class="fw-bold text-dark small">⚡ Luyện tập phản xạ (Practice Mode)</div>
-                  <div class="text-muted small" style="font-size: 0.76rem;">Vào thẳng Trắc nghiệm 4 đáp án, Đúng/Sai & Gõ từ (KHÔNG lộ thẻ bài trước)</div>
+                  <div class="fw-bold text-dark small d-flex align-items-center gap-1.5">
+                    <i class="ph-bold ph-lightning text-warning"></i>
+                    <span>Luyện tập phản xạ (Practice Mode)</span>
+                  </div>
+                  <div class="text-muted small" style="font-size: 0.76rem;">Vào thẳng Trắc nghiệm 4 đáp án, Đúng/Sai & Gõ từ (không lộ thẻ bài trước)</div>
                 </div>
               </label>
 
-              <label class="study-mode-option d-flex align-items-center gap-3 p-2.5">
+              <label class="study-mode-option d-flex align-items-center gap-3 p-2.5 rounded-3 border">
                 <input type="radio" name="studyMode" value="flashcard" class="form-check-input mt-0" onchange="changeStudyMode('flashcard')">
                 <div class="flex-grow-1">
-                  <div class="fw-bold text-dark small">🗂️ Chỉ Thẻ Flashcard 3D</div>
+                  <div class="fw-bold text-dark small d-flex align-items-center gap-1.5">
+                    <i class="ph-bold ph-cards text-info"></i>
+                    <span>Chỉ Thẻ Flashcard 3D</span>
+                  </div>
                   <div class="text-muted small" style="font-size: 0.76rem;">Lướt xem thẻ từ vựng và tự đánh giá (Chưa biết / Nhớ tạm / Đã học)</div>
                 </div>
               </label>
 
-              <label class="study-mode-option d-flex align-items-center gap-3 p-2.5">
+              <label class="study-mode-option d-flex align-items-center gap-3 p-2.5 rounded-3 border">
                 <input type="radio" name="studyMode" value="true_false" class="form-check-input mt-0" onchange="changeStudyMode('true_false')">
                 <div class="flex-grow-1">
-                  <div class="fw-bold text-dark small">⚡ Chỉ Kiểm tra Đúng / Sai</div>
+                  <div class="fw-bold text-dark small d-flex align-items-center gap-1.5">
+                    <i class="ph-bold ph-check-square-offset text-success"></i>
+                    <span>Chỉ Kiểm tra Đúng / Sai</span>
+                  </div>
                   <div class="text-muted small" style="font-size: 0.76rem;">Kiểm tra phản xạ Đúng/Sai kèm âm thanh thông báo tức thì</div>
                 </div>
               </label>
 
-              <label class="study-mode-option d-flex align-items-center gap-3 p-2.5">
+              <label class="study-mode-option d-flex align-items-center gap-3 p-2.5 rounded-3 border">
                 <input type="radio" name="studyMode" value="typing" class="form-check-input mt-0" onchange="changeStudyMode('typing')">
                 <div class="flex-grow-1">
-                  <div class="fw-bold text-dark small">✍️ Chỉ Luyện gõ từ vựng</div>
+                  <div class="fw-bold text-dark small d-flex align-items-center gap-1.5">
+                    <i class="ph-bold ph-keyboard text-secondary"></i>
+                    <span>Chỉ Luyện gõ từ vựng</span>
+                  </div>
                   <div class="text-muted small" style="font-size: 0.76rem;">Luyện viết chính tả tiếng Anh từ định nghĩa tiếng Việt</div>
                 </div>
               </label>
@@ -429,7 +444,7 @@
             <div class="form-check form-switch d-flex align-items-center justify-content-between p-2.5 rounded-3 bg-light bg-opacity-50">
               <div>
                 <label class="form-check-label fw-semibold text-dark small cursor-pointer d-block" for="autoplayToggle">
-                  Tự động đọc 🔊
+                  <i class="ph-bold ph-speaker-high text-primary me-1"></i> Tự động đọc
                 </label>
                 <small class="text-muted d-block" style="font-size: 0.74rem;">Tự động đọc giọng chuẩn bản xứ khi chuyển sang từ mới</small>
               </div>
@@ -440,19 +455,19 @@
               <div class="form-check form-switch d-flex align-items-center justify-content-between mb-1.5">
                 <div>
                   <label class="form-check-label fw-semibold text-dark small cursor-pointer d-block" for="sfxToggle">
-                    Hiệu ứng âm thanh 🔔
+                    <i class="ph-bold ph-bell-ringing text-warning me-1"></i> Hiệu ứng âm thanh
                   </label>
-                  <small class="text-muted d-block" style="font-size: 0.74rem;">Phát tiếng chuông khi làm Đúng, còi báo khi làm Sai và tiếng lật thẻ</small>
+                  <small class="text-muted d-block" style="font-size: 0.74rem;">Phát tiếng chuông khi làm đúng, còi báo khi sai và tiếng lật thẻ</small>
                 </div>
                 <input class="form-check-input ms-2 cursor-pointer" type="checkbox" id="sfxToggle" checked onchange="saveSetting('study_sfx', this.checked)">
               </div>
               <div class="d-flex align-items-center gap-2 pt-1 border-top border-light">
                 <span class="text-muted small" style="font-size: 0.7rem;">Nghe thử:</span>
                 <button type="button" class="btn btn-outline-success btn-sm rounded-pill px-2.5 py-0.5 fw-bold" style="font-size: 0.73rem;" onclick="playSfx('correct', true)">
-                  <i class="ph-bold ph-check"></i> Tiếng Đúng 🔔
+                  <i class="ph-bold ph-check"></i> Tiếng Đúng
                 </button>
                 <button type="button" class="btn btn-outline-danger btn-sm rounded-pill px-2.5 py-0.5 fw-bold" style="font-size: 0.73rem;" onclick="playSfx('wrong', true)">
-                  <i class="ph-bold ph-x"></i> Tiếng Sai ✕
+                  <i class="ph-bold ph-x"></i> Tiếng Sai
                 </button>
               </div>
             </div>
@@ -460,7 +475,7 @@
             <div class="form-check form-switch d-flex align-items-center justify-content-between p-2.5 rounded-3 bg-light bg-opacity-50">
               <div>
                 <label class="form-check-label fw-semibold text-dark small cursor-pointer d-block" for="shortcutsToggle">
-                  Gợi ý phím tắt ⌨️
+                  <i class="ph-bold ph-command text-secondary me-1"></i> Gợi ý phím tắt
                 </label>
                 <small class="text-muted d-block" style="font-size: 0.74rem;">Hiển thị nhãn phím tắt (1, 2, 3, Space) trên màn hình</small>
               </div>
@@ -470,7 +485,7 @@
             <div class="form-check form-switch d-flex align-items-center justify-content-between p-2.5 rounded-3 bg-light bg-opacity-50">
               <div>
                 <label class="form-check-label fw-semibold text-dark small cursor-pointer d-block" for="requeueToggle">
-                  Lặp lại từ chưa nhớ 🔄
+                  <i class="ph-bold ph-arrows-counter-clockwise text-success me-1"></i> Lặp lại từ chưa nhớ
                 </label>
                 <small class="text-muted d-block" style="font-size: 0.74rem;">Từ bạn chọn "Chưa biết" sẽ xuất hiện lại sau vài thẻ để ghi nhớ</small>
               </div>

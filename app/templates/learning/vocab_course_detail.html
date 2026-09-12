@@ -100,6 +100,12 @@
         </button>
       </form>
       {% endif %}
+
+      <button type="button" class="btn btn-sm btn-light border rounded-pill px-3 py-1.5 fw-semibold text-secondary d-inline-flex align-items-center gap-1.5 shadow-2xs hover-text-primary transition-all" 
+              data-bs-toggle="modal" data-bs-target="#studySettingsModal" title="Cài đặt phiên học">
+        <i class="ph-bold ph-gear"></i>
+        <span>Cài đặt</span>
+      </button>
       {% else %}
       <span class="badge bg-primary-subtle text-primary border rounded-pill px-3 py-1.5 fw-semibold">
         <i class="ph-fill ph-check-circle me-1"></i>{{ course_learned_words }}/{{ course_total_words }} đã học
@@ -257,37 +263,191 @@
   {% set cur_total = selected_unit.total if selected_unit else course_total_words %}
 
   <div class="sticky-bottom py-2 mt-4" style="bottom: 1.25rem; z-index: 50; pointer-events: none;">
-    <div class="bg-white border rounded-pill shadow-lg p-2 px-3 mx-auto d-flex justify-content-center gap-3" 
-         style="max-width: 500px; pointer-events: auto;">
+    <div class="bg-white border rounded-pill shadow-lg p-2 px-3 mx-auto d-flex align-items-center justify-content-center gap-2.5" 
+         style="max-width: 400px; pointer-events: auto;">
       
-      <!-- Button 1: Học từ mới / Luyện tập -->
+      <!-- Primary Action: Học từ mới / Luyện tập (Dynamic theo Cài đặt) -->
       {% if cur_learned >= cur_total %}
       <a href="{{ url_for('learning.study_vocabulary', cat=cat_key, subcat=subcat_key, unit=selected_unit.id if selected_unit else unit_filter, mode='practice') }}" 
+         id="mainStudyActionBtn"
          class="btn btn-primary flex-grow-1 py-2.5 fw-bold rounded-pill shadow-none d-flex align-items-center justify-content-center gap-2 text-white" 
-         style="font-size: 0.9rem;">
+         style="font-size: 0.92rem;">
         <i class="ph-bold ph-lightning fs-5"></i>
         <span>Luyện tập phản xạ</span>
       </a>
       {% else %}
       <a href="{{ url_for('learning.study_vocabulary', cat=cat_key, subcat=subcat_key, unit=selected_unit.id if selected_unit else unit_filter, mode='learn') }}" 
+         id="mainStudyActionBtn"
          class="btn btn-primary flex-grow-1 py-2.5 fw-bold rounded-pill shadow-none d-flex align-items-center justify-content-center gap-2 text-white" 
-         style="font-size: 0.9rem;">
+         style="font-size: 0.92rem;">
         <i class="ph-bold ph-book-open fs-5"></i>
         <span>{% if cur_learned > 0 %}Học tiếp{% else %}Học từ mới{% endif %}</span>
       </a>
       {% endif %}
 
-      <!-- Button 2: Thẻ ghi nhớ -->
-      <a href="{{ url_for('learning.study_vocabulary', cat=cat_key, subcat=subcat_key, unit=selected_unit.id if selected_unit else unit_filter, mode='flashcard') }}" 
-         class="btn btn-light border flex-grow-1 py-2.5 fw-bold rounded-pill shadow-none d-flex align-items-center justify-content-center gap-2 text-dark" 
-         style="font-size: 0.9rem;">
-        <i class="ph-bold ph-cards text-primary fs-5"></i>
-        <span>Thẻ ghi nhớ</span>
-      </a>
+      <!-- Settings Button: Cài đặt phiên học -->
+      <button type="button" class="btn btn-light border rounded-circle d-flex align-items-center justify-content-center text-secondary shadow-none flex-shrink-0" 
+              style="width: 42px; height: 42px;" data-bs-toggle="modal" data-bs-target="#studySettingsModal" title="Cài đặt phiên học">
+        <i class="ph-bold ph-gear fs-5 text-dark"></i>
+      </button>
 
     </div>
   </div>
 
+</div>
+
+<!-- ========================================== -->
+<!-- MODAL: CÀI ĐẶT PHIÊN HỌC (NGOÀI BÀI HỌC)    -->
+<!-- ========================================== -->
+<div class="modal fade" id="studySettingsModal" tabindex="-1" aria-labelledby="studySettingsModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered" style="max-width: 500px;">
+    <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
+      <div class="modal-header border-bottom py-3 px-4 bg-light bg-opacity-50">
+        <div class="d-flex align-items-center gap-2.5">
+          <div class="rounded-circle bg-primary-subtle text-primary d-flex align-items-center justify-content-center" style="width: 36px; height: 36px;">
+            <i class="ph-bold ph-gear fs-5"></i>
+          </div>
+          <div>
+            <h6 class="modal-title fw-bold text-dark mb-0" id="studySettingsModalLabel">Cài đặt phiên học</h6>
+            <small class="text-muted" style="font-size: 0.76rem;">Tùy chỉnh chế độ học & tương tác</small>
+          </div>
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+
+      <div class="modal-body p-4">
+        <!-- 1. Chế độ học tập -->
+        <div class="mb-4">
+          <label class="form-label fw-bold text-dark small text-uppercase tracking-wider mb-2 d-flex justify-content-between">
+            <span>Chế độ học</span>
+            <span class="badge bg-success-subtle text-success rounded-pill small" style="font-size: 0.7rem;">Tự động lưu</span>
+          </label>
+          <div class="d-flex flex-column gap-2" id="studyModeSelector">
+            <label class="study-mode-option d-flex align-items-center gap-3 p-2.5 rounded-3 border cursor-pointer">
+              <input type="radio" name="studyMode" value="learn" class="form-check-input mt-0" onchange="handleSettingModeChange('learn')">
+              <div class="flex-grow-1">
+                <div class="fw-bold text-dark small d-flex align-items-center gap-1.5">
+                  <i class="ph-bold ph-book-open text-primary"></i>
+                  <span>Học từ mới (Learn Mode)</span>
+                </div>
+                <div class="text-muted small" style="font-size: 0.76rem;">Thẻ Flashcard 3D đầy đủ phát âm, lật xem nghĩa & tự đánh giá nhớ từ</div>
+              </div>
+            </label>
+
+            <label class="study-mode-option d-flex align-items-center gap-3 p-2.5 rounded-3 border cursor-pointer">
+              <input type="radio" name="studyMode" value="practice" class="form-check-input mt-0" onchange="handleSettingModeChange('practice')">
+              <div class="flex-grow-1">
+                <div class="fw-bold text-dark small d-flex align-items-center gap-1.5">
+                  <i class="ph-bold ph-lightning text-warning"></i>
+                  <span>Luyện tập phản xạ (Practice Mode)</span>
+                </div>
+                <div class="text-muted small" style="font-size: 0.76rem;">Vào thẳng Trắc nghiệm 4 đáp án, Đúng/Sai & Gõ từ (không lộ thẻ bài trước)</div>
+              </div>
+            </label>
+
+            <label class="study-mode-option d-flex align-items-center gap-3 p-2.5 rounded-3 border cursor-pointer">
+              <input type="radio" name="studyMode" value="flashcard" class="form-check-input mt-0" onchange="handleSettingModeChange('flashcard')">
+              <div class="flex-grow-1">
+                <div class="fw-bold text-dark small d-flex align-items-center gap-1.5">
+                  <i class="ph-bold ph-cards text-info"></i>
+                  <span>Chỉ Thẻ Flashcard 3D</span>
+                </div>
+                <div class="text-muted small" style="font-size: 0.76rem;">Lướt xem thẻ từ vựng và tự đánh giá (Chưa biết / Nhớ tạm / Đã học)</div>
+              </div>
+            </label>
+
+            <label class="study-mode-option d-flex align-items-center gap-3 p-2.5 rounded-3 border cursor-pointer">
+              <input type="radio" name="studyMode" value="true_false" class="form-check-input mt-0" onchange="handleSettingModeChange('true_false')">
+              <div class="flex-grow-1">
+                <div class="fw-bold text-dark small d-flex align-items-center gap-1.5">
+                  <i class="ph-bold ph-check-square-offset text-success"></i>
+                  <span>Chỉ Kiểm tra Đúng / Sai</span>
+                </div>
+                <div class="text-muted small" style="font-size: 0.76rem;">Kiểm tra phản xạ Đúng/Sai kèm âm thanh thông báo tức thì</div>
+              </div>
+            </label>
+
+            <label class="study-mode-option d-flex align-items-center gap-3 p-2.5 rounded-3 border cursor-pointer">
+              <input type="radio" name="studyMode" value="typing" class="form-check-input mt-0" onchange="handleSettingModeChange('typing')">
+              <div class="flex-grow-1">
+                <div class="fw-bold text-dark small d-flex align-items-center gap-1.5">
+                  <i class="ph-bold ph-keyboard text-secondary"></i>
+                  <span>Chỉ Luyện gõ từ vựng</span>
+                </div>
+                <div class="text-muted small" style="font-size: 0.76rem;">Luyện viết chính tả tiếng Anh từ định nghĩa tiếng Việt</div>
+              </div>
+            </label>
+          </div>
+        </div>
+
+        <hr class="my-3 text-muted opacity-25">
+
+        <!-- 2. Âm thanh & Tương tác -->
+        <label class="form-label fw-bold text-dark small text-uppercase tracking-wider mb-2">
+          Âm thanh & Tương tác
+        </label>
+        
+        <div class="d-flex flex-column gap-2">
+          <div class="form-check form-switch d-flex align-items-center justify-content-between p-2.5 rounded-3 bg-light bg-opacity-50">
+            <div>
+              <label class="form-check-label fw-semibold text-dark small cursor-pointer d-block" for="modalAutoplayToggle">
+                <i class="ph-bold ph-speaker-high text-primary me-1"></i> Tự động đọc
+              </label>
+              <small class="text-muted d-block" style="font-size: 0.74rem;">Tự động đọc giọng chuẩn bản xứ khi chuyển sang từ mới</small>
+            </div>
+            <input class="form-check-input ms-2 cursor-pointer" type="checkbox" id="modalAutoplayToggle" checked onchange="saveCourseSetting('study_autoplay', this.checked)">
+          </div>
+
+          <div class="p-2.5 rounded-3 bg-light bg-opacity-50">
+            <div class="form-check form-switch d-flex align-items-center justify-content-between mb-1.5">
+              <div>
+                <label class="form-check-label fw-semibold text-dark small cursor-pointer d-block" for="modalSfxToggle">
+                  <i class="ph-bold ph-bell-ringing text-warning me-1"></i> Hiệu ứng âm thanh
+                </label>
+                <small class="text-muted d-block" style="font-size: 0.74rem;">Phát tiếng chuông khi làm đúng, còi báo khi sai và tiếng lật thẻ</small>
+              </div>
+              <input class="form-check-input ms-2 cursor-pointer" type="checkbox" id="modalSfxToggle" checked onchange="saveCourseSetting('study_sfx', this.checked)">
+            </div>
+            <div class="d-flex align-items-center gap-2 pt-1 border-top border-light">
+              <span class="text-muted small" style="font-size: 0.7rem;">Nghe thử:</span>
+              <button type="button" class="btn btn-outline-success btn-sm rounded-pill px-2.5 py-0.5 fw-bold" style="font-size: 0.73rem;" onclick="playCourseSfx('correct', true)">
+                <i class="ph-bold ph-check"></i> Tiếng Đúng
+              </button>
+              <button type="button" class="btn btn-outline-danger btn-sm rounded-pill px-2.5 py-0.5 fw-bold" style="font-size: 0.73rem;" onclick="playCourseSfx('wrong', true)">
+                <i class="ph-bold ph-x"></i> Tiếng Sai
+              </button>
+            </div>
+          </div>
+
+          <div class="form-check form-switch d-flex align-items-center justify-content-between p-2.5 rounded-3 bg-light bg-opacity-50">
+            <div>
+              <label class="form-check-label fw-semibold text-dark small cursor-pointer d-block" for="modalShortcutsToggle">
+                <i class="ph-bold ph-command text-secondary me-1"></i> Gợi ý phím tắt
+              </label>
+              <small class="text-muted d-block" style="font-size: 0.74rem;">Hiển thị nhãn phím tắt (1, 2, 3, Space) trên màn hình</small>
+            </div>
+            <input class="form-check-input ms-2 cursor-pointer" type="checkbox" id="modalShortcutsToggle" checked onchange="saveCourseSetting('study_shortcuts', this.checked)">
+          </div>
+
+          <div class="form-check form-switch d-flex align-items-center justify-content-between p-2.5 rounded-3 bg-light bg-opacity-50">
+            <div>
+              <label class="form-check-label fw-semibold text-dark small cursor-pointer d-block" for="modalRequeueToggle">
+                <i class="ph-bold ph-arrows-counter-clockwise text-success me-1"></i> Lặp lại từ chưa nhớ
+              </label>
+              <small class="text-muted d-block" style="font-size: 0.74rem;">Từ bạn chọn "Chưa biết" sẽ xuất hiện lại sau vài thẻ để ghi nhớ</small>
+            </div>
+            <input class="form-check-input ms-2 cursor-pointer" type="checkbox" id="modalRequeueToggle" checked onchange="saveCourseSetting('study_requeue', this.checked)">
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer border-top py-3 px-4 bg-light bg-opacity-50">
+        <button type="button" class="btn btn-primary rounded-pill w-100 py-2.5 fw-bold text-white shadow-xs" data-bs-dismiss="modal">
+          Lưu cài đặt
+        </button>
+      </div>
+    </div>
+  </div>
 </div>
 
 <!-- ========================================== -->
@@ -511,5 +671,140 @@ function toggleModalFavorite() {
     favIcon.className = currentWordModalData.is_favorite ? "ph-fill ph-star text-warning fs-5" : "ph-bold ph-star fs-5";
   });
 }
+
+// ==========================================
+// Settings Modal & Audio Synthesizer outside
+// ==========================================
+let courseAudioCtx = null;
+function getCourseAudioContext() {
+  try {
+    const AudioCtx = window.AudioContext || window.webkitAudioContext;
+    if (!AudioCtx) return null;
+    if (!courseAudioCtx) courseAudioCtx = new AudioCtx();
+    if (courseAudioCtx.state === 'suspended') courseAudioCtx.resume();
+    return courseAudioCtx;
+  } catch(e) { return null; }
+}
+
+function playCourseSfx(type, forcePlay = false) {
+  const toggle = document.getElementById('modalSfxToggle');
+  if (!forcePlay && toggle && !toggle.checked) return;
+  const ctx = getCourseAudioContext();
+  if (!ctx) return;
+  const now = ctx.currentTime;
+
+  if (type === 'correct') {
+    [523.25, 659.25, 783.99, 1046.50].forEach((freq, idx) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(freq, now + idx * 0.07);
+      gain.gain.setValueAtTime(0.28, now + idx * 0.07);
+      gain.gain.exponentialRampToValueAtTime(0.0001, now + idx * 0.07 + 0.35);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start(now + idx * 0.07);
+      osc.stop(now + idx * 0.07 + 0.35);
+    });
+  } else if (type === 'wrong') {
+    [{ freq: 329.63, delay: 0.0, dur: 0.18, vol: 0.25 }, { freq: 220.00, delay: 0.11, dur: 0.28, vol: 0.28 }].forEach(({ freq, delay, dur, vol }) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'triangle';
+      osc.frequency.setValueAtTime(freq, now + delay);
+      osc.frequency.exponentialRampToValueAtTime(freq * 0.92, now + delay + dur);
+      gain.gain.setValueAtTime(vol, now + delay);
+      gain.gain.exponentialRampToValueAtTime(0.0001, now + delay + dur);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start(now + delay);
+      osc.stop(now + delay + dur);
+    });
+  }
+}
+
+function saveCourseSetting(key, value) {
+  try {
+    if (typeof value === 'boolean') {
+      localStorage.setItem(key, value ? '1' : '0');
+    } else {
+      localStorage.setItem(key, value);
+    }
+  } catch(e) {}
+}
+
+function handleSettingModeChange(mode) {
+  saveCourseSetting('study_mode', mode);
+  applyStudyModeToButtons(mode);
+}
+
+function applyStudyModeToButtons(mode) {
+  const mainBtn = document.getElementById('mainStudyActionBtn');
+  if (!mainBtn) return;
+  const baseUrl = "{{ url_for('learning.study_vocabulary', cat=cat_key, subcat=subcat_key, unit=selected_unit.id if selected_unit else unit_filter) }}";
+  mainBtn.href = `${baseUrl}${baseUrl.includes('?') ? '&' : '?'}mode=${mode}`;
+  
+  const iconEl = mainBtn.querySelector('i');
+  const textEl = mainBtn.querySelector('span');
+  if (mode === 'practice') {
+    if (iconEl) iconEl.className = 'ph-bold ph-lightning fs-5';
+    if (textEl) textEl.textContent = 'Luyện tập phản xạ';
+  } else if (mode === 'flashcard') {
+    if (iconEl) iconEl.className = 'ph-bold ph-cards fs-5';
+    if (textEl) textEl.textContent = 'Thẻ Flashcard 3D';
+  } else if (mode === 'true_false') {
+    if (iconEl) iconEl.className = 'ph-bold ph-check-square-offset fs-5';
+    if (textEl) textEl.textContent = 'Kiểm tra Đúng / Sai';
+  } else if (mode === 'typing') {
+    if (iconEl) iconEl.className = 'ph-bold ph-keyboard fs-5';
+    if (textEl) textEl.textContent = 'Luyện gõ từ vựng';
+  } else {
+    if (iconEl) iconEl.className = 'ph-bold ph-book-open fs-5';
+    const curLearned = {{ cur_learned }};
+    const curTotal = {{ cur_total }};
+    if (curLearned >= curTotal) {
+      if (iconEl) iconEl.className = 'ph-bold ph-lightning fs-5';
+      if (textEl) textEl.textContent = 'Luyện tập phản xạ';
+    } else {
+      if (textEl) textEl.textContent = curLearned > 0 ? 'Học tiếp' : 'Học từ mới';
+    }
+  }
+}
+
+function loadCourseStudySettings() {
+  try {
+    const savedMode = localStorage.getItem('study_mode') || 'learn';
+    const radios = document.querySelectorAll('input[name="studyMode"]');
+    radios.forEach(r => {
+      r.checked = (r.value === savedMode);
+    });
+    applyStudyModeToButtons(savedMode);
+
+    const autoplay = localStorage.getItem('study_autoplay');
+    if (autoplay !== null) {
+      const el = document.getElementById('modalAutoplayToggle');
+      if (el) el.checked = (autoplay === '1');
+    }
+    const sfx = localStorage.getItem('study_sfx');
+    if (sfx !== null) {
+      const el = document.getElementById('modalSfxToggle');
+      if (el) el.checked = (sfx === '1');
+    }
+    const shortcuts = localStorage.getItem('study_shortcuts');
+    if (shortcuts !== null) {
+      const el = document.getElementById('modalShortcutsToggle');
+      if (el) el.checked = (shortcuts === '1');
+    }
+    const requeue = localStorage.getItem('study_requeue');
+    if (requeue !== null) {
+      const el = document.getElementById('modalRequeueToggle');
+      if (el) el.checked = (requeue === '1');
+    }
+  } catch(e) {}
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  loadCourseStudySettings();
+});
 </script>
 {% endblock %}
