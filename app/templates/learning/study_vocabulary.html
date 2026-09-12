@@ -362,91 +362,14 @@
             </div>
             <div>
               <h6 class="modal-title fw-bold text-dark mb-0" id="studySettingsModalLabel">Cài đặt phiên học</h6>
-              <small class="text-muted" style="font-size: 0.76rem;">Tùy chỉnh chế độ học & âm thanh phản hồi</small>
+              <small class="text-muted" style="font-size: 0.76rem;">Tùy chỉnh âm thanh & phím tắt tương tác</small>
             </div>
           </div>
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
 
         <div class="modal-body p-4">
-          <!-- 1. Chế độ học tập -->
-          <div class="mb-4">
-            <label class="form-label fw-bold text-dark small text-uppercase tracking-wider mb-2 d-flex justify-content-between">
-              <span>Chế độ học</span>
-              <span class="badge bg-success-subtle text-success rounded-pill small" style="font-size: 0.7rem;">Tự động lưu</span>
-            </label>
-            <div class="d-flex flex-column gap-2" id="studyModeSelector">
-              <label class="study-mode-option d-flex align-items-center gap-3 p-2.5 rounded-3 border">
-                <input type="radio" name="studyMode" value="learn" class="form-check-input mt-0" checked onchange="changeStudyMode('learn')">
-                <div class="flex-grow-1">
-                  <div class="fw-bold text-dark small d-flex align-items-center gap-1.5">
-                    <i class="ph-bold ph-book-open text-primary"></i>
-                    <span>Học từ mới (Learn Mode)</span>
-                  </div>
-                  <div class="text-muted small" style="font-size: 0.76rem;">Thẻ Flashcard 3D đầy đủ phát âm, lật xem nghĩa & tự đánh giá nhớ từ</div>
-                </div>
-              </label>
-
-              <label class="study-mode-option d-flex align-items-center gap-3 p-2.5 rounded-3 border">
-                <input type="radio" name="studyMode" value="practice" class="form-check-input mt-0" onchange="changeStudyMode('practice')">
-                <div class="flex-grow-1">
-                  <div class="fw-bold text-dark small d-flex align-items-center gap-1.5">
-                    <i class="ph-bold ph-lightning text-primary"></i>
-                    <span>Luyện tập tổng hợp (Comprehensive)</span>
-                  </div>
-                  <div class="text-muted small" style="font-size: 0.76rem;">Kết hợp Trắc nghiệm 4 đáp án, Đúng/Sai & Gõ từ vựng</div>
-                </div>
-              </label>
-
-              <label class="study-mode-option d-flex align-items-center gap-3 p-2.5 rounded-3 border">
-                <input type="radio" name="studyMode" value="reflex" class="form-check-input mt-0" onchange="changeStudyMode('reflex')">
-                <div class="flex-grow-1">
-                  <div class="fw-bold text-dark small d-flex align-items-center gap-1.5">
-                    <i class="ph-bold ph-lightning text-warning"></i>
-                    <span>Luyện tập phản xạ (Reflex Quiz)</span>
-                  </div>
-                  <div class="text-muted small" style="font-size: 0.76rem;">Trắc nghiệm 4 đáp án & Đúng/Sai phản xạ nhanh</div>
-                </div>
-              </label>
-
-              <label class="study-mode-option d-flex align-items-center gap-3 p-2.5 rounded-3 border">
-                <input type="radio" name="studyMode" value="flashcard" class="form-check-input mt-0" onchange="changeStudyMode('flashcard')">
-                <div class="flex-grow-1">
-                  <div class="fw-bold text-dark small d-flex align-items-center gap-1.5">
-                    <i class="ph-bold ph-cards text-info"></i>
-                    <span>Chỉ Thẻ Flashcard 3D</span>
-                  </div>
-                  <div class="text-muted small" style="font-size: 0.76rem;">Lướt xem thẻ từ vựng và tự đánh giá (Chưa biết / Nhớ tạm / Đã học)</div>
-                </div>
-              </label>
-
-              <label class="study-mode-option d-flex align-items-center gap-3 p-2.5 rounded-3 border">
-                <input type="radio" name="studyMode" value="true_false" class="form-check-input mt-0" onchange="changeStudyMode('true_false')">
-                <div class="flex-grow-1">
-                  <div class="fw-bold text-dark small d-flex align-items-center gap-1.5">
-                    <i class="ph-bold ph-check-square-offset text-success"></i>
-                    <span>Chỉ Kiểm tra Đúng / Sai</span>
-                  </div>
-                  <div class="text-muted small" style="font-size: 0.76rem;">Kiểm tra phản xạ Đúng/Sai kèm âm thanh thông báo tức thì</div>
-                </div>
-              </label>
-
-              <label class="study-mode-option d-flex align-items-center gap-3 p-2.5 rounded-3 border">
-                <input type="radio" name="studyMode" value="typing" class="form-check-input mt-0" onchange="changeStudyMode('typing')">
-                <div class="flex-grow-1">
-                  <div class="fw-bold text-dark small d-flex align-items-center gap-1.5">
-                    <i class="ph-bold ph-keyboard text-secondary"></i>
-                    <span>Chỉ Luyện gõ từ vựng</span>
-                  </div>
-                  <div class="text-muted small" style="font-size: 0.76rem;">Luyện viết chính tả tiếng Anh từ định nghĩa tiếng Việt</div>
-                </div>
-              </label>
-            </div>
-          </div>
-
-          <hr class="my-3 text-muted opacity-25">
-
-          <!-- 2. Âm thanh & Trợ năng -->
+          <!-- 1. Âm thanh & Trợ năng -->
           <label class="form-label fw-bold text-dark small text-uppercase tracking-wider mb-2">
             Âm thanh & Tương tác
           </label>
@@ -1683,11 +1606,6 @@ function loadSavedSettings() {
 
     currentStudyMode = activeMode;
     saveSetting('study_mode', activeMode);
-
-    const radios = document.querySelectorAll('input[name="studyMode"]');
-    radios.forEach(r => {
-      r.checked = (r.value === activeMode);
-    });
 
     const autoplay = localStorage.getItem('study_autoplay');
     if (autoplay !== null) {
