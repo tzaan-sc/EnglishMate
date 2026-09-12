@@ -1230,6 +1230,78 @@ def learn_word(word_id):
     return redirect(request.referrer or url_for("learning.vocabulary"))
 
 
+@bp.post("/vocabulary/<int:word_id>/unlearn")
+@login_required
+def unlearn_word(word_id):
+    word = db.get_or_404(Vocabulary, word_id)
+    form = ActionForm()
+    if not form.validate_on_submit():
+        abort(400)
+    progress = VocabularyProgress.query.filter_by(user_id=current_user.id, vocabulary_id=word.id).first()
+    if progress:
+        progress.learned_count = 0
+        progress.review_count = 0
+        db.session.commit()
+    flash(f"Đã đặt lại “{word.word}” thành Chưa học.", "info")
+    return redirect(request.referrer or url_for("learning.vocabulary"))
+
+
+@bp.post("/vocabulary/courses/<cat_key>/<subcat_key>/reset-unit")
+@login_required
+def reset_unit_vocab(cat_key, subcat_key):
+    form = ActionForm()
+    if not form.validate_on_submit():
+        abort(400)
+    unit_id = request.form.get("unit_id")
+    if not unit_id:
+        abort(400)
+
+    all_course_words = Vocabulary.query.filter(
+        func.lower(Vocabulary.topic).ilike(f"%{subcat_key.replace('_', ' ')}%")
+        | func.lower(Vocabulary.topic).ilike(f"%{cat_key}%")
+    ).order_by(Vocabulary.id.asc()).all()
+
+    if not all_course_words:
+        all_course_words = Vocabulary.query.order_by(Vocabulary.id.asc()).limit(120).all()
+
+    CHUNK_SIZE = 12
+    target_words = []
+    if "toeic" in cat_key.lower() and "600" in subcat_key.lower():
+        units_dict = {}
+        for w in all_course_words:
+            u_name = w.topic if w.topic else "General"
+            if u_name not in units_dict:
+                units_dict[u_name] = []
+            units_dict[u_name].append(w)
+        
+        for i, (u_name, w_list) in enumerate(units_dict.items()):
+            if str(i + 1) == str(unit_id) or u_name == str(unit_id):
+                target_words = w_list
+                break
+    else:
+        try:
+            u_idx = int(unit_id) - 1
+            target_words = all_course_words[u_idx * CHUNK_SIZE : (u_idx + 1) * CHUNK_SIZE]
+        except Exception:
+            target_words = []
+
+    if target_words:
+        w_ids = [w.id for w in target_words]
+        progs = VocabularyProgress.query.filter(
+            VocabularyProgress.user_id == current_user.id,
+            VocabularyProgress.vocabulary_id.in_(w_ids)
+        ).all()
+        for p in progs:
+            p.learned_count = 0
+            p.review_count = 0
+        db.session.commit()
+        flash("Đã đặt lại tất cả từ vựng trong bài học về trạng thái Chưa học.", "success")
+    else:
+        flash("Không tìm thấy từ vựng trong bài học này để đặt lại.", "warning")
+
+    return redirect(request.referrer or url_for("learning.vocab_course_detail", cat_key=cat_key, subcat_key=subcat_key, unit=unit_id))
+
+
 @bp.get("/vocabulary/study")
 @login_required
 def study_vocabulary():

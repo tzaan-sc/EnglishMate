@@ -78,15 +78,28 @@
       {% endif %}
     </div>
 
-    <!-- Right: Minimal Badges -->
-    <div class="d-flex align-items-center gap-2">
+    <!-- Right: Minimal Badges & Unit Reset Action -->
+    <div class="d-flex align-items-center gap-2 flex-wrap">
       {% if selected_unit %}
-      <span class="badge bg-primary-subtle text-primary border rounded-pill px-3 py-1.5 fw-semibold">
-        <i class="ph-fill ph-check-circle me-1"></i>{{ selected_unit.learned }}/{{ selected_unit.total }} đã học
+      <span class="badge bg-primary-subtle text-primary border rounded-pill px-3 py-1.5 fw-semibold" id="unitLearnedBadge">
+        <i class="ph-fill ph-check-circle me-1"></i><span id="unitLearnedCount">{{ selected_unit.learned }}</span>/{{ selected_unit.total }} đã học
       </span>
       <span class="badge bg-warning-subtle text-warning-emphasis border rounded-pill px-3 py-1.5 fw-semibold">
         <i class="ph-fill ph-clock me-1"></i>{{ selected_unit.due_count }} cần ôn
       </span>
+
+      {% if selected_unit.learned > 0 %}
+      <form method="post" action="{{ url_for('learning.reset_unit_vocab', cat_key=cat_key, subcat_key=subcat_key) }}" 
+            onsubmit="return confirm('Bạn có chắc muốn đặt lại tất cả {{ selected_unit.total }} từ trong bài học “{{ selected_unit.name }}” về trạng thái Chưa học?');" class="m-0">
+        {{ form.hidden_tag() }}
+        <input type="hidden" name="unit_id" value="{{ selected_unit.id }}">
+        <button type="submit" class="btn btn-sm btn-light border rounded-pill px-3 py-1.5 fw-semibold text-secondary d-inline-flex align-items-center gap-1.5 shadow-2xs hover-text-danger transition-all" 
+                title="Đặt lại toàn bộ bài học này thành Chưa học">
+          <i class="ph-bold ph-arrow-counter-clockwise"></i>
+          <span>Đặt lại bài này</span>
+        </button>
+      </form>
+      {% endif %}
       {% else %}
       <span class="badge bg-primary-subtle text-primary border rounded-pill px-3 py-1.5 fw-semibold">
         <i class="ph-fill ph-check-circle me-1"></i>{{ course_learned_words }}/{{ course_total_words }} đã học
@@ -140,24 +153,18 @@
   <!-- 3. DANH SÁCH TỪ VỰNG                       -->
   <!-- ========================================== -->
   <div class="bg-white rounded-4 p-4 border shadow-2xs mb-4">
+    {% if not selected_unit %}
     <div class="d-flex flex-column flex-sm-row justify-content-between align-items-sm-center gap-3 mb-3 pb-2 border-bottom">
       <div>
         <h6 class="fw-bold text-dark mb-0.5">
-          {% if selected_unit %}
-          Danh sách Từ vựng - {{ selected_unit.name }}
-          {% else %}
           Tất cả từ vựng trong khóa học
-          {% endif %}
         </h6>
         <small class="text-muted">Nhấn vào thẻ từ để xem chi tiết và nghe phát âm</small>
       </div>
 
-      <!-- Search in Unit / Course -->
+      <!-- Search in Course -->
       <div style="min-width: 220px;">
         <form method="get" class="m-0">
-          {% if unit_filter %}
-          <input type="hidden" name="unit" value="{{ unit_filter }}">
-          {% endif %}
           <div class="input-group input-group-sm">
             <span class="input-group-text bg-white border-end-0 text-muted rounded-start-pill ps-2.5">
               <i class="ph-bold ph-magnifying-glass"></i>
@@ -167,7 +174,7 @@
                    placeholder="Tìm từ vựng..." 
                    style="font-size: 0.82rem;">
             {% if search %}
-            <a href="{{ url_for('learning.vocab_course_detail', cat_key=cat_key, subcat_key=subcat_key, unit=unit_filter) }}" class="btn btn-light border border-start-0 text-muted">
+            <a href="{{ url_for('learning.vocab_course_detail', cat_key=cat_key, subcat_key=subcat_key) }}" class="btn btn-light border border-start-0 text-muted">
               <i class="ph-bold ph-x"></i>
             </a>
             {% endif %}
@@ -175,6 +182,14 @@
         </form>
       </div>
     </div>
+    {% elif search %}
+    <div class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom">
+      <small class="text-muted">Kết quả tìm kiếm cho: "<strong>{{ search }}</strong>"</small>
+      <a href="{{ url_for('learning.vocab_course_detail', cat_key=cat_key, subcat_key=subcat_key, unit=unit_filter) }}" class="btn btn-sm btn-light border rounded-pill">
+        <i class="ph-bold ph-x me-1"></i>Xóa tìm kiếm
+      </a>
+    </div>
+    {% endif %}
 
     {% if words %}
     <!-- 3-Column Clean Card Layout -->
@@ -213,15 +228,17 @@
             </div>
           </div>
 
-          <!-- Right: Action Button -->
+          <!-- Right: Action Button (Click to toggle Learned / Unlearned) -->
           <div class="flex-shrink-0" onclick="event.stopPropagation();">
-            <form method="post" action="{{ url_for('learning.learn_word', word_id=word.id) }}" class="m-0">
-              {{ form.hidden_tag() }}
-              <button type="submit" class="btn btn-sm rounded-circle p-1.5 d-flex align-items-center justify-content-center {% if is_learned %}text-success bg-success-subtle{% else %}text-muted bg-light{% endif %} border-0" 
-                      title="{% if is_learned %}Đã học{% else %}Đánh dấu đã học{% endif %}" style="width: 32px; height: 32px;">
-                <i class="ph-bold {% if is_learned %}ph-check-circle-fill text-success{% else %}ph-plus{% endif %}" style="font-size: 1rem;"></i>
-              </button>
-            </form>
+            <button type="button" 
+                    class="btn btn-sm rounded-circle p-1.5 d-flex align-items-center justify-content-center {% if is_learned %}text-success bg-success-subtle{% else %}text-muted bg-light{% endif %} border-0 shadow-2xs" 
+                    id="word-action-btn-{{ word.id }}"
+                    onclick="toggleWordLearnedCard({{ word.id }}, event)"
+                    title="{% if is_learned %}Đã học (Bấm để chuyển thành Chưa học){% else %}Đánh dấu đã học{% endif %}" 
+                    style="width: 34px; height: 34px;">
+              <i class="ph-bold {% if is_learned %}ph-check-circle-fill text-success{% else %}ph-plus{% endif %}" 
+                 id="word-action-icon-{{ word.id }}" style="font-size: 1.05rem;"></i>
+            </button>
           </div>
 
         </div>
@@ -404,34 +421,67 @@ function updateLearnedButtonState(isLearned) {
   }
 }
 
-function toggleModalLearned() {
-  if (!currentWordModalData) return;
-  fetch(`/vocabulary/${currentWordModalData.id}/toggle-learned`, {
+function toggleWordLearnedCard(wordId, e) {
+  if (e) e.stopPropagation();
+  const btn = document.getElementById(`word-action-btn-${wordId}`);
+  const icon = document.getElementById(`word-action-icon-${wordId}`);
+  const ring = document.getElementById(`word-status-ring-${wordId}`);
+  const learnedCountEl = document.getElementById('unitLearnedCount');
+
+  fetch(`/vocabulary/${wordId}/toggle-learned`, {
     method: 'POST',
     headers: { 'X-Requested-With': 'XMLHttpRequest' }
   })
   .then(res => res.json())
   .then(res => {
     if (res.success) {
-      currentWordModalData.is_learned = res.is_learned;
-      updateLearnedButtonState(res.is_learned);
-      
-      const cardRing = document.getElementById(`word-status-ring-${currentWordModalData.id}`);
-      if (cardRing) {
-        if (res.is_learned) {
-          cardRing.style.borderColor = '#10b981';
-          cardRing.style.background = '#ecfdf5';
-          cardRing.style.color = '#059669';
-          cardRing.innerHTML = '<i class="ph-fill ph-check text-success" style="font-size: 0.9rem;"></i>';
-        } else {
-          cardRing.style.borderColor = '#cbd5e1';
-          cardRing.style.background = '#f8fafc';
-          cardRing.style.color = '#94a3b8';
-          cardRing.innerHTML = '<i class="ph-bold ph-circle text-muted" style="font-size: 0.6rem;"></i>';
+      if (res.is_learned) {
+        // Đã học
+        if (btn) {
+          btn.className = 'btn btn-sm rounded-circle p-1.5 d-flex align-items-center justify-content-center text-success bg-success-subtle border-0 shadow-2xs';
+          btn.title = 'Đã học (Bấm để chuyển thành Chưa học)';
+        }
+        if (icon) icon.className = 'ph-bold ph-check-circle-fill text-success';
+        if (ring) {
+          ring.style.borderColor = '#10b981';
+          ring.style.background = '#ecfdf5';
+          ring.style.color = '#059669';
+          ring.innerHTML = '<i class="ph-fill ph-check text-success" style="font-size: 0.95rem;"></i>';
+        }
+        if (learnedCountEl) {
+          learnedCountEl.textContent = parseInt(learnedCountEl.textContent || '0') + 1;
+        }
+      } else {
+        // Chưa học
+        if (btn) {
+          btn.className = 'btn btn-sm rounded-circle p-1.5 d-flex align-items-center justify-content-center text-muted bg-light border-0 shadow-2xs';
+          btn.title = 'Đánh dấu đã học';
+        }
+        if (icon) icon.className = 'ph-bold ph-plus';
+        if (ring) {
+          ring.style.borderColor = '#cbd5e1';
+          ring.style.background = '#f8fafc';
+          ring.style.color = '#94a3b8';
+          ring.innerHTML = '<i class="ph-bold ph-circle text-muted" style="font-size: 0.65rem;"></i>';
+        }
+        if (learnedCountEl) {
+          learnedCountEl.textContent = Math.max(0, parseInt(learnedCountEl.textContent || '0') - 1);
         }
       }
+
+      // Sync modal if currently open for this word
+      if (currentWordModalData && currentWordModalData.id === wordId) {
+        currentWordModalData.is_learned = res.is_learned;
+        updateLearnedButtonState(res.is_learned);
+      }
     }
-  });
+  })
+  .catch(err => console.error("Error toggling word learned status:", err));
+}
+
+function toggleModalLearned() {
+  if (!currentWordModalData) return;
+  toggleWordLearnedCard(currentWordModalData.id);
 }
 
 function toggleModalFavorite() {
