@@ -292,10 +292,10 @@
       <div class="dropup flex-grow-1">
         <button type="button" class="btn btn-light border w-100 py-2.5 fw-bold rounded-pill shadow-none d-flex align-items-center justify-content-center gap-1.5 dropdown-toggle text-dark" 
                 data-bs-toggle="dropdown" aria-expanded="false" style="font-size: 0.9rem;">
-          <i class="ph-bold ph-lightning text-warning fs-5"></i>
-          <span>Luyện tập</span>
+          <i class="ph-bold ph-lightning text-primary fs-5"></i>
+          <span>Luyện tập tổng hợp</span>
         </button>
-        <ul class="dropdown-menu dropdown-menu-end shadow-lg rounded-4 p-2 border mb-2" style="min-width: 275px; z-index: 1050;">
+        <ul class="dropdown-menu dropdown-menu-end shadow-lg rounded-4 p-2 border mb-2" style="min-width: 280px; z-index: 1050;">
           <li>
             <div class="px-2.5 py-1 text-muted small fw-bold text-uppercase" style="font-size: 0.7rem; letter-spacing: 0.04em;">
               Chọn dạng luyện tập
@@ -303,6 +303,17 @@
           </li>
           <li>
             <a class="dropdown-item rounded-3 py-2 px-2.5 d-flex align-items-center gap-2.5" href="{{ study_base_url }}{{ delim }}mode=practice">
+              <div class="rounded-circle bg-primary-subtle text-primary d-flex align-items-center justify-content-center flex-shrink-0" style="width: 32px; height: 32px;">
+                <i class="ph-bold ph-lightning fs-6"></i>
+              </div>
+              <div>
+                <div class="fw-bold small text-dark">Luyện tập tổng hợp</div>
+                <small class="text-muted d-block" style="font-size: 0.72rem;">Kết hợp Trắc nghiệm, Đúng/Sai & Gõ từ</small>
+              </div>
+            </a>
+          </li>
+          <li>
+            <a class="dropdown-item rounded-3 py-2 px-2.5 d-flex align-items-center gap-2.5" href="{{ study_base_url }}{{ delim }}mode=reflex">
               <div class="rounded-circle bg-warning-subtle text-warning d-flex align-items-center justify-content-center flex-shrink-0" style="width: 32px; height: 32px;">
                 <i class="ph-bold ph-lightning fs-6"></i>
               </div>
@@ -355,7 +366,7 @@
          class="btn btn-primary flex-grow-1 py-2.5 fw-bold rounded-pill shadow-none d-flex align-items-center justify-content-center gap-2 text-white" 
          style="font-size: 0.9rem;">
         <i class="ph-bold ph-lightning fs-5"></i>
-        <span>Luyện tập phản xạ</span>
+        <span>Luyện tập tổng hợp</span>
       </a>
 
       <!-- Dropup Chọn dạng ôn tập khác -->
@@ -365,7 +376,7 @@
           <i class="ph-bold ph-cards text-primary fs-5"></i>
           <span>Các dạng khác</span>
         </button>
-        <ul class="dropdown-menu dropdown-menu-end shadow-lg rounded-4 p-2 border mb-2" style="min-width: 275px; z-index: 1050;">
+        <ul class="dropdown-menu dropdown-menu-end shadow-lg rounded-4 p-2 border mb-2" style="min-width: 280px; z-index: 1050;">
           <li>
             <div class="px-2.5 py-1 text-muted small fw-bold text-uppercase" style="font-size: 0.7rem; letter-spacing: 0.04em;">
               Chọn dạng ôn tập
@@ -373,6 +384,17 @@
           </li>
           <li>
             <a class="dropdown-item rounded-3 py-2 px-2.5 d-flex align-items-center gap-2.5" href="{{ study_base_url }}{{ delim }}mode=practice">
+              <div class="rounded-circle bg-primary-subtle text-primary d-flex align-items-center justify-content-center flex-shrink-0" style="width: 32px; height: 32px;">
+                <i class="ph-bold ph-lightning fs-6"></i>
+              </div>
+              <div>
+                <div class="fw-bold small text-dark">Luyện tập tổng hợp</div>
+                <small class="text-muted d-block" style="font-size: 0.72rem;">Kết hợp Trắc nghiệm, Đúng/Sai & Gõ từ</small>
+              </div>
+            </a>
+          </li>
+          <li>
+            <a class="dropdown-item rounded-3 py-2 px-2.5 d-flex align-items-center gap-2.5" href="{{ study_base_url }}{{ delim }}mode=reflex">
               <div class="rounded-circle bg-warning-subtle text-warning d-flex align-items-center justify-content-center flex-shrink-0" style="width: 32px; height: 32px;">
                 <i class="ph-bold ph-lightning fs-6"></i>
               </div>
@@ -472,10 +494,21 @@
               <input type="radio" name="studyMode" value="practice" class="form-check-input mt-0" onchange="handleSettingModeChange('practice')">
               <div class="flex-grow-1">
                 <div class="fw-bold text-dark small d-flex align-items-center gap-1.5">
-                  <i class="ph-bold ph-lightning text-warning"></i>
-                  <span>Luyện tập phản xạ (Practice Mode)</span>
+                  <i class="ph-bold ph-lightning text-primary"></i>
+                  <span>Luyện tập tổng hợp (Comprehensive)</span>
                 </div>
-                <div class="text-muted small" style="font-size: 0.76rem;">Vào thẳng Trắc nghiệm 4 đáp án, Đúng/Sai & Gõ từ (không lộ thẻ bài trước)</div>
+                <div class="text-muted small" style="font-size: 0.76rem;">Kết hợp Trắc nghiệm 4 đáp án, Đúng/Sai & Gõ từ vựng</div>
+              </div>
+            </label>
+
+            <label class="study-mode-option d-flex align-items-center gap-3 p-2.5 rounded-3 border cursor-pointer">
+              <input type="radio" name="studyMode" value="reflex" class="form-check-input mt-0" onchange="handleSettingModeChange('reflex')">
+              <div class="flex-grow-1">
+                <div class="fw-bold text-dark small d-flex align-items-center gap-1.5">
+                  <i class="ph-bold ph-lightning text-warning"></i>
+                  <span>Luyện tập phản xạ (Reflex Quiz)</span>
+                </div>
+                <div class="text-muted small" style="font-size: 0.76rem;">Trắc nghiệm 4 đáp án & Đúng/Sai phản xạ nhanh</div>
               </div>
             </label>
 
@@ -908,9 +941,12 @@ function applyStudyModeToButtons(mode) {
     } else if (targetMode === 'typing') {
       if (iconEl) iconEl.className = 'ph-bold ph-keyboard fs-5';
       if (textEl) textEl.textContent = 'Luyện gõ từ vựng';
-    } else {
+    } else if (targetMode === 'reflex') {
       if (iconEl) iconEl.className = 'ph-bold ph-lightning fs-5';
       if (textEl) textEl.textContent = 'Luyện tập phản xạ';
+    } else {
+      if (iconEl) iconEl.className = 'ph-bold ph-lightning fs-5';
+      if (textEl) textEl.textContent = 'Luyện tập tổng hợp';
     }
   }
 }

@@ -391,10 +391,21 @@
                 <input type="radio" name="studyMode" value="practice" class="form-check-input mt-0" onchange="changeStudyMode('practice')">
                 <div class="flex-grow-1">
                   <div class="fw-bold text-dark small d-flex align-items-center gap-1.5">
-                    <i class="ph-bold ph-lightning text-warning"></i>
-                    <span>Luyện tập phản xạ (Practice Mode)</span>
+                    <i class="ph-bold ph-lightning text-primary"></i>
+                    <span>Luyện tập tổng hợp (Comprehensive)</span>
                   </div>
-                  <div class="text-muted small" style="font-size: 0.76rem;">Vào thẳng Trắc nghiệm 4 đáp án, Đúng/Sai & Gõ từ (không lộ thẻ bài trước)</div>
+                  <div class="text-muted small" style="font-size: 0.76rem;">Kết hợp Trắc nghiệm 4 đáp án, Đúng/Sai & Gõ từ vựng</div>
+                </div>
+              </label>
+
+              <label class="study-mode-option d-flex align-items-center gap-3 p-2.5 rounded-3 border">
+                <input type="radio" name="studyMode" value="reflex" class="form-check-input mt-0" onchange="changeStudyMode('reflex')">
+                <div class="flex-grow-1">
+                  <div class="fw-bold text-dark small d-flex align-items-center gap-1.5">
+                    <i class="ph-bold ph-lightning text-warning"></i>
+                    <span>Luyện tập phản xạ (Reflex Quiz)</span>
+                  </div>
+                  <div class="text-muted small" style="font-size: 0.76rem;">Trắc nghiệm 4 đáp án & Đúng/Sai phản xạ nhanh</div>
                 </div>
               </label>
 
@@ -1030,13 +1041,24 @@ function buildActivityQueue() {
   if (!rawWordsData || rawWordsData.length === 0) return;
 
   if (currentStudyMode === 'practice') {
-    // 100% Practice Reflex Mode: Multiple Choice (4 options) + True/False
-    // Strictly NO flashcard upfront!
+    // 1. Luyện tập tổng hợp: Trắc nghiệm 4 đáp án + Đúng/Sai + Gõ từ vựng
+    const mcActivities = rawWordsData.map(w => createMultipleChoiceActivity(w));
+    const tfActivities = rawWordsData.map(w => createTrueFalseActivity(w));
+    const typingActivities = rawWordsData.map(w => ({ type: 'typing', word: w, id: w.id, originWord: w }));
+    activities = [...mcActivities, ...tfActivities, ...typingActivities];
+
+    // Shuffle queue for engaging comprehensive practice
+    for (let i = activities.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [activities[i], activities[j]] = [activities[j], activities[i]];
+    }
+  } else if (currentStudyMode === 'reflex') {
+    // 2. Luyện tập phản xạ: Trắc nghiệm 4 đáp án + Đúng/Sai nhanh
     const mcActivities = rawWordsData.map(w => createMultipleChoiceActivity(w));
     const tfActivities = rawWordsData.map(w => createTrueFalseActivity(w));
     activities = [...mcActivities, ...tfActivities];
 
-    // Shuffle queue for engaging practice
+    // Shuffle queue for quick reflex
     for (let i = activities.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
       [activities[i], activities[j]] = [activities[j], activities[i]];
@@ -1088,7 +1110,15 @@ function changeStudyMode(mode) {
 
   // Re-build session with selected mode
   initStudySession();
-  const label = mode === 'practice' ? 'Luyện tập phản xạ ⚡' : 'Học từ mới 📖';
+  const labels = {
+    'learn': 'Học từ mới 📖',
+    'practice': 'Luyện tập tổng hợp ⚡',
+    'reflex': 'Luyện tập phản xạ ⚡',
+    'flashcard': 'Thẻ Flashcard 3D 🗂️',
+    'true_false': 'Chỉ Đúng / Sai ⚡',
+    'typing': 'Chỉ Luyện gõ ✍️'
+  };
+  const label = labels[mode] || 'Học từ vựng 📖';
   showToast(`<i class="ph-bold ph-sliders text-success"></i> <span>Đã chuyển sang: ${label}!</span>`);
 }
 
@@ -1112,10 +1142,10 @@ function renderCurrentActivity() {
 
   const badgeEl = document.getElementById('activityWordIndex');
   if (badgeEl) {
-    if (currentStudyMode === 'practice') {
-      badgeEl.textContent = `Câu ${currentActivityIndex + 1} / ${activities.length}`;
-    } else {
+    if (currentStudyMode === 'learn') {
       badgeEl.textContent = `${sessionMasteredCount} / ${rawWordsData.length} đã thuộc`;
+    } else {
+      badgeEl.textContent = `Câu ${currentActivityIndex + 1} / ${activities.length}`;
     }
   }
 
@@ -1589,7 +1619,7 @@ function showCompletionSummary() {
   document.getElementById('completionCard').style.display = 'block';
   document.getElementById('studyProgressBar').style.width = '100%';
 
-  const isPractice = (currentStudyMode === 'practice');
+  const isPractice = (currentStudyMode !== 'learn');
   const headingEl = document.getElementById('completionHeading');
   const descEl = document.getElementById('completionDesc');
   if (headingEl) {
@@ -1597,7 +1627,7 @@ function showCompletionSummary() {
   }
   if (descEl) {
     descEl.innerHTML = isPractice
-      ? `Bạn vừa luyện phản xạ xuất sắc <strong class="text-dark" id="statPracticedWords">${rawWordsData.length}</strong> từ vựng của bài học.`
+      ? `Bạn vừa luyện tập xuất sắc <strong class="text-dark" id="statPracticedWords">${rawWordsData.length}</strong> từ vựng của bài học.`
       : `Bạn vừa hoàn thành toàn bộ <strong class="text-dark" id="statPracticedWords">${rawWordsData.length}</strong> từ vựng của bài học.`;
   }
 
@@ -1644,9 +1674,10 @@ function loadSavedSettings() {
 
     // Priority: Explicit URL parameter > localStorage > default ('learn')
     let activeMode = 'learn';
-    if (urlMode && ['learn', 'practice', 'flashcard', 'true_false', 'typing'].includes(urlMode)) {
+    const validModes = ['learn', 'practice', 'reflex', 'flashcard', 'true_false', 'typing'];
+    if (urlMode && validModes.includes(urlMode)) {
       activeMode = urlMode;
-    } else if (savedMode && ['learn', 'practice', 'flashcard', 'true_false', 'typing'].includes(savedMode)) {
+    } else if (savedMode && validModes.includes(savedMode)) {
       activeMode = savedMode;
     }
 
