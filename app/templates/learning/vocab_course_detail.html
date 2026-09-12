@@ -269,18 +269,17 @@
 <!-- ========================================== -->
 <div class="modal fade" id="wordDetailModal" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered" style="max-width: 480px;">
-    <div class="modal-content border rounded-4 shadow-xl text-white position-relative" 
-         style="background: #18181b; border-color: rgba(255,255,255,0.1) !important;">
+    <div class="modal-content border-0 rounded-4 shadow-lg bg-white text-dark position-relative">
       
       <!-- Header -->
       <div class="modal-header border-0 pb-0 pt-3 px-4 d-flex align-items-center justify-content-between">
-        <h4 class="fw-bold text-white mb-0" id="mWordTitle">word</h4>
+        <h4 class="fw-bold text-dark mb-0" id="mWordTitle">word</h4>
 
         <div class="d-flex align-items-center gap-1">
-          <button type="button" class="btn btn-sm text-white-50 p-1 hover-text-warning border-0" id="mFavBtn" onclick="toggleModalFavorite()" title="Lưu từ">
+          <button type="button" class="btn btn-sm text-secondary p-1 hover-text-warning border-0" id="mFavBtn" onclick="toggleModalFavorite()" title="Lưu từ">
             <i class="ph-bold ph-star fs-5" id="mFavIcon"></i>
           </button>
-          <button type="button" class="btn-close btn-close-white shadow-none ms-1" data-bs-dismiss="modal" aria-label="Close"></button>
+          <button type="button" class="btn-close shadow-none ms-1" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
       </div>
 
@@ -288,43 +287,43 @@
       <div class="modal-body px-4 py-3">
         
         <!-- Audio & Pronunciation -->
-        <div class="d-flex align-items-center justify-content-between mb-3 pb-2 border-bottom border-secondary border-opacity-25">
+        <div class="d-flex align-items-center justify-content-between mb-3 pb-2 border-bottom">
           <div class="d-flex align-items-center gap-3">
-            <div class="cursor-pointer text-white-50 hover-text-white d-flex align-items-center gap-1.5" onclick="speakModal('en-US')">
+            <div class="cursor-pointer text-muted hover-text-primary d-flex align-items-center gap-1.5" onclick="speakModal('en-US')">
               <i class="ph-fill ph-speaker-high text-primary"></i>
-              <span class="small fw-bold text-white">US</span>
-              <span class="small text-white-50 font-monospace" id="mPronUS">/pron/</span>
+              <span class="small fw-bold text-dark">US</span>
+              <span class="small text-muted font-monospace" id="mPronUS">/pron/</span>
             </div>
-            <div class="cursor-pointer text-white-50 hover-text-white d-flex align-items-center gap-1.5" onclick="speakModal('en-GB')">
+            <div class="cursor-pointer text-muted hover-text-primary d-flex align-items-center gap-1.5" onclick="speakModal('en-GB')">
               <i class="ph-fill ph-speaker-high text-primary"></i>
-              <span class="small fw-bold text-white">UK</span>
-              <span class="small text-white-50 font-monospace" id="mPronUK">/pron/</span>
+              <span class="small fw-bold text-dark">UK</span>
+              <span class="small text-muted font-monospace" id="mPronUK">/pron/</span>
             </div>
           </div>
 
           <button type="button" class="btn btn-sm rounded-pill px-3 py-1 fw-bold" 
                   id="mLearnedToggleBtn" onclick="toggleModalLearned()"
-                  style="background: #27272a; border: 1px solid rgba(255,255,255,0.15); color: #e4e4e7; font-size: 0.78rem;">
+                  style="font-size: 0.78rem;">
             Đánh dấu chưa biết
           </button>
         </div>
 
         <!-- Part of Speech & Meaning -->
-        <div class="fst-italic text-white-50 small mb-0.5" id="mPartOfSpeech">noun</div>
-        <h5 class="fw-bold mb-3 text-primary-subtle" style="font-size: 1.15rem;" id="mMeaningVi">
+        <div class="fst-italic text-muted small mb-0.5" id="mPartOfSpeech">noun</div>
+        <h5 class="fw-bold mb-3 text-primary" style="font-size: 1.15rem;" id="mMeaningVi">
           Nghĩa tiếng Việt
         </h5>
 
         <!-- Examples -->
-        <div class="p-3 rounded-3 mb-3 bg-dark border border-secondary border-opacity-25">
-          <div class="small text-white-50 fw-semibold mb-1" style="font-size: 0.75rem;">Ví dụ:</div>
-          <div class="small text-white mb-1 fw-medium" id="mExampleEn">"Example sentence"</div>
-          <div class="small text-white-50" id="mExampleVi">"Bản dịch ví dụ"</div>
+        <div class="p-3 rounded-3 mb-3 bg-light-subtle border">
+          <div class="small text-muted fw-semibold mb-1" style="font-size: 0.75rem;">Ví dụ:</div>
+          <div class="small text-dark mb-1 fw-medium fst-italic" id="mExampleEn">"Example sentence"</div>
+          <div class="small text-secondary" id="mExampleVi">"Bản dịch ví dụ"</div>
         </div>
 
         <!-- Related Words -->
         <div>
-          <div class="small text-white-50 fw-semibold mb-1.5" style="font-size: 0.78rem;">Từ liên quan:</div>
+          <div class="small text-muted fw-semibold mb-1.5" style="font-size: 0.78rem;">Từ liên quan:</div>
           <div class="d-flex flex-wrap gap-1.5" id="mRelatedWords"></div>
         </div>
 
@@ -386,7 +385,7 @@ function renderModalContent(data) {
   if (data.related_words && data.related_words.length > 0) {
     data.related_words.forEach(rw => {
       const badge = document.createElement('span');
-      badge.className = 'badge rounded-pill bg-dark border border-secondary border-opacity-50 text-white-50 px-2.5 py-1 cursor-pointer';
+      badge.className = 'badge rounded-pill bg-light border text-secondary px-2.5 py-1 cursor-pointer hover-bg-light-subtle';
       badge.textContent = rw;
       badge.onclick = () => speakWord(rw, 'en-US');
       relContainer.appendChild(badge);
@@ -398,7 +397,7 @@ function updateLearnedButtonState(isLearned) {
   const btn = document.getElementById('mLearnedToggleBtn');
   if (isLearned) {
     btn.textContent = 'Đánh dấu chưa biết';
-    btn.className = 'btn btn-sm rounded-pill px-3 py-1 fw-semibold btn-dark border border-secondary text-white-50';
+    btn.className = 'btn btn-sm rounded-pill px-3 py-1 fw-semibold btn-light border text-secondary';
   } else {
     btn.textContent = '✓ Đã học từ này';
     btn.className = 'btn btn-sm rounded-pill px-3 py-1 fw-bold btn-success text-white border-0';
