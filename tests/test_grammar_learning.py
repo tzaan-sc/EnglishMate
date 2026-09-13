@@ -88,3 +88,36 @@ def test_grammar_complete_and_favorite(client):
     with client.application.app_context():
         prog = GrammarProgress.query.filter_by(user_id=user.id, topic_id=topic_id).first()
         assert prog.is_favorite is True
+
+
+def test_grammar_exam_filters_and_metadata(client):
+    login(client)
+
+    with client.application.app_context():
+        topic = GrammarTopic.query.filter_by(title="Thì Quá Khứ Đơn (Past Simple Tense)").first()
+        if not topic:
+            topic = ensure_sample_grammar_topic()
+        topic.exam_targets = "General English, TOEIC"
+        topic.toeic_parts = "Part 5, Part 6"
+        topic.toeic_weight = "High"
+        topic.importance = "High"
+        topic.order_index = 1
+        db.session.commit()
+
+    # Test /grammar/toeic redirect
+    res_redir = client.get("/grammar/toeic", follow_redirects=False)
+    assert res_redir.status_code == 302
+    assert "exam=TOEIC" in res_redir.location
+
+    # Test /grammar?exam=TOEIC
+    res_exam = client.get("/grammar?exam=TOEIC")
+    assert res_exam.status_code == 200
+    assert "Thì Quá Khứ Đơn".encode("utf-8") in res_exam.data
+    assert "TOEIC".encode("utf-8") in res_exam.data
+    assert "Part 5, Part 6".encode("utf-8") in res_exam.data
+
+    # Test /grammar?exam=TOEIC_HIGH
+    res_high = client.get("/grammar?exam=TOEIC_HIGH")
+    assert res_high.status_code == 200
+    assert "Thì Quá Khứ Đơn".encode("utf-8") in res_high.data
+    assert "Trọng tâm: Cao".encode("utf-8") in res_high.data

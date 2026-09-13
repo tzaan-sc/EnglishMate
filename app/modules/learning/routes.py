@@ -2775,6 +2775,8 @@ def grammar_overview():
     level = request.args.get("level", "").strip()
     difficulty = request.args.get("difficulty", "").strip()
     status = request.args.get("status", "").strip()
+    exam = request.args.get("exam", "").strip()
+    toeic_weight = request.args.get("toeic_weight", "").strip()
 
     all_topics = GrammarTopic.query.filter_by(is_active=True).all()
     user_progress = GrammarProgress.query.filter_by(user_id=current_user.id).all()
@@ -2792,8 +2794,20 @@ def grammar_overview():
         query = query.filter_by(level=level)
     if difficulty:
         query = query.filter_by(difficulty=difficulty)
+    if exam:
+        if exam.upper() in ["TOEIC_HIGH", "TOEIC-HIGH"]:
+            query = query.filter(GrammarTopic.exam_targets.ilike("%TOEIC%"), GrammarTopic.toeic_weight == "High")
+        else:
+            query = query.filter(GrammarTopic.exam_targets.ilike(f"%{exam}%"))
+    if toeic_weight:
+        query = query.filter_by(toeic_weight=toeic_weight)
 
-    topics_list = query.order_by(GrammarTopic.level, GrammarTopic.id).all()
+    # Sort primarily by order_index, then level, then id
+    topics_list = query.order_by(
+        GrammarTopic.order_index.asc(),
+        GrammarTopic.level.asc(),
+        GrammarTopic.id.asc()
+    ).all()
 
     if status == "completed":
         topics_list = [t for t in topics_list if t.id in completed_ids]
@@ -2806,6 +2820,10 @@ def grammar_overview():
     completed_count = len(completed_ids)
     favorite_count = len(favorite_ids)
 
+    # Count for Goal Badges
+    toeic_high_count = sum(1 for t in all_topics if "TOEIC" in (t.exam_targets or "") and t.toeic_weight == "High")
+    toeic_total_count = sum(1 for t in all_topics if "TOEIC" in (t.exam_targets or ""))
+
     return render_template(
         "learning/grammar.html",
         topics=topics_list,
@@ -2815,12 +2833,23 @@ def grammar_overview():
         level=level,
         difficulty=difficulty,
         status=status,
+        exam=exam,
+        toeic_weight=toeic_weight,
         completed_ids=completed_ids,
         favorite_ids=favorite_ids,
         total_topics=total_topics,
         completed_count=completed_count,
         favorite_count=favorite_count,
+        toeic_high_count=toeic_high_count,
+        toeic_total_count=toeic_total_count,
     )
+
+
+@bp.route("/grammar/toeic")
+@login_required
+def grammar_toeic():
+    """Quick direct link to TOEIC grammar section"""
+    return redirect(url_for("learning.grammar_overview", exam="TOEIC"))
 
 
 @bp.route("/grammar/<int:topic_id>")

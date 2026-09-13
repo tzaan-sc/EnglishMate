@@ -90,15 +90,21 @@ def get_sample_vocabulary_data():
 
 def get_sample_grammar_data():
     headers = [
-        "title", "category", "level", "difficulty", "summary",
-        "rule_explanation", "examples_json", "common_mistakes", "tips_tricks"
+        "title", "category", "level", "difficulty", "order_index",
+        "exam_targets", "toeic_parts", "toeic_weight", "importance",
+        "summary", "rule_explanation", "examples_json", "common_mistakes", "tips_tricks"
     ]
     rows = [
         [
             "Thì Hiện Tại Hoàn Thành (Present Perfect Tense)",
-            "Các thì (Tenses)",
+            "Thì (Tenses)",
             "A2",
             "Medium",
+            3,
+            "General English, TOEIC, IELTS",
+            "Part 5, Part 6",
+            "High",
+            "High",
             "Diễn tả hành động đã xảy ra trong quá khứ nhưng có kết quả hoặc liên quan mật thiết đến hiện tại.",
             "1. CÔNG THỨC KHẲNG ĐỊNH:\nS + have / has + V3/ed + (O)\n\n2. CÔNG THỨC PHỦ ĐỊNH:\nS + have / has + not (haven't / hasn't) + V3/ed\n\n3. CÂU HỎI:\nHave / Has + S + V3/ed...?",
             "I have lived in Hanoi for 5 years.|Tôi đã sống ở Hà Nội được 5 năm.\nShe has already finished her homework.|Cô ấy đã làm xong bài tập về nhà rồi.",
@@ -107,8 +113,13 @@ def get_sample_grammar_data():
         ],
         [
             "Câu Điều Kiện Loại 2 (Conditional Type 2)",
-            "Câu điều kiện (Conditionals)",
+            "Cấu trúc câu nâng cao (Advanced Structures)",
             "B1",
+            "Medium",
+            2,
+            "General English, TOEIC, IELTS, THPT",
+            "Part 5, Part 6",
+            "Medium",
             "Medium",
             "Diễn tả giả định trái ngược với thực tế ở hiện tại hoặc khó có thể xảy ra.",
             "Mệnh đề If: If + S + V2/ed (động từ to be dùng 'were' cho mọi ngôi)\nMệnh đề chính: S + would / could + V_inf",

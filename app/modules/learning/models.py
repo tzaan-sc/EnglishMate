@@ -253,9 +253,27 @@ class GrammarTopic(db.Model):
     common_mistakes = db.Column(db.Text, nullable=True)
     tips_tricks = db.Column(db.Text, nullable=True)
     related_topic_ids = db.Column(db.String(100), nullable=True)
+
+    # Metadata for Exam Targeting & Pedagogy
+    order_index = db.Column(db.Integer, nullable=False, default=0, index=True)
+    exam_targets = db.Column(db.String(160), nullable=True, default="General English, TOEIC")
+    toeic_parts = db.Column(db.String(80), nullable=True)
+    toeic_weight = db.Column(db.String(20), nullable=True, default="Medium")
+    importance = db.Column(db.String(20), nullable=True, default="Medium")
+
     is_active = db.Column(db.Boolean, nullable=False, default=True)
     created_at = db.Column(db.DateTime(timezone=True), default=now, nullable=False)
     updated_at = db.Column(db.DateTime(timezone=True), default=now, onupdate=now, nullable=False)
+
+    def get_exam_list(self):
+        if not self.exam_targets:
+            return []
+        return [item.strip() for item in self.exam_targets.split(",") if item.strip()]
+
+    def get_toeic_parts_list(self):
+        if not self.toeic_parts:
+            return []
+        return [item.strip() for item in self.toeic_parts.split(",") if item.strip()]
 
 
 class GrammarProgress(db.Model):

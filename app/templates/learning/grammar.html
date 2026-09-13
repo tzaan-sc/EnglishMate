@@ -112,14 +112,60 @@
     </div>
   </div>
 
+  <!-- ZONE 1.5: GOAL / EXAM TARGET SWITCHER BAR -->
+  <div class="card-modern p-3 mb-3 bg-white border">
+    <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+      <div class="d-flex align-items-center gap-1.5 flex-wrap">
+        <span class="small fw-bold text-muted me-1"><i class="ph-bold ph-crosshair text-primary me-1"></i>Mục tiêu học:</span>
+        <a href="{{ url_for('learning.grammar_overview', category=category, level=level, difficulty=difficulty, status=status) }}" 
+           class="btn {{ 'btn-dark text-white' if not exam else 'btn-light border text-dark' }} btn-sm rounded-pill px-3 py-1 fw-bold">
+          Tất cả
+        </a>
+        <a href="{{ url_for('learning.grammar_overview', exam='TOEIC_HIGH', category=category, level=level, difficulty=difficulty, status=status) }}" 
+           class="btn {{ 'btn-danger text-white shadow-xs' if exam=='TOEIC_HIGH' else 'btn-outline-danger border' }} btn-sm rounded-pill px-3 py-1 fw-bold d-inline-flex align-items-center gap-1">
+          <i class="ph-bold ph-fire"></i>
+          <span>Trọng tâm TOEIC (Part 5, 6)</span>
+          {% if toeic_high_count %}
+          <span class="badge {{ 'bg-white text-danger' if exam=='TOEIC_HIGH' else 'bg-danger text-white' }} rounded-pill px-1.5 py-0.5 ms-1" style="font-size: 0.68rem;">{{ toeic_high_count }}</span>
+          {% endif %}
+        </a>
+        <a href="{{ url_for('learning.grammar_overview', exam='TOEIC', category=category, level=level, difficulty=difficulty, status=status) }}" 
+           class="btn {{ 'btn-warning text-dark fw-bold' if exam=='TOEIC' else 'btn-light border text-dark' }} btn-sm rounded-pill px-3 py-1 fw-semibold d-inline-flex align-items-center gap-1">
+          <i class="ph-bold ph-target"></i>
+          <span>TOEIC Toàn diện</span>
+          {% if toeic_total_count %}
+          <span class="badge bg-dark text-white rounded-pill px-1.5 py-0.5 ms-1" style="font-size: 0.68rem;">{{ toeic_total_count }}</span>
+          {% endif %}
+        </a>
+        <a href="{{ url_for('learning.grammar_overview', exam='General English', category=category, level=level, difficulty=difficulty, status=status) }}" 
+           class="btn {{ 'btn-primary text-white' if exam=='General English' else 'btn-light border text-dark' }} btn-sm rounded-pill px-3 py-1 fw-semibold">
+          Tiếng Anh Tổng Quát
+        </a>
+        <a href="{{ url_for('learning.grammar_overview', exam='IELTS', category=category, level=level, difficulty=difficulty, status=status) }}" 
+           class="btn {{ 'btn-primary text-white' if exam=='IELTS' else 'btn-light border text-dark' }} btn-sm rounded-pill px-3 py-1 fw-semibold">
+          IELTS
+        </a>
+        <a href="{{ url_for('learning.grammar_overview', exam='THPT', category=category, level=level, difficulty=difficulty, status=status) }}" 
+           class="btn {{ 'btn-primary text-white' if exam=='THPT' else 'btn-light border text-dark' }} btn-sm rounded-pill px-3 py-1 fw-semibold">
+          THPT Quốc Gia
+        </a>
+      </div>
+      {% if exam %}
+      <a href="{{ url_for('learning.grammar_overview', category=category, level=level, difficulty=difficulty, status=status) }}" class="btn btn-sm btn-link text-decoration-none text-muted py-0 px-1">
+        <i class="ph-bold ph-arrow-counter-clockwise me-1"></i>Xem tất cả
+      </a>
+      {% endif %}
+    </div>
+  </div>
+
   <!-- ZONE 2: CATEGORY PILLS QUICK FILTER -->
   <div class="d-flex gap-2 flex-wrap mb-4 align-items-center">
     <span class="text-muted small fw-bold me-1" style="font-size: 0.78rem;">Danh mục:</span>
-    <a href="{{ url_for('learning.grammar_overview') }}" class="btn {{ 'btn-primary text-white shadow-xs' if not category else 'btn-light border text-secondary' }} rounded-pill px-3.5 py-1.5 fw-bold" style="font-size: 0.82rem;">
+    <a href="{{ url_for('learning.grammar_overview', exam=exam, level=level, difficulty=difficulty, status=status) }}" class="btn {{ 'btn-primary text-white shadow-xs' if not category else 'btn-light border text-secondary' }} rounded-pill px-3.5 py-1.5 fw-bold" style="font-size: 0.82rem;">
       Tất cả danh mục
     </a>
     {% for cat in categories %}
-    <a href="{{ url_for('learning.grammar_overview', category=cat) }}" class="btn {{ 'btn-primary text-white shadow-xs' if category==cat else 'btn-light border text-secondary' }} rounded-pill px-3.5 py-1.5 fw-semibold transition-hover" style="font-size: 0.82rem;">
+    <a href="{{ url_for('learning.grammar_overview', category=cat, exam=exam, level=level, difficulty=difficulty, status=status) }}" class="btn {{ 'btn-primary text-white shadow-xs' if category==cat else 'btn-light border text-secondary' }} rounded-pill px-3.5 py-1.5 fw-semibold transition-hover" style="font-size: 0.82rem;">
       {{ cat }}
     </a>
     {% endfor %}
@@ -128,6 +174,8 @@
   <!-- SEARCH & FILTER CONTROLS BAR -->
   <div class="card-modern p-4 mb-5">
     <form method="get" action="{{ url_for('learning.grammar_overview') }}" class="row g-3 align-items-center">
+      {% if exam %}<input type="hidden" name="exam" value="{{ exam }}">{% endif %}
+      {% if category %}<input type="hidden" name="category" value="{{ category }}">{% endif %}
       <!-- Search Input -->
       <div class="col-md-4">
         <label class="form-label small fw-bold text-muted mb-1">Tìm chủ đề ngữ pháp</label>
@@ -215,13 +263,37 @@
             </div>
           </div>
 
-          <!-- Category, Title & Summary (Optimized for 60-75 char reading) -->
+          <!-- Category, Title & Summary -->
           <span class="text-primary small d-block mb-1 fw-bold text-uppercase" style="font-size: 0.74rem; letter-spacing: 0.04em;">
             {{ topic.category }}
           </span>
-          <h5 class="fw-bold text-dark mb-2" style="font-size: 1.18rem; letter-spacing: -0.01em; line-height: 1.4;">
+          <h5 class="fw-bold text-dark mb-2" style="font-size: 1.15rem; letter-spacing: -0.01em; line-height: 1.4;">
             {{ topic.title }}
           </h5>
+
+          <!-- Metadata Badges: Exam, TOEIC Parts, Weight -->
+          <div class="d-flex flex-wrap gap-1.5 mb-2.5">
+            {% if topic.exam_targets and 'TOEIC' in topic.exam_targets %}
+              <span class="badge bg-warning-subtle text-dark border border-warning-subtle rounded-pill px-2 py-0.5 fw-semibold d-inline-flex align-items-center gap-1" style="font-size: 0.72rem;">
+                <i class="ph-bold ph-target text-warning"></i>TOEIC
+              </span>
+            {% endif %}
+            {% if topic.toeic_parts %}
+              <span class="badge bg-light text-secondary border rounded-pill px-2 py-0.5 fw-medium" style="font-size: 0.72rem;">
+                {{ topic.toeic_parts }}
+              </span>
+            {% endif %}
+            {% if topic.toeic_weight == 'High' %}
+              <span class="badge bg-danger-subtle text-danger border border-danger-subtle rounded-pill px-2 py-0.5 fw-bold d-inline-flex align-items-center gap-1" style="font-size: 0.72rem;">
+                <i class="ph-bold ph-fire"></i>Trọng tâm: Cao
+              </span>
+            {% elif topic.toeic_weight == 'Medium' and topic.exam_targets and 'TOEIC' in topic.exam_targets %}
+              <span class="badge bg-secondary-subtle text-secondary rounded-pill px-2 py-0.5" style="font-size: 0.7rem;">
+                Trọng tâm: TB
+              </span>
+            {% endif %}
+          </div>
+
           <p class="text-secondary small mb-3" style="font-size: 0.88rem; line-height: 1.6; color: #475569; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;">
             {{ topic.summary }}
           </p>

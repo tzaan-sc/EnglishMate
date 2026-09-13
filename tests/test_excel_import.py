@@ -138,7 +138,12 @@ def test_commit_grammar_import(client):
                 "rule_explanation": "Bắt đầu bằng That, What, Where, When, Why, How, Whether/If...",
                 "examples_json": "What he said surprised everyone.|Những gì anh ấy nói làm mọi người ngạc nhiên.",
                 "common_mistakes": "Nhầm lẫn trật tự từ trong mệnh đề danh từ.",
-                "tips_tricks": "Luôn dùng trật tự khẳng định S + V sau từ để hỏi."
+                "tips_tricks": "Luôn dùng trật tự khẳng định S + V sau từ để hỏi.",
+                "order_index": "5",
+                "exam_targets": "General English, TOEIC, IELTS",
+                "toeic_parts": "Part 5, Part 6",
+                "toeic_weight": "High",
+                "importance": "High"
             }
         }
     ]
@@ -156,6 +161,11 @@ def test_commit_grammar_import(client):
         assert topic is not None
         assert topic.category == "Mệnh đề (Clauses)"
         assert topic.difficulty == "Hard"
+        assert topic.order_index == 5
+        assert "TOEIC" in topic.exam_targets
+        assert topic.toeic_parts == "Part 5, Part 6"
+        assert topic.toeic_weight == "High"
+        assert topic.importance == "High"
 
 
 def test_commit_lessons_import(client):

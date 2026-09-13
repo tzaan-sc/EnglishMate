@@ -21,7 +21,11 @@ CONTENT_SCHEMAS = {
     "grammar": {
         "title": "Ngữ pháp (Grammar Topics)",
         "required_columns": ["title", "category", "level", "difficulty", "summary", "rule_explanation", "examples_json"],
-        "optional_columns": ["common_mistakes", "tips_tricks"],
+        "optional_columns": [
+            "common_mistakes", "tips_tricks",
+            "order_index", "order", "exam_targets", "exam", "exams",
+            "toeic_parts", "toeic_weight", "importance"
+        ],
         "level_valid": ["A1", "A2", "B1", "B2", "C1", "C2"],
         "difficulty_valid": ["Easy", "Medium", "Hard"],
     },
@@ -51,6 +55,15 @@ CONTENT_SCHEMAS = {
         "difficulty_valid": ["Easy", "Medium", "Hard"],
         "correct_answer_valid": ["A", "B", "C", "D"],
     }
+}
+
+HEADER_ALIASES = {
+    "examples": "examples_json",
+    "order": "order_index",
+    "exam": "exam_targets",
+    "exams": "exam_targets",
+    "description": "summary",
+    "name": "title",
 }
 
 
@@ -299,7 +312,7 @@ def parse_and_validate_csv(file_stream, content_type):
             "error": "File CSV trống, không có dữ liệu."
         }
 
-    raw_headers = [str(h or "").strip().lower() for h in rows[0]]
+    raw_headers = [HEADER_ALIASES.get(str(h or "").strip().lower(), str(h or "").strip().lower()) for h in rows[0]]
     missing_cols = [col for col in schema["required_columns"] if col not in raw_headers]
     if missing_cols:
         return {
@@ -458,7 +471,7 @@ def parse_and_validate_excel(file_stream, content_type):
         }
 
     # Header check
-    raw_headers = [str(h or "").strip().lower() for h in rows[0]]
+    raw_headers = [HEADER_ALIASES.get(str(h or "").strip().lower(), str(h or "").strip().lower()) for h in rows[0]]
     missing_cols = [col for col in schema["required_columns"] if col not in raw_headers]
     if missing_cols:
         return {
@@ -588,6 +601,19 @@ def commit_import_records(content_type, valid_records, user_id=None, mode="inser
             existing = GrammarTopic.query.filter_by(title=title_str).first()
             norm_examples = _normalize_grammar_examples(d.get("examples_json", ""))
 
+            # Safe order_index parsing
+            order_idx = 0
+            if d.get("order_index"):
+                try:
+                    order_idx = int(float(d["order_index"]))
+                except (ValueError, TypeError):
+                    order_idx = 0
+
+            exam_targets_val = (d.get("exam_targets") or "General English, TOEIC").strip()
+            toeic_parts_val = d.get("toeic_parts").strip() if d.get("toeic_parts") else None
+            toeic_weight_val = (d.get("toeic_weight") or "Medium").strip().title()
+            importance_val = (d.get("importance") or "Medium").strip().title()
+
             if existing and mode == "insert_or_update":
                 existing.category = d.get("category", existing.category)
                 existing.level = d.get("level", existing.level)
@@ -600,6 +626,16 @@ def commit_import_records(content_type, valid_records, user_id=None, mode="inser
                     existing.common_mistakes = d["common_mistakes"]
                 if d.get("tips_tricks"):
                     existing.tips_tricks = d["tips_tricks"]
+                if d.get("order_index") is not None:
+                    existing.order_index = order_idx
+                if d.get("exam_targets"):
+                    existing.exam_targets = exam_targets_val
+                if d.get("toeic_parts") is not None:
+                    existing.toeic_parts = toeic_parts_val
+                if d.get("toeic_weight"):
+                    existing.toeic_weight = toeic_weight_val
+                if d.get("importance"):
+                    existing.importance = importance_val
                 updated_count += 1
             elif not existing:
                 item = GrammarTopic(
@@ -612,6 +648,11 @@ def commit_import_records(content_type, valid_records, user_id=None, mode="inser
                     examples_json=norm_examples,
                     common_mistakes=d.get("common_mistakes") or None,
                     tips_tricks=d.get("tips_tricks") or None,
+                    order_index=order_idx,
+                    exam_targets=exam_targets_val,
+                    toeic_parts=toeic_parts_val,
+                    toeic_weight=toeic_weight_val,
+                    importance=importance_val,
                     is_active=True,
                 )
                 db.session.add(item)
