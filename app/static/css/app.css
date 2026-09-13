@@ -618,18 +618,214 @@ a:hover {
     margin-top: 70px
 }
 
+/* ==========================================================================
+   Modern Toast Notifications (Floating Top-Right Stack)
+   ========================================================================== */
 .flash-stack {
     position: fixed;
-    top: 86px;
-    left: 50%;
-    transform: translateX(-50%);
-    z-index: 1050;
-    max-width: 650px
+    top: 76px;
+    right: 24px;
+    z-index: 1095;
+    width: 380px;
+    max-width: calc(100vw - 32px);
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    pointer-events: none;
 }
 
-.flash-stack .alert {
-    border: 0;
-    border-radius: 14px
+@media (max-width: 576px) {
+    .flash-stack {
+        top: 70px;
+        right: 16px;
+        left: 16px;
+        width: auto;
+        max-width: none;
+    }
+}
+
+.flash-toast {
+    position: relative;
+    pointer-events: auto;
+    background: #ffffff !important;
+    border-radius: 16px !important;
+    padding: 14px 16px !important;
+    display: flex !important;
+    align-items: flex-start !important;
+    gap: 12px !important;
+    box-shadow: 0 14px 36px -4px rgba(15, 23, 42, 0.18), 0 4px 12px -2px rgba(15, 23, 42, 0.08) !important;
+    border: 1px solid #e2e8f0 !important;
+    border-left-width: 5px !important;
+    margin-bottom: 0 !important;
+    overflow: hidden;
+    animation: toastSlideInRight 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.flash-toast:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 18px 40px -4px rgba(15, 23, 42, 0.22), 0 6px 16px -2px rgba(15, 23, 42, 0.1) !important;
+}
+
+@keyframes toastSlideInRight {
+    from {
+        opacity: 0;
+        transform: translateX(100%) scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0) scale(1);
+    }
+}
+
+/* Toast Icon Badge */
+.flash-toast-icon {
+    width: 38px;
+    height: 38px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    font-size: 1.25rem;
+}
+
+/* Toast Content */
+.flash-toast-content {
+    flex: 1;
+    min-width: 0;
+    padding-right: 14px;
+}
+
+.flash-toast-title {
+    font-size: 0.88rem;
+    font-weight: 700;
+    line-height: 1.25;
+    margin-bottom: 3px;
+    letter-spacing: -0.01em;
+}
+
+.flash-toast-message {
+    font-size: 0.84rem;
+    color: #334155;
+    line-height: 1.45;
+    word-break: break-word;
+}
+
+/* Close button */
+.flash-toast .btn-close {
+    position: absolute;
+    top: 14px;
+    right: 14px;
+    padding: 6px;
+    background-size: 0.7rem;
+    opacity: 0.45;
+    transition: opacity 0.15s ease;
+    z-index: 2;
+}
+
+.flash-toast .btn-close:hover {
+    opacity: 0.85;
+}
+
+/* Animated Progress Countdown */
+.flash-toast-progress {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    height: 3px;
+    width: 100%;
+    opacity: 0.75;
+    transform-origin: left;
+    animation: toastProgress 4.5s linear forwards;
+}
+
+@keyframes toastProgress {
+    from {
+        transform: scaleX(1);
+    }
+    to {
+        transform: scaleX(0);
+    }
+}
+
+/* Distinct High-Contrast Themes (Stand out from page background) */
+/* 1. SUCCESS: Emerald Theme */
+.flash-toast-success {
+    border-left-color: #059669 !important;
+}
+.flash-toast-success .flash-toast-icon {
+    background: #ecfdf5;
+    color: #059669;
+    box-shadow: 0 2px 6px rgba(5, 150, 105, 0.18);
+}
+.flash-toast-success .flash-toast-title {
+    color: #064e3b;
+}
+.flash-toast-success .flash-toast-progress {
+    background: #059669;
+}
+
+/* 2. DANGER / ERROR: Vivid Crimson Red Theme */
+.flash-toast-danger,
+.flash-toast-error {
+    border-left-color: #ef4444 !important;
+}
+.flash-toast-danger .flash-toast-icon,
+.flash-toast-error .flash-toast-icon {
+    background: #fef2f2;
+    color: #dc2626;
+    box-shadow: 0 2px 6px rgba(220, 38, 38, 0.18);
+}
+.flash-toast-danger .flash-toast-title,
+.flash-toast-error .flash-toast-title {
+    color: #991b1b;
+}
+.flash-toast-danger .flash-toast-progress,
+.flash-toast-error .flash-toast-progress {
+    background: #ef4444;
+}
+
+/* 3. WARNING: Warm Amber / Gold Theme */
+.flash-toast-warning {
+    border-left-color: #f59e0b !important;
+}
+.flash-toast-warning .flash-toast-icon {
+    background: #fffbeb;
+    color: #d97706;
+    box-shadow: 0 2px 6px rgba(217, 119, 6, 0.18);
+}
+.flash-toast-warning .flash-toast-title {
+    color: #78350f;
+}
+.flash-toast-warning .flash-toast-progress {
+    background: #f59e0b;
+}
+
+/* 4. INFO: Vibrant Royal Blue Theme */
+.flash-toast-info {
+    border-left-color: #3b82f6 !important;
+}
+.flash-toast-info .flash-toast-icon {
+    background: #eff6ff;
+    color: #2563eb;
+    box-shadow: 0 2px 6px rgba(37, 99, 235, 0.18);
+}
+.flash-toast-info .flash-toast-title {
+    color: #1e3a8a;
+}
+.flash-toast-info .flash-toast-progress {
+    background: #3b82f6;
+}
+
+/* Fallback for unclassed alerts inside flash-stack */
+.flash-stack .alert:not(.flash-toast) {
+    pointer-events: auto;
+    background: #ffffff !important;
+    border-radius: 16px !important;
+    border: 1px solid #cbd5e1 !important;
+    box-shadow: 0 14px 36px -4px rgba(15, 23, 42, 0.18) !important;
+    color: #0f172a !important;
 }
 
 .eyebrow {

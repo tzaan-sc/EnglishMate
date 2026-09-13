@@ -15,7 +15,7 @@
   <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.1/src/duotone/style.css">
   <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.1/src/light/style.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/app.css') }}?v=2.1">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/app.css') }}?v=2.2">
 </head>
 <body class="{% block body_class %}{% endblock %}">
   {% if current_user.is_authenticated %}
@@ -210,12 +210,34 @@
     </nav>
   {% endif %}
 
-  <!-- Flash Messages Stack (Unified) -->
-  <div class="{% if current_user.is_authenticated %}flash-stack px-3 mt-3{% else %}flash-stack container mt-3{% endif %}">
+  <!-- Flash Toast Notification Engine (Top-Right Floating Stack) -->
+  <div class="flash-stack" id="flashStack" aria-live="polite" aria-atomic="true">
     {% for category, message in get_flashed_messages(with_categories=true) %}
-      <div class="alert alert-{{ category }} alert-dismissible fade show shadow-sm" role="alert">
-        {{ message|safe }}
-        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+      {% set cat = 'danger' if category in ['error', 'danger'] else (category if category in ['success', 'warning', 'info'] else 'info') %}
+      <div class="flash-toast flash-toast-{{ cat }} alert alert-dismissible fade show" role="alert">
+        <div class="flash-toast-icon">
+          {% if cat == 'success' %}
+            <i class="ph-fill ph-check-circle"></i>
+          {% elif cat == 'danger' %}
+            <i class="ph-fill ph-x-circle"></i>
+          {% elif cat == 'warning' %}
+            <i class="ph-fill ph-warning-circle"></i>
+          {% else %}
+            <i class="ph-fill ph-info"></i>
+          {% endif %}
+        </div>
+        <div class="flash-toast-content">
+          <div class="flash-toast-title">
+            {% if cat == 'success' %}Thành công
+            {% elif cat == 'danger' %}Có lỗi xảy ra
+            {% elif cat == 'warning' %}Lưu ý
+            {% else %}Thông báo
+            {% endif %}
+          </div>
+          <div class="flash-toast-message">{{ message|safe }}</div>
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Đóng"></button>
+        <div class="flash-toast-progress"></div>
       </div>
     {% endfor %}
   </div>
