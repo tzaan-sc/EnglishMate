@@ -3,7 +3,7 @@ from datetime import date, datetime, timedelta, timezone
 
 from flask import abort, flash, jsonify, redirect, render_template, request, session, url_for
 from flask_login import current_user, login_required
-from sqlalchemy import func
+from sqlalchemy import func, or_
 
 from ...extensions import db, csrf
 from ..auth.models import record_daily_activity
@@ -2765,6 +2765,145 @@ Applicants must submit their resume before Friday.|Ứng viên phải nộp hồ
     db.session.commit()
 
 
+# ==============================================================================
+# 12 MAJOR GRAMMAR CATEGORIES CATALOG
+# ==============================================================================
+GRAMMAR_12_CATEGORIES = [
+    {
+        "id": 1,
+        "name": "Từ loại (Parts of Speech)",
+        "name_en": "Parts of Speech",
+        "icon": "ph-bold ph-text-aa",
+        "badge": "TOEIC Part 5 (30% đề thi)",
+        "badge_color": "warning",
+        "desc": "Noun (Danh từ), Pronoun (Đại từ), Verb (Động từ), Adjective (Tính từ), Adverb (Trạng từ), Preposition, Conjunction, Determiner.",
+        "keywords": ["Từ loại", "Parts of Speech", "Noun", "Pronoun", "Adjective", "Adverb"],
+        "subtopics": ["Danh từ (Noun)", "Đại từ (Pronoun)", "Động từ (Verb)", "Tính từ (Adjective)", "Trạng từ (Adverb)", "Giới từ", "Liên từ", "Từ hạn định"]
+    },
+    {
+        "id": 2,
+        "name": "Cấu trúc câu (Sentence Structure)",
+        "name_en": "Sentence Structure",
+        "icon": "ph-bold ph-tree-structure",
+        "badge": "Nền tảng câu",
+        "badge_color": "info",
+        "desc": "5 mẫu câu cơ bản (S+V, S+V+O, S+V+C, S+V+O+O, S+V+O+C), Câu đơn, câu ghép, câu phức & thành phần câu.",
+        "keywords": ["Cấu trúc câu", "Sentence Structure", "Mẫu câu", "Thành phần câu"],
+        "subtopics": ["S + V", "S + V + O", "S + V + C", "S + V + O + O", "S + V + O + C", "Câu đơn / ghép / phức"]
+    },
+    {
+        "id": 3,
+        "name": "Thì (Tenses)",
+        "name_en": "12 English Tenses",
+        "icon": "ph-bold ph-clock",
+        "badge": "Trọng tâm TOEIC Part 5-6",
+        "badge_color": "success",
+        "desc": "12 thì tiếng Anh chuẩn xác: Hiện tại đơn, Tiếp diễn, Hoàn thành, Quá khứ đơn, Tương lai đơn...",
+        "keywords": ["Thì", "Tenses", "Các thì", "Present Simple", "Past Simple", "Continuous", "Perfect"],
+        "subtopics": ["Present Simple", "Present Continuous", "Present Perfect", "Past Simple", "Past Continuous", "Past Perfect", "Future Simple..."]
+    },
+    {
+        "id": 4,
+        "name": "Động từ (Verbs)",
+        "name_en": "Verbs & Verb Patterns",
+        "icon": "ph-bold ph-lightning",
+        "badge": "Cốt lõi hành động",
+        "badge_color": "warning",
+        "desc": "Động từ thường / to be, Transitive/Intransitive, Linking verbs, Modal verbs, Phrasal verbs, Gerund, Infinitive.",
+        "keywords": ["Động từ", "Verbs", "Modals", "Khuyết thiếu", "Gerund", "Infinitive", "Phrasal"],
+        "subtopics": ["Động từ to be / thường", "Linking verbs", "Modal verbs", "Phrasal verbs", "Gerund (V-ing)", "To-Infinitive"]
+    },
+    {
+        "id": 5,
+        "name": "Danh từ & Mạo từ (Nouns & Articles)",
+        "name_en": "Nouns & Articles",
+        "icon": "ph-bold ph-books",
+        "badge": "TOEIC Part 5",
+        "badge_color": "primary",
+        "desc": "Countable/Uncountable nouns, Singular/Plural, Possessive nouns, a/an/the, Zero article, Quantifiers (much, many, few...).",
+        "keywords": ["Danh từ & Mạo từ", "Nouns & Articles", "Mạo từ", "Articles", "Quantifiers"],
+        "subtopics": ["Countable / Uncountable", "Singular / Plural", "a / an / the", "Zero article", "Quantifiers: much, many, few..."]
+    },
+    {
+        "id": 6,
+        "name": "Đại từ & Từ hạn định (Pronouns & Determiners)",
+        "name_en": "Pronouns & Determiners",
+        "icon": "ph-bold ph-identification-card",
+        "badge": "Bẫy đại từ TOEIC",
+        "badge_color": "purple",
+        "desc": "Personal pronouns, Possessive pronouns, Reflexive pronouns, Demonstratives, Indefinite (each, every, some, any, no).",
+        "keywords": ["Đại từ & Từ hạn định", "Pronouns & Determiners", "Đại từ", "Từ hạn định"],
+        "subtopics": ["Personal pronouns", "Possessive pronouns", "Reflexive pronouns", "Demonstratives", "each / every", "some / any / no"]
+    },
+    {
+        "id": 7,
+        "name": "Tính từ & Trạng từ (Adjectives & Adverbs)",
+        "name_en": "Adjectives & Adverbs",
+        "icon": "ph-bold ph-paint-brush",
+        "badge": "Bẫy so sánh Part 5",
+        "badge_color": "danger",
+        "desc": "Vị trí tính từ, vị trí trạng từ, Adjective vs Adverb, Cấp so sánh (Comparative, Superlative, as...as), too/enough, so/such.",
+        "keywords": ["Tính từ & Trạng từ", "Adjectives & Adverbs", "So sánh", "Comparative", "Superlative"],
+        "subtopics": ["Vị trí tính từ / trạng từ", "Adjective vs Adverb", "Comparative (Hơn)", "Superlative (Nhất)", "too / enough", "so / such"]
+    },
+    {
+        "id": 8,
+        "name": "Giới từ (Prepositions)",
+        "name_en": "Prepositions",
+        "icon": "ph-bold ph-compass",
+        "badge": "Học thuộc cụm từ",
+        "badge_color": "danger",
+        "desc": "Prepositions of time, place, direction, Prepositions after verbs, Prepositions after adjectives, Cụm giới từ cố định.",
+        "keywords": ["Giới từ", "Prepositions"],
+        "subtopics": ["Prepositions of time", "Prepositions of place", "Prepositions after verbs", "Prepositions after adjectives", "Cụm giới từ thường gặp"]
+    },
+    {
+        "id": 9,
+        "name": "Câu bị động (Passive Voice)",
+        "name_en": "Passive Voice",
+        "icon": "ph-bold ph-arrows-clockwise",
+        "badge": "Trọng tâm TOEIC 70%",
+        "badge_color": "primary",
+        "desc": "Passive cơ bản, Passive theo các thì, Modal + Passive, Passive với 2 tân ngữ, Get passive, Causative have/get done.",
+        "keywords": ["Câu bị động", "Passive Voice", "Passive", "Bị động"],
+        "subtopics": ["Passive cơ bản", "Passive theo thì", "Modal + Passive", "Passive với 2 tân ngữ", "Get passive", "Causative (have/get done)"]
+    },
+    {
+        "id": 10,
+        "name": "Mệnh đề & Liên từ (Clauses & Conjunctions)",
+        "name_en": "Clauses & Conjunctions",
+        "icon": "ph-bold ph-intersect",
+        "badge": "Mệnh đề quan hệ",
+        "badge_color": "success",
+        "desc": "Relative clauses (Mệnh đề quan hệ), Noun clauses, Adverb clauses, Defining/Non-defining, because/although/while/if/unless.",
+        "keywords": ["Mệnh đề & Liên từ", "Clauses & Conjunctions", "Mệnh đề", "Liên từ", "Relative clauses"],
+        "subtopics": ["Relative clauses", "Noun clauses", "Adverb clauses", "Defining / Non-defining", "because / although / while...", "if / unless..."]
+    },
+    {
+        "id": 11,
+        "name": "Cấu trúc câu nâng cao (Advanced Structures)",
+        "name_en": "Advanced Structures",
+        "icon": "ph-bold ph-sparkle",
+        "badge": "Điểm 700+ TOEIC",
+        "badge_color": "dark",
+        "desc": "Conditional sentences (If 1,2,3), Wish / If only, Reported speech (Gián tiếp), Inversion (Đảo ngữ), Cleft sentences, Subjunctive.",
+        "keywords": ["Cấu trúc câu nâng cao", "Advanced Structures", "Nâng cao", "Điều kiện", "Đảo ngữ", "Inversion", "Wish", "Subjunctive"],
+        "subtopics": ["Conditional sentences", "Wish / If only", "Reported speech", "Inversion (Đảo ngữ)", "Cleft sentences", "Subjunctive"]
+    },
+    {
+        "id": 12,
+        "name": "Cấu trúc đặc biệt & Ngữ pháp ứng dụng",
+        "name_en": "Special Structures & Applied Grammar",
+        "icon": "ph-bold ph-puzzle-piece",
+        "badge": "Ngữ pháp ứng dụng",
+        "badge_color": "warning",
+        "desc": "Question forms, Tag questions (Hỏi đuôi), Imperatives, There is/are, Used to / Be used to, Would rather, Both/Either/Neither.",
+        "keywords": ["Cấu trúc đặc biệt", "Ngữ pháp ứng dụng", "Special Structures", "Question forms", "Tag questions", "Used to"],
+        "subtopics": ["Question forms", "Tag questions", "There is / There are", "Used to / Be used to", "Would rather / Had better", "Both / Either / Neither"]
+    }
+]
+
+
 @bp.route("/grammar")
 @login_required
 def grammar_overview():
@@ -2777,19 +2916,51 @@ def grammar_overview():
     status = request.args.get("status", "").strip()
     exam = request.args.get("exam", "").strip()
     toeic_weight = request.args.get("toeic_weight", "").strip()
+    tab = request.args.get("tab", "").strip()  # "categories" or "topics"
 
     all_topics = GrammarTopic.query.filter_by(is_active=True).all()
     user_progress = GrammarProgress.query.filter_by(user_id=current_user.id).all()
     completed_ids = {p.topic_id for p in user_progress if p.is_completed}
     favorite_ids = {p.topic_id for p in user_progress if p.is_favorite}
 
-    categories = [r[0] for r in db.session.query(GrammarTopic.category).distinct().all()]
+    # Find matched category if category is specified
+    selected_category = None
+    if category:
+        selected_category = next(
+            (c for c in GRAMMAR_12_CATEGORIES if c["name"].lower() == category.lower() or any(k.lower() in category.lower() for k in c["keywords"])),
+            None
+        )
 
+    # Determine view mode: "categories" (12 big categories grid) or "topics" (subtopics list)
+    if category or q or exam or level or difficulty or status or tab == "topics":
+        view_mode = "topics"
+    else:
+        view_mode = "categories"
+
+    # Compute statistics for 12 categories
+    categories_catalog = []
+    for c in GRAMMAR_12_CATEGORIES:
+        c_copy = dict(c)
+        c_topics = [
+            t for t in all_topics
+            if t.category == c["name"] or any(k.lower() in (t.category or "").lower() for k in c["keywords"])
+        ]
+        c_copy["topic_count"] = len(c_topics)
+        c_copy["completed_count"] = sum(1 for t in c_topics if t.id in completed_ids)
+        c_copy["progress"] = int(c_copy["completed_count"] / c_copy["topic_count"] * 100) if c_copy["topic_count"] > 0 else 0
+        categories_catalog.append(c_copy)
+
+    # Query for subtopics
     query = GrammarTopic.query.filter_by(is_active=True)
     if q:
         query = query.filter(GrammarTopic.title.ilike(f"%{q}%") | GrammarTopic.summary.ilike(f"%{q}%"))
     if category:
-        query = query.filter_by(category=category)
+        if selected_category:
+            cat_filters = [GrammarTopic.category == category, GrammarTopic.category == selected_category["name"]]
+            cat_filters.extend([GrammarTopic.category.ilike(f"%{k}%") for k in selected_category["keywords"]])
+            query = query.filter(or_(*cat_filters))
+        else:
+            query = query.filter_by(category=category)
     if level:
         query = query.filter_by(level=level)
     if difficulty:
@@ -2824,8 +2995,14 @@ def grammar_overview():
     toeic_high_count = sum(1 for t in all_topics if "TOEIC" in (t.exam_targets or "") and t.toeic_weight == "High")
     toeic_total_count = sum(1 for t in all_topics if "TOEIC" in (t.exam_targets or ""))
 
+    # Distinct categories in DB for fallback
+    categories = [r[0] for r in db.session.query(GrammarTopic.category).distinct().all()]
+
     return render_template(
         "learning/grammar.html",
+        view_mode=view_mode,
+        categories_catalog=categories_catalog,
+        selected_category=selected_category,
         topics=topics_list,
         categories=categories,
         q=q,

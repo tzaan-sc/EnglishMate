@@ -121,3 +121,25 @@ def test_grammar_exam_filters_and_metadata(client):
     assert res_high.status_code == 200
     assert "Thì Quá Khứ Đơn".encode("utf-8") in res_high.data
     assert "Trọng tâm: Cao".encode("utf-8") in res_high.data
+
+
+def test_grammar_12_categories_overview_and_drilldown(client):
+    login(client)
+
+    with client.application.app_context():
+        ensure_sample_grammar_topic()
+
+    # 1. Overview shows 12 major categories
+    res = client.get("/grammar")
+    assert res.status_code == 200
+    assert "Danh mục Ngữ pháp Lớn".encode("utf-8") in res.data
+    assert "Thì (Tenses)".encode("utf-8") in res.data
+    assert "Từ loại (Parts of Speech)".encode("utf-8") in res.data
+    assert "Câu bị động (Passive Voice)".encode("utf-8") in res.data
+
+    # 2. Drill down into specific category shows subtopics
+    res_drill = client.get("/grammar?category=Thì+(Tenses)")
+    assert res_drill.status_code == 200
+    assert "Quay lại 12 Danh mục".encode("utf-8") in res_drill.data
+    assert "Thì Quá Khứ Đơn".encode("utf-8") in res_drill.data
+    assert "Học ngay".encode("utf-8") in res_drill.data
