@@ -2,6 +2,24 @@
 {% block title %}Tài Liệu Tra Cứu Ngữ Pháp · EnglishMate{% endblock %}
 
 {% block content %}
+<style>
+  /* Synchronized Reference Card Styling */
+  .reference-card {
+    background: #ffffff;
+    border: 1.5px solid #cbd5e1 !important;
+    border-radius: 16px !important;
+    box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04), 0 4px 12px rgba(15, 23, 42, 0.03);
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+  }
+
+  .reference-card-hover:hover {
+    border-color: #6366f1 !important;
+    box-shadow: 0 10px 24px rgba(99, 102, 241, 0.12), 0 2px 6px rgba(0, 0, 0, 0.04);
+    transform: translateY(-3px);
+  }
+</style>
+
 <div class="container-fluid max-w-6xl py-4">
 
   <!-- Breadcrumb Navigation -->
@@ -56,7 +74,7 @@
   </div>
 
   <!-- Search Bar -->
-  <div class="card border-0 shadow-sm rounded-4 p-4 bg-white mb-4">
+  <div class="reference-card p-4 mb-4">
     <form method="get" action="{{ url_for('learning.grammar_reference_index') }}" class="row g-3 align-items-center">
       <div class="col-md-9">
         <div class="input-group">
@@ -76,24 +94,24 @@
   <div class="row g-4 mb-4">
     {% for rule in rules %}
     <div class="col-md-6 col-lg-4">
-      <article class="card border-0 shadow-xs rounded-4 p-4 h-100 bg-white d-flex flex-column justify-content-between hover-shadow transition">
+      <article class="reference-card reference-card-hover p-4 h-100 d-flex flex-column justify-content-between">
         <div>
           <div class="d-flex justify-content-between align-items-center mb-2">
-            <span class="badge bg-primary-subtle text-primary rounded-pill px-2.5 py-1 fw-bold small">{{ rule.category }}</span>
+            <span class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill px-2.5 py-0.5 fw-bold small">{{ rule.category }}</span>
             <button type="button" class="btn btn-link p-0 text-decoration-none btn-bm-rule" data-rule-id="{{ rule.id }}" title="Bookmark quy tắc">
               <i class="ph-fill ph-bookmark fs-5 {{ 'text-warning' if rule.id in bm_rule_ids else 'text-muted opacity-50' }}"></i>
             </button>
           </div>
 
           <h5 class="fw-bold text-dark mb-2 line-clamp-2">{{ rule.title }}</h5>
-          <p class="text-secondary small mb-3 line-clamp-3">{{ rule.summary }}</p>
+          <p class="text-secondary small mb-3" style="line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">{{ rule.summary }}</p>
         </div>
 
-        <div class="pt-3 border-top d-flex align-items-center justify-content-between">
-          <a href="{{ url_for('learning.grammar_rule_detail', rule_id=rule.id) }}" class="btn btn-sm btn-outline-primary rounded-pill px-3 fw-bold">
+        <div class="pt-3 border-top border-light d-flex align-items-center justify-content-between mt-auto">
+          <a href="{{ url_for('learning.grammar_rule_detail', rule_id=rule.id) }}" class="btn btn-sm btn-outline-primary rounded-pill px-3 py-1 fw-bold">
             Xem chi tiết →
           </a>
-          <a href="{{ url_for('learning.grammar_rule_print_view', rule_id=rule.id) }}" target="_blank" class="btn btn-sm btn-light text-secondary rounded-circle p-1.5" title="In ấn">
+          <a href="{{ url_for('learning.grammar_rule_print_view', rule_id=rule.id) }}" target="_blank" class="btn btn-sm btn-light border text-secondary rounded-circle p-1.5" title="In ấn">
             <i class="ph ph-printer fs-5"></i>
           </a>
         </div>
@@ -101,7 +119,7 @@
     </div>
     {% else %}
     <div class="col-12">
-      <div class="card border-0 shadow-sm rounded-4 p-5 text-center bg-white">
+      <div class="reference-card p-5 text-center">
         <i class="ph ph-notebook fs-1 text-muted mb-2"></i>
         <h5 class="fw-bold text-muted mb-1">Chưa tìm thấy quy tắc ngữ pháp phù hợp</h5>
         <p class="text-secondary small mb-0">Thử tìm kiếm với từ khóa khác hoặc quay lại danh mục tất cả quy tắc.</p>
