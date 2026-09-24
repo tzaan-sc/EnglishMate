@@ -106,10 +106,12 @@ python -m pytest -q
 
 ## 📚 Tra Cứu Tài Liệu Nhanh
 
-- 📑 [Kế hoạch chi tiết 25 chức năng (1.1 - 4.7)](docs/plans/)
+- 📑 [Kế hoạch phát triển 4 giai đoạn](docs/plans/)
 - 🧭 [Hướng dẫn Đồng bộ Dữ liệu PostgreSQL & SQLite](docs/guides/HD_Sync_Data.md)
-- 🔑 [Hướng dẫn Cấu hình Google OAuth](docs/guides/HUONG_DAN_TAO_GOOGLE_OAUTH.txt)
-- 📧 [Hướng dẫn Cấu hình Gmail SMTP](docs/guides/HUONG_DAN_CAU_HINH_GMAIL_SMTP.txt)
+- 🔑 [Hướng dẫn Cấu hình Google OAuth](docs/guides/HUONG_DAN_TAO_GOOGLE_OAUTH.md)
+- 📧 [Hướng dẫn Cấu hình Gmail SMTP](docs/guides/HUONG_DAN_CAU_HINH_GMAIL_SMTP.md)
 - 🗄️ [Đặc tả Lược đồ CSDL (Database Schema)](docs/architecture/database_schema.md)
-- 📋 [Tổng hợp Đặc tả Tính năng Hệ thống](docs/specs/CORE_FEATURES.md)
+- 📋 [Tổng hợp Đặc tả Tính năng Hệ thống](docs/specs/SYSTEM_FEATURES.md)
+- ✅ [Danh sách 100% Chức năng Đã hoàn thành](DANH_SACH_CHUC_NANG_DA_LAM.txt)
 - 📁 [File CSV / Excel Mẫu để Import](csv_templates/)
+
