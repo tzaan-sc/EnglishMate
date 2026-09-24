@@ -1,9 +1,9 @@
-import io
+﻿import io
 import pytest
 from openpyxl import Workbook
 from app.extensions import db
-from app.modules.learning.models import Vocabulary, GrammarTopic, Lesson, Question
-from app.modules.exams.models import Exam, ExamQuestion
+from app.backend.learning.models import Vocabulary, GrammarTopic, Lesson, Question
+from app.backend.exams.models import Exam, ExamQuestion
 from tests.conftest import login
 
 

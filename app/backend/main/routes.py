@@ -298,7 +298,7 @@ def profile():
     admin_audit_count = 0
     assigned_roles = []
     if current_user.is_admin:
-        from app.modules.admin.models import AuditLog
+        from app.backend.admin.models import AuditLog
         admin_audit_logs = AuditLog.query.filter_by(user_id=current_user.id).order_by(AuditLog.created_at.desc()).limit(15).all()
         admin_audit_count = AuditLog.query.filter_by(user_id=current_user.id).count()
         assigned_roles = [ur.role for ur in current_user.user_assigned_roles.all() if ur.role]
@@ -331,7 +331,7 @@ def edit_profile_info():
             file = form.avatar.data
             ext = os.path.splitext(file.filename)[1].lower()
             filename = f"avatar_{current_user.id}_{uuid.uuid4().hex[:8]}{ext}"
-            upload_folder = Path(current_app.root_path) / "static" / "uploads" / "avatars"
+            upload_folder = Path(current_app.static_folder) / "uploads" / "avatars"
             upload_folder.mkdir(parents=True, exist_ok=True)
             file_path = upload_folder / filename
             file.save(file_path)

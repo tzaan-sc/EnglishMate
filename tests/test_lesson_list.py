@@ -1,6 +1,6 @@
-from app.extensions import db
-from app.modules.auth.models import User
-from app.modules.learning.models import Lesson, LessonProgress, LessonFavorite
+﻿from app.extensions import db
+from app.backend.auth.models import User
+from app.backend.learning.models import Lesson, LessonProgress, LessonFavorite
 from tests.conftest import login
 
 

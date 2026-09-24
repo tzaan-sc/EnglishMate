@@ -1,8 +1,8 @@
-from datetime import datetime, timedelta
+﻿from datetime import datetime, timedelta
 from app.extensions import db
-from app.modules.auth.models import User
-from app.modules.learning.models import QuizAttempt
-from app.modules.learning.routes import calculate_quiz_dashboard_metrics
+from app.backend.auth.models import User
+from app.backend.learning.models import QuizAttempt
+from app.backend.learning.routes import calculate_quiz_dashboard_metrics
 from tests.conftest import login
 
 

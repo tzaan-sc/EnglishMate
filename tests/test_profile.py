@@ -1,5 +1,5 @@
-from app.extensions import db
-from app.modules.auth.models import User
+﻿from app.extensions import db
+from app.backend.auth.models import User
 
 
 def test_view_profile_info(client):

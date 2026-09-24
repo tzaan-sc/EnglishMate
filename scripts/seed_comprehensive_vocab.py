@@ -1,4 +1,4 @@
-"""
+﻿"""
 Seed comprehensive vocabulary across all 5 major categories:
 1. CEFR (A0, A1, A2, B1, B2, C1, C2)
 2. TOEIC (600 Essential words, Hackers TOEIC, Parts 1-7)
@@ -17,7 +17,7 @@ sys.path.insert(0, str(root_dir))
 
 from app import create_app
 from app.extensions import db
-from app.modules.learning.models import Vocabulary, VocabularyProgress
+from app.backend.learning.models import Vocabulary, VocabularyProgress
 
 app = create_app()
 

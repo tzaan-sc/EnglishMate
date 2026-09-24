@@ -1,5 +1,5 @@
-from app.extensions import db
-from app.modules.learning.models import Vocabulary, VocabularyProgress
+﻿from app.extensions import db
+from app.backend.learning.models import Vocabulary, VocabularyProgress
 
 
 def login_student(client):

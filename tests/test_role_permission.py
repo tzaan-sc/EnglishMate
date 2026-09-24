@@ -1,8 +1,8 @@
-from datetime import datetime, timedelta, timezone
+﻿from datetime import datetime, timedelta, timezone
 from app.extensions import db
-from app.modules.admin.models import AuditLog, Permission, Role, RolePermission, UserRole
-from app.modules.admin.utils import has_permission, log_audit_action, permission_required
-from app.modules.auth.models import User
+from app.backend.admin.models import AuditLog, Permission, Role, RolePermission, UserRole
+from app.backend.admin.utils import has_permission, log_audit_action, permission_required
+from app.backend.auth.models import User
 
 
 def login_admin(client):

@@ -1,7 +1,7 @@
-import math
+﻿import math
 import pandas as pd
 from app.extensions import db
-from app.modules.exams.models import Exam, ExamQuestion
+from app.backend.exams.models import Exam, ExamQuestion
 
 
 def is_nan(value):

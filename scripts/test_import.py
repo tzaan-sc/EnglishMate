@@ -1,4 +1,4 @@
-import sys
+﻿import sys
 from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -6,8 +6,8 @@ sys.path.insert(0, str(BASE_DIR))
 
 from app import create_app
 from app.extensions import db
-from app.modules.exams.services import import_exam_from_json
-from app.modules.exams.models import Exam, ExamQuestion
+from app.backend.exams.services import import_exam_from_json
+from app.backend.exams.models import Exam, ExamQuestion
 
 def run_import():
     app = create_app()

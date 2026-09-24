@@ -1,6 +1,6 @@
-import time
+﻿import time
 from app.extensions import db
-from app.modules.auth.models import User, UserSession
+from app.backend.auth.models import User, UserSession
 
 
 def test_session_creation_on_login(client):

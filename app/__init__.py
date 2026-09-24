@@ -1,3 +1,4 @@
+import sys
 from pathlib import Path
 
 from flask import Flask, render_template
@@ -7,7 +8,12 @@ from .extensions import csrf, db, login_manager
 
 
 def create_app(config_object=Config):
-    app = Flask(__name__, instance_relative_config=True)
+    app = Flask(
+        __name__,
+        instance_relative_config=True,
+        template_folder="frontend/templates",
+        static_folder="frontend/static",
+    )
     app.config.from_object(config_object)
     Path(app.instance_path).mkdir(parents=True, exist_ok=True)
 
@@ -18,17 +24,17 @@ def create_app(config_object=Config):
     login_manager.login_message = "Vui lòng đăng nhập để tiếp tục."
     login_manager.login_message_category = "warning"
 
-    from .modules.auth.models import User
+    from .backend.auth.models import User
 
     @login_manager.user_loader
     def load_user(user_id):
         return db.session.get(User, int(user_id))
 
-    from .modules.main import bp as main_bp
-    from .modules.auth import bp as auth_bp
-    from .modules.learning import bp as learning_bp
-    from .modules.admin import bp as admin_bp
-    from .modules.exams import bp as exams_bp
+    from .backend.main import bp as main_bp
+    from .backend.auth import bp as auth_bp
+    from .backend.learning import bp as learning_bp
+    from .backend.admin import bp as admin_bp
+    from .backend.exams import bp as exams_bp
 
     app.register_blueprint(main_bp)
     app.register_blueprint(auth_bp)
@@ -72,9 +78,9 @@ def create_app(config_object=Config):
         if not current_user.is_authenticated or not getattr(current_user, "is_admin", False):
             return {"admin_notif_data": None}
         try:
-            from .modules.auth.models import User
-            from .modules.learning.models import QuizAttempt
-            from .modules.admin.models import AuditLog
+            from .backend.auth.models import User
+            from .backend.learning.models import QuizAttempt
+            from .backend.admin.models import AuditLog
             locked_users = User.query.filter((User.failed_login_attempts >= 5) | (User.is_active == False)).count()
             total_attempts = QuizAttempt.query.count()
             latest_audit = AuditLog.query.order_by(AuditLog.id.desc()).first()
@@ -102,7 +108,7 @@ def create_app(config_object=Config):
         from flask import jsonify
         base = Path(__file__).resolve().parent
         max_mtime = 0
-        for check_dir in [base / "templates", base / "static"]:
+        for check_dir in [base / "frontend" / "templates", base / "frontend" / "static"]:
             for root, dirs, files in os.walk(check_dir):
                 if "uploads" in root:
                     continue
@@ -117,4 +123,3 @@ def create_app(config_object=Config):
         return jsonify({"timestamp": max_mtime})
 
     return app
-

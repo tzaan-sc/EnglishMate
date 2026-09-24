@@ -1,7 +1,7 @@
-import pytest
+﻿import pytest
 from app.extensions import db
-from app.modules.auth.models import User
-from app.modules.learning.models import FlashcardSet, FlashcardItem, GameSession
+from app.backend.auth.models import User
+from app.backend.learning.models import FlashcardSet, FlashcardItem, GameSession
 from tests.conftest import login
 
 @pytest.fixture

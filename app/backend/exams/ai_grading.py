@@ -1,7 +1,7 @@
-import time
+﻿import time
 from threading import Thread
 from app.extensions import db
-from app.modules.exams.models import ExamSubmission, ExamAnswerDetail, ExamQuestion
+from app.backend.exams.models import ExamSubmission, ExamAnswerDetail, ExamQuestion
 
 def async_grade_submission(app, submission_id):
     """

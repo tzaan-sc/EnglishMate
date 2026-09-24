@@ -1,5 +1,5 @@
-from app.extensions import db
-from app.modules.learning.models import Quiz
+﻿from app.extensions import db
+from app.backend.learning.models import Quiz
 from tests.conftest import login
 
 

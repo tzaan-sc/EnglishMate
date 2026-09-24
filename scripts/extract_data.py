@@ -1,4 +1,4 @@
-"""
+﻿"""
 extract_data.py
 ===============
 Chạy bóc tách tài liệu Word (.docx), PDF (.pdf), Text (.txt) từ Google Drive
@@ -58,7 +58,7 @@ def save_to_csv(filename: str, fieldnames: list, rows: list):
 def import_questions_to_db(questions: list):
     try:
         from app import create_app, db
-        from app.modules.learning.models import Question
+        from app.backend.learning.models import Question
         app = create_app()
         with app.app_context():
             added = 0
@@ -87,7 +87,7 @@ def import_questions_to_db(questions: list):
 def import_vocabulary_to_db(vocab_list: list):
     try:
         from app import create_app, db
-        from app.modules.learning.models import Vocabulary
+        from app.backend.learning.models import Vocabulary
         app = create_app()
         with app.app_context():
             added = 0

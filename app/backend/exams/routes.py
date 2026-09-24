@@ -1,10 +1,10 @@
-from flask import abort, flash, redirect, render_template, request, url_for
+﻿from flask import abort, flash, redirect, render_template, request, url_for
 from flask_login import current_user, login_required
 from sqlalchemy import func
 
 from app.extensions import db
-from app.modules.auth.models import record_daily_activity
-from app.modules.exams.models import ToeicTest, ToeicPassage, ToeicQuestion, ToeicAttempt, ToeicAttemptAnswer
+from app.backend.auth.models import record_daily_activity
+from app.backend.exams.models import ToeicTest, ToeicPassage, ToeicQuestion, ToeicAttempt, ToeicAttemptAnswer
 from . import bp
 from .forms import ActionForm
 
@@ -100,7 +100,7 @@ def toeic_submit(attempt_id):
     current_user.add_xp(50, reason="Hoàn thành đề thi TOEIC")
     record_daily_activity(current_user)
     try:
-        from app.modules.learning.routes import update_challenge_progress, check_user_badges
+        from app.backend.learning.routes import update_challenge_progress, check_user_badges
         update_challenge_progress(current_user, "exam", 1)
         check_user_badges(current_user)
     except Exception:
@@ -155,7 +155,7 @@ def toeic_result(attempt_id):
 
 
 # --- NEW GENERIC EXAM ROUTES ---
-from app.modules.exams.models import Exam, ExamQuestion, ExamSubmission, ExamAnswerDetail
+from app.backend.exams.models import Exam, ExamQuestion, ExamSubmission, ExamAnswerDetail
 import json
 
 @bp.get("/exam")
@@ -381,7 +381,7 @@ def submit_exam(submission_id):
     current_user.add_xp(50, reason="Hoàn thành bài thi")
     record_daily_activity(current_user)
     try:
-        from app.modules.learning.routes import update_challenge_progress, check_user_badges
+        from app.backend.learning.routes import update_challenge_progress, check_user_badges
         update_challenge_progress(current_user, "exam", 1)
         check_user_badges(current_user)
     except Exception:
@@ -390,7 +390,7 @@ def submit_exam(submission_id):
     db.session.commit()
     
     if needs_grading:
-        from app.modules.exams.ai_grading import trigger_ai_grading
+        from app.backend.exams.ai_grading import trigger_ai_grading
         from flask import current_app
         # current_app._get_current_object() is needed to pass the actual app instance to the thread
         trigger_ai_grading(current_app._get_current_object(), submission.id)
@@ -628,7 +628,7 @@ from datetime import datetime
 import io
 import csv
 from flask import Response
-from app.modules.learning.models import QuizAttempt, GrammarExerciseAttempt
+from app.backend.learning.models import QuizAttempt, GrammarExerciseAttempt
 
 @bp.route("/history")
 @bp.route("/exams/history")

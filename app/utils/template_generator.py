@@ -5,9 +5,10 @@ from openpyxl import Workbook
 from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
 from openpyxl.utils import get_column_letter
 
-TEMPLATE_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), "static", "templates", "excel")
-JSON_TEMPLATE_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), "static", "templates", "json")
-CSV_TEMPLATE_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), "static", "templates", "csv")
+STATIC_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), "frontend", "static")
+TEMPLATE_DIR = os.path.join(STATIC_DIR, "templates", "excel")
+JSON_TEMPLATE_DIR = os.path.join(STATIC_DIR, "templates", "json")
+CSV_TEMPLATE_DIR = os.path.join(STATIC_DIR, "templates", "csv")
 
 HEADER_FILL = PatternFill(start_color="059669", end_color="059669", fill_type="solid")
 HEADER_FONT = Font(name="Arial", size=11, bold=True, color="FFFFFF")

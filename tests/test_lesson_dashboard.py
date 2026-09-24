@@ -1,5 +1,5 @@
-from app.extensions import db
-from app.modules.learning.models import Lesson, LessonProgress
+﻿from app.extensions import db
+from app.backend.learning.models import Lesson, LessonProgress
 from tests.conftest import login
 
 

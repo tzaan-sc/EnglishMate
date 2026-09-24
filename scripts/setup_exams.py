@@ -1,4 +1,4 @@
-"""
+﻿"""
 setup_exams.py
 ==============
 Khởi tạo cấu trúc bảng Đề thi (Exam tables) trong PostgreSQL / SQLite.
@@ -12,7 +12,7 @@ sys.path.insert(0, str(BASE_DIR))
 
 from app import create_app
 from app.extensions import db
-from app.modules.exams.models import Exam, ExamQuestion, ExamSubmission, ExamAnswerDetail
+from app.backend.exams.models import Exam, ExamQuestion, ExamSubmission, ExamAnswerDetail
 
 
 def setup_exams():

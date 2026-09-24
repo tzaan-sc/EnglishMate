@@ -1,4 +1,4 @@
-"""
+﻿"""
 fetch_vocab.py
 ==============
 Tự động gọi Free Dictionary API và MyMemory Translation API
@@ -159,7 +159,7 @@ def main():
     if save_db in ["", "y", "yes"]:
         try:
             from app import create_app, db
-            from app.modules.learning.models import Vocabulary
+            from app.backend.learning.models import Vocabulary
             app = create_app()
             with app.app_context():
                 added = 0

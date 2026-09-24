@@ -1,5 +1,5 @@
-from app.extensions import db
-from app.modules.auth.models import now
+﻿from app.extensions import db
+from app.backend.auth.models import now
 
 
 class ToeicTest(db.Model):

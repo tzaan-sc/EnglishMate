@@ -1,5 +1,5 @@
-from app.extensions import db
-from app.modules.exams.models import Exam
+﻿from app.extensions import db
+from app.backend.exams.models import Exam
 from tests.conftest import login
 
 

@@ -1,4 +1,4 @@
-import csv
+﻿import csv
 import io
 import json
 import uuid
@@ -6,9 +6,9 @@ from datetime import datetime
 from openpyxl import load_workbook
 
 from app.extensions import db
-from app.modules.learning.models import Vocabulary, GrammarTopic, Lesson, Question
-from app.modules.exams.models import Exam, ExamQuestion
-from app.modules.admin.models import AuditLog
+from app.backend.learning.models import Vocabulary, GrammarTopic, Lesson, Question
+from app.backend.exams.models import Exam, ExamQuestion
+from app.backend.admin.models import AuditLog
 
 
 CONTENT_SCHEMAS = {

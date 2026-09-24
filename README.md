@@ -41,15 +41,16 @@ Truy cập website tại: **`http://127.0.0.1:5000`**
 ```text
 web-english/
 ├── app/                        # Mã nguồn chính ứng dụng Flask
-│   ├── modules/                # Kiến trúc Blueprint chia theo tính năng
-│   │   ├── admin/              # Trang quản trị, quản lý đề thi & học viên
+│   ├── frontend/               # Giao diện người dùng (UI & Static Assets)
+│   │   ├── static/             # Assets: CSS, JavaScript, Web Fonts, Images
+│   │   └── templates/          # Giao diện Jinja2 HTML hiện đại
+│   ├── backend/                # Xử lý dữ liệu & logic nghiệp vụ (Blueprints)
+│   │   ├── admin/              # Quản trị hệ thống, quản lý đề thi & học viên
 │   │   ├── auth/               # Đăng nhập, đăng ký, OTP, OAuth Google/Facebook
 │   │   ├── exams/              # Thi TOEIC, IELTS, THPT, chấm điểm & review
-│   │   ├── learning/           # Học ngữ pháp, từ vựng Flashcard SRS, game
+│   │   ├── learning/           # Học ngữ pháp, Flashcard SRS, mini-game từ vựng
 │   │   └── main/               # Trang chủ, dashboard tiến độ học tập
 │   ├── seeds/                  # Bộ dữ liệu khởi tạo database (Base & TOEIC)
-│   ├── static/                 # Static assets (CSS, JS, Fonts, Images)
-│   ├── templates/              # Giao diện Jinja2 HTML theo chuẩn hiện đại
 │   ├── utils/                  # Helper dùng chung (Email SMTP, Template generator)
 │   ├── config.py               # Cấu hình môi trường & tự động fallback DB
 │   ├── extensions.py           # Khởi tạo SQLAlchemy, LoginManager, CSRF

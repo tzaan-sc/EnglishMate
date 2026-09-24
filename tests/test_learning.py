@@ -1,6 +1,6 @@
-from datetime import date, timedelta
-from app.modules.learning.models import Lesson, LessonProgress, QuizAttempt, Question
-from app.modules.auth.models import User
+﻿from datetime import date, timedelta
+from app.backend.learning.models import Lesson, LessonProgress, QuizAttempt, Question
+from app.backend.auth.models import User
 from tests.conftest import login
 
 
@@ -50,7 +50,7 @@ def test_all_learner_pages_render(client, app):
 
 def test_streak_mechanics(app):
     from datetime import date, timedelta
-    from app.modules.auth.models import User, record_daily_activity, DailyActivity
+    from app.backend.auth.models import User, record_daily_activity, DailyActivity
     from app.extensions import db
 
     with app.app_context():
@@ -157,7 +157,7 @@ def test_streak_status_four_states(app):
 
 
 def test_streak_activation_popup_event(client, app):
-    from app.modules.auth.models import DailyActivity
+    from app.backend.auth.models import DailyActivity
     from app.extensions import db
     login(client)
     today = date.today()
@@ -182,7 +182,7 @@ def test_streak_activation_popup_event(client, app):
 
 
 def test_admin_excluded_from_level_and_streak(app):
-    from app.modules.auth.models import User, record_daily_activity
+    from app.backend.auth.models import User, record_daily_activity
     with app.app_context():
         admin = User.query.filter_by(role="ADMIN").first()
         assert admin is not None

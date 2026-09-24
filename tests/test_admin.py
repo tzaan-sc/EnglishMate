@@ -1,4 +1,4 @@
-from tests.conftest import login
+﻿from tests.conftest import login
 
 
 def test_user_cannot_access_admin(client):
@@ -44,7 +44,7 @@ def test_admin_lesson_create_writing_c2_and_toggle_status(client, app):
     assert "Đã thêm bài học mới".encode() in res.data
 
     with app.app_context():
-        from app.modules.learning.models import Lesson
+        from app.backend.learning.models import Lesson
         lesson = Lesson.query.filter_by(title="Advanced C2 Writing Essay Skills").first()
         assert lesson is not None
         assert lesson.skill == "Writing"
@@ -87,7 +87,7 @@ def test_admin_lesson_create_with_skill_data_json(client, app):
     assert res.status_code == 200
 
     with app.app_context():
-        from app.modules.learning.models import Lesson
+        from app.backend.learning.models import Lesson
         lesson = Lesson.query.filter_by(title="Listening Studio Practice Lesson").first()
         assert lesson is not None
         assert lesson.skill_data is not None
@@ -122,7 +122,7 @@ def test_admin_exam_crud_and_toeic_distribution(client, app):
     assert create_res.status_code == 200
 
     with app.app_context():
-        from app.modules.exams.models import Exam
+        from app.backend.exams.models import Exam
         exam = Exam.query.filter_by(title="TOEIC Full Practice Test 2026").first()
         assert exam is not None
         assert exam.part_distribution is not None
@@ -272,7 +272,7 @@ def test_admin_vocabulary_and_lesson_upload_pages(client, app):
     assert "Upload thành công".encode("utf-8") in res_v_post.data
 
     with app.app_context():
-        from app.modules.learning.models import Vocabulary
+        from app.backend.learning.models import Vocabulary
         w = Vocabulary.query.filter_by(word="serendipity").first()
         assert w is not None
         assert w.level == "C1"
@@ -303,7 +303,7 @@ def test_admin_vocabulary_and_lesson_upload_pages(client, app):
     assert "Upload thành công".encode("utf-8") in res_l_post.data
 
     with app.app_context():
-        from app.modules.learning.models import Lesson
+        from app.backend.learning.models import Lesson
         les = Lesson.query.filter_by(title="Mastering English Collocations in Daily Speaking").first()
         assert les is not None
         assert les.skill == "Speaking"

@@ -1,9 +1,9 @@
-import pytest
+﻿import pytest
 from datetime import date
 from app.extensions import db
-from app.modules.auth.models import User, DailyActivity, record_daily_activity
-from app.modules.learning.models import Badge, UserBadge, Challenge, UserChallenge, Lesson, LessonProgress
-from app.modules.learning.routes import check_user_badges, get_or_create_user_challenges, update_challenge_progress
+from app.backend.auth.models import User, DailyActivity, record_daily_activity
+from app.backend.learning.models import Badge, UserBadge, Challenge, UserChallenge, Lesson, LessonProgress
+from app.backend.learning.routes import check_user_badges, get_or_create_user_challenges, update_challenge_progress
 from tests.conftest import login
 
 @pytest.fixture

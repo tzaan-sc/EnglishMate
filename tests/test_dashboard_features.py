@@ -1,8 +1,8 @@
-import pytest
+﻿import pytest
 from datetime import date, timedelta
 from app.extensions import db
-from app.modules.auth.models import User, DailyActivity, record_daily_activity
-from app.modules.learning.models import Lesson, LessonProgress, QuizAttempt, Vocabulary, VocabularyProgress
+from app.backend.auth.models import User, DailyActivity, record_daily_activity
+from app.backend.learning.models import Lesson, LessonProgress, QuizAttempt, Vocabulary, VocabularyProgress
 from tests.conftest import login
 
 @pytest.fixture

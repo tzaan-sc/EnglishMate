@@ -1,6 +1,6 @@
-from datetime import date
+﻿from datetime import date
 from app.extensions import db
-from app.modules.auth.models import now
+from app.backend.auth.models import now
 
 
 class Lesson(db.Model):

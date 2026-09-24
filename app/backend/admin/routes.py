@@ -677,10 +677,11 @@ def audit_logs_export():
 import os
 import pandas as pd
 from werkzeug.utils import secure_filename
-from app.modules.exams.services import import_exam_from_dataframe
+from app.backend.exams.services import import_exam_from_dataframe
 from flask import jsonify
 
-UPLOAD_FOLDER = os.path.join('app', 'static', 'uploads')
+UPLOAD_FOLDER = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), 'frontend', 'static', 'uploads')
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 # --- CONTENT UPLOAD SUITE (VOCABULARY, LESSONS, EXAMS) ---
 
 @bp.route("/vocabulary/upload", methods=["GET", "POST"])

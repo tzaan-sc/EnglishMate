@@ -1,6 +1,6 @@
-import pytest
+﻿import pytest
 from app.extensions import db
-from app.modules.auth.models import User
+from app.backend.auth.models import User
 from tests.conftest import login
 
 def test_exam_settings_fields_defaults(app):

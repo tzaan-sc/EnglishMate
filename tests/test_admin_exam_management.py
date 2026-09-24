@@ -1,7 +1,7 @@
-from app.extensions import db
-from app.modules.auth.models import User
-from app.modules.exams.models import Exam
-from app.modules.learning.models import Question
+﻿from app.extensions import db
+from app.backend.auth.models import User
+from app.backend.exams.models import Exam
+from app.backend.learning.models import Question
 from tests.conftest import login
 
 
