@@ -1,0 +1,896 @@
+====================================================================================================
+DANH SÁCH CÁC TÍNH NĂNG CHƯA LÀM / ĐANG CHỜ PHÁT TRIỂN (BACKLOG & ROADMAP)
+HỆ THỐNG ENGLISHMATE — NỀN TẢNG HỌC TIẾNG ANH TRỰC TUYẾN THÔNG MINH
+====================================================================================================
+Tài liệu đối chiếu và trích xuất từ 2 nguồn:
+1. EnglishMate_Features.txt (Danh sách 100% tính năng ĐÃ HOÀN THÀNH trong hệ thống)
+2. List-Advantage-EnglishMate_Features.txt (Khảo sát toàn diện 864 tính năng: 738 đã làm [x], 126 chưa làm [ ])
+Mục đích: Tách riêng toàn bộ 126 tính năng CHƯA LÀM thành tài liệu Backlog độc lập kèm đối chiếu thực trạng và gợi ý lộ trình ưu tiên.
+====================================================================================================
+
+BẢNG ĐỐI CHIẾU TỔNG QUAN HỆ THỐNG (SYSTEM STATUS COMPARISON)
+----------------------------------------------------------------------------------------------------
+| Chỉ số thống kê                                    | Giá trị          | Ghi chú                               |
+|:---------------------------------------------------|:-----------------|:--------------------------------------|
+| Tổng số tính năng khảo sát toàn hệ thống           | 864 tính năng    | Đầy đủ từ cơ bản đến nâng cao         |
+| Tổng số tính năng ĐÃ HOÀN THÀNH [x]                | 738 tính năng    | Đã có Route, Model, Logic, UI chuẩn   |
+| Tổng số tính năng CHƯA TRIỂN KHAI [ ]              | 126 tính năng    | Nằm trong danh sách backlog dưới đây  |
+| Tỷ lệ hoàn thiện hiện tại của hệ thống             | 85.4%            | 185/185 Pytest tests PASSED 100%      |
+| Số Module đã hoàn thành 100%                       | 1 Module         | Module 1: Xác thực & Quản lý user    |
+| Số Module còn tính năng đang chờ phát triển        | 14 Module        | Từ Module 2 đến Module 15             |
+----------------------------------------------------------------------------------------------------
+
+MỤC LỤC 14 MODULE CHỨA CÁC TÍNH NĂNG CHƯA LÀM:
+----------------------------------------------------------------------------------------------------
+- [ ] 2. USER PROFILE & SETTINGS (HỒ SƠ & CÀI ĐẶT): 3 tính năng chưa làm
+- [ ] 3. DASHBOARD & ANALYTICS (BẢNG ĐIỀU KHIỂN & PHÂN TÍCH): 3 tính năng chưa làm
+- [ ] 4. LESSONS & 4 SKILLS (BÀI HỌC & 4 KỸ NĂNG): 9 tính năng chưa làm
+- [ ] 5. VOCABULARY & FLASHCARD SYSTEM (HỆ THỐNG TỪ VỰNG & FLASHCARD): 2 tính năng chưa làm
+- [ ] 6. GRAMMAR SYSTEM (HỆ THỐNG NGỮ PHÁP): 1 tính năng chưa làm
+- [ ] 7. QUIZ SYSTEM (HỆ THỐNG KIỂM TRA): 1 tính năng chưa làm
+- [ ] 8. EXAM SYSTEM (HỆ THỐNG ĐỀ THI): 4 tính năng chưa làm
+- [ ] 9. GAMIFICATION SYSTEM (HỆ THỐNG TRÒ CHƠI HÓA): 3 tính năng chưa làm
+- [ ] 10. ADMIN SYSTEM (HỆ THỐNG QUẢN TRỊ): 7 tính năng chưa làm
+- [ ] 11. SECURITY SYSTEM (HỆ THỐNG BẢO MẬT): 15 tính năng chưa làm
+- [ ] 12. SYSTEM FEATURES (TÍNH NĂNG HỆ THỐNG): 46 tính năng chưa làm
+- [ ] 13. UI/UX FEATURES (TÍNH NĂNG GIAO DIỆN): 14 tính năng chưa làm
+- [ ] 14. DATA INTEGRITY & VALIDATION (TOÀN VỆN DỮ LIỆU & KIỂM TRA): 5 tính năng chưa làm
+- [ ] 15. ERROR HANDLING & RECOVERY (XỬ LÝ LỖI & PHỤC HỒI): 13 tính năng chưa làm
+----------------------------------------------------------------------------------------------------
+
+====================================================================================================
+MODULE: 2. USER PROFILE & SETTINGS (HỒ SƠ & CÀI ĐẶT) (3 tính năng chưa làm)
+====================================================================================================
+
+### 2.2. Email Management (Quản lý email) (1 tính năng):
+----------------------------------------------------------------------------------------------------
+1. [ ] Email Change History - Lịch sử thay đổi email
+   - Mức độ ưu tiên: Thấp
+   - Mô tả yêu cầu: Lưu trữ và hiển thị nhật ký các lần thay đổi địa chỉ email của tài khoản (email cũ, email mới, thời gian đổi, IP thực hiện).
+   - Đối chiếu hiện trạng: Đã có luồng đổi email xác thực qua OTP gửi về mail mới (/profile/change-email, /profile/verify-email), nhưng chưa có bảng DB riêng ghi lại lịch sử các lần đổi email cũ.
+
+
+### 2.5. User Settings (Cài đặt người dùng) (2 tính năng):
+----------------------------------------------------------------------------------------------------
+2. [ ] Vocabulary Notification - Thông báo ôn tập
+   - Mức độ ưu tiên: Trung bình
+   - Mô tả yêu cầu: Hệ thống thông báo đẩy (Web Push Notifications) hoặc email định kỳ nhắc nhở người dùng vào ôn tập từ vựng đến hạn SRS.
+   - Đối chiếu hiện trạng: Đã có tính năng tính toán ngày ôn tập SRS (next_review_at) trên Dashboard và trang /vocabulary/review, nhưng chưa có Web Push / Notification Service đẩy tin về trình duyệt.
+
+3. [ ] Exam Sound Effects - Hiệu ứng âm thanh thi
+   - Mức độ ưu tiên: Thấp
+   - Mô tả yêu cầu: Tùy chọn bật/tắt hiệu ứng âm thanh trong phòng thi (tiếng tích tắc 10 giây cuối, âm thanh khi chọn câu trả lời, âm thanh nộp bài).
+   - Đối chiếu hiện trạng: Đã có cấu hình thời gian thi, tự động nộp bài, cho phép tạm dừng tại /settings, nhưng chưa tích hợp audio sound effects trong quá trình làm bài thi.
+
+
+====================================================================================================
+MODULE: 3. DASHBOARD & ANALYTICS (BẢNG ĐIỀU KHIỂN & PHÂN TÍCH) (3 tính năng chưa làm)
+====================================================================================================
+
+### 3.2. Activity Tracking (Theo dõi hoạt động) (1 tính năng):
+----------------------------------------------------------------------------------------------------
+4. [ ] Activity Filter - Lọc hoạt động
+   - Mức độ ưu tiên: Trung bình
+   - Mô tả yêu cầu: Bộ lọc tương tác cho phép xem lịch sử học tập theo khoảng ngày tùy chọn (7 ngày, 30 ngày, quý, năm) trên Activity Heatmap.
+   - Đối chiếu hiện trạng: Đã có Heatmap hoạt động theo năm kiểu GitHub và lịch tuần 7 ngày, nhưng chưa có form filter chọn ngày bắt đầu - kết thúc động.
+
+
+### 3.4. Time Analytics (Phân tích thời gian) (1 tính năng):
+----------------------------------------------------------------------------------------------------
+5. [ ] Time per Lesson - Thời gian mỗi bài học
+   - Mức độ ưu tiên: Thấp
+   - Mô tả yêu cầu: Theo dõi và thống kê chi tiết thời gian chính xác người dùng dành cho từng bài học cụ thể (tính theo phút/giây).
+   - Đối chiếu hiện trạng: Hiện tại bảng DailyActivity mới chỉ lưu tổng thời gian học trong ngày (time_spent), chưa có cột đo thời gian lưu trú riêng cho từng LessonProgress.
+
+
+### 3.6. Goal Tracking (Theo dõi mục tiêu) (1 tính năng):
+----------------------------------------------------------------------------------------------------
+6. [ ] Goal Reminder - Nhắc nhở mục tiêu
+   - Mức độ ưu tiên: Trung bình
+   - Mô tả yêu cầu: Gửi tin nhắn hoặc popup nhắc nhở khi sắp hết ngày mà người dùng chưa hoàn thành mục tiêu học tập (Daily Goal).
+   - Đối chiếu hiện trạng: Đã có hộp quà thưởng Daily Goal Chest nhận 50 XP khi đạt mục tiêu, nhưng chưa có thông báo nhắc nhở trước mốc 24h.
+
+
+====================================================================================================
+MODULE: 4. LESSONS & 4 SKILLS (BÀI HỌC & 4 KỸ NĂNG) (9 tính năng chưa làm)
+====================================================================================================
+
+### 4.4. Lesson Interaction (Tương tác bài học) (2 tính năng):
+----------------------------------------------------------------------------------------------------
+7. [ ] Lesson Rating - Đánh giá bài học
+   - Mức độ ưu tiên: Trung bình
+   - Mô tả yêu cầu: Cho phép học viên chấm điểm đánh giá bài học từ 1 đến 5 sao và để lại nhận xét ngắn về chất lượng bài giảng.
+   - Đối chiếu hiện trạng: Đã có tính năng Yêu thích (Favorite), Đánh dấu (Bookmark), Báo cáo nội dung (Report), nhưng chưa có bảng xếp hạng vote sao.
+
+8. [ ] Lesson Sharing - Chia sẻ bài học
+   - Mức độ ưu tiên: Thấp
+   - Mô tả yêu cầu: Nút chia sẻ bài học nhanh lên mạng xã hội (Facebook, Twitter/X, Zalo, LinkedIn) hoặc sao chép liên kết chia sẻ.
+   - Đối chiếu hiện trạng: Chưa có các nút chia sẻ mạng xã hội gắn link bài học.
+
+
+### 4.5. Listening Features (Tính năng nghe) (1 tính năng):
+----------------------------------------------------------------------------------------------------
+9. [ ] Audio Accent Selection - Chọn giọng audio
+   - Mức độ ưu tiên: Trung bình
+   - Mô tả yêu cầu: Cho phép chuyển đổi linh hoạt giữa giọng Anh - Mỹ (US) và Anh - Anh (UK) trực tiếp trên Audio Player của bài học nghe.
+   - Đối chiếu hiện trạng: Trong phần Từ vựng đã có 2 nguồn phát âm US/UK, nhưng audio bài học Listening hiện tại chỉ gắn 1 file mp3 đơn lẻ.
+
+
+### 4.6. Reading Features (Tính năng đọc) (2 tính năng):
+----------------------------------------------------------------------------------------------------
+10. [ ] Reading Annotation - Ghi chú bài đọc
+   - Mức độ ưu tiên: Trung bình
+   - Mô tả yêu cầu: Công cụ ghi chú nhanh (Annotation / Sticky Notes) gắn trực tiếp vào các đoạn văn cụ thể trong bài đọc hiểu.
+   - Đối chiếu hiện trạng: Đã có tính năng ghi chú toàn bài học (LessonNote) trong modal, nhưng chưa có công cụ gắn note trực tiếp vào từng câu trong bài đọc.
+
+11. [ ] Reading Highlight - Highlight bài đọc
+   - Mức độ ưu tiên: Trung bình
+   - Mô tả yêu cầu: Tính năng bôi màu (Highlight) các từ hoặc cụm từ quan trọng trực tiếp trên văn bản bài đọc bằng chuột.
+   - Đối chiếu hiện trạng: Đã có tra cứu từ vựng nhanh (Vocabulary Tooltips) khi bấm vào từ, nhưng chưa lưu trạng thái highlight màu của học viên.
+
+
+### 4.7. Speaking Features (Tính năng nói) (2 tính năng):
+----------------------------------------------------------------------------------------------------
+12. [ ] Speaking Recording - Ghi âm nói
+   - Mức độ ưu tiên: Cao
+   - Mô tả yêu cầu: Thu âm trực tiếp giọng nói của người học qua Micro trình duyệt (Web Audio API / MediaRecorder) trong bài luyện nói.
+   - Đối chiếu hiện trạng: Đã có hiển thị câu mẫu, phiên âm IPA, mẹo nói và audio mẫu, nhưng chưa có nút thu âm trực tiếp qua mic của học viên.
+
+13. [ ] Speaking Feedback - Phản hồi nói
+   - Mức độ ưu tiên: Cao
+   - Mô tả yêu cầu: Hệ thống AI nhận diện giọng nói (Speech-to-Text) và phản hồi độ chính xác phát âm, ngữ điệu theo thời gian thực.
+   - Đối chiếu hiện trạng: Chưa tích hợp Speech Recognition API để chấm điểm âm điệu câu nói của học viên.
+
+
+### 4.8. Writing Features (Tính năng viết) (2 tính năng):
+----------------------------------------------------------------------------------------------------
+14. [ ] Writing Correction - Sửa lỗi viết
+   - Mức độ ưu tiên: Trung bình
+   - Mô tả yêu cầu: Hệ thống tự động phát hiện và gợi ý sửa lỗi chính tả, ngữ pháp trực tiếp trong lúc học viên soạn thảo văn bản bài học viết.
+   - Đối chiếu hiện trạng: Đã có trình soạn thảo đếm từ và dàn ý mẫu trong bài học, tính năng chấm sửa lỗi AI hiện chỉ chạy ở phòng thi Exam (AI Essay Grading).
+
+15. [ ] Writing Feedback - Phản hồi viết
+   - Mức độ ưu tiên: Trung bình
+   - Mô tả yêu cầu: Nhận xét và đánh giá chi tiết bài tập viết được nộp trong quá trình học từng Lesson.
+   - Đối chiếu hiện trạng: Học viên luyện viết trong bài học nhưng chưa có cơ chế lưu bài và gửi chấm feedback riêng từng lesson.
+
+
+====================================================================================================
+MODULE: 5. VOCABULARY & FLASHCARD SYSTEM (HỆ THỐNG TỪ VỰNG & FLASHCARD) (2 tính năng chưa làm)
+====================================================================================================
+
+### 5.10. Custom Flashcard Sets (Bộ flashcard tùy chỉnh) (2 tính năng):
+----------------------------------------------------------------------------------------------------
+16. [ ] Flashcard Set Sharing - Chia sẻ bộ flashcard
+   - Mức độ ưu tiên: Trung bình
+   - Mô tả yêu cầu: Cho phép người dùng chia sẻ bộ Flashcard tự tạo của mình cho cộng đồng người học khác thông qua đường link hoặc mã PIN.
+   - Đối chiếu hiện trạng: Đã có đầy đủ CRUD FlashcardSet và FlashcardItem cá nhân, nhưng bộ thẻ hiện chỉ thuộc quyền sở hữu của riêng user đó.
+
+17. [ ] Flashcard Set Privacy - Riêng tư bộ flashcard
+   - Mức độ ưu tiên: Thấp
+   - Mô tả yêu cầu: Cài đặt chế độ hiển thị cho bộ Flashcard tự tạo: Công khai (Public), Riêng tư (Private), hoặc Chỉ chia sẻ qua link (Unlisted).
+   - Đối chiếu hiện trạng: Hiện tại các bộ thẻ mặc định ở chế độ riêng tư theo user_id, chưa có cột cài đặt quyền riêng tư.
+
+
+====================================================================================================
+MODULE: 6. GRAMMAR SYSTEM (HỆ THỐNG NGỮ PHÁP) (1 tính năng chưa làm)
+====================================================================================================
+
+### 6.5. Grammar Reference (Tra cứu ngữ pháp) (1 tính năng):
+----------------------------------------------------------------------------------------------------
+18. [ ] Grammar Export - Xuất ngữ pháp
+   - Mức độ ưu tiên: Thấp
+   - Mô tả yêu cầu: Xuất toàn bộ sổ tay quy tắc ngữ pháp hoặc từng chuyên đề ngữ pháp ra file định dạng PDF hoặc Word (DOCX).
+   - Đối chiếu hiện trạng: Đã có chế độ in chuyên dụng tối ưu định dạng giấy (/grammar/reference/<id>/print), nhưng chưa có nút bấm kết xuất file PDF/DOCX tự động.
+
+
+====================================================================================================
+MODULE: 7. QUIZ SYSTEM (HỆ THỐNG KIỂM TRA) (1 tính năng chưa làm)
+====================================================================================================
+
+### 7.4. Quiz Results (Kết quả quiz) (1 tính năng):
+----------------------------------------------------------------------------------------------------
+19. [ ] Result Sharing - Chia sẻ kết quả
+   - Mức độ ưu tiên: Thấp
+   - Mô tả yêu cầu: Tạo thẻ kết quả trắc nghiệm hình ảnh đẹp mắt kèm điểm số để chia sẻ trực tiếp lên mạng xã hội (Facebook, Instagram, Zalo).
+   - Đối chiếu hiện trạng: Đã có tính năng xuất phiếu kết quả trắc nghiệm dạng PDF (/quizzes/results/<id>/pdf) và xem lại đáp án chi tiết.
+
+
+====================================================================================================
+MODULE: 8. EXAM SYSTEM (HỆ THỐNG ĐỀ THI) (4 tính năng chưa làm)
+====================================================================================================
+
+### 8.3. IELTS Exam (Đề thi IELTS) (1 tính năng):
+----------------------------------------------------------------------------------------------------
+20. [ ] IELTS Speaking - Nói IELTS
+   - Mức độ ưu tiên: Cao
+   - Mô tả yêu cầu: Phòng thi IELTS Speaking trực tuyến hoàn chỉnh với 3 phần thi (Part 1, 2, 3), ghi âm toàn bộ câu trả lời.
+   - Đối chiếu hiện trạng: Đã có format đề thi IELTS 3 kỹ năng Nghe (Listening), Đọc (Reading), Viết luận Task 2 (Writing) với chấm điểm AI.
+
+
+### 8.4. Specialized Exams (Đề thi chuyên biệt) (1 tính năng):
+----------------------------------------------------------------------------------------------------
+21. [ ] THPT Exam - Đề thi THPT
+   - Mức độ ưu tiên: Trung bình
+   - Mô tả yêu cầu: Danh mục đề thi chuyên biệt chuẩn cấu trúc đề thi Tốt nghiệp THPT Quốc Gia môn Tiếng Anh (50 câu, 60 phút).
+   - Đối chiếu hiện trạng: Đã có Đề đánh giá năng lực (Placement), Kiểm tra tiến độ (Progress), Luyện tập tính giờ (Timed Practice) và đề TOEIC/IELTS.
+
+
+### 8.6. AI Grading (Chấm điểm AI) (1 tính năng):
+----------------------------------------------------------------------------------------------------
+22. [ ] Audio Grading - Chấm bài nói
+   - Mức độ ưu tiên: Cao
+   - Mô tả yêu cầu: Mô hình AI tự động nghe file audio bài nói của học viên để chấm điểm phát âm, từ vựng và độ trôi chảy.
+   - Đối chiếu hiện trạng: File ai_grading.py đã tích hợp AI chấm bài luận viết (Task Achievement, Coherence, Lexical, Grammar), chưa có AI chấm âm thanh.
+
+
+### 8.9. Exam Settings (Cài đặt đề thi) (1 tính năng):
+----------------------------------------------------------------------------------------------------
+23. [ ] Sound Setting - Cài đặt âm thanh
+   - Mức độ ưu tiên: Thấp
+   - Mô tả yêu cầu: Cài đặt âm thanh báo hiệu khi bắt đầu thi, hết giờ và nộp bài trong phòng thi.
+   - Đối chiếu hiện trạng: Đã có cài đặt thời gian, tự nộp, hiển thị đồng hồ, điểm số thời gian thực, nhưng chưa có tùy chọn âm thanh.
+
+
+====================================================================================================
+MODULE: 9. GAMIFICATION SYSTEM (HỆ THỐNG TRÒ CHƠI HÓA) (3 tính năng chưa làm)
+====================================================================================================
+
+### 9.1. Streak System (Hệ thống chuỗi) (1 tính năng):
+----------------------------------------------------------------------------------------------------
+24. [ ] Streak Protection - Bảo vệ chuỗi
+   - Mức độ ưu tiên: Cao
+   - Mô tả yêu cầu: Tính năng Đóng băng chuỗi (Streak Freeze) cho phép dùng điểm thưởng XP để bảo vệ chuỗi học tập nếu lỡ quên học 1 ngày.
+   - Đối chiếu hiện trạng: Đã có chuỗi học tập (Streak), phát hiện đứt chuỗi, ghi nhận chuỗi kỷ lục dài nhất, nhưng chưa có vật phẩm mua bảo vệ chuỗi.
+
+
+### 9.4. Badges System (Hệ thống huy hiệu) (1 tính năng):
+----------------------------------------------------------------------------------------------------
+25. [ ] Badge Sharing - Chia sẻ huy hiệu
+   - Mức độ ưu tiên: Thấp
+   - Mô tả yêu cầu: Tạo ảnh huy hiệu đạt được kèm huy chương để người dùng chia sẻ lên bảng tin mạng xã hội hoặc khoe bạn bè.
+   - Đối chiếu hiện trạng: Đã có hệ thống huy hiệu tự động mở khóa theo cột mốc kèm cộng điểm XP, nhưng chưa có nút share ra ngoài hệ thống.
+
+
+### 9.7. Game Mechanics (Cơ chế game) (1 tính năng):
+----------------------------------------------------------------------------------------------------
+26. [ ] Power-ups - Power-ups
+   - Mức độ ưu tiên: Trung bình
+   - Mô tả yêu cầu: Hệ thống vật phẩm bổ trợ trong game arcade (Đóng băng thời gian, Loại bỏ đáp án sai 50:50, Nhân đôi điểm số).
+   - Đối chiếu hiện trạng: Đã có 4 mini-game (Word Match, Speed Typing, Listening Rush, Speed Quiz), hệ thống 3 mạng sống, combo, nhưng chưa có power-up items.
+
+
+====================================================================================================
+MODULE: 10. ADMIN SYSTEM (HỆ THỐNG QUẢN TRỊ) (7 tính năng chưa làm)
+====================================================================================================
+
+### 10.5. Import/Export System (Hệ thống nhập/xuất) (1 tính năng):
+----------------------------------------------------------------------------------------------------
+27. [ ] Import History - Lịch sử nhập
+   - Mức độ ưu tiên: Thấp
+   - Mô tả yêu cầu: Bảng theo dõi nhật ký các lần nhập dữ liệu hàng loạt (thời gian, người thực hiện, loại dữ liệu, số dòng thành công/thất bại).
+   - Đối chiếu hiện trạng: Đã có bộ Bulk Importer 2 bước (Validate -> Commit) cho Từ vựng, Bài học, Đề thi với file CSV/Excel/JSON, nhưng chưa lưu riêng bảng ImportHistory.
+
+
+### 10.6. Audit Logging (Ghi nhật ký kiểm tra) (1 tính năng):
+----------------------------------------------------------------------------------------------------
+28. [ ] Log Retention - Lưu trữ nhật ký
+   - Mức độ ưu tiên: Thấp
+   - Mô tả yêu cầu: Tác vụ định kỳ tự động dọn dẹp hoặc lưu trữ các bản ghi nhật ký kiểm toán (Audit Logs) cũ hơn 90 hoặc 180 ngày.
+   - Đối chiếu hiện trạng: Đã có bảng AuditLog ghi nhận chi tiết hành động, IP, User Agent, múi giờ Việt Nam và xuất file CSV, nhưng chưa có auto-purge scheduler.
+
+
+### 10.7. System Configuration (Cấu hình hệ thống) (5 tính năng):
+----------------------------------------------------------------------------------------------------
+29. [ ] Feature Flags - Cờ tính năng
+   - Mức độ ưu tiên: Trung bình
+   - Mô tả yêu cầu: Giao diện Web Admin cho phép bật/tắt tức thì các tính năng hệ thống (Feature Flags) mà không cần can thiệp mã nguồn.
+   - Đối chiếu hiện trạng: Các tham số đang được quản lý tĩnh qua biến môi trường (.env) và file app/config.py.
+
+30. [ ] System Limits - Giới hạn hệ thống
+   - Mức độ ưu tiên: Trung bình
+   - Mô tả yêu cầu: Trang quản trị cho phép điều chỉnh các ngưỡng giới hạn hệ thống (giới hạn dung lượng upload, số lần đăng nhập sai, thời gian timeout phiên).
+   - Đối chiếu hiện trạng: Các ngưỡng đang được cấu hình cố định trong mã nguồn (5 lần đăng nhập sai, 30 phút timeout, file tối đa 5MB).
+
+31. [ ] Performance Settings - Cài đặt hiệu suất
+   - Mức độ ưu tiên: Thấp
+   - Mô tả yêu cầu: Giao diện điều chỉnh tham số hiệu năng hệ thống (kết nối database pool size, timeout kết nối).
+   - Đối chiếu hiện trạng: Cấu hình trực tiếp trong code SQLAlchemy.
+
+32. [ ] Backup Settings - Cài đặt sao lưu
+   - Mức độ ưu tiên: Thấp
+   - Mô tả yêu cầu: Giao diện quản lý sao lưu dữ liệu tự động định kỳ (chọn giờ sao lưu, lưu vào thư mục dự phòng hoặc đám mây).
+   - Đối chiếu hiện trạng: Hiện sao lưu đang phải thực hiện thủ công ở mức tệp tin cơ sở dữ liệu.
+
+33. [ ] Maintenance Mode - Chế độ bảo trì
+   - Mức độ ưu tiên: Trung bình
+   - Mô tả yêu cầu: Nút chuyển đổi hệ thống sang Chế độ bảo trì (Maintenance Mode - HTTP 503) kèm thông báo cho người dùng khi admin nâng cấp.
+   - Đối chiếu hiện trạng: Chưa có middleware bảo trì toàn trang.
+
+
+====================================================================================================
+MODULE: 11. SECURITY SYSTEM (HỆ THỐNG BẢO MẬT) (15 tính năng chưa làm)
+====================================================================================================
+
+### 11.1. Authentication Security (Bảo mật xác thực) (1 tính năng):
+----------------------------------------------------------------------------------------------------
+34. [ ] Secure Headers - Headers bảo mật
+   - Mức độ ưu tiên: Trung bình
+   - Mô tả yêu cầu: Cấu hình đầy đủ các HTTP Security Headers tiêu chuẩn cao: Content-Security-Policy (CSP), Strict-Transport-Security (HSTS), X-Content-Type-Options.
+   - Đối chiếu hiện trạng: Đã có bảo vệ CSRF (Flask-WTF), chống Brute-force qua Lockout, Cookies an toàn HttpOnly/SameSite, nhưng chưa cài middleware Flask-Talisman.
+
+
+### 11.2. Authorization Security (Bảo mật phân quyền) (1 tính năng):
+----------------------------------------------------------------------------------------------------
+35. [ ] Permission Caching - Cache quyền
+   - Mức độ ưu tiên: Thấp
+   - Mô tả yêu cầu: Lưu tạm thời (cache) danh sách quyền hạn người dùng vào bộ nhớ RAM/Redis để tối ưu tốc độ truy vấn mỗi khi kiểm tra route.
+   - Đối chiếu hiện trạng: Đã có hệ thống phân quyền RBAC phân cấp mạnh mẽ nhưng đang truy vấn trực tiếp CSDL qua quan hệ UserRole -> RolePermission.
+
+
+### 11.3. Data Security (Bảo mật dữ liệu) (5 tính năng):
+----------------------------------------------------------------------------------------------------
+36. [ ] Data Masking - Che dữ liệu
+   - Mức độ ưu tiên: Thấp
+   - Mô tả yêu cầu: Cơ chế che mờ dữ liệu nhạy cảm (ẩn một phần email, số điện thoại, thông tin định danh cá nhân) khi hiển thị trên màn hình quản trị viên.
+   - Đối chiếu hiện trạng: Dữ liệu được hiển thị nguyên vẹn cho Admin.
+
+37. [ ] Data Backup - Sao lưu dữ liệu
+   - Mức độ ưu tiên: Trung bình
+   - Mô tả yêu cầu: Cơ chế sao lưu CSDL tự động theo lịch (Automated Database Backup) lưu sang thư mục backup an toàn.
+   - Đối chiếu hiện trạng: Chưa có script cron backup tự động.
+
+38. [ ] Data Recovery - Phục hồi dữ liệu
+   - Mức độ ưu tiên: Thấp
+   - Mô tả yêu cầu: Quy trình và tập lệnh hỗ trợ khôi phục dữ liệu nhanh chóng khi có sự cố mất mát cơ sở dữ liệu.
+   - Đối chiếu hiện trạng: Chưa có kịch bản khôi phục tự động.
+
+39. [ ] Data Retention - Lưu trữ dữ liệu
+   - Mức độ ưu tiên: Thấp
+   - Mô tả yêu cầu: Chính sách và cơ chế tự động xóa/lưu trữ dữ liệu cũ (phiên đăng nhập hết hạn, nhật ký đăng nhập cũ) theo quy định bảo mật.
+   - Đối chiếu hiện trạng: Chưa có tác vụ dọn dẹp phiên rác tự động.
+
+40. [ ] Data Purging - Xóa dữ liệu
+   - Mức độ ưu tiên: Thấp
+   - Mô tả yêu cầu: Cơ chế xóa dọn triệt để vĩnh viễn các dữ liệu đã bị xóa mềm (soft deleted) sau một khoảng thời gian nhất định (ví dụ 30 ngày).
+   - Đối chiếu hiện trạng: Dữ liệu xóa mềm (is_active=False) đang được lưu trữ vĩnh viễn trong CSDL.
+
+
+### 11.4. Network Security (Bảo mật mạng) (8 tính năng):
+----------------------------------------------------------------------------------------------------
+41. [ ] HTTPS Enforcement - Thực thi HTTPS
+   - Mức độ ưu tiên: Trung bình
+   - Mô tả yêu cầu: Bắt buộc toàn bộ lưu lượng truy cập chuyển hướng sang giao thức mã hóa an toàn HTTPS (SSL/TLS redirection).
+   - Đối chiếu hiện trạng: Hệ thống đang chạy môi trường phát triển HTTP, chưa cấu hình enforce HTTPS mức ứng dụng.
+
+42. [ ] SSL/TLS Configuration - Cấu hình SSL/TLS
+   - Mức độ ưu tiên: Thấp
+   - Mô tả yêu cầu: Cấu hình chứng chỉ bảo mật SSL/TLS trực tiếp trên Web Server (Nginx/Gunicorn) khi triển khai thực tế.
+   - Đối chiếu hiện trạng: Đang dùng Flask dev server.
+
+43. [ ] CORS Configuration - Cấu hình CORS
+   - Mức độ ưu tiên: Thấp
+   - Mô tả yêu cầu: Cấu hình giới hạn tên miền truy cập tài nguyên chéo (Cross-Origin Resource Sharing) thông qua extension Flask-CORS.
+   - Đối chiếu hiện trạng: Chưa cấu hình Flask-CORS.
+
+44. [ ] Firewall Rules - Quy tắc tường lửa
+   - Mức độ ưu tiên: Thấp
+   - Mô tả yêu cầu: Thiết lập các quy tắc tường lửa mạng (Firewall / Web Application Firewall - WAF) ngăn chặn truy cập trái phép.
+   - Đối chiếu hiện trạng: Tính năng thuộc lớp hạ tầng máy chủ, chưa cấu hình trong mã nguồn.
+
+45. [ ] IP Whitelisting - Danh sách trắng IP
+   - Mức độ ưu tiên: Thấp
+   - Mô tả yêu cầu: Chỉ cho phép các dải địa chỉ IP chỉ định được phép truy cập vào trang Quản trị viên (/admin).
+   - Đối chiếu hiện trạng: Trang Admin hiện xác thực dựa trên vai trò tài khoản (Role-based), chưa giới hạn theo IP.
+
+46. [ ] IP Blacklisting - Danh sách đen IP
+   - Mức độ ưu tiên: Trung bình
+   - Mô tả yêu cầu: Danh sách đen tự động chặn hoàn toàn truy cập từ các địa chỉ IP có hành vi tấn công dò mật khẩu hoặc spam request.
+   - Đối chiếu hiện trạng: Đã có khóa theo tài khoản (Account Lockout), nhưng chưa chặn hẳn IP ở tầng mạng.
+
+47. [ ] DDoS Protection - Bảo vệ DDoS
+   - Mức độ ưu tiên: Thấp
+   - Mô tả yêu cầu: Giải pháp chống tấn công từ chối dịch vụ phân tán (DDoS) thông qua Cloudflare hoặc hạ tầng CDN.
+   - Đối chiếu hiện trạng: Thuộc hạ tầng triển khai bên ngoài.
+
+48. [ ] Network Monitoring - Giám sát mạng
+   - Mức độ ưu tiên: Thấp
+   - Mô tả yêu cầu: Giám sát lưu lượng mạng thời gian thực để phát hiện các mẫu truy cập bất thường.
+   - Đối chiếu hiện trạng: Chưa có công cụ giám sát mạng tích hợp.
+
+
+====================================================================================================
+MODULE: 12. SYSTEM FEATURES (TÍNH NĂNG HỆ THỐNG) (46 tính năng chưa làm)
+====================================================================================================
+
+### 12.1. Database Features (Tính năng database) (3 tính năng):
+----------------------------------------------------------------------------------------------------
+49. [ ] Migration System - Hệ thống migration
+   - Mức độ ưu tiên: Trung bình
+   - Mô tả yêu cầu: Hệ thống quản lý phiên bản cơ sở dữ liệu (Database Migrations) sử dụng Flask-Migrate / Alembic.
+   - Đối chiếu hiện trạng: Hiện tại đang khởi tạo bảng qua db.create_all(), chưa thiết lập migration tracking phiên bản lược đồ CSDL.
+
+50. [ ] Backup Automation - Tự động sao lưu
+   - Mức độ ưu tiên: Trung bình
+   - Mô tả yêu cầu: Tự động sao lưu cơ sở dữ liệu định kỳ mỗi ngày/tuần theo lịch trình được cấu hình sẵn.
+   - Đối chiếu hiện trạng: Chưa có tác vụ sao lưu tự động.
+
+51. [ ] Restore Automation - Tự động phục hồi
+   - Mức độ ưu tiên: Thấp
+   - Mô tả yêu cầu: Kịch bản phục hồi dữ liệu tự động từ các bản sao lưu gần nhất khi cần khôi phục hệ thống.
+   - Đối chiếu hiện trạng: Chưa có kịch bản restore tự động.
+
+
+### 12.2. API Features (Tính năng API) (4 tính năng):
+----------------------------------------------------------------------------------------------------
+52. [ ] Rate Limiting - Giới hạn tốc độ
+   - Mức độ ưu tiên: Trung bình
+   - Mô tả yêu cầu: Giới hạn tần suất gọi API (Rate Limiting) trên toàn bộ endpoints (ví dụ tối đa 60 request/phút) bằng Flask-Limiter.
+   - Đối chiếu hiện trạng: Đã có giới hạn 5 lần đăng nhập sai ở form Login, nhưng các endpoint API chung chưa có rate limiter.
+
+53. [ ] API Versioning - Phiên bản API
+   - Mức độ ưu tiên: Trung bình
+   - Mô tả yêu cầu: Quy chuẩn phiên bản cho toàn bộ API backend có tiền tố rõ ràng (ví dụ: /api/v1/lessons, /api/v1/vocabulary).
+   - Đối chiếu hiện trạng: Các endpoint AJAX đang nằm rải rác trong các route chính (/vocabulary/..., /quizzes/...).
+
+54. [ ] Documentation - Tài liệu
+   - Mức độ ưu tiên: Thấp
+   - Mô tả yêu cầu: Tài liệu API tương tác tự động sinh ra chuẩn OpenAPI / Swagger UI.
+   - Đối chiếu hiện trạng: Chưa tích hợp Flasgger / Swagger UI.
+
+55. [ ] CORS Support - Hỗ trợ CORS
+   - Mức độ ưu tiên: Thấp
+   - Mô tả yêu cầu: Hỗ trợ chia sẻ tài nguyên nguồn gốc chéo cho các ứng dụng client khác (mobile app, SPA).
+   - Đối chiếu hiện trạng: Hiện tại ứng dụng là giao diện render Jinja2 phía server.
+
+
+### 12.3. File Management (Quản lý file) (4 tính năng):
+----------------------------------------------------------------------------------------------------
+56. [ ] File Compression - Nén file
+   - Mức độ ưu tiên: Thấp
+   - Mô tả yêu cầu: Tự động nén ảnh đại diện (Avatar) và các tệp tải lên để tiết kiệm dung lượng lưu trữ.
+   - Đối chiếu hiện trạng: Ảnh avatar được lưu nguyên vẹn định dạng người dùng tải lên sau khi kiểm tra đuôi file và kích thước.
+
+57. [ ] Image Processing - Xử lý ảnh
+   - Mức độ ưu tiên: Trung bình
+   - Mô tả yêu cầu: Tự động cắt ảnh (crop vuông), resize về kích thước chuẩn (200x200px) bằng thư viện Pillow trước khi lưu vào static/uploads.
+   - Đối chiếu hiện trạng: Chưa tích hợp xử lý ảnh Pillow ở backend.
+
+58. [ ] Audio Processing - Xử lý audio
+   - Mức độ ưu tiên: Thấp
+   - Mô tả yêu cầu: Xử lý tệp âm thanh (cắt ghép, chuẩn hóa âm lượng, nén bitrate audio) cho bài học nghe.
+   - Đối chiếu hiện trạng: Các file mp3 bài nghe được đọc trực tiếp từ thư mục tĩnh.
+
+59. [ ] File Backup - Sao lưu file
+   - Mức độ ưu tiên: Thấp
+   - Mô tả yêu cầu: Tự động đồng bộ các file người dùng tải lên (ảnh đại diện, tài liệu) lên dịch vụ lưu trữ đám mây (AWS S3 / Google Cloud Storage).
+   - Đối chiếu hiện trạng: Toàn bộ file upload đang lưu cục bộ trong app/static/uploads/.
+
+
+### 12.4. Email System (Hệ thống email) (6 tính năng):
+----------------------------------------------------------------------------------------------------
+60. [ ] Email Queue - Hàng đợi email
+   - Mức độ ưu tiên: Trung bình
+   - Mô tả yêu cầu: Hàng đợi gửi email bất đồng bộ (Email Queue) bằng Celery hoặc Redis để không làm chậm request của người dùng khi gửi OTP/Reset.
+   - Đối chiếu hiện trạng: Đang gửi email trực tiếp qua SMTP và in log Terminal trong môi trường dev.
+
+61. [ ] Email Tracking - Theo dõi email
+   - Mức độ ưu tiên: Thấp
+   - Mô tả yêu cầu: Theo dõi trạng thái học viên đã mở email (Open rate) hoặc bấm vào link trong email (Click-through rate).
+   - Đối chiếu hiện trạng: Chưa tích hợp pixel tracking email.
+
+62. [ ] Email Bounce Handling - Xử lý bounce
+   - Mức độ ưu tiên: Thấp
+   - Mô tả yêu cầu: Tự động xử lý và đánh dấu các địa chỉ email không tồn tại hoặc bị từ chối gửi (Bounced Emails).
+   - Đối chiếu hiện trạng: Chưa có xử lý webhooks nhận phản hồi bounce từ máy chủ mail.
+
+63. [ ] Email Analytics - Phân tích email
+   - Mức độ ưu tiên: Thấp
+   - Mô tả yêu cầu: Thống kê tổng số email đã gửi, tỷ lệ gửi thành công, thất bại trên trang Quản trị.
+   - Đối chiếu hiện trạng: Chưa có báo cáo thống kê email riêng.
+
+64. [ ] Email Scheduling - Lên lịch email
+   - Mức độ ưu tiên: Thấp
+   - Mô tả yêu cầu: Lên lịch gửi email thông báo học tập hoặc bản tin tổng kết tiến độ hàng tuần vào một giờ định trước.
+   - Đối chiếu hiện trạng: Chưa có bộ lập lịch email định kỳ.
+
+65. [ ] Email Templates Management - Quản lý mẫu email
+   - Mức độ ưu tiên: Thấp
+   - Mô tả yêu cầu: Giao diện CMS trong trang Quản trị viên cho phép chỉnh sửa nội dung các mẫu email (OTP, Reset mật khẩu, Chào mừng) trực quan.
+   - Đối chiếu hiện trạng: Các mẫu email đang được viết cố định trong thư mục app/templates/emails/.
+
+
+### 12.5. Background Processing (Xử lý nền) (6 tính năng):
+----------------------------------------------------------------------------------------------------
+66. [ ] Task Queue - Hàng đợi tác vụ
+   - Mức độ ưu tiên: Trung bình
+   - Mô tả yêu cầu: Hệ thống hàng đợi tác vụ nền chuyên nghiệp (Task Queue Worker) sử dụng Celery hoặc RQ với Redis/RabbitMQ.
+   - Đối chiếu hiện trạng: Hiện tại tác vụ chấm điểm AI bài thi đang chạy qua thread nền riêng biệt (threading.Thread), chưa dùng message broker chuyên dụng.
+
+67. [ ] Scheduled Tasks - Tác vụ định kỳ
+   - Mức độ ưu tiên: Trung bình
+   - Mô tả yêu cầu: Hệ thống lập lịch tác vụ định kỳ tự động (Cron / Scheduled Jobs) sử dụng APScheduler hoặc Celery Beat.
+   - Đối chiếu hiện trạng: Chưa có scheduler chạy nền trong tiến trình ứng dụng.
+
+68. [ ] Retry Logic - Logic thử lại
+   - Mức độ ưu tiên: Thấp
+   - Mô tả yêu cầu: Cơ chế tự động thử lại (Retry) tác vụ nền với khoảng thời gian lùi dần (Exponential backoff) khi gặp sự cố mạng hoặc lỗi API.
+   - Đối chiếu hiện trạng: Tác vụ AI grading ghi nhận trạng thái lỗi FAILED khi ngoại lệ phát sinh nhưng chưa có vòng lặp tự động retry.
+
+69. [ ] Job Prioritization - Ưu tiên tác vụ
+   - Mức độ ưu tiên: Thấp
+   - Mô tả yêu cầu: Phân chia độ ưu tiên cho các tác vụ nền (ví dụ: OTP khẩn cấp ưu tiên cao hơn chấm bài luận dài).
+   - Đối chiếu hiện trạng: Các thread nền thực thi tuần tự theo yêu cầu.
+
+70. [ ] Resource Management - Quản lý tài nguyên
+   - Mức độ ưu tiên: Thấp
+   - Mô tả yêu cầu: Giới hạn số lượng worker và tài nguyên CPU/RAM tối đa dành cho các tiến trình xử lý nền.
+   - Đối chiếu hiện trạng: Chưa có bộ điều phối tài nguyên tiến trình con.
+
+71. [ ] Performance Monitoring - Giám sát hiệu suất
+   - Mức độ ưu tiên: Thấp
+   - Mô tả yêu cầu: Bảng theo dõi thời gian thực hiện trung bình và tỷ lệ hoàn thành của các tác vụ chạy nền.
+   - Đối chiếu hiện trạng: Chưa có bảng dashboard giám sát worker.
+
+
+### 12.6. Caching System (Hệ thống cache) (10 tính năng):
+----------------------------------------------------------------------------------------------------
+72. [ ] Response Caching - Cache phản hồi
+   - Mức độ ưu tiên: Trung bình
+   - Mô tả yêu cầu: Lưu tạm thời (cache) kết quả phản hồi HTTP của các trang tĩnh hoặc ít thay đổi để giảm tải máy chủ.
+   - Đối chiếu hiện trạng: Chưa tích hợp thư viện Flask-Caching.
+
+73. [ ] Data Caching - Cache dữ liệu
+   - Mức độ ưu tiên: Trung bình
+   - Mô tả yêu cầu: Lưu bộ nhớ đệm cho dữ liệu danh mục bài học, từ điển từ vựng vào Redis/RAM để tăng tốc truy xuất.
+   - Đối chiếu hiện trạng: Mọi truy vấn đều đọc trực tiếp từ CSDL SQLite/PostgreSQL.
+
+74. [ ] Query Caching - Cache query
+   - Mức độ ưu tiên: Thấp
+   - Mô tả yêu cầu: Lưu đệm kết quả của các câu truy vấn phức tạp (thống kê bảng xếp hạng, tiến độ tổng quan).
+   - Đối chiếu hiện trạng: Truy vấn được tối ưu hóa qua joinedload nhưng chưa lưu cache.
+
+75. [ ] Cache Invalidation - Hủy cache
+   - Mức độ ưu tiên: Thấp
+   - Mô tả yêu cầu: Cơ chế tự động xóa bộ nhớ đệm khi dữ liệu tương ứng có thay đổi (khi thêm/sửa bài học, đổi điểm).
+   - Đối chiếu hiện trạng: Chưa có hệ thống cache nên chưa có cơ chế vô hiệu hóa cache.
+
+76. [ ] Cache Management - Quản lý cache
+   - Mức độ ưu tiên: Thấp
+   - Mô tả yêu cầu: Giao diện quản lý bộ nhớ đệm cho Quản trị viên (xem dung lượng cache, nút xóa sạch cache thủ công).
+   - Đối chiếu hiện trạng: Chưa có giao diện quản lý cache.
+
+77. [ ] Cache Statistics - Thống kê cache
+   - Mức độ ưu tiên: Thấp
+   - Mô tả yêu cầu: Thống kê tỷ lệ trúng cache (Cache Hit/Miss ratio) để đánh giá hiệu quả tăng tốc độ ứng dụng.
+   - Đối chiếu hiện trạng: Chưa có đo lường cache.
+
+78. [ ] Cache Warming - Làm nóng cache
+   - Mức độ ưu tiên: Thấp
+   - Mô tả yêu cầu: Tự động tải sẵn dữ liệu phổ biến vào cache ngay khi ứng dụng khởi động (Pre-warming cache).
+   - Đối chiếu hiện trạng: Chưa thiết lập cơ chế nạp sẵn dữ liệu vào RAM.
+
+79. [ ] Distributed Caching - Cache phân tán
+   - Mức độ ưu tiên: Thấp
+   - Mô tả yêu cầu: Hệ thống bộ nhớ đệm phân tán hỗ trợ mở rộng nhiều máy chủ sử dụng Redis Cluster hoặc Memcached.
+   - Đối chiếu hiện trạng: Hệ thống hiện chạy đơn khối (Monolithic), chưa dùng distributed cache.
+
+80. [ ] Cache Security - Bảo mật cache
+   - Mức độ ưu tiên: Thấp
+   - Mô tả yêu cầu: Mã hóa và kiểm soát quyền truy cập dữ liệu được lưu trong bộ nhớ đệm.
+   - Đối chiếu hiện trạng: Chưa triển khai cache.
+
+81. [ ] Cache Optimization - Tối ưu cache
+   - Mức độ ưu tiên: Thấp
+   - Mô tả yêu cầu: Tối ưu hóa thời gian tồn tại (TTL) của từng nhóm dữ liệu trong bộ nhớ đệm.
+   - Đối chiếu hiện trạng: Chưa triển khai cache.
+
+
+### 12.7. Error Handling (Xử lý lỗi) (2 tính năng):
+----------------------------------------------------------------------------------------------------
+82. [ ] Error Analysis - Phân tích lỗi
+   - Mức độ ưu tiên: Thấp
+   - Mô tả yêu cầu: Phân tích tự động tần suất xuất hiện và xu hướng của các loại mã lỗi để cảnh báo lập trình viên.
+   - Đối chiếu hiện trạng: Đã có trang báo lỗi 403, 404, 500 đẹp mắt và ghi file log cục bộ, nhưng chưa có công cụ phân tích biểu đồ lỗi.
+
+83. [ ] Error Monitoring - Giám sát lỗi
+   - Mức độ ưu tiên: Trung bình
+   - Mô tả yêu cầu: Tích hợp dịch vụ giám sát lỗi ứng dụng thời gian thực như Sentry, Rollbar hoặc Datadog.
+   - Đối chiếu hiện trạng: Chưa tích hợp SDK giám sát lỗi bên thứ ba.
+
+
+### 12.8. Performance Optimization (Tối ưu hiệu suất) (4 tính năng):
+----------------------------------------------------------------------------------------------------
+84. [ ] Lazy Loading - Lazy loading
+   - Mức độ ưu tiên: Trung bình
+   - Mô tả yêu cầu: Tải chậm hình ảnh và tài nguyên tĩnh (Lazy Loading) khi cuộn chuột đến để tăng tốc độ tải trang ban đầu.
+   - Đối chiếu hiện trạng: Ảnh đang tải theo chuẩn HTML thông thường, chưa thêm loading="lazy" đại trà.
+
+85. [ ] Compression - Nén
+   - Mức độ ưu tiên: Thấp
+   - Mô tả yêu cầu: Nén toàn bộ phản hồi HTTP (Gzip/Brotli Compression) ở tầng ứng dụng hoặc Web Server.
+   - Đối chiếu hiện trạng: Chưa kích hoạt middleware Flask-Compress.
+
+86. [ ] Load Balancing - Cân bằng tải
+   - Mức độ ưu tiên: Thấp
+   - Mô tả yêu cầu: Cân bằng tải giữa nhiều phiên bản ứng dụng (Load Balancer) để đáp ứng lượng người dùng lớn đồng thời.
+   - Đối chiếu hiện trạng: Ứng dụng đang chạy 1 instance duy nhất.
+
+87. [ ] Performance Monitoring - Giám sát hiệu suất
+   - Mức độ ưu tiên: Thấp
+   - Mô tả yêu cầu: Công cụ theo dõi thời gian phản hồi (Response time / APM) của từng route Flask.
+   - Đối chiếu hiện trạng: Chưa tích hợp APM monitoring.
+
+
+### 12.9. Monitoring & Logging (Giám sát & ghi log) (5 tính năng):
+----------------------------------------------------------------------------------------------------
+88. [ ] Performance Logging - Ghi hiệu suất
+   - Mức độ ưu tiên: Thấp
+   - Mô tả yêu cầu: Ghi lại chi tiết thời gian thực thi của từng truy vấn SQL và thời gian render template.
+   - Đối chiếu hiện trạng: Đã có logging ứng dụng và nhật ký người dùng AuditLog, chưa ghi log profiling hiệu năng.
+
+89. [ ] Resource Monitoring - Giám sát tài nguyên
+   - Mức độ ưu tiên: Thấp
+   - Mô tả yêu cầu: Theo dõi tỷ lệ sử dụng tài nguyên phần cứng máy chủ (CPU, RAM, Disk, Network) trực tiếp trên trang Admin.
+   - Đối chiếu hiện trạng: Chưa có widget đo phần cứng máy chủ.
+
+90. [ ] Alert System - Hệ thống cảnh báo
+   - Mức độ ưu tiên: Trung bình
+   - Mô tả yêu cầu: Tự động gửi thông báo khẩn qua Telegram / Discord / Slack webhook khi hệ thống gặp lỗi 500 nghiêm trọng.
+   - Đối chiếu hiện trạng: Lỗi đang được in ra terminal và lưu vào file log.
+
+91. [ ] Log Analysis - Phân tích log
+   - Mức độ ưu tiên: Thấp
+   - Mô tả yêu cầu: Công cụ tìm kiếm và phân tích log chuyên sâu (ELK Stack hoặc Grafana Loki).
+   - Đối chiếu hiện trạng: Admin đang lọc và tìm kiếm trực tiếp trên bảng AuditLog qua giao diện web.
+
+92. [ ] Log Retention - Lưu trữ log
+   - Mức độ ưu tiên: Thấp
+   - Mô tả yêu cầu: Tự động nén và dọn dẹp các tệp log quay vòng (Log rotation & retention) cũ hơn số ngày quy định.
+   - Đối chiếu hiện trạng: Chưa cấu hình RotatingFileHandler tự động dọn log.
+
+
+### 12.10. Testing System (Hệ thống kiểm thử) (2 tính năng):
+----------------------------------------------------------------------------------------------------
+93. [ ] End-to-End Tests - Kiểm thử E2E
+   - Mức độ ưu tiên: Trung bình
+   - Mô tả yêu cầu: Bộ kiểm thử tự động toàn diện từ đầu đến cuối trên trình duyệt thực tế (E2E Testing) sử dụng Playwright hoặc Selenium.
+   - Đối chiếu hiện trạng: Đã có 185 test cases Unit Test, Functional Test và Integration Test chạy hoàn hảo bằng Pytest, chưa có bộ test E2E browser.
+
+94. [ ] Continuous Integration - Tích hợp liên tục
+   - Mức độ ưu tiên: Trung bình
+   - Mô tả yêu cầu: Quy trình tích hợp liên tục CI/CD tự động chạy kiểm thử và kiểm tra chất lượng mã nguồn mỗi khi tạo commit (GitHub Actions).
+   - Đối chiếu hiện trạng: Chưa có file cấu hình .github/workflows/ci.yml.
+
+
+====================================================================================================
+MODULE: 13. UI/UX FEATURES (TÍNH NĂNG GIAO DIỆN) (14 tính năng chưa làm)
+====================================================================================================
+
+### 13.1. Responsive Design (Thiết kế responsive) (1 tính năng):
+----------------------------------------------------------------------------------------------------
+95. [ ] Gesture Support - Hỗ trợ gesture
+   - Mức độ ưu tiên: Trung bình
+   - Mô tả yêu cầu: Hỗ trợ thao tác vuốt cảm ứng (Swipe gestures) trên thiết bị di động để lật thẻ flashcard hoặc chuyển câu hỏi.
+   - Đối chiếu hiện trạng: Giao diện đã responsive mượt mà trên Mobile/Tablet/Desktop, nhưng lật flashcard hiện đang dùng thao tác chạm/click.
+
+
+### 13.2. Accessibility (Khả năng truy cập) (2 tính năng):
+----------------------------------------------------------------------------------------------------
+96. [ ] Screen Reader Support - Hỗ trợ screen reader
+   - Mức độ ưu tiên: Thấp
+   - Mô tả yêu cầu: Tối ưu hóa các thẻ ARIA và cấu trúc ngữ nghĩa chuyên sâu hỗ trợ người khiếm thị sử dụng phần mềm đọc màn hình.
+   - Đối chiếu hiện trạng: Đã có các thẻ aria-label cơ bản, độ tương phản màu tốt, điều hướng phím Tab/Enter hoạt động ổn định.
+
+97. [ ] Skip Links - Link skip
+   - Mức độ ưu tiên: Thấp
+   - Mô tả yêu cầu: Liên kết ẩn hỗ trợ người dùng dùng bàn phím bấm bỏ qua thanh điều hướng để nhảy thẳng tới nội dung chính ("Skip to main content").
+   - Đối chiếu hiện trạng: Chưa thêm skip-link ở đầu trang layout base.
+
+
+### 13.4. User Experience (Trải nghiệm người dùng) (3 tính năng):
+----------------------------------------------------------------------------------------------------
+98. [ ] Shortcuts - Phím tắt
+   - Mức độ ưu tiên: Trung bình
+   - Mô tả yêu cầu: Hệ thống phím tắt bàn phím tiện lợi (ví dụ: Phím Space để lật thẻ flashcard, Phím mũi tên để qua từ, phím 1-4 để chọn đáp án).
+   - Đối chiếu hiện trạng: Người học đang tương tác chủ yếu qua chuột hoặc bấm chạm màn hình.
+
+99. [ ] Onboarding - Hướng dẫn bắt đầu
+   - Mức độ ưu tiên: Trung bình
+   - Mô tả yêu cầu: Chuyến tham quan hướng dẫn giao diện (Product Tour / Onboarding Walkthrough) từng bước cho người dùng lần đầu tạo tài khoản.
+   - Đối chiếu hiện trạng: Đã có trang hướng dẫn /how-to-learn, nhưng chưa có popup tương tác từng bước hướng dẫn lần đầu đăng nhập.
+
+100. [ ] User Support - Hỗ trợ người dùng
+   - Mức độ ưu tiên: Trung bình
+   - Mô tả yêu cầu: Kênh trung tâm trợ giúp người dùng (kênh gửi thắc mắc, phản hồi hỗ trợ kỹ thuật trực tiếp trong tài khoản).
+   - Đối chiếu hiện trạng: Đã có tính năng báo cáo bài học/từ vựng (Report), nhưng chưa có trang hỗ trợ người dùng toàn diện.
+
+
+### 13.5. Theming (Chủ đề) (8 tính năng):
+----------------------------------------------------------------------------------------------------
+101. [ ] Dark Mode - Chế độ tối
+   - Mức độ ưu tiên: Cao
+   - Mô tả yêu cầu: Chế độ giao diện nền tối (Dark Mode / Night Theme) giúp bảo vệ mắt người dùng khi học tập vào ban đêm.
+   - Đối chiếu hiện trạng: Hệ thống hiện tại đang sử dụng 100% giao diện nền sáng (Light Mode) tông màu hiện đại Indigo/Emerald.
+
+102. [ ] Theme Switching - Chuyển chủ đề
+   - Mức độ ưu tiên: Cao
+   - Mô tả yêu cầu: Nút bấm chuyển đổi nhanh một chạm giữa chế độ Sáng / Tối (Toggle Theme Switcher) trên thanh điều hướng Navbar.
+   - Đối chiếu hiện trạng: Chưa có nút chuyển đổi giao diện trên Navbar.
+
+103. [ ] Custom Themes - Chủ đề tùy chỉnh
+   - Mức độ ưu tiên: Thấp
+   - Mô tả yêu cầu: Cho phép người dùng cá nhân hóa bảng màu giao diện học tập theo sở thích riêng.
+   - Đối chiếu hiện trạng: Chưa hỗ trợ chủ đề tùy biến.
+
+104. [ ] Color Schemes - Phối màu
+   - Mức độ ưu tiên: Thấp
+   - Mô tả yêu cầu: Bộ sưu tập các phối màu giao diện đa dạng (Xanh dương, Tím hoàng gia, Xanh lá thiên nhiên...).
+   - Đối chiếu hiện trạng: Đang sử dụng một bảng màu thương hiệu duy nhất.
+
+105. [ ] Font Options - Tùy chọn font
+   - Mức độ ưu tiên: Thấp
+   - Mô tả yêu cầu: Tùy chọn thay đổi phông chữ và kích thước chữ bài đọc phù hợp với thị lực của từng người học.
+   - Đối chiếu hiện trạng: Đang dùng bộ phông chữ mặc định của hệ thống.
+
+106. [ ] Theme Persistence - Lưu chủ đề
+   - Mức độ ưu tiên: Cao
+   - Mô tả yêu cầu: Lưu trạng thái giao diện đã chọn của người dùng vào LocalStorage hoặc CSDL để duy trì khi mở lại trình duyệt.
+   - Đối chiếu hiện trạng: Chưa có lưu trạng thái theme.
+
+107. [ ] Theme Preview - Xem trước chủ đề
+   - Mức độ ưu tiên: Thấp
+   - Mô tả yêu cầu: Màn hình xem trước giao diện trước khi quyết định áp dụng chủ đề mới.
+   - Đối chiếu hiện trạng: Chưa có tính năng đổi theme.
+
+108. [ ] Accessibility Themes - Chủ đề khả năng truy cập
+   - Mức độ ưu tiên: Thấp
+   - Mô tả yêu cầu: Chủ đề giao diện độ tương phản cực cao (High Contrast Theme) dành cho người dùng thị lực kém.
+   - Đối chiếu hiện trạng: Chưa có chế độ tương phản cao chuyên biệt.
+
+
+====================================================================================================
+MODULE: 14. DATA INTEGRITY & VALIDATION (TOÀN VỆN DỮ LIỆU & KIỂM TRA) (5 tính năng chưa làm)
+====================================================================================================
+
+### 14.3. Data Quality (Chất lượng dữ liệu) (5 tính năng):
+----------------------------------------------------------------------------------------------------
+109. [ ] Data Profiling - Phân tích dữ liệu
+   - Mức độ ưu tiên: Thấp
+   - Mô tả yêu cầu: Phân tích thống kê chất lượng dữ liệu (tỷ lệ bản ghi thiếu trường dữ liệu, tỷ lệ rỗng, định dạng dị biệt).
+   - Đối chiếu hiện trạng: Đã có tính năng kiểm tra dữ liệu nghiêm ngặt ở bộ lọc Admin Importer, chưa có công cụ profiling riêng.
+
+110. [ ] Data Quality Metrics - Thước đo chất lượng
+   - Mức độ ưu tiên: Thấp
+   - Mô tả yêu cầu: Hệ thống đo lường các chỉ số chất lượng dữ liệu trong CSDL.
+   - Đối chiếu hiện trạng: Đang kiểm soát qua các ràng buộc CSDL (Unique, Foreign Key, Not Null).
+
+111. [ ] Data Quality Monitoring - Giám sát chất lượng
+   - Mức độ ưu tiên: Thấp
+   - Mô tả yêu cầu: Giám sát tự động tính toàn vẹn dữ liệu định kỳ và thông báo cho Quản trị viên.
+   - Đối chiếu hiện trạng: Chưa có giám sát tự động.
+
+112. [ ] Data Quality Reports - Báo cáo chất lượng
+   - Mức độ ưu tiên: Thấp
+   - Mô tả yêu cầu: Xuất báo cáo tổng kết tình trạng chất lượng dữ liệu hệ thống.
+   - Đối chiếu hiện trạng: Chưa có báo cáo chất lượng dữ liệu.
+
+113. [ ] Data Quality Improvement - Cải thiện chất lượng
+   - Mức độ ưu tiên: Thấp
+   - Mô tả yêu cầu: Công cụ hỗ trợ chuẩn hóa và tự động sửa các trường dữ liệu bị thiếu hoặc lệch chuẩn.
+   - Đối chiếu hiện trạng: Chưa có công cụ auto-fix dữ liệu.
+
+
+====================================================================================================
+MODULE: 15. ERROR HANDLING & RECOVERY (XỬ LÝ LỖI & PHỤC HỒI) (13 tính năng chưa làm)
+====================================================================================================
+
+### 15.1. Error Detection (Phát hiện lỗi) (2 tính năng):
+----------------------------------------------------------------------------------------------------
+114. [ ] Error Correlation - Tương quan lỗi
+   - Mức độ ưu tiên: Thấp
+   - Mô tả yêu cầu: Gắn mã định danh tương quan duy nhất (Correlation ID / Trace ID) vào mỗi yêu cầu để truy vết chuỗi lỗi.
+   - Đối chiếu hiện trạng: Lỗi được ghi theo stack trace thông thường.
+
+115. [ ] Error Patterns - Mẫu lỗi
+   - Mức độ ưu tiên: Thấp
+   - Mô tả yêu cầu: Hệ thống tự động gom nhóm các lỗi có chung mẫu nguyên nhân để xử lý dứt điểm.
+   - Đối chiếu hiện trạng: Chưa có công cụ phân tích mẫu lỗi.
+
+
+### 15.2. Error Recovery (Phục hồi lỗi) (5 tính năng):
+----------------------------------------------------------------------------------------------------
+116. [ ] Automatic Retry - Thử lại tự động
+   - Mức độ ưu tiên: Thấp
+   - Mô tả yêu cầu: Tự động gửi lại yêu cầu khi gặp sự cố ngắt kết nối mạng tạm thời phía client.
+   - Đối chiếu hiện trạng: Người dùng cần bấm tải lại trang hoặc bấm thử lại thủ công.
+
+117. [ ] Circuit Breakers - Circuit breakers
+   - Mức độ ưu tiên: Thấp
+   - Mô tả yêu cầu: Mẫu thiết kế ngắt mạch (Circuit Breaker) tự động tạm ngắt các dịch vụ phụ (như AI Grading) khi quá tải để bảo vệ hệ thống chính.
+   - Đối chiếu hiện trạng: AI grading đang chạy độc lập trong background thread an toàn, nhưng chưa cài đặt circuit breaker pattern.
+
+118. [ ] Data Recovery - Phục hồi dữ liệu
+   - Mức độ ưu tiên: Thấp
+   - Mô tả yêu cầu: Cơ chế tự động khôi phục dữ liệu từ bản sao lưu dự phòng khi phát hiện hỏng dữ liệu.
+   - Đối chiếu hiện trạng: Quy trình phục hồi đang phải làm thủ công.
+
+119. [ ] Service Recovery - Phục hồi dịch vụ
+   - Mức độ ưu tiên: Thấp
+   - Mô tả yêu cầu: Tự động khởi động lại tiến trình web server (Process Supervisor) khi dịch vụ bị dừng đột ngột.
+   - Đối chiếu hiện trạng: Phụ thuộc vào công cụ quản lý tiến trình hệ điều hành (systemd / PM2 / Docker).
+
+120. [ ] System Recovery - Phục hồi hệ thống
+   - Mức độ ưu tiên: Thấp
+   - Mô tả yêu cầu: Quy trình phục hồi toàn diện thảm họa hệ thống (Disaster Recovery Plan).
+   - Đối chiếu hiện trạng: Chưa có kịch bản Disaster Recovery tự động.
+
+
+### 15.3. User Error Handling (Xử lý lỗi người dùng) (6 tính năng):
+----------------------------------------------------------------------------------------------------
+121. [ ] Support Contacts - Liên hệ hỗ trợ
+   - Mức độ ưu tiên: Trung bình
+   - Mô tả yêu cầu: Hiển thị thông tin liên hệ hỗ trợ trực tiếp (Hotline, Email hỗ trợ kỹ thuật, Zalo OA) ngay trên các trang báo lỗi 404/500.
+   - Đối chiếu hiện trạng: Trang lỗi 403, 404, 500 hiện có lời giải thích thân thiện và nút quay lại trang chủ, chưa có số hotline/email hỗ trợ.
+
+122. [ ] Error Tutorials - Hướng dẫn lỗi
+   - Mức độ ưu tiên: Thấp
+   - Mô tả yêu cầu: Các bài viết hoặc tài liệu hướng dẫn nhanh cách tự khắc phục một số lỗi thường gặp của người dùng (quên mật khẩu, không nhận được OTP).
+   - Đối chiếu hiện trạng: Đã có thông báo hướng dẫn trực tiếp trong form, chưa có kho bài viết hướng dẫn lỗi riêng.
+
+123. [ ] FAQ Integration - Tích hợp FAQ
+   - Mức độ ưu tiên: Trung bình
+   - Mô tả yêu cầu: Trang hỏi đáp thường gặp (FAQ) tích hợp đầy đủ câu hỏi và câu trả lời về cách sử dụng hệ thống.
+   - Đối chiếu hiện trạng: Đã có trang hướng dẫn cách học (/how-to-learn), nhưng chưa có mục câu hỏi thường gặp FAQ chuyên biệt.
+
+124. [ ] Video Tutorials - Hướng dẫn video
+   - Mức độ ưu tiên: Trung bình
+   - Mô tả yêu cầu: Video clip ngắn hướng dẫn cách học từ vựng SRS, cách làm đề thi TOEIC/IELTS và sử dụng sảnh game.
+   - Đối chiếu hiện trạng: Chưa tích hợp video clip hướng dẫn.
+
+125. [ ] Chat Support - Hỗ trợ chat
+   - Mức độ ưu tiên: Trung bình
+   - Mô tả yêu cầu: Hộp thoại Live Chat trực tuyến (Chatbot hoặc nhân viên hỗ trợ trực tiếp) ở góc dưới màn hình.
+   - Đối chiếu hiện trạng: Chưa tích hợp tiện ích Live Chat.
+
+126. [ ] Ticket System - Hệ thống vé
+   - Mức độ ưu tiên: Thấp
+   - Mô tả yêu cầu: Hệ thống gửi phiếu yêu cầu hỗ trợ (Support Ticket) có mã theo dõi tiến độ xử lý vấn đề của học viên.
+   - Đối chiếu hiện trạng: Chưa có hệ thống Ticket Helpdesk.
+
+
+====================================================================================================
+LỘ TRÌNH ĐỀ XUẤT TRIỂN KHAI TIẾP THEO (DEVELOPMENT ROADMAP & PRIORITIES)
+====================================================================================================
+
+GIAI ĐOẠN 1: TÍNH NĂNG NÂNG TẦM TRẢI NGHIỆM NGƯỜI DÙNG (ƯU TIÊN CAO - HIGH PRIORITY)
+Đây là những tính năng học viên trực tiếp mong đợi nhiều nhất, mang lại hiệu ứng WOW và giữ chân người học:
+1. [ ] Chế độ nền tối & Nút chuyển Theme (Dark Mode & Theme Switcher) [Module 13]
+2. [ ] Thu âm giọng nói trực tiếp qua Mic (Web Audio API Recording) cho bài học Speaking [Module 4]
+3. [ ] AI nhận diện và phản hồi giọng nói (Speech Recognition & Audio Feedback) [Module 4 & 8]
+4. [ ] Đóng băng chuỗi học tập (Streak Freeze Protection) mua bằng điểm thưởng XP [Module 9]
+5. [ ] Phòng thi IELTS Speaking trực tuyến 3 phần đầy đủ [Module 8]
+
+GIAI ĐOẠN 2: TÍNH NĂNG TƯƠNG TÁC, NỘI DUNG & TIỆN ÍCH HỌC TẬP (ƯU TIÊN TRUNG BÌNH - MEDIUM PRIORITY)
+Các tính năng hoàn thiện chiều sâu nội dung và gia tăng sự gắn kết:
+1. [ ] Hệ thống phím tắt bàn phím (Shortcuts) khi lật Flashcard và làm bài Quiz [Module 13]
+2. [ ] Chia sẻ bộ Flashcard tự tạo và bộ câu hỏi cho bạn bè (Flashcard/Quiz Sharing) [Module 5 & 7]
+3. [ ] Danh mục bộ đề thi Tốt nghiệp THPT Quốc Gia môn Tiếng Anh [Module 8]
+4. [ ] Bôi màu từ vựng (Highlight) và ghi chú tương tác trên bài đọc hiểu (Reading Annotation) [Module 4]
+5. [ ] Chuyến tham quan hướng dẫn người mới (Onboarding Product Tour) [Module 13]
+6. [ ] Tự động cắt ảnh đại diện (Pillow Image Cropping) trước khi lưu [Module 12]
+7. [ ] Giao diện Web Admin bật tắt tính năng bằng Feature Flags [Module 10]
+8. [ ] Hệ thống di chuyển cơ sở dữ liệu Flask-Migrate (Alembic) [Module 12]
+
+GIAI ĐOẠN 3: TỐI ƯU HẠ TẦNG DOANH NGHIỆP & BẢO MẬT NÂNG CAO (ENTERPRISE INFRASTRUCTURE)
+Các hạng mục phù hợp triển khai khi ứng dụng đạt quy mô hàng chục nghìn người dùng đồng thời:
+1. [ ] Caching phân tán với Redis/Memcached [Module 12]
+2. [ ] Hàng đợi tác vụ bất đồng bộ Celery / Redis Queue [Module 12]
+3. [ ] Cấu hình bảo mật nâng cao: HSTS, CSP (Flask-Talisman), Rate-limiting diện rộng [Module 11 & 12]
+4. [ ] Kiểm thử tự động E2E trên trình duyệt với Playwright/Selenium và CI/CD GitHub Actions [Module 12]
+5. [ ] Tích hợp Live Chat và hệ thống Ticket Helpdesk chăm sóc khách hàng [Module 15]
+
+====================================================================================================
+TỔNG KẾT: 126 TÍNH NĂNG CHƯA LÀM ĐÃ ĐƯỢC PHÂN TÍCH VÀ ĐỊNH VỊ CHÍNH XÁC.
+KHI HOÀN THÀNH BẤT KỲ TÍNH NĂNG NÀO, HÃY ĐỔI DẤU [ ] THÀNH [x] ĐỂ ĐỒNG BỘ TRẠNG THÁI.
+====================================================================================================

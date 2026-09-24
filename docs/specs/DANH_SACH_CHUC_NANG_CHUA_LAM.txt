@@ -1,0 +1,665 @@
+====================================================================================================
+DANH SÁCH CHI TIẾT CÁC TÍNH NĂNG CHƯA TRIỂN KHAI & LỘ TRÌNH PHÁT TRIỂN (ROADMAP)
+HỆ THỐNG NỀN TẢNG HỌC TIẾNG ANH THÔNG MINH - ENGLISHMATE
+====================================================================================================
+Tài liệu: Báo cáo đối chiếu & Kế hoạch phát triển tính năng còn thiếu
+Căn cứ so sánh:
+  1. EnglishMate_Features.txt (Tổng hợp các tính năng đã hoàn thành trong codebase)
+  2. List-Advantage-EnglishMate_Features.txt (Bảng tiêu chuẩn toàn diện 864 tính năng hệ thống)
+Ngày tạo: 2026-09-24
+Trạng thái: 126 / 864 tính năng đang chờ triển khai (Tỷ lệ hoàn thành hiện tại: 85.4%)
+====================================================================================================
+
+MỤC LỤC TỔNG QUAN:
+----------------------------------------------------------------------------------------------------
+PHẦN I: BẢNG TỔNG HỢP NHANH SỐ LƯỢNG TÍNH NĂNG CHƯA LÀM THEO MODULE
+PHẦN II: CHI TIẾT 126 TÍNH NĂNG CHƯA LÀM (SO SÁNH HIỆN TRẠNG, KHIẾM KHUYẾT & GIẢI PHÁP KỸ THUẬT)
+  - Module 2: User Profile & Settings (3 tính năng)
+  - Module 3: Dashboard & Analytics (3 tính năng)
+  - Module 4: Lessons & 4 Skills (9 tính năng)
+  - Module 5: Vocabulary & Flashcard System (2 tính năng)
+  - Module 6: Grammar System (1 tính năng)
+  - Module 7: Quiz System (1 tính năng)
+  - Module 8: Exam System (4 tính năng)
+  - Module 9: Gamification System (3 tính năng)
+  - Module 10: Admin System (7 tính năng)
+  - Module 11: Security System (15 tính năng)
+  - Module 12: System Features (46 tính năng)
+  - Module 13: UI/UX Features (14 tính năng)
+  - Module 14: Data Integrity & Validation (5 tính năng)
+  - Module 15: Error Handling & Recovery (13 tính năng)
+PHẦN III: PHÂN LOẠI THEO LỘ TRÌNH PHÁT TRIỂN THỰC TẾ (4 PHASES ROADMAP)
+
+====================================================================================================
+PHẦN I: BẢNG TỔNG HỢP NHANH SỐ LƯỢNG TÍNH NĂNG CHƯA LÀM THEO MODULE
+====================================================================================================
+
++----+---------------------------------------------------+----------+-----------+-----------+
+| STT| Module Hệ Thống                                    | Đã Làm   | Chưa Làm  | Tỷ Lệ     |
++----+---------------------------------------------------+----------+-----------+-----------+
+| 01 | 1. Authentication & User Management               |  60 / 60 |  00 tính  |  100.0%   |
+| 02 | 2. User Profile & Settings                        |  37 / 40 |  03 tính  |   92.5%   |
+| 03 | 3. Dashboard & Analytics                          |  45 / 48 |  03 tính  |   93.8%   |
+| 04 | 4. Lessons & 4 Skills                             |  54 / 63 |  09 tính  |   85.7%   |
+| 05 | 5. Vocabulary & Flashcard System                  |  76 / 78 |  02 tính  |   97.4%   |
+| 06 | 6. Grammar System                                 |  60 / 61 |  01 tính  |   98.4%   |
+| 07 | 7. Quiz System                                    |  45 / 46 |  01 tính  |   97.8%   |
+| 08 | 8. Exam System                                    |  74 / 78 |  04 tính  |   94.9%   |
+| 09 | 9. Gamification System                            |  67 / 70 |  03 tính  |   95.7%   |
+| 10 | 10. Admin System                                  |  63 / 70 |  07 tính  |   90.0%   |
+| 11 | 11. Security System                               |  25 / 40 |  15 tính  |   62.5%   |
+| 12 | 12. System Features                               |  54 / 100|  46 tính  |   54.0%   |
+| 13 | 13. UI/UX Features                                |  36 / 50 |  14 tính  |   72.0%   |
+| 14 | 14. Data Integrity & Validation                   |  25 / 30 |  05 tính  |   83.3%   |
+| 15 | 15. Error Handling & Recovery                     |  17 / 30 |  13 tính  |   56.7%   |
++----+---------------------------------------------------+----------+-----------+-----------+
+|    | TỔNG CỘNG HỆ THỐNG                                | 738 / 864| 126 tính  |   85.4%   |
++----+---------------------------------------------------+----------+-----------+-----------+
+
+====================================================================================================
+PHẦN II: CHI TIẾT 126 TÍNH NĂNG CHƯA LÀM
+(ĐỐI CHIẾU VỚI ENGLISHMATE_FEATURES.TXT & ĐỀ XUẤT GIẢI PHÁP KỸ THUẬT)
+====================================================================================================
+
+----------------------------------------------------------------------------------------------------
+MODULE 2. USER PROFILE & SETTINGS (HỒ SƠ & CÀI ĐẶT) — 3 TÍNH NĂNG CHƯA LÀM
+----------------------------------------------------------------------------------------------------
+
+[ ] 2.1. Email Change History - Lịch sử thay đổi email (Mục 2.2)
+- Hiện trạng trong EnglishMate_Features.txt:
+  Hệ thống đã có quy trình đổi email bảo mật 2 bước (`/profile/change-email` và `/profile/verify-email`), kiểm tra trùng lặp email và gửi OTP xác nhận.
+- Phần còn thiếu chưa làm:
+  Chưa có bảng CSDL lưu vết lịch sử các lần đổi email cũ của người dùng. Khi người dùng đổi email, trường `email` bị ghi đè trực tiếp mà không lưu lại dấu vết trước đó.
+- Giải pháp kỹ thuật cần làm:
+  + Tạo model `EmailChangeHistory` (id, user_id, old_email, new_email, ip_address, changed_at).
+  + Trong route `verify_new_email()`, sau khi đổi thành công thì ghi nhận 1 bản ghi vào bảng này.
+  + Thêm tab "Lịch sử bảo mật" trong trang `/profile` để người dùng xem lại.
+- Mức độ ưu tiên: Trung bình (Medium)
+
+[ ] 2.2. Vocabulary Notification - Thông báo ôn tập từ vựng (Mục 2.5)
+- Hiện trạng trong EnglishMate_Features.txt:
+  Đã có thuật toán Spaced Repetition (SRS) tính ngày ôn tập tiếp theo (`next_review`) và cài đặt mục tiêu số từ học mỗi ngày (10 - 50 từ).
+- Phần còn thiếu chưa làm:
+  Chưa có cơ chế thông báo (Web Push Notification hoặc Email Alert) tự động nhắc nhở người dùng khi có từ vựng đến hạn cần ôn tập hôm nay.
+- Giải pháp kỹ thuật cần làm:
+  + Tích hợp Web Notifications API trên trình duyệt (Service Worker).
+  + Thêm trường `vocab_reminder_enabled` và `vocab_reminder_time` trong bảng `User`.
+  + Tạo endpoint background job kiểm tra từ đến hạn và gửi thông báo nhắc học.
+- Mức độ ưu tiên: Cao (High)
+
+[ ] 2.3. Exam Sound Effects - Hiệu ứng âm thanh thi (Mục 2.5)
+- Hiện trạng trong EnglishMate_Features.txt:
+  Trang cài đặt `/settings` của exam đã có giới hạn thời gian thi, hiển thị đồng hồ, tự động nộp bài khi hết giờ.
+- Phần còn thiếu chưa làm:
+  Chưa có toggle bật/tắt âm thanh hiệu ứng (tiếng tích tắc 10s cuối, tiếng chuông báo hết giờ, tiếng ting báo nộp bài thành công).
+- Giải pháp kỹ thuật cần làm:
+  + Thêm trường `sound_effects_enabled` (Boolean, default=True) vào cấu hình người dùng.
+  + Bổ sung các file âm thanh nhỏ (`tick.mp3`, `timeout.mp3`, `success.mp3`) vào thư mục `static/sounds/`.
+  + Tích hợp Audio JS phát âm thanh tương ứng trong trang làm bài thi.
+- Mức độ ưu tiên: Thấp (Low)
+
+----------------------------------------------------------------------------------------------------
+MODULE 3. DASHBOARD & ANALYTICS (BẢNG ĐIỀU KHIỂN & PHÂN TÍCH) — 3 TÍNH NĂNG CHƯA LÀM
+----------------------------------------------------------------------------------------------------
+
+[ ] 3.1. Activity Filter - Bộ lọc khoảng thời gian hoạt động (Mục 3.2)
+- Hiện trạng trong EnglishMate_Features.txt:
+  Dashboard đã có Activity Heatmap cả năm (GitHub-style) và biểu đồ hoạt động tuần hiện tại.
+- Phần còn thiếu chưa làm:
+  Chưa có dropdown/picker cho phép người dùng lọc biểu đồ theo khoảng thời gian tùy chọn (7 ngày qua, 30 ngày qua, Quý này, Năm nay, hoặc Tùy chỉnh `from_date` đến `to_date`).
+- Giải pháp kỹ thuật cần làm:
+  + Thêm query param `?timeframe=30d` vào route `/dashboard`.
+  + Viết query SQLAlchemy lọc `DailyActivity` theo khoảng ngày được chọn.
+  + Cập nhật biểu đồ Chart.js tự động vẽ lại dữ liệu tương ứng.
+- Mức độ ưu tiên: Trung bình (Medium)
+
+[ ] 3.2. Time per Lesson - Thời gian học chi tiết từng bài học (Mục 3.4)
+- Hiện trạng trong EnglishMate_Features.txt:
+  Bảng `DailyActivity` chỉ cộng dồn tổng thời gian học trong ngày `time_spent` (phút).
+- Phần còn thiếu chưa làm:
+  Chưa theo dõi chính xác học viên dành bao nhiêu phút/giây cho một bài học cụ thể trước khi ấn nút "Hoàn thành bài học".
+- Giải pháp kỹ thuật cần làm:
+  + Bổ sung cột `duration_seconds` (Integer, default=0) vào bảng `LessonProgress`.
+  + Trong giao diện bài học `lesson_detail.html`, dùng JS Timer đếm thời gian thực tế người dùng mở bài học.
+  + Gửi kèm `duration_seconds` khi gọi POST `/lessons/<id>/complete`.
+- Mức độ ưu tiên: Trung bình (Medium)
+
+[ ] 3.3. Goal Reminder - Nhắc nhở mục tiêu hàng ngày (Mục 3.6)
+- Hiện trạng trong EnglishMate_Features.txt:
+  Đã có thanh tiến độ Daily Goal (ví dụ 10/20 từ) và hộp quà Daily Goal Chest nhận thưởng 50 XP khi đạt 100%.
+- Phần còn thiếu chưa làm:
+  Chưa có hệ thống tự động nhắc nhở (Notification/Email) vào 20:00 tối nếu học viên chưa hoàn thành mục tiêu ngày để tránh bị đứt chuỗi streak.
+- Giải pháp kỹ thuật cần làm:
+  + Bổ sung cron job kiểm tra các user chưa đạt Daily Goal trước 21:00 hàng ngày.
+  + Gửi email nhắc nhở kèm link học nhanh bài học đề xuất.
+- Mức độ ưu tiên: Trung bình (Medium)
+
+----------------------------------------------------------------------------------------------------
+MODULE 4. LESSONS & 4 SKILLS (BÀI HỌC & 4 KỸ NĂNG) — 9 TÍNH NĂNG CHƯA LÀM
+----------------------------------------------------------------------------------------------------
+
+[ ] 4.1. Lesson Rating - Đánh giá & Chấm sao bài học (Mục 4.4)
+- Hiện trạng trong EnglishMate_Features.txt:
+  Bài học đã có Đánh dấu yêu thích (`LessonFavorite`), Ghi chú cá nhân (`LessonNote`), Báo cáo nội dung (`LessonReport`).
+- Phần còn thiếu chưa làm:
+  Chưa có chức năng đánh giá chất lượng bài học 1 - 5 sao kèm bình luận nhận xét, và hiển thị điểm đánh giá trung bình.
+- Giải pháp kỹ thuật cần làm:
+  + Tạo model `LessonRating` (id, lesson_id, user_id, rating (1-5), review_text, created_at).
+  + Thêm route POST `/lessons/<id>/rate` xử lý đánh giá qua AJAX.
+  + Hiển thị widget 5 ngôi sao tương tác ở chân trang bài học.
+- Mức độ ưu tiên: Trung bình (Medium)
+
+[ ] 4.2. Lesson Sharing - Chia sẻ bài học (Mục 4.4)
+- Hiện trạng trong EnglishMate_Features.txt:
+  Chưa có nút chia sẻ bài học ra bên ngoài.
+- Phần còn thiếu chưa làm:
+  Chưa có nút chia sẻ nhanh link bài học lên Facebook, X (Twitter), LinkedIn, Zalo hoặc nút 1-click Copy Link vào clipboard.
+- Giải pháp kỹ thuật cần làm:
+  + Bổ sung nút Share với Web Share API trên mobile và Modal chia sẻ link mạng xã hội trên desktop.
+- Mức độ ưu tiên: Thấp (Low)
+
+[ ] 4.3. Audio Accent Selection - Chuyển đổi giọng đọc bài nghe US/UK (Mục 4.5)
+- Hiện trạng trong EnglishMate_Features.txt:
+  Mục từ vựng đã có audio US và UK riêng. Nhưng bài học kỹ năng Nghe (`listening_detail.html`) hiện tại chỉ gắn 1 file audio duy nhất.
+- Phần còn thiếu chưa làm:
+  Chưa có cơ chế nạp 2 nguồn audio khác nhau (giọng Mỹ US và giọng Anh UK) cho bài nghe và nút chuyển đổi Accent ngay trên Audio Player.
+- Giải pháp kỹ thuật cần làm:
+  + Thêm trường `audio_url_uk` trong model `Lesson`.
+  + Bổ sung nút gạt [US | UK] trên giao diện Audio Player để chuyển nguồn `src` của thẻ `<audio>`.
+- Mức độ ưu tiên: Trung bình (Medium)
+
+[ ] 4.4. Reading Annotation - Ghi chú trực tiếp trên bài đọc (Mục 4.6)
+- Hiện trạng trong EnglishMate_Features.txt:
+  Đã có bảng ghi chú chung cuối bài `LessonNote`.
+- Phần còn thiếu chưa làm:
+  Chưa cho phép học viên bôi chọn một câu hoặc một từ bất kỳ trong đoạn văn bản đọc để đính kèm một mẩu ghi chú nổi (annotation popover) ngay tại vị trí đó.
+- Giải pháp kỹ thuật cần làm:
+  + Tạo model `ReadingAnnotation` (id, lesson_id, user_id, selected_text, note_content, start_offset, end_offset).
+  + Sử dụng JavaScript Range API / Selection API để bắt sự kiện bôi văn bản và hiển thị popover thêm ghi chú.
+- Mức độ ưu tiên: Cao (High)
+
+[ ] 4.5. Reading Highlight - Bôi màu nổi bật văn bản bài đọc (Mục 4.6)
+- Hiện trạng trong EnglishMate_Features.txt:
+  Chưa có công cụ highlight trực tiếp trên bài đọc.
+- Phần còn thiếu chưa làm:
+  Chưa có bảng chọn màu highlight (Vàng, Xanh lá, Hồng) để người dùng đánh dấu các từ mới hoặc cấu trúc hay trong đoạn văn đọc hiểu.
+- Giải pháp kỹ thuật cần làm:
+  + Dùng thư viện JavaScript nhẹ (như `mark.js` hoặc custom highlighter) để bao bọc thẻ `<mark class="highlight-yellow">` quanh vùng chọn.
+  + Lưu các dải vị trí đã highlight vào CSDL hoặc `localStorage`.
+- Mức độ ưu tiên: Cao (High)
+
+[ ] 4.6. Speaking Recording - Thu âm giọng nói trực tiếp qua Micro (Mục 4.7)
+- Hiện trạng trong EnglishMate_Features.txt:
+  Trang bài học Speaking (`speaking_detail.html`) hiển thị câu mẫu, phiên âm IPA, nghĩa tiếng Việt, mẹo phát âm và nút nghe audio mẫu.
+- Phần còn thiếu chưa làm:
+  Chưa có nút bấm micro thu âm giọng đọc của học viên qua trình duyệt để học viên nghe lại giọng của mình.
+- Giải pháp kỹ thuật cần làm:
+  + Tích hợp Web Audio API và `MediaRecorder` API trên JavaScript.
+  + Thiết kế giao diện: Nút "Bắt đầu ghi âm" (icon mic đỏ), sóng âm thanh (visualizer waveform), và nút "Nghe lại bản thu".
+- Mức độ ưu tiên: RẤT CAO (Tính năng cốt lõi kỹ năng Nói)
+
+[ ] 4.7. Speaking Feedback - AI Phản hồi & Chấm điểm phát âm (Mục 4.7)
+- Hiện trạng trong EnglishMate_Features.txt:
+  Chưa có AI nhận diện giọng nói và chấm điểm câu nói.
+- Phần còn thiếu chưa làm:
+  Chưa đối chiếu câu người dùng vừa phát âm với câu mẫu để chỉ ra từ nào phát âm đúng (màu xanh), từ nào phát âm sai (màu đỏ) và điểm phát âm tổng thể (%).
+- Giải pháp kỹ thuật cần làm:
+  + Tích hợp Web Speech API (`webkitSpeechRecognition`) hoặc gửi audio thu âm lên endpoint backend tích hợp Whisper AI / Google Speech-to-Text.
+  + So khớp Levenshtein distance giữa văn bản nhận diện và câu mẫu để trả về điểm phát âm chi tiết.
+- Mức độ ưu tiên: RẤT CAO (Tính năng đột phá kỹ năng Nói)
+
+[ ] 4.8. Writing Correction - Sửa lỗi ngữ pháp & chính tả bài viết thời gian thực (Mục 4.8)
+- Hiện trạng trong EnglishMate_Features.txt:
+  Bài học viết có khung soạn thảo và bộ đếm số từ (word counter). Tính năng chấm AI hiện mới chỉ có ở phần thi Exam.
+- Phần còn thiếu chưa làm:
+  Chưa có công cụ bắt lỗi chính tả, ngữ pháp, dấu câu tức thì (tương tự Grammarly/LanguageTool) trong lúc học viên gõ bài trong bài học viết.
+- Giải pháp kỹ thuật cần làm:
+  + Tích hợp LanguageTool API (hoặc local rule-based grammar checker).
+  + Khi người dùng dừng gõ 1.5 giây, tự động gửi text kiểm tra và gạch chân đỏ các từ sai chính tả kèm gợi ý sửa.
+- Mức độ ưu tiên: Cao (High)
+
+[ ] 4.9. Writing Feedback - Nộp bài & Nhận phản hồi bài viết trong bài học (Mục 4.8)
+- Hiện trạng trong EnglishMate_Features.txt:
+  Trong trang `writing_detail.html`, người dùng chỉ có thể gõ nháp mà không có nút "Gửi bài viết để nhận xét".
+- Phần còn thiếu chưa làm:
+  Chưa có luồng nộp bài luận của bài học và hiển thị nhận xét chi tiết của giáo viên/AI ngay trong bài học.
+- Giải pháp kỹ thuật cần làm:
+  + Thêm route POST `/writing/<id>/submit`.
+  + Tái sử dụng engine `grade_essay` từ `app/backend/exams/ai_grading.py` để chấm bài viết và lưu nhận xét vào `LessonNote` hoặc model nộp bài.
+- Mức độ ưu tiên: Cao (High)
+
+----------------------------------------------------------------------------------------------------
+MODULE 5. VOCABULARY & FLASHCARD SYSTEM (HỆ THỐNG TỪ VỰNG & FLASHCARD) — 2 TÍNH NĂNG CHƯA LÀM
+----------------------------------------------------------------------------------------------------
+
+[ ] 5.1. Flashcard Set Sharing - Chia sẻ bộ flashcard (Mục 5.10)
+- Hiện trạng trong EnglishMate_Features.txt:
+  Người dùng đã có thể tự tạo bộ flashcard riêng (`FlashcardSet`), thêm sửa xóa thẻ (`FlashcardItem`), học lật thẻ 3D và ôn tập theo SRS.
+- Phần còn thiếu chưa làm:
+  Chưa có tính năng tạo link chia sẻ bộ flashcard cho bạn bè hoặc học viên khác xem và nhân bản (clone set) về tài khoản của họ.
+- Giải pháp kỹ thuật cần làm:
+  + Sinh mã định danh chia sẻ `share_code = secrets.token_urlsafe(8)` cho mỗi bộ flashcard.
+  + Thêm route GET `/flashcards/share/<share_code>` và nút "Sao chép bộ thẻ này vào tài khoản của tôi".
+- Mức độ ưu tiên: Trung bình (Medium)
+
+[ ] 5.2. Flashcard Set Privacy - Cài đặt quyền riêng tư bộ flashcard (Mục 5.10)
+- Hiện trạng trong EnglishMate_Features.txt:
+  Mọi bộ thẻ hiện tại chỉ hiển thị duy nhất cho tài khoản người tạo (`user_id == current_user.id`).
+- Phần còn thiếu chưa làm:
+  Chưa có toggle cho phép người dùng chọn chế độ: "Riêng tư (Chỉ mình tôi)" hoặc "Công khai (Hiển thị trên thư viện cộng đồng)".
+- Giải pháp kỹ thuật cần làm:
+  + Bổ sung trường `is_public` (Boolean, default=False) trong model `FlashcardSet`.
+  + Thêm tab "Thư viện bộ thẻ cộng đồng" trên trang quản lý flashcard.
+- Mức độ ưu tiên: Trung bình (Medium)
+
+----------------------------------------------------------------------------------------------------
+MODULE 6. GRAMMAR SYSTEM (HỆ THỐNG NGỮ PHÁP) — 1 TÍNH NĂNG CHƯA LÀM
+----------------------------------------------------------------------------------------------------
+
+[ ] 6.1. Grammar Export - Xuất sổ tay ngữ pháp sang PDF/DOCX (Mục 6.5)
+- Hiện trạng trong EnglishMate_Features.txt:
+  Đã có chế độ in chuyên biệt tối ưu CSS trang in (`/grammar/reference/<id>/print`), đánh dấu bookmark quy tắc, tra cứu bảng ngữ pháp.
+- Phần còn thiếu chưa làm:
+  Chưa có nút 1-click "Tải sổ tay ngữ pháp dạng PDF/Word" được render định dạng sẵn để học viên tải về học offline.
+- Giải pháp kỹ thuật cần làm:
+  + Tích hợp thư viện `weasyprint` hoặc `xhtml2pdf` tạo route `/grammar/reference/<id>/export-pdf`.
+- Mức độ ưu tiên: Thấp (Low)
+
+----------------------------------------------------------------------------------------------------
+MODULE 7. QUIZ SYSTEM (HỆ THỐNG KIỂM TRA) — 1 TÍNH NĂNG CHƯA LÀM
+----------------------------------------------------------------------------------------------------
+
+[ ] 7.1. Result Sharing - Chia sẻ chứng nhận & kết quả quiz (Mục 7.4)
+- Hiện trạng trong EnglishMate_Features.txt:
+  Đã có tính năng xuất kết quả quiz ra file PDF chuẩn (`/quizzes/results/<id>/pdf`), xem lại đáp án, làm lại đề.
+- Phần còn thiếu chưa làm:
+  Chưa có tính năng tạo card ảnh đồ họa kết quả (Scorecard) để học viên bấm chia sẻ trực tiếp khoe thành tích lên Facebook/Zalo/Twitter.
+- Giải pháp kỹ thuật cần làm:
+  + Dùng thư viện JavaScript `html2canvas` để chụp Score Card thành ảnh PNG.
+  + Thêm nút chia sẻ qua URL hoặc tải ảnh kết quả về điện thoại/máy tính.
+- Mức độ ưu tiên: Thấp (Low)
+
+----------------------------------------------------------------------------------------------------
+MODULE 8. EXAM SYSTEM (HỆ THỐNG ĐỀ THI) — 4 TÍNH NĂNG CHƯA LÀM
+----------------------------------------------------------------------------------------------------
+
+[ ] 8.1. IELTS Speaking - Phòng thi IELTS Speaking mô phỏng (Mục 8.3)
+- Hiện trạng trong EnglishMate_Features.txt:
+  Hệ thống đã có đề thi IELTS Listening (có audio), IELTS Reading (chia đôi màn hình đọc), IELTS Writing Task 2 (chấm luận AI).
+- Phần còn thiếu chưa làm:
+  Chưa có phòng thi IELTS Speaking theo chuẩn 3 Part (Part 1: Giới thiệu & phỏng vấn 4-5 câu; Part 2: Cue Card 1 phút chuẩn bị, 2 phút nói; Part 3: Câu hỏi thảo luận chuyên sâu).
+- Giải pháp kỹ thuật cần làm:
+  + Tạo bảng `IeltsSpeakingTest` và `IeltsSpeakingTopic`.
+  + Xây dựng giao diện phòng thi có video/audio giám khảo hỏi mẫu, đồng hồ đếm ngược chuẩn bị 60s, và tự động kích hoạt micro ghi âm bài nói của thí sinh.
+- Mức độ ưu tiên: RẤT CAO (Phục vụ đầy đủ chuẩn IELTS 4 kỹ năng)
+
+[ ] 8.2. THPT Exam - Ngân hàng đề thi chuẩn cấu trúc THPT Quốc Gia (Mục 8.4)
+- Hiện trạng trong EnglishMate_Features.txt:
+  Đã có đề thi xếp lớp (Placement Test), đánh giá tiến độ (Progress Assessment), đề luyện thi nhanh (Timed Practice) và TOEIC Full Test.
+- Phần còn thiếu chưa làm:
+  Chưa có danh mục đề thi mô phỏng chuẩn cấu trúc 50 câu trắc nghiệm thi Tốt nghiệp THPT Quốc Gia môn Tiếng Anh (Ngữ âm, Trọng âm, Tìm lỗi sai, Đồng nghĩa/Trái nghĩa, Điền từ, Đọc hiểu).
+- Giải pháp kỹ thuật cần làm:
+  + Bổ sung type `THPT` trong `Exam` model.
+  + Seed bộ câu hỏi mẫu 50 câu chuẩn format Bộ GD&ĐT vào hệ thống.
+- Mức độ ưu tiên: Trung bình (Medium)
+
+[ ] 8.3. Audio Grading - AI Chấm điểm bài nói qua file âm thanh (Mục 8.6)
+- Hiện trạng trong EnglishMate_Features.txt:
+  File `app/backend/exams/ai_grading.py` đã chấm điểm tự động bài viết luận Essay theo 4 tiêu chí chuẩn quốc tế (Task Response, Coherence, Lexical Resource, Grammatical Accuracy).
+- Phần còn thiếu chưa làm:
+  Chưa có pipeline tự động chấm bài thi nói Speaking từ file audio (chấm điểm Phát âm Pronunciation, Độ trôi chảy Fluency, Ngữ pháp và Từ vựng).
+- Giải pháp kỹ thuật cần làm:
+  + Bổ sung hàm `grade_speaking_audio()` trong `ai_grading.py`.
+  + Sử dụng mô hình AI nhận diện giọng nói (Speech-to-Text) kết hợp mô hình ngôn ngữ lớn LLM để chấm điểm theo rubric IELTS Speaking.
+- Mức độ ưu tiên: Cao (High)
+
+[ ] 8.4. Sound Setting - Cài đặt âm thanh cho bài thi (Mục 8.9)
+- Hiện trạng trong EnglishMate_Features.txt:
+  Trong trang `/settings` của exam đã có cấu hình thời gian thi, hiển thị điểm, tạm dừng, tự động nộp bài.
+- Phần còn thiếu chưa làm:
+  Chưa có tùy chọn bật/tắt âm thanh thông báo trong bài thi.
+- Giải pháp kỹ thuật cần làm:
+  + Thêm checkbox "Bật âm thanh cảnh báo thi" trong form cấu hình đề thi.
+- Mức độ ưu tiên: Thấp (Low)
+
+----------------------------------------------------------------------------------------------------
+MODULE 9. GAMIFICATION SYSTEM (HỆ THỐNG TRÒ CHƠI HÓA) — 3 TÍNH NĂNG CHƯA LÀM
+----------------------------------------------------------------------------------------------------
+
+[ ] 9.1. Streak Protection - Đóng băng chuỗi học tập (Streak Freeze) (Mục 9.1)
+- Hiện trạng trong EnglishMate_Features.txt:
+  Đã có hệ thống tính streak liên tục, phát hiện mất chuỗi khi qua ngày, lưu kỷ lục chuỗi dài nhất (`longest_streak`), modal chúc mừng streak.
+- Phần còn thiếu chưa làm:
+  Chưa có vật phẩm "Đóng băng chuỗi (Streak Freeze)" cho phép học viên dùng điểm kinh nghiệm XP để trang bị; nếu quên học 1 ngày thì vật phẩm tự tiêu hao để giữ nguyên chuỗi ngày liên tục.
+- Giải pháp kỹ thuật cần làm:
+  + Thêm trường `streak_freeze_count` (Integer, default=0) trong model `User`.
+  + Trong hàm kiểm tra streak `check_streak_status()`, nếu người dùng không học ngày hôm qua nhưng `streak_freeze_count > 0`, trừ 1 freeze và giữ nguyên streak.
+  + Thêm nút mua "Streak Freeze" (giá 100 XP) trên Gamification Hub.
+- Mức độ ưu tiên: Cao (High - Tăng mạnh retention của người dùng)
+
+[ ] 9.2. Badge Sharing - Chia sẻ huy hiệu lên mạng xã hội (Mục 9.4)
+- Hiện trạng trong EnglishMate_Features.txt:
+  Đã có bộ sưu tập huy hiệu đa cấp độ, tự động mở khóa theo mốc thành tích và cộng điểm thưởng XP.
+- Phần còn thiếu chưa làm:
+  Chưa có popup chia sẻ huy hiệu mới đạt được lên Facebook hoặc tải ảnh huy hiệu về máy.
+- Giải pháp kỹ thuật cần làm:
+  + Thêm nút Share trong modal chúc mừng mở khóa huy hiệu (`badge_unlock_modal.html`).
+- Mức độ ưu tiên: Thấp (Low)
+
+[ ] 9.3. Power-ups - Vật phẩm trợ giúp trong Game Arcade (Mục 9.7)
+- Hiện trạng trong EnglishMate_Features.txt:
+  Sảnh game có 4 trò chơi hấp dẫn (Matching, Typing, Listening Rush, Speed Quiz), hệ thống 3 mạng sống (lives) và combo điểm.
+- Phần còn thiếu chưa làm:
+  Chưa có các vật phẩm bổ trợ (Power-ups) trong game như: Đóng băng thời gian 10 giây (Time Freeze), Loại bỏ 2 đáp án sai (50:50), Nhân đôi điểm số (x2 Multiplier).
+- Giải pháp kỹ thuật cần làm:
+  + Thêm thanh bar vật phẩm Power-ups trên giao diện chơi game arcade.
+  + Viết logic JavaScript kích hoạt hiệu ứng khi người chơi nhấn phím hoặc click icon vật phẩm.
+- Mức độ ưu tiên: Trung bình (Medium)
+
+----------------------------------------------------------------------------------------------------
+MODULE 10. ADMIN SYSTEM (HỆ THỐNG QUẢN TRỊ) — 7 TÍNH NĂNG CHƯA LÀM
+----------------------------------------------------------------------------------------------------
+
+[ ] 10.1. Import History - Bảng lưu lịch sử các lần nhập liệu (Mục 10.5)
+- Hiện trạng trong EnglishMate_Features.txt:
+  Đã có tính năng Bulk Importer nhập hàng loạt Excel/CSV/JSON 2 bước (Preview validation -> Commit) cho Từ vựng, Bài học, Đề thi.
+- Phần còn thiếu chưa làm:
+  Chưa lưu lại lịch sử các đợt import (Ai import, File tên gì, Thời gian nào, Bao nhiêu bản ghi thành công, Bao nhiêu bản ghi lỗi).
+- Giải pháp kỹ thuật cần làm:
+  + Tạo model `ImportHistory` (id, admin_id, filename, file_type, success_count, error_count, error_log, created_at).
+  + Thêm tab "Lịch sử nhập liệu" trong trang `/admin/import`.
+- Mức độ ưu tiên: Trung bình (Medium)
+
+[ ] 10.2. Log Retention - Tự động dọn dẹp nhật ký kiểm tra (Mục 10.6)
+- Hiện trạng trong EnglishMate_Features.txt:
+  Đã có bảng `AuditLog` lưu chi tiết hành động, người dùng, IP, giờ Việt Nam, bộ lọc và xuất CSV.
+- Phần còn thiếu chưa làm:
+  Chưa có cơ chế tự động dọn dẹp hoặc lưu trữ các log cũ hơn 90 hoặc 180 ngày khiến CSDL có nguy cơ phình to theo thời gian.
+- Giải pháp kỹ thuật cần làm:
+  + Viết lệnh Flask CLI `flask cleanup-logs --days=90` để xóa hoặc xuất lưu trữ các log cũ.
+  + Thêm cấu hình số ngày lưu trữ trong bảng cài đặt Admin.
+- Mức độ ưu tiên: Trung bình (Medium)
+
+[ ] 10.3. Feature Flags - Quản lý bật/tắt tính năng thời gian thực (Mục 10.7)
+- Hiện trạng trong EnglishMate_Features.txt:
+  Các tính năng hiện tại được cấu hình cứng qua file `.env` hoặc file `config.py`.
+- Phần còn thiếu chưa làm:
+  Chưa có giao diện Web Admin cho phép Quản trị viên bật/tắt nhanh các tính năng (ví dụ: Tạm khóa đăng ký người dùng mới, Bật/tắt Sảnh game arcade, Bật/tắt Chấm bài AI) mà không cần can thiệp code hay khởi động lại server.
+- Giải pháp kỹ thuật cần làm:
+  + Tạo model `SystemConfig` (key, value, description, is_active).
+  + Xây dựng trang Admin `/admin/system/feature-flags` với các nút gạt Toggle Switch On/Off.
+  + Viết decorator `@feature_flag_required('arcade_games')`.
+- Mức độ ưu tiên: Cao (High)
+
+[ ] 10.4. System Limits - Giao diện cấu hình giới hạn hệ thống (Mục 10.7)
+- Hiện trạng trong EnglishMate_Features.txt:
+  Các giới hạn (dung lượng avatar tối đa 5MB, thời gian khóa đăng nhập 15 phút, số lần thử sai tối đa 5 lần) đang là các hằng số cố định trong mã nguồn.
+- Phần còn thiếu chưa làm:
+  Chưa có trang giao diện Admin để điều chỉnh linh hoạt các giá trị giới hạn này.
+- Giải pháp kỹ thuật cần làm:
+  + Lưu các thông số `MAX_FAILED_LOGIN_ATTEMPTS`, `LOCKOUT_MINUTES`, `SESSION_TIMEOUT_MINUTES` vào bảng `SystemConfig`.
+- Mức độ ưu tiên: Trung bình (Medium)
+
+[ ] 10.5. Performance Settings - Cài đặt thông số hiệu năng (Mục 10.7)
+- Hiện trạng: Chưa có.
+- Phần còn thiếu chưa làm:
+  Chưa có màn hình quản trị xem và cấu hình số lượng bản ghi hiển thị trên mỗi trang phân trang (`PAGE_SIZE`), độ dài thời gian cache.
+- Mức độ ưu tiên: Thấp (Low)
+
+[ ] 10.6. Backup Settings - Cài đặt sao lưu CSDL tự động (Mục 10.7)
+- Hiện trạng trong EnglishMate_Features.txt:
+  Chưa có tính năng sao lưu CSDL trên giao diện Admin.
+- Phần còn thiếu chưa làm:
+  Chưa có nút bấm "Tạo bản sao lưu ngay (Backup Now)" và cấu hình tần suất tự động sao lưu CSDL (hàng ngày, hàng tuần).
+- Giải pháp kỹ thuật cần làm:
+  + Viết hàm sao lưu CSDL SQLite/PostgreSQL xuất ra file `.sql.gz` hoặc `.dump`.
+  + Tạo route `/admin/system/backup` cho phép tải file sao lưu về máy.
+- Mức độ ưu tiên: Cao (High)
+
+[ ] 10.7. Maintenance Mode - Chế độ bảo trì hệ thống (Mục 10.7)
+- Hiện trạng trong EnglishMate_Features.txt:
+  Chưa có cơ chế chuyển hệ thống sang trạng thái bảo trì.
+- Phần còn thiếu chưa làm:
+  Khi Admin cần cập nhật CSDL lớn hoặc nâng cấp phiên bản, cần có nút bật "Bảo trì": toàn bộ học viên truy cập sẽ nhận trang 503 Maintenance đẹp mắt, chỉ tài khoản Admin mới được vào hệ thống.
+- Giải pháp kỹ thuật cần làm:
+  + Thêm biến `MAINTENANCE_MODE = True/False` trong CSDL.
+  + Trong middleware `before_request`, kiểm tra nếu đang bảo trì và `current_user.role != 'ADMIN'`, trả về template `errors/maintenance.html` (HTTP 503).
+- Mức độ ưu tiên: Cao (High)
+
+----------------------------------------------------------------------------------------------------
+MODULE 11. SECURITY SYSTEM (HỆ THỐNG BẢO MẬT) — 15 TÍNH NĂNG CHƯA LÀM
+----------------------------------------------------------------------------------------------------
+
+[ ] 11.1. Secure Headers - Cấu hình HTTP Security Headers (Mục 11.1)
+- Chưa làm: Chưa có middleware thiết lập các header bảo vệ chuẩn quốc tế (HSTS, Content-Security-Policy, X-Frame-Options, X-Content-Type-Options).
+- Giải pháp: Cài đặt và kích hoạt thư viện `Flask-Talisman`.
+- Mức độ ưu tiên: Cao (High)
+
+[ ] 11.2. Permission Caching - Cache quyền hạn người dùng (Mục 11.2)
+- Chưa làm: Mỗi lần kiểm tra `@permission_required`, hệ thống lại truy vấn CSDL bảng `RolePermission`.
+- Giải pháp: Cache kết quả quyền của user vào bộ nhớ đệm (In-memory/Redis) với thời gian 15-30 phút.
+- Mức độ ưu tiên: Trung bình (Medium)
+
+[ ] 11.3. Data Masking - Che giấu dữ liệu nhạy cảm (Mục 11.3)
+- Chưa làm: Chưa có hàm che giấu email (`u***r@gmail.com`) hoặc ẩn địa chỉ IP trên các màn hình hiển thị công khai hoặc xuất báo cáo.
+- Mức độ ưu tiên: Trung bình (Medium)
+
+[ ] 11.4 - 11.7. Data Backup, Recovery, Retention, Purging (Mục 11.3)
+- Chưa làm:
+  + `Data Backup`: Script sao lưu CSDL định kỳ tự động.
+  + `Data Recovery`: Kịch bản và lệnh khôi phục CSDL an toàn từ backup.
+  + `Data Retention`: Chính sách tự động lưu trữ dữ liệu người dùng không hoạt động.
+  + `Data Purging`: Cron job tự động dọn sạch các bản ghi soft-delete (`is_active=False`) đã quá hạn 180 ngày.
+- Mức độ ưu tiên: Cao (High)
+
+[ ] 11.8 - 11.15. Network Security (Mục 11.4) — 8 tính năng:
+- Các mục chưa triển khai:
+  + `HTTPS Enforcement`: Tự động chuyển hướng toàn bộ traffic HTTP sang HTTPS trên môi trường live.
+  + `SSL/TLS Configuration`: Cài đặt chứng chỉ SSL Let's Encrypt / TLS 1.3 trên Nginx reverse proxy.
+  + `CORS Configuration`: Cấu hình danh sách domain được phép truy vấn API qua `Flask-CORS`.
+  + `Firewall Rules`: Cấu hình tường lửa máy chủ (UFW/iptables) chặn truy cập cổng lạ.
+  + `IP Whitelisting`: Chỉ cho phép một số IP cụ thể truy cập trang Admin.
+  + `IP Blacklisting`: Tự động đưa IP có hành vi tấn công brute force vào danh sách chặn.
+  + `DDoS Protection`: Thiết lập bảo vệ qua Cloudflare Proxy / CDN.
+  + `Network Monitoring`: Giám sát lưu lượng mạng và số kết nối đồng thời.
+- Mức độ ưu tiên: Cao khi đưa lên máy chủ Production, Thấp trong môi trường Local Dev.
+
+----------------------------------------------------------------------------------------------------
+MODULE 12. SYSTEM FEATURES (TÍNH NĂNG HỆ THỐNG) — 46 TÍNH NĂNG CHƯA LÀM
+----------------------------------------------------------------------------------------------------
+
+12.1. Database Features (3 tính năng chưa làm):
+- [ ] `Migration System`: Chưa cài `Flask-Migrate` (Alembic) để quản lý lịch sử thay đổi bảng CSDL (hiện đang dùng `db.create_all()`). (Ưu tiên: RẤT CAO)
+- [ ] `Backup Automation`: Chưa có cron job tự động sao lưu CSDL hàng ngày. (Ưu tiên: Cao)
+- [ ] `Restore Automation`: Chưa có script tự động khôi phục dữ liệu từ bản sao lưu. (Ưu tiên: Trung bình)
+
+12.2. API Features (4 tính năng chưa làm):
+- [ ] `Rate Limiting`: Chưa cài đặt `Flask-Limiter` để giới hạn số lượt gọi API/phút chống spam API. (Ưu tiên: Cao)
+- [ ] `API Versioning`: Chưa chuẩn hóa các route API theo tiền tố phiên bản `/api/v1/...`. (Ưu tiên: Trung bình)
+- [ ] `Documentation`: Chưa tích hợp Swagger/OpenAPI (qua `flasgger`) tạo trang tài liệu API tự động. (Ưu tiên: Trung bình)
+- [ ] `CORS Support`: Chưa bật CORS cho các endpoint public. (Ưu tiên: Trung bình)
+
+12.3. File Management (4 tính năng chưa làm):
+- [ ] `File Compression`: Chưa tự động nén giảm dung lượng file ảnh upload. (Ưu tiên: Trung bình)
+- [ ] `Image Processing`: Chưa dùng thư viện `Pillow` để crop/resize ảnh đại diện về tỷ lệ vuông chuẩn 300x300. (Ưu tiên: Trung bình)
+- [ ] `Audio Processing`: Chưa có module xử lý chuẩn hóa âm lượng audio. (Ưu tiên: Thấp)
+- [ ] `File Backup`: Chưa sao lưu thư mục `static/uploads/` lên Cloud Storage (S3 / Cloudinary). (Ưu tiên: Cao)
+
+12.4. Email System (6 tính năng chưa làm):
+- [ ] `Email Queue`: Hiện tại gửi email bằng `smtplib` đồng bộ, nếu mạng chậm sẽ gây đơ trang web. Cần hàng đợi gửi mail bất đồng bộ. (Ưu tiên: Cao)
+- [ ] `Email Tracking`: Chưa theo dõi tỷ lệ người dùng mở email kích hoạt / reset mật khẩu. (Ưu tiên: Thấp)
+- [ ] `Email Bounce Handling`: Chưa xử lý các trường hợp hòm thư người nhận không tồn tại. (Ưu tiên: Thấp)
+- [ ] `Email Analytics`: Chưa có biểu đồ thống kê số lượng email gửi đi mỗi ngày. (Ưu tiên: Thấp)
+- [ ] `Email Scheduling`: Chưa có tính năng hẹn giờ gửi email. (Ưu tiên: Thấp)
+- [ ] `Email Templates Management`: Chưa có giao diện Admin để sửa nội dung mẫu HTML email. (Ưu tiên: Trung bình)
+
+12.5. Background Processing (6 tính năng chưa làm):
+- [ ] `Task Queue`: Chưa cài đặt Celery hoặc Redis Queue (RQ) làm hàng đợi tác vụ nền chuẩn. (Ưu tiên: Cao)
+- [ ] `Scheduled Tasks`: Chưa cài đặt APScheduler cho các tác vụ định kỳ tự động. (Ưu tiên: Cao)
+- [ ] `Retry Logic`: Chưa có cơ chế tự động thử lại tác vụ ngầm khi lỗi mạng. (Ưu tiên: Trung bình)
+- [ ] `Job Prioritization`: Chưa phân cấp độ ưu tiên cho các tác vụ nền. (Ưu tiên: Thấp)
+- [ ] `Resource Management`: Chưa kiểm soát mức tiêu thụ RAM của worker ngầm. (Ưu tiên: Thấp)
+- [ ] `Performance Monitoring`: Chưa đo thời gian hoàn thành từng job ngầm. (Ưu tiên: Thấp)
+
+12.6. Caching System (10 tính năng chưa làm - Toàn bộ module Cache):
+- [ ] `Response Caching`, `Data Caching`, `Query Caching`, `Cache Invalidation`, `Cache Management`, `Cache Statistics`, `Cache Warming`, `Distributed Caching`, `Cache Security`, `Cache Optimization`:
+  + Hiện trạng: Toàn bộ hệ thống hiện đang truy vấn trực tiếp CSDL mà chưa qua tầng Cache đệm nào.
+  + Giải pháp: Cài đặt `Flask-Caching` kết hợp Redis để cache kết quả các trang có dữ liệu tĩnh lớn như Bảng xếp hạng, Danh mục từ vựng, Sổ tay ngữ pháp giúp tăng tốc độ tải trang lên gấp 5-10 lần.
+  + Mức độ ưu tiên: Cao (High)
+
+12.7. Error Handling (2 tính năng chưa làm):
+- [ ] `Error Analysis`: Chưa có công cụ gom nhóm và phân tích tần suất lỗi hệ thống. (Ưu tiên: Thấp)
+- [ ] `Error Monitoring`: Chưa tích hợp công cụ cảnh báo lỗi thời gian thực như Sentry. (Ưu tiên: Cao)
+
+12.8. Performance Optimization (4 tính năng chưa làm):
+- [ ] `Lazy Loading`: Chưa áp dụng lazy loading `loading="lazy"` cho toàn bộ hình ảnh bài học/từ vựng. (Ưu tiên: Cao)
+- [ ] `Compression`: Chưa kích hoạt nén Gzip/Brotli cho các file CSS/JS. (Ưu tiên: Trung bình)
+- [ ] `Load Balancing`: Chưa cấu hình cân bằng tải đa tiến trình Gunicorn. (Ưu tiên: Cao khi deploy)
+- [ ] `Performance Monitoring`: Chưa có công cụ APM đo thời gian phản hồi của từng route. (Ưu tiên: Thấp)
+
+12.9. Monitoring & Logging (5 tính năng chưa làm):
+- [ ] `Performance Logging`: Chưa ghi log các câu truy vấn CSDL chạy chậm (> 500ms). (Ưu tiên: Trung bình)
+- [ ] `Resource Monitoring`: Chưa theo dõi CPU, RAM, Disk của server trên giao diện. (Ưu tiên: Thấp)
+- [ ] `Alert System`: Chưa có bot tự động bắn thông báo lỗi 500 qua Telegram/Discord/Slack. (Ưu tiên: Cao)
+- [ ] `Log Analysis` & `Log Retention`: Chưa có bộ máy lọc và dọn dẹp log tự động. (Ưu tiên: Thấp)
+
+12.10. Testing System (2 tính năng chưa làm):
+- [ ] `End-to-End Tests`: Đã có 185 unit & integration tests pytest, nhưng chưa có bộ test giao diện người dùng E2E tự động bằng Playwright hoặc Selenium. (Ưu tiên: Trung bình)
+- [ ] `Continuous Integration`: Chưa tạo file workflow `.github/workflows/ci.yml` để tự động chạy test khi push code. (Ưu tiên: Cao)
+
+----------------------------------------------------------------------------------------------------
+MODULE 13. UI/UX FEATURES (TÍNH NĂNG GIAO DIỆN) — 14 TÍNH NĂNG CHƯA LÀM
+----------------------------------------------------------------------------------------------------
+
+13.1. Responsive Design (1 tính năng chưa làm):
+- [ ] `Gesture Support - Hỗ trợ thao tác vuốt cảm ứng`:
+  Chưa hỗ trợ thao tác vuốt màn hình (Swipe left / right) trên điện thoại để chuyển thẻ flashcard tiếp theo hoặc lật mặt thẻ. (Ưu tiên: Cao cho trải nghiệm mobile)
+
+13.2. Accessibility (2 tính năng chưa làm):
+- [ ] `Screen Reader Support`: Chưa tối ưu hoàn chỉnh các nhãn ARIA cho người khiếm thị. (Ưu tiên: Thấp)
+- [ ] `Skip Links`: Chưa có link ẩn "Nhảy thẳng vào nội dung chính" ở đầu trang. (Ưu tiên: Thấp)
+
+13.4. User Experience (3 tính năng chưa làm):
+- [ ] `Shortcuts - Phím tắt điều khiển`:
+  Chưa có hệ thống phím tắt bàn phím (ví dụ: Phím Space để lật thẻ flashcard, Phím 1,2,3,4 để chọn đáp án trắc nghiệm, Phím mũi tên Trái/Phải để chuyển câu). (Ưu tiên: Cao)
+- [ ] `Onboarding - Hướng dẫn tương tác cho người mới`:
+  Chưa có tour hướng dẫn (Tour guide popover) hiển thị các bước cho học viên mới đăng ký lần đầu. (Ưu tiên: Trung bình)
+- [ ] `User Support - Kênh hỗ trợ người dùng`:
+  Chưa có mục liên hệ giải đáp thắc mắc tích hợp trên giao diện. (Ưu tiên: Trung bình)
+
+13.5. Theming - Hệ thống chủ đề giao diện (8 tính năng chưa làm):
+- [ ] `Dark Mode - Chế độ tối`:
+  Toàn bộ hệ thống hiện tại chạy trên giao diện Sáng (Light Theme). Chưa thiết kế bảng màu Chế độ tối (Dark Mode) để học viên học ban đêm không bị mỏi mắt. (Ưu tiên: RẤT CAO)
+- [ ] `Theme Switching - Nút chuyển đổi giao diện`:
+  Chưa có nút icon Mặt Trời / Mặt Trăng trên thanh Header để chuyển nhanh chế độ. (Ưu tiên: RẤT CAO)
+- [ ] `Theme Persistence - Lưu trạng thái chủ đề`:
+  Cần lưu trạng thái chọn Dark/Light Mode vào `localStorage` và đồng bộ vào tài khoản `User.theme_preference`. (Ưu tiên: Cao)
+- [ ] `Custom Themes`, `Color Schemes`, `Font Options`, `Theme Preview`, `Accessibility Themes`:
+  Các tùy biến nâng cao về màu sắc chủ đạo, cỡ chữ, font chữ và độ tương phản cao. (Ưu tiên: Thấp)
+
+----------------------------------------------------------------------------------------------------
+MODULE 14. DATA INTEGRITY & VALIDATION (TOÀN VỆN DỮ LIỆU) — 5 TÍNH NĂNG CHƯA LÀM
+----------------------------------------------------------------------------------------------------
+
+14.3. Data Quality (5 tính năng chưa làm):
+- [ ] `Data Profiling - Phân tích dữ liệu`: Chưa có module thống kê độ phủ và độ dài trung bình của câu hỏi, từ vựng.
+- [ ] `Data Quality Metrics - Thước đo chất lượng dữ liệu`: Chưa có bộ tiêu chí tự động đánh giá từ vựng chuẩn (đầy đủ nghĩa, phát âm IPA, ví dụ, collocations).
+- [ ] `Data Quality Monitoring - Giám sát chất lượng dữ liệu`: Chưa có tính năng quét tự động tìm các câu hỏi trắc nghiệm thiếu đáp án đúng hoặc thiếu giải thích.
+- [ ] `Data Quality Reports - Báo cáo chất lượng dữ liệu`: Chưa có màn hình Admin hiển thị danh sách bài học/từ vựng chưa đạt chuẩn.
+- [ ] `Data Quality Improvement - Cải thiện chất lượng dữ liệu`: Chưa có nút bấm tự động điền phiên âm hoặc nghĩa qua API từ điển.
+- Mức độ ưu tiên: Trung bình (Medium)
+
+----------------------------------------------------------------------------------------------------
+MODULE 15. ERROR HANDLING & RECOVERY (XỬ LÝ LỖI & PHỤC HỒI) — 13 TÍNH NĂNG CHƯA LÀM
+----------------------------------------------------------------------------------------------------
+
+15.1. Error Detection (2 tính năng chưa làm):
+- [ ] `Error Correlation`: Chưa tạo mã lỗi định danh duy nhất (Request Trace ID) để người dùng gửi cho Admin tra cứu nhanh nguyên nhân lỗi trong log. (Ưu tiên: Trung bình)
+- [ ] `Error Patterns`: Chưa có công cụ gom nhóm các mẫu lỗi tương tự nhau. (Ưu tiên: Thấp)
+
+15.2. Error Recovery (5 tính năng chưa làm):
+- [ ] `Automatic Retry`: Chưa tự động gọi lại các API bên ngoài (như AI Gemini, SMTP gửi mail) nếu gặp lỗi mạng chập chờn. (Ưu tiên: Cao)
+- [ ] `Circuit Breakers`: Chưa có cơ chế tự ngắt mạch để tránh làm treo ứng dụng khi dịch vụ AI bên ngoài bị sập. (Ưu tiên: Trung bình)
+- [ ] `Data Recovery`, `Service Recovery`, `System Recovery`: Quy trình tự động khôi phục dịch vụ sau khi crash. (Ưu tiên: Trung bình)
+
+15.3. User Error Handling & Support (6 tính năng chưa làm):
+- [ ] `Support Contacts`: Chưa có trang thông tin liên hệ hỗ trợ kỹ thuật rõ ràng. (Ưu tiên: Cao)
+- [ ] `Error Tutorials`: Chưa có bài viết hướng dẫn người dùng tự khắc phục các lỗi phổ biến (lỗi không cấp quyền micro, lỗi không nhận email OTP...). (Ưu tiên: Trung bình)
+- [ ] `FAQ Integration`: Chưa xây dựng trang Câu hỏi thường gặp (Frequently Asked Questions). (Ưu tiên: Cao)
+- [ ] `Video Tutorials`: Chưa có các video clip ngắn hướng dẫn cách học trên nền tảng. (Ưu tiên: Thấp)
+- [ ] `Chat Support`: Chưa tích hợp tiện ích Chat trực tuyến (Live Chat Widget như Tawk.to / Crisp) để hỗ trợ học viên thời gian thực. (Ưu tiên: Cao)
+- [ ] `Ticket System`: Chưa có hệ thống gửi phiếu hỗ trợ (Helpdesk Ticket) cho phép học viên gửi báo cáo lỗi và theo dõi phản hồi của Admin. (Ưu tiên: Cao)
+
+====================================================================================================
+PHẦN III: PHÂN LOẠI THEO LỘ TRÌNH PHÁT TRIỂN THỰC TẾ (4 PHASES ROADMAP)
+====================================================================================================
+
+Dựa trên mức độ quan trọng và giá trị thực tế mang lại cho người học, 126 tính năng trên được sắp xếp theo 4 giai đoạn ưu tiên triển khai như sau:
+
+----------------------------------------------------------------------------------------------------
+GIAI ĐOẠN 1: CẢI THIỆN TRẢI NGHIỆM HỌC TẬP CỐT LÕI (CORE LEARNING EXPERIENCE)
+(Thời gian đề xuất: 2 - 3 tuần | Mục tiêu: Hoàn thiện 100% 4 kỹ năng Nghe - Nói - Đọc - Viết & Dark Mode)
+----------------------------------------------------------------------------------------------------
+1. [ ] Speaking Recording: Thu âm giọng nói trực tiếp qua micro trình duyệt (MediaRecorder API).
+2. [ ] Speaking Feedback: Chấm điểm phát âm bằng AI Speech Recognition.
+3. [ ] IELTS Speaking Test: Xây dựng phòng thi nói IELTS 3 Part có hẹn giờ và chấm điểm AI.
+4. [ ] Dark Mode & Theme Switcher: Thiết kế giao diện Chế độ tối bảo vệ mắt học ban đêm.
+5. [ ] Reading Highlight & Annotation: Bôi màu và ghi chú trực tiếp trên văn bản đọc hiểu.
+6. [ ] Writing Correction: Sửa lỗi ngữ pháp và chính tả bài viết thời gian thực.
+7. [ ] Streak Protection: Vật phẩm đóng băng chuỗi ngày học "Streak Freeze" mua bằng điểm XP.
+8. [ ] Keyboard Shortcuts: Bổ sung phím tắt Space, phím số 1-4, phím mũi tên khi luyện tập.
+
+----------------------------------------------------------------------------------------------------
+GIAI ĐOẠN 2: TỐI ƯU QUẢN TRỊ ADMIN & CHĂM SÓC HỌC VIÊN (ADMIN CMS & USER RETENTION)
+(Thời gian đề xuất: 2 tuần | Mục tiêu: Tự động hóa vận hành và giữ chân người học)
+----------------------------------------------------------------------------------------------------
+1. [ ] Feature Flags: Giao diện Web Admin bật/tắt nhanh các tính năng linh hoạt.
+2. [ ] Maintenance Mode: Chế độ bảo trì hệ thống trả về mã 503 cho người dùng thường.
+3. [ ] Vocabulary Push Notification: Thông báo trên trình duyệt nhắc học từ vựng đến hạn SRS.
+4. [ ] Daily Goal Email Reminder: Email tự động nhắc nhở hoàn thành mục tiêu ngày lúc 20:00.
+5. [ ] Backup & Restore Settings: Giao diện quản lý sao lưu CSDL một chạm trong Admin.
+6. [ ] FAQ & Support Contacts: Trang Câu hỏi thường gặp và thông tin hỗ trợ kỹ thuật.
+7. [ ] Live Chat Widget: Tích hợp khung chat hỗ trợ học viên trực tuyến.
+8. [ ] Flashcard Set Sharing: Chia sẻ bộ flashcard cá nhân sang cộng đồng.
+
+----------------------------------------------------------------------------------------------------
+GIAI ĐOẠN 3: NÂNG CẤP KIẾN TRÚC KỸ THUẬT & HIỆU NĂNG (BACKEND ARCHITECTURE & CACHING)
+(Thời gian đề xuất: 2 - 3 tuần | Mục tiêu: Hệ thống chịu tải cao, sẵn sàng phục vụ 10,000+ học viên)
+----------------------------------------------------------------------------------------------------
+1. [ ] Flask-Migrate (Alembic): Quản lý phiên bản CSDL chuyên nghiệp, thay thế `db.create_all()`.
+2. [ ] Redis Caching System: Triển khai bộ nhớ đệm Cache cho Bảng xếp hạng, Từ vựng, Ngữ pháp.
+3. [ ] Asynchronous Task Queue (Celery / RQ): Đưa tác vụ gửi email và chấm bài AI vào hàng đợi nền.
+4. [ ] API Rate Limiting (Flask-Limiter): Bảo vệ API chống spam và tấn công brute force.
+5. [ ] Pillow Image Optimization: Tự động nén và resize ảnh đại diện tải lên máy chủ.
+6. [ ] Lazy Loading Images: Tải lười toàn bộ hình ảnh giúp trang web mở nhanh tức thì.
+7. [ ] Security Headers (Flask-Talisman): Thiết lập HSTS, CSP, X-Frame-Options chống tấn công mạng.
+8. [ ] GitHub Actions CI Pipeline: Tự động hóa chạy 185 tests pytest khi có thay đổi mã nguồn.
+
+----------------------------------------------------------------------------------------------------
+GIAI ĐOẠN 4: HỆ THỐNG MỞ RỘNG & NÂNG CAO (ENTERPRISE EXPANSION & ADVANCED FEATURES)
+(Thời gian đề xuất: Phát triển dài hạn | Mục tiêu: Đạt chuẩn nền tảng học trực tuyến quy mô lớn)
+----------------------------------------------------------------------------------------------------
+1. [ ] THPT Exam Mock Test: Bộ đề thi thử chuẩn 50 câu tốt nghiệp THPT Quốc Gia môn Tiếng Anh.
+2. [ ] Helpdesk Ticket System: Hệ thống gửi và phản hồi phiếu yêu cầu hỗ trợ người dùng.
+3. [ ] Swagger / OpenAPI Docs: Trang tài liệu tương tác cho lập trình viên phát triển API.
+4. [ ] Playwright E2E UI Testing: Bộ kiểm thử tự động toàn bộ luồng tương tác trên trình duyệt.
+5. [ ] Power-ups Game Mechanics: Hệ thống vật phẩm trợ giúp trong sảnh game arcade.
+6. [ ] Data Quality Automated Scanner: Bộ quét tự động phát hiện dữ liệu bài học/từ vựng bị thiếu.
+7. [ ] Sentry Error Monitoring: Giám sát và thông báo lỗi ứng dụng thời gian thực.
+8. [ ] Mobile Swipe Gesture: Hỗ trợ thao tác vuốt cảm ứng trên màn hình điện thoại.
+
+====================================================================================================
+KẾT LUẬN & ĐÁNH GIÁ CHUNG:
+Hệ thống EnglishMate hiện tại đã hoàn thành xuất sắc 738/864 tính năng (85.4%), bao phủ trọn vẹn toàn
+bộ các nghiệp vụ học tập từ vựng, ngữ pháp, bài học đa kỹ năng, thi thử TOEIC/IELTS, chấm điểm AI,
+trò chơi hóa gamification và quản trị admin đa chức năng.
+
+126 tính năng còn lại trong danh sách này là các tính năng mở rộng nâng cao, tập trung chủ yếu vào:
+- Công nghệ nhận diện giọng nói (Micro Web Audio & Chấm phát âm AI)
+- Giao diện người dùng ban đêm (Dark Mode)
+- Hạ tầng kỹ thuật tải cao (Redis Cache, Celery Queue, Alembic Migration)
+- Kênh chăm sóc và hỗ trợ học viên (FAQ, Live Chat, Ticket Helpdesk)
+
+Việc hoàn thiện theo 4 giai đoạn lộ trình trên sẽ đưa EnglishMate trở thành một trong những nền tảng
+học tiếng Anh trực tuyến toàn diện, hiện đại và chuẩn mực hàng đầu.
+====================================================================================================
