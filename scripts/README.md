@@ -14,6 +14,7 @@ Tất cả các script công cụ được đặt trực tiếp trong thư mục
 | **`fetch_vocab.py`** | Tự động gọi API tra cứu IPA, nghĩa tiếng Việt và nạp từ vựng vào Database | `python scripts/fetch_vocab.py` |
 | **`patch_db.py`** | Đồng bộ & cập nhật cấu trúc bảng cơ sở dữ liệu (PostgreSQL / SQLite) | `python scripts/patch_db.py` |
 | **`setup_exams.py`** | Khởi tạo cấu trúc các bảng đề thi trong cơ sở dữ liệu | `python scripts/setup_exams.py` |
+| **`test_import.py`** | Kiểm thử import đề thi trực tiếp từ file JSON | `python scripts/test_import.py` |
 | `document_parser.py` | *(Module phụ trợ)* Thuật toán bóc tách regex cho `extract_data.py` | Tự động gọi bởi `extract_data.py` |
 
 ---

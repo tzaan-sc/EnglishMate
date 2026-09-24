@@ -1,3 +1,9 @@
+import sys
+from pathlib import Path
+
+BASE_DIR = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(BASE_DIR))
+
 from app import create_app
 from app.extensions import db
 from app.modules.exams.services import import_exam_from_json
@@ -14,8 +20,9 @@ def run_import():
             print("Deleted old sample exam.")
             
         print("Importing JSON...")
+        sample_path = BASE_DIR / "csv_templates" / "data" / "sample_exam.json"
         exam = import_exam_from_json(
-            "sample_exam.json", 
+            str(sample_path), 
             category="TOEIC", 
             title="Sample Test 1", 
             duration=60

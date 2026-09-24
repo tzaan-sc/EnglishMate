@@ -1,7 +1,8 @@
 import sqlite3
 from pathlib import Path
 
-db_path = Path(__file__).parent / "instance" / "englishmate.db"
+BASE_DIR = Path(__file__).resolve().parent.parent
+db_path = BASE_DIR / "instance" / "englishmate.db"
 
 if db_path.exists():
     conn = sqlite3.connect(db_path)
