@@ -263,6 +263,7 @@ def lessons():
         search=search,
         q=q,
         done=done,
+        progress_map={p.lesson_id: p for p in user_progress_list},
         favorite_ids=favorite_ids,
         skill_counts=skill_counts,
         statistics=statistics,
@@ -893,11 +894,22 @@ def complete_lesson(lesson_id):
     form = ActionForm()
     if not form.validate_on_submit():
         abort(400)
-    if not LessonProgress.query.filter_by(user_id=current_user.id, lesson_id=lesson.id).first():
-        db.session.add(LessonProgress(user_id=current_user.id, lesson_id=lesson.id))
+    duration_seconds = request.form.get("duration_seconds", type=int) or 0
+    progress = LessonProgress.query.filter_by(user_id=current_user.id, lesson_id=lesson.id).first()
+    if not progress:
+        progress = LessonProgress(
+            user_id=current_user.id,
+            lesson_id=lesson.id,
+            duration_seconds=duration_seconds
+        )
+        db.session.add(progress)
+        db.session.commit()
         record_daily_activity(current_user)
         flash("Tuyệt vời! Bài học đã được đánh dấu hoàn thành.", "success")
     else:
+        if duration_seconds > 0:
+            progress.duration_seconds = (progress.duration_seconds or 0) + duration_seconds
+            db.session.commit()
         record_daily_activity(current_user)
     return redirect(lesson.url)
 

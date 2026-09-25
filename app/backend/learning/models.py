@@ -1,4 +1,4 @@
-﻿from datetime import date
+from datetime import date
 from app.extensions import db
 from app.backend.auth.models import now
 
@@ -95,9 +95,19 @@ class LessonProgress(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False, index=True)
     lesson_id = db.Column(db.Integer, db.ForeignKey("lesson.id"), nullable=False, index=True)
     completed_at = db.Column(db.DateTime(timezone=True), default=now, nullable=False)
+    duration_seconds = db.Column(db.Integer, nullable=False, default=0)
     user = db.relationship("User", backref="lesson_progress")
     lesson = db.relationship("Lesson", backref="progress_records")
     __table_args__ = (db.UniqueConstraint("user_id", "lesson_id"),)
+
+    @property
+    def formatted_duration(self):
+        secs = self.duration_seconds or 0
+        mins = secs // 60
+        rem_secs = secs % 60
+        if mins > 0:
+            return f"{mins}p {rem_secs}s"
+        return f"{rem_secs}s"
 
 
 class VocabularyProgress(db.Model):

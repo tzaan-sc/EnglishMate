@@ -106,10 +106,17 @@ def dashboard():
     else:
         estimated_completion_date = "-"
 
-    # 2. Time spent learning
+    # 2. Time spent learning (tích hợp thời gian thực tế LessonProgress.duration_seconds)
     today_act = DailyActivity.query.filter_by(user_id=current_user.id, activity_date=today).first()
     today_lessons = today_act.completed_lessons if today_act else 0
-    today_time_spent_minutes = today_lessons * 15 + (10 if today_act else 0)
+    today_lp_seconds = db.session.query(func.coalesce(func.sum(LessonProgress.duration_seconds), 0)).filter(
+        LessonProgress.user_id == current_user.id,
+        func.date(LessonProgress.completed_at) == today
+    ).scalar() or 0
+    if today_lp_seconds > 0:
+        today_time_spent_minutes = max(1, round(today_lp_seconds / 60)) + (10 if today_act else 0)
+    else:
+        today_time_spent_minutes = today_lessons * 15 + (10 if today_act else 0)
     
     weekly_acts = DailyActivity.query.filter(
         DailyActivity.user_id == current_user.id,
@@ -117,8 +124,14 @@ def dashboard():
     ).all()
     weekly_time_spent_minutes = sum((a.completed_lessons * 15 + 10) for a in weekly_acts)
     
+    total_lp_seconds = db.session.query(func.coalesce(func.sum(LessonProgress.duration_seconds), 0)).filter(
+        LessonProgress.user_id == current_user.id
+    ).scalar() or 0
     all_acts = DailyActivity.query.filter_by(user_id=current_user.id).all()
-    total_time_spent_minutes = sum((a.completed_lessons * 15 + 10) for a in all_acts) or (completed * 15)
+    if total_lp_seconds > 0:
+        total_time_spent_minutes = round(total_lp_seconds / 60) + sum(10 for a in all_acts)
+    else:
+        total_time_spent_minutes = sum((a.completed_lessons * 15 + 10) for a in all_acts) or (completed * 15)
     total_time_hours = round(total_time_spent_minutes / 60, 1)
 
     # 3. Activity Heatmap & Activity Filter (Preset 7d, 30d, quarter, year, or custom from_date -> to_date)

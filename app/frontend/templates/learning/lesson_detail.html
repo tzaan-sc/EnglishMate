@@ -137,11 +137,11 @@
 
       {% if completed %}
       <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-3 py-1 fw-bold d-inline-flex align-items-center gap-1" style="font-size: 0.74rem;">
-        <i class="ph-fill ph-check-circle"></i> ✓ Đã hoàn thành
+        <i class="ph-fill ph-check-circle"></i> ✓ Đã hoàn thành{% if completed.formatted_duration %} (⏱️ {{ completed.formatted_duration }}){% endif %}
       </span>
       {% else %}
-      <span class="badge bg-primary-subtle text-primary rounded-pill px-3 py-1 fw-semibold" style="font-size: 0.74rem;">
-        Đang học
+      <span class="badge bg-primary-subtle text-primary rounded-pill px-3 py-1 fw-semibold d-inline-flex align-items-center gap-1" style="font-size: 0.74rem;">
+        <i class="ph-bold ph-timer"></i> <span class="lesson-live-timer-text">00:00</span>
       </span>
       {% endif %}
     </div>
@@ -372,6 +372,9 @@
             <h5 class="fw-bold text-success mb-1">Tuyệt vời! Bạn đã hoàn thành bài nghe này.</h5>
             <p class="text-secondary small mb-3" style="max-width: 460px;">
               Hệ thống đã ghi nhận tiến độ học tập tích lũy cho tài khoản của bạn. Hãy tiếp tục học các bài tiếp theo để duy trì chuỗi học tập!
+              {% if completed and completed.duration_seconds and completed.duration_seconds > 0 %}
+              <br><span class="badge bg-white text-success border border-success-subtle px-3 py-1.5 mt-2 fw-bold shadow-2xs d-inline-flex align-items-center gap-1"><i class="ph-bold ph-timer"></i>Thời gian học: {{ completed.formatted_duration }}</span>
+              {% endif %}
             </p>
             <a class="btn btn-primary rounded-3 px-4 py-2 fw-bold shadow-sm d-inline-flex align-items-center gap-2" href="/listening">
               <i class="ph-bold ph-arrow-left"></i>
@@ -389,6 +392,7 @@
             </p>
             <form method="post" action="{{ url_for('learning.complete_lesson', lesson_id=lesson.id) }}">
               {{ form.hidden_tag() }}
+              <input type="hidden" name="duration_seconds" class="lesson-duration-seconds-input" value="0">
               <button class="btn btn-primary btn-lg rounded-pill px-5 py-2.5 fw-bold shadow-sm d-inline-flex align-items-center gap-2">
                 <i class="ph-bold ph-check-circle fs-5"></i>
                 <span>Đánh dấu hoàn thành bài nghe</span>
@@ -428,11 +432,11 @@
 
       {% if completed %}
       <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-3 py-1 fw-bold d-inline-flex align-items-center gap-1" style="font-size: 0.74rem;">
-        <i class="ph-fill ph-check-circle"></i> ✓ Đã hoàn thành
+        <i class="ph-fill ph-check-circle"></i> ✓ Đã hoàn thành{% if completed.formatted_duration %} (⏱️ {{ completed.formatted_duration }}){% endif %}
       </span>
       {% else %}
-      <span class="badge rounded-pill px-3 py-1 fw-semibold" style="font-size: 0.74rem; background-color: rgba(13, 148, 136, 0.12); color: #0f766e;">
-        Đang đọc
+      <span class="badge rounded-pill px-3 py-1 fw-semibold d-inline-flex align-items-center gap-1" style="font-size: 0.74rem; background-color: rgba(13, 148, 136, 0.12); color: #0f766e;">
+        <i class="ph-bold ph-timer"></i> <span class="lesson-live-timer-text">00:00</span>
       </span>
       {% endif %}
     </div>
@@ -651,6 +655,9 @@
                   <h6 class="fw-bold text-success mb-1">Đã hoàn thành bài đọc!</h6>
                   <p class="text-secondary small mb-2.5" style="font-size: 0.8rem;">
                     Hệ thống đã ghi nhận tiến độ học tập và tích lũy điểm kinh nghiệm (+20 XP).
+                    {% if completed and completed.duration_seconds and completed.duration_seconds > 0 %}
+                    <br><span class="badge bg-white text-success border border-success-subtle px-2.5 py-1 mt-1 fw-bold shadow-2xs d-inline-flex align-items-center gap-1"><i class="ph-bold ph-timer"></i>Thời gian: {{ completed.formatted_duration }}</span>
+                    {% endif %}
                   </p>
                   <a class="btn btn-primary btn-sm rounded-pill px-3.5 py-1.5 fw-bold shadow-xs d-inline-flex align-items-center gap-1.5" href="/reading">
                     <i class="ph-bold ph-arrow-left"></i>
@@ -668,6 +675,7 @@
                   </p>
                   <form method="post" action="{{ url_for('learning.complete_lesson', lesson_id=lesson.id) }}">
                     {{ form.hidden_tag() }}
+                    <input type="hidden" name="duration_seconds" class="lesson-duration-seconds-input" value="0">
                     <button class="btn btn-primary btn-sm rounded-pill px-4 py-2 fw-bold shadow-xs d-inline-flex align-items-center gap-1.5">
                       <i class="ph-bold ph-check-circle fs-6"></i>
                       <span>Hoàn thành bài đọc (+20 XP)</span>
@@ -718,11 +726,11 @@
 
       {% if completed %}
       <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-3 py-1 fw-bold d-inline-flex align-items-center gap-1" style="font-size: 0.74rem;">
-        <i class="ph-fill ph-check-circle"></i> ✓ Đã hoàn thành
+        <i class="ph-fill ph-check-circle"></i> ✓ Đã hoàn thành{% if completed.formatted_duration %} (⏱️ {{ completed.formatted_duration }}){% endif %}
       </span>
       {% else %}
-      <span class="badge rounded-pill px-3 py-1 fw-semibold" style="font-size: 0.74rem; background-color: rgba(190, 18, 60, 0.12); color: #9f1239;">
-        Đang viết
+      <span class="badge rounded-pill px-3 py-1 fw-semibold d-inline-flex align-items-center gap-1" style="font-size: 0.74rem; background-color: rgba(190, 18, 60, 0.12); color: #9f1239;">
+        <i class="ph-bold ph-timer"></i> <span class="lesson-live-timer-text">00:00</span>
       </span>
       {% endif %}
     </div>
@@ -956,6 +964,9 @@
                   <h6 class="fw-bold text-success mb-1">Đã hoàn thành bài viết!</h6>
                   <p class="text-secondary small mb-2.5" style="font-size: 0.8rem;">
                     Hệ thống đã ghi nhận bài viết và cộng điểm tích lũy kinh nghiệm (+20 XP).
+                    {% if completed and completed.duration_seconds and completed.duration_seconds > 0 %}
+                    <br><span class="badge bg-white text-success border border-success-subtle px-2.5 py-1 mt-1 fw-bold shadow-2xs d-inline-flex align-items-center gap-1"><i class="ph-bold ph-timer"></i>Thời gian: {{ completed.formatted_duration }}</span>
+                    {% endif %}
                   </p>
                   <a class="btn btn-primary btn-sm rounded-pill px-3.5 py-1.5 fw-bold shadow-xs d-inline-flex align-items-center gap-1.5" href="/writing">
                     <i class="ph-bold ph-arrow-left"></i>
@@ -973,6 +984,7 @@
                   </p>
                   <form method="post" action="{{ url_for('learning.complete_lesson', lesson_id=lesson.id) }}">
                     {{ form.hidden_tag() }}
+                    <input type="hidden" name="duration_seconds" class="lesson-duration-seconds-input" value="0">
                     <button class="btn btn-primary btn-sm rounded-pill px-4 py-2 fw-bold shadow-xs d-inline-flex align-items-center gap-1.5">
                       <i class="ph-bold ph-check-circle fs-6"></i>
                       <span>Hoàn thành bài viết (+20 XP)</span>
@@ -1023,11 +1035,11 @@
 
       {% if completed %}
       <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-3 py-1 fw-bold d-inline-flex align-items-center gap-1" style="font-size: 0.74rem;">
-        <i class="ph-fill ph-check-circle"></i> ✓ Đã hoàn thành
+        <i class="ph-fill ph-check-circle"></i> ✓ Đã hoàn thành{% if completed.formatted_duration %} (⏱️ {{ completed.formatted_duration }}){% endif %}
       </span>
       {% else %}
-      <span class="badge rounded-pill px-3 py-1 fw-semibold" style="font-size: 0.74rem; background-color: rgba(234, 88, 12, 0.12); color: #ea580c;">
-        Đang luyện nói
+      <span class="badge rounded-pill px-3 py-1 fw-semibold d-inline-flex align-items-center gap-1" style="font-size: 0.74rem; background-color: rgba(234, 88, 12, 0.12); color: #ea580c;">
+        <i class="ph-bold ph-timer"></i> <span class="lesson-live-timer-text">00:00</span>
       </span>
       {% endif %}
     </div>
@@ -1285,6 +1297,9 @@
                   <h6 class="fw-bold text-success mb-1">Đã hoàn thành bài nói!</h6>
                   <p class="text-secondary small mb-2.5" style="font-size: 0.8rem;">
                     Bạn đã hoàn thành các câu luyện phát âm và nhận +20 XP kinh nghiệm.
+                    {% if completed and completed.duration_seconds and completed.duration_seconds > 0 %}
+                    <br><span class="badge bg-white text-success border border-success-subtle px-2.5 py-1 mt-1 fw-bold shadow-2xs d-inline-flex align-items-center gap-1"><i class="ph-bold ph-timer"></i>Thời gian: {{ completed.formatted_duration }}</span>
+                    {% endif %}
                   </p>
                   <a class="btn btn-primary btn-sm rounded-pill px-3.5 py-1.5 fw-bold shadow-xs d-inline-flex align-items-center gap-1.5" href="/speaking">
                     <i class="ph-bold ph-arrow-left"></i>
@@ -1302,6 +1317,7 @@
                   </p>
                   <form method="post" action="{{ url_for('learning.complete_lesson', lesson_id=lesson.id) }}">
                     {{ form.hidden_tag() }}
+                    <input type="hidden" name="duration_seconds" class="lesson-duration-seconds-input" value="0">
                     <button class="btn btn-primary btn-sm rounded-pill px-4 py-2 fw-bold shadow-xs d-inline-flex align-items-center gap-1.5">
                       <i class="ph-bold ph-check-circle fs-6"></i>
                       <span>Hoàn thành bài nói (+20 XP)</span>
@@ -1345,11 +1361,11 @@
 
       {% if completed %}
       <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-3 py-1 fw-bold d-inline-flex align-items-center gap-1" style="font-size: 0.74rem;">
-        <i class="ph-fill ph-check-circle"></i> ✓ Đã hoàn thành
+        <i class="ph-fill ph-check-circle"></i> ✓ Đã hoàn thành{% if completed.formatted_duration %} (⏱️ {{ completed.formatted_duration }}){% endif %}
       </span>
       {% else %}
-      <span class="badge bg-primary-subtle text-primary rounded-pill px-3 py-1 fw-semibold" style="font-size: 0.74rem;">
-        Đang học
+      <span class="badge bg-primary-subtle text-primary rounded-pill px-3 py-1 fw-semibold d-inline-flex align-items-center gap-1" style="font-size: 0.74rem;">
+        <i class="ph-bold ph-timer"></i> <span class="lesson-live-timer-text">00:00</span>
       </span>
       {% endif %}
     </div>
@@ -1507,6 +1523,9 @@
             <h5 class="fw-bold text-success mb-1">Tuyệt vời! Bạn đã hoàn thành bài học này.</h5>
             <p class="text-secondary small mb-3" style="max-width: 460px;">
               Hệ thống đã ghi nhận tiến độ học tập tích lũy cho tài khoản của bạn. Hãy tiếp tục học các bài tiếp theo để duy trì chuỗi học tập!
+              {% if completed and completed.duration_seconds and completed.duration_seconds > 0 %}
+              <br><span class="badge bg-white text-success border border-success-subtle px-3 py-1.5 mt-2 fw-bold shadow-2xs d-inline-flex align-items-center gap-1"><i class="ph-bold ph-timer"></i>Thời gian học: {{ completed.formatted_duration }}</span>
+              {% endif %}
             </p>
             <a class="btn btn-primary rounded-3 px-4 py-2 fw-bold shadow-sm d-inline-flex align-items-center gap-2" href="{{ lesson.skill_hub_url }}">
               <i class="ph-bold ph-arrow-left"></i>
@@ -1524,6 +1543,7 @@
             </p>
             <form method="post" action="{{ url_for('learning.complete_lesson', lesson_id=lesson.id) }}">
               {{ form.hidden_tag() }}
+              <input type="hidden" name="duration_seconds" class="lesson-duration-seconds-input" value="0">
               <button class="btn btn-primary btn-lg rounded-3 px-5 py-2.5 fw-bold shadow-sm d-inline-flex align-items-center gap-2">
                 <i class="ph-bold ph-check-circle fs-5"></i>
                 <span>Đánh dấu hoàn thành bài học</span>
@@ -2769,6 +2789,30 @@ document.addEventListener("DOMContentLoaded", function() {
   // Initialize view
   updateSpeakingView(0);
   {% endif %}
+
+  // ==========================================
+  // Lesson Time Tracker (Thời gian mỗi bài học)
+  // ==========================================
+  let lessonDurationSeconds = 0;
+  const timerDisplays = document.querySelectorAll(".lesson-live-timer-text");
+  const durationInputs = document.querySelectorAll(".lesson-duration-seconds-input");
+
+  function formatLessonTimer(sec) {
+    const m = Math.floor(sec / 60);
+    const s = sec % 60;
+    return `${m.toString().padStart(2, "0")}:${s.toString().padStart(2, "0")}`;
+  }
+
+  setInterval(function() {
+    lessonDurationSeconds++;
+    const formatted = formatLessonTimer(lessonDurationSeconds);
+    timerDisplays.forEach(el => {
+      el.textContent = formatted;
+    });
+    durationInputs.forEach(input => {
+      input.value = lessonDurationSeconds;
+    });
+  }, 1000);
 });
 </script>
 {% endblock %}

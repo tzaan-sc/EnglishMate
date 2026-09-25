@@ -385,9 +385,16 @@
         <!-- Card Footer -->
         <div class="pt-2.5 border-top border-light d-flex align-items-center justify-content-between mt-auto">
           {% if is_done %}
-          <span class="badge bg-success-subtle text-success rounded-pill px-2.5 py-0.5 fw-bold" style="font-size: 0.72rem;">
-            ✓ Đã học
-          </span>
+          <div class="d-flex align-items-center gap-1.5 flex-wrap">
+            <span class="badge bg-success-subtle text-success rounded-pill px-2.5 py-0.5 fw-bold" style="font-size: 0.72rem;">
+              ✓ Đã học
+            </span>
+            {% if progress_map and progress_map.get(lesson.id) and progress_map[lesson.id].duration_seconds > 0 %}
+            <span class="badge bg-light text-secondary border rounded-pill px-2 py-0.5" style="font-size: 0.7rem;" title="Thời gian học">
+              ⏱️ {{ progress_map[lesson.id].formatted_duration }}
+            </span>
+            {% endif %}
+          </div>
           {% else %}
           <span class="badge bg-light text-secondary border rounded-pill px-2 py-0.5" style="font-size: 0.72rem;">
             Chưa học
@@ -461,9 +468,16 @@
         <!-- Footer: Status & Read CTA -->
         <div class="pt-2.5 border-top border-light d-flex align-items-center justify-content-between mt-auto">
           {% if is_done %}
-          <span class="badge bg-success-subtle text-success rounded-pill px-2.5 py-0.5 fw-bold" style="font-size: 0.72rem;">
-            ✓ Đã đọc
-          </span>
+          <div class="d-flex align-items-center gap-1.5 flex-wrap">
+            <span class="badge bg-success-subtle text-success rounded-pill px-2.5 py-0.5 fw-bold" style="font-size: 0.72rem;">
+              ✓ Đã đọc
+            </span>
+            {% if progress_map and progress_map.get(lesson.id) and progress_map[lesson.id].duration_seconds > 0 %}
+            <span class="badge bg-light text-secondary border rounded-pill px-2 py-0.5" style="font-size: 0.7rem;" title="Thời gian đọc">
+              ⏱️ {{ progress_map[lesson.id].formatted_duration }}
+            </span>
+            {% endif %}
+          </div>
           {% else %}
           <span class="text-muted" style="font-size: 0.74rem;">Chưa đọc</span>
           {% endif %}
@@ -535,9 +549,16 @@
         <!-- Footer: Status & Write CTA -->
         <div class="pt-2.5 border-top border-light d-flex align-items-center justify-content-between mt-auto">
           {% if is_done %}
-          <span class="badge bg-success-subtle text-success rounded-pill px-2.5 py-0.5 fw-bold" style="font-size: 0.72rem;">
-            ✓ Đã viết
-          </span>
+          <div class="d-flex align-items-center gap-1.5 flex-wrap">
+            <span class="badge bg-success-subtle text-success rounded-pill px-2.5 py-0.5 fw-bold" style="font-size: 0.72rem;">
+              ✓ Đã viết
+            </span>
+            {% if progress_map and progress_map.get(lesson.id) and progress_map[lesson.id].duration_seconds > 0 %}
+            <span class="badge bg-light text-secondary border rounded-pill px-2 py-0.5" style="font-size: 0.7rem;" title="Thời gian viết">
+              ⏱️ {{ progress_map[lesson.id].formatted_duration }}
+            </span>
+            {% endif %}
+          </div>
           {% else %}
           <span class="text-muted" style="font-size: 0.74rem;">Chưa viết</span>
           {% endif %}
@@ -609,9 +630,16 @@
         <!-- Footer: Status & Speak CTA -->
         <div class="pt-2.5 border-top border-light d-flex align-items-center justify-content-between mt-auto">
           {% if is_done %}
-          <span class="badge bg-success-subtle text-success rounded-pill px-2.5 py-0.5 fw-bold" style="font-size: 0.72rem;">
-            ✓ Đã luyện
-          </span>
+          <div class="d-flex align-items-center gap-1.5 flex-wrap">
+            <span class="badge bg-success-subtle text-success rounded-pill px-2.5 py-0.5 fw-bold" style="font-size: 0.72rem;">
+              ✓ Đã luyện
+            </span>
+            {% if progress_map and progress_map.get(lesson.id) and progress_map[lesson.id].duration_seconds > 0 %}
+            <span class="badge bg-light text-secondary border rounded-pill px-2 py-0.5" style="font-size: 0.7rem;" title="Thời gian nói">
+              ⏱️ {{ progress_map[lesson.id].formatted_duration }}
+            </span>
+            {% endif %}
+          </div>
           {% else %}
           <span class="text-muted" style="font-size: 0.74rem;">Chưa luyện</span>
           {% endif %}
@@ -674,9 +702,16 @@
         <!-- Card Footer -->
         <div class="pt-3 border-top border-light d-flex align-items-center justify-content-between mt-auto">
           {% if is_done %}
-          <span class="badge bg-success-subtle text-success rounded-pill px-2.5 py-1 fw-bold small">
-            ✓ Đã hoàn thành
-          </span>
+          <div class="d-flex align-items-center gap-1.5 flex-wrap">
+            <span class="badge bg-success-subtle text-success rounded-pill px-2.5 py-1 fw-bold small">
+              ✓ Đã hoàn thành
+            </span>
+            {% if progress_map and progress_map.get(lesson.id) and progress_map[lesson.id].duration_seconds > 0 %}
+            <span class="badge bg-light text-secondary border rounded-pill px-2 py-0.5" style="font-size: 0.7rem;" title="Thời gian học">
+              ⏱️ {{ progress_map[lesson.id].formatted_duration }}
+            </span>
+            {% endif %}
+          </div>
           {% else %}
           <span class="badge bg-light text-secondary border rounded-pill px-2.5 py-1 small fw-semibold">
             Chưa học

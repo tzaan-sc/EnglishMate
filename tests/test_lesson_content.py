@@ -1,4 +1,4 @@
-﻿from app.extensions import db
+from app.extensions import db
 from app.backend.auth.models import User
 from app.backend.learning.models import Lesson, LessonNote, LessonBookmark, LessonReport
 from tests.conftest import login
@@ -91,3 +91,51 @@ def test_report_lesson_content(client):
         report = LessonReport.query.filter_by(lesson_id=lesson_id).first()
         assert report is not None
         assert report.reason == "Lỗi chính tả / Ngữ pháp"
+
+
+def test_lesson_time_tracking(client):
+    from app.backend.learning.models import LessonProgress
+    login(client)
+
+    with client.application.app_context():
+        l = ensure_sample_lesson()
+        lesson_id = l.id
+        user = User.query.filter_by(email="student@test.com").first()
+        # Clean any existing progress
+        LessonProgress.query.filter_by(user_id=user.id, lesson_id=lesson_id).delete()
+        db.session.commit()
+
+    # Complete lesson with duration_seconds = 125 (2 min 5 sec)
+    res = client.post(
+        f"/lessons/{lesson_id}/complete",
+        data={"duration_seconds": 125},
+        follow_redirects=True,
+    )
+    assert res.status_code == 200
+
+    with client.application.app_context():
+        user = User.query.filter_by(email="student@test.com").first()
+        progress = LessonProgress.query.filter_by(user_id=user.id, lesson_id=lesson_id).first()
+        assert progress is not None
+        assert progress.duration_seconds == 125
+        assert progress.formatted_duration == "2p 5s"
+
+    # Re-study and add 40 seconds (total 165 seconds = 2 min 45 sec)
+    res2 = client.post(
+        f"/lessons/{lesson_id}/complete",
+        data={"duration_seconds": 40},
+        follow_redirects=True,
+    )
+    assert res2.status_code == 200
+
+    with client.application.app_context():
+        user = User.query.filter_by(email="student@test.com").first()
+        progress = LessonProgress.query.filter_by(user_id=user.id, lesson_id=lesson_id).first()
+        assert progress.duration_seconds == 165
+        assert progress.formatted_duration == "2p 45s"
+
+    # Check that formatted duration renders on lesson detail and lessons page
+    res_detail = client.get(f"/lessons/{lesson_id}")
+    assert res_detail.status_code == 200
+    assert "2p 45s".encode("utf-8") in res_detail.data
+

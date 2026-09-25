@@ -170,7 +170,7 @@ NỀN TẢNG HỌC TIẾNG ANH TRỰC TUYẾN THÔNG MINH
 [x] - Today Time Spent - Thời gian học hôm nay
 [x] - Weekly Time Spent - Thời gian học tuần
 [x] - Total Time Spent - Tổng thời gian học
-[ ] - Time per Lesson - Thời gian mỗi bài học
+[x] - Time per Lesson - Thời gian mỗi bài học
 [x] - Time Distribution - Phân bổ thời gian
 
 3.5. Performance Analytics (Phân tích hiệu suất)

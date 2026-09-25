@@ -53,6 +53,7 @@ def create_app(config_object=Config):
                     conn.execute(text('ALTER TABLE "user" ADD COLUMN IF NOT EXISTS vocab_reminder_enabled BOOLEAN DEFAULT TRUE;'))
                     conn.execute(text('ALTER TABLE "user" ADD COLUMN IF NOT EXISTS vocab_reminder_time VARCHAR(10) DEFAULT \'09:00\';'))
                     conn.execute(text('ALTER TABLE "user" ADD COLUMN IF NOT EXISTS vocab_push_subscription TEXT;'))
+                    conn.execute(text("ALTER TABLE lesson_progress ADD COLUMN IF NOT EXISTS duration_seconds INTEGER DEFAULT 0;"))
                     conn.commit()
                 elif "sqlite" in str(db.engine.url):
                     insp = inspect(db.engine)
@@ -77,6 +78,11 @@ def create_app(config_object=Config):
                             conn.commit()
                         if "vocab_push_subscription" not in cols:
                             conn.execute(text('ALTER TABLE "user" ADD COLUMN vocab_push_subscription TEXT;'))
+                            conn.commit()
+                    if "lesson_progress" in tables:
+                        cols = [c["name"] for c in insp.get_columns("lesson_progress")]
+                        if "duration_seconds" not in cols:
+                            conn.execute(text("ALTER TABLE lesson_progress ADD COLUMN duration_seconds INTEGER DEFAULT 0;"))
                             conn.commit()
         except Exception:
             pass

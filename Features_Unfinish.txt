@@ -13,9 +13,9 @@ BẢNG ĐỐI CHIẾU TỔNG QUAN HỆ THỐNG (SYSTEM STATUS COMPARISON)
 | Chỉ số thống kê                                    | Giá trị          | Ghi chú                               |
 |:---------------------------------------------------|:-----------------|:--------------------------------------|
 | Tổng số tính năng khảo sát toàn hệ thống           | 864 tính năng    | Đầy đủ từ cơ bản đến nâng cao         |
-| Tổng số tính năng ĐÃ HOÀN THÀNH [x]                | 742 tính năng    | Đã có Route, Model, Logic, UI chuẩn   |
-| Tổng số tính năng CHƯA TRIỂN KHAI [ ]              | 122 tính năng    | Nằm trong danh sách backlog dưới đây  |
-| Tỷ lệ hoàn thiện hiện tại của hệ thống             | 85.9%            | Pytest test suite PASSED 100%         |
+| Tổng số tính năng ĐÃ HOÀN THÀNH [x]                | 743 tính năng    | Đã có Route, Model, Logic, UI chuẩn   |
+| Tổng số tính năng CHƯA TRIỂN KHAI [ ]              | 121 tính năng    | Nằm trong danh sách backlog dưới đây  |
+| Tỷ lệ hoàn thiện hiện tại của hệ thống             | 86.0%            | Pytest test suite PASSED 100%         |
 | Số Module đã hoàn thành 100%                       | 2 Module         | Module 1: Xác thực; Module 2: Hồ sơ   |
 | Số Module còn tính năng đang chờ phát triển        | 13 Module        | Từ Module 3 đến Module 15             |
 ----------------------------------------------------------------------------------------------------
@@ -23,7 +23,7 @@ BẢNG ĐỐI CHIẾU TỔNG QUAN HỆ THỐNG (SYSTEM STATUS COMPARISON)
 MỤC LỤC 13 MODULE CHỨA CÁC TÍNH NĂNG CHƯA LÀM (MODULE 1 & 2 ĐÃ HOÀN THÀNH 100%):
 ----------------------------------------------------------------------------------------------------
 - [x] 2. USER PROFILE & SETTINGS (HỒ SƠ & CÀI ĐẶT): ĐÃ HOÀN THÀNH 100% (0 tính năng chưa làm)
-- [ ] 3. DASHBOARD & ANALYTICS (BẢNG ĐIỀU KHIỂN & PHÂN TÍCH): 2 tính năng chưa làm
+- [ ] 3. DASHBOARD & ANALYTICS (BẢNG ĐIỀU KHIỂN & PHÂN TÍCH): 1 tính năng chưa làm
 - [ ] 4. LESSONS & 4 SKILLS (BÀI HỌC & 4 KỸ NĂNG): 9 tính năng chưa làm
 - [ ] 5. VOCABULARY & FLASHCARD SYSTEM (HỆ THỐNG TỪ VỰNG & FLASHCARD): 2 tính năng chưa làm
 - [ ] 6. GRAMMAR SYSTEM (HỆ THỐNG NGỮ PHÁP): 1 tính năng chưa làm
@@ -64,7 +64,7 @@ MODULE: 2. USER PROFILE & SETTINGS (HỒ SƠ & CÀI ĐẶT) (ĐÃ HOÀN THÀNH 1
 
 
 ====================================================================================================
-MODULE: 3. DASHBOARD & ANALYTICS (BẢNG ĐIỀU KHIỂN & PHÂN TÍCH) (2 tính năng chưa làm)
+MODULE: 3. DASHBOARD & ANALYTICS (BẢNG ĐIỀU KHIỂN & PHÂN TÍCH) (1 tính năng chưa làm)
 ====================================================================================================
 
 ### 3.2. Activity Tracking (Theo dõi hoạt động) (1 tính năng đã hoàn thành):
@@ -75,12 +75,12 @@ MODULE: 3. DASHBOARD & ANALYTICS (BẢNG ĐIỀU KHIỂN & PHÂN TÍCH) (2 tính
    - Hiện trạng thực hiện: Đã bổ sung các tham số truy vấn `timeframe` (7d, 30d, quarter, year, custom), `from_date`, `to_date` và `year` vào route `/dashboard`; xây dựng thuật toán lọc và căn chỉnh lưới GitHub Heatmap động theo từng tuần từ Thứ Hai đến Chủ Nhật; tính toán thống kê chi tiết số bài hoàn thành và số ngày hoạt động trong khoảng thời gian được lọc; bổ sung thanh công cụ bộ lọc tương tác với các nút bấm nhanh (7 ngày, 30 ngày, Quý này, dropdown chọn năm) cùng form chọn ngày tùy chỉnh dạng collapse và badge trạng thái hiển thị trực quan.
 
 
-### 3.4. Time Analytics (Phân tích thời gian) (1 tính năng):
+### 3.4. Time Analytics (Phân tích thời gian) (1 tính năng đã hoàn thành):
 ----------------------------------------------------------------------------------------------------
-5. [ ] Time per Lesson - Thời gian mỗi bài học
+5. [x] Time per Lesson - Thời gian mỗi bài học (ĐÃ HOÀN THÀNH)
    - Mức độ ưu tiên: Thấp
    - Mô tả yêu cầu: Theo dõi và thống kê chi tiết thời gian chính xác người dùng dành cho từng bài học cụ thể (tính theo phút/giây).
-   - Đối chiếu hiện trạng: Hiện tại bảng DailyActivity mới chỉ lưu tổng thời gian học trong ngày (time_spent), chưa có cột đo thời gian lưu trú riêng cho từng LessonProgress.
+   - Hiện trạng thực hiện: Đã bổ sung trường `duration_seconds` vào model `LessonProgress` kèm property định dạng trực quan `formatted_duration` (Xp Ys); cập nhật route hoàn thành bài học `/lessons/<id>/complete` nhận và cộng dồn số giây học thực tế; tích hợp đồng hồ Live Timer đếm thời gian theo thời gian thực và tự động gửi kèm form hoàn thành trên toàn bộ 5 kỹ năng/loại bài học (Listening, Reading, Writing, Speaking, General); hiển thị badge thời gian đã hoàn thành trên thẻ bài học (`lessons.html`), trang chi tiết (`lesson_detail.html`) và trang tiến độ tổng quan (`progress.html`); đồng thời tích hợp `LessonProgress.duration_seconds` vào chỉ số thời gian học tập trên Dashboard (`main/routes.py`).
 
 
 ### 3.6. Goal Tracking (Theo dõi mục tiêu) (1 tính năng):

@@ -108,16 +108,17 @@ MODULE 3. DASHBOARD & ANALYTICS (BẢNG ĐIỀU KHIỂN & PHÂN TÍCH) — 2 TÍ
   + Bổ sung giao diện các nút lọc nhanh (7 ngày, 30 ngày, Quý này, dropdown chọn năm) kèm form date picker tùy chỉnh dạng collapse và badge trạng thái hiển thị trực quan.
 - Trạng thái: ĐÃ HOÀN THÀNH (100% test passed)
 
-[ ] 3.2. Time per Lesson - Thời gian học chi tiết từng bài học (Mục 3.4)
-- Hiện trạng trong EnglishMate_Features.txt:
-  Bảng `DailyActivity` chỉ cộng dồn tổng thời gian học trong ngày `time_spent` (phút).
-- Phần còn thiếu chưa làm:
-  Chưa theo dõi chính xác học viên dành bao nhiêu phút/giây cho một bài học cụ thể trước khi ấn nút "Hoàn thành bài học".
-- Giải pháp kỹ thuật cần làm:
-  + Bổ sung cột `duration_seconds` (Integer, default=0) vào bảng `LessonProgress`.
-  + Trong giao diện bài học `lesson_detail.html`, dùng JS Timer đếm thời gian thực tế người dùng mở bài học.
-  + Gửi kèm `duration_seconds` khi gọi POST `/lessons/<id>/complete`.
-- Mức độ ưu tiên: Trung bình (Medium)
+[x] 3.2. Time per Lesson - Thời gian học chi tiết từng bài học (Mục 3.4) (ĐÃ HOÀN THÀNH)
+- Hiện trạng:
+  Đã hoàn thành toàn diện tính năng theo dõi và thống kê chi tiết thời gian chính xác người dùng dành cho từng bài học cụ thể (tính theo phút/giây).
+- Giải pháp kỹ thuật đã triển khai:
+  + Bổ sung cột `duration_seconds` (Integer, default=0) vào bảng `LessonProgress` kèm property `formatted_duration` (Xp Ys).
+  + Bổ sung tự động migration schema kiểm tra cột `duration_seconds` trong `app/__init__.py`.
+  + Tích hợp JavaScript Live Timer thời gian thực trên giao diện chi tiết bài học (`lesson_detail.html`), tự động đẩy `duration_seconds` vào form hoàn thành ở cả 5 kỹ năng / thể loại bài học (Listening, Reading, Writing, Speaking, General).
+  + Cập nhật route POST `/lessons/<id>/complete` nhận và cộng dồn số giây học thực tế vào `LessonProgress.duration_seconds`.
+  + Hiển thị huy hiệu thời gian đã hoàn thành trên thẻ bài học (`lessons.html`), trang chi tiết (`lesson_detail.html`) và trang tổng quan tiến độ (`progress.html`).
+  + Tích hợp `LessonProgress.duration_seconds` vào tính toán thời gian học tập trên Dashboard (`main/routes.py`).
+- Trạng thái: ĐÃ HOÀN THÀNH (100% test passed)
 
 [ ] 3.3. Goal Reminder - Nhắc nhở mục tiêu hàng ngày (Mục 3.6)
 - Hiện trạng trong EnglishMate_Features.txt:

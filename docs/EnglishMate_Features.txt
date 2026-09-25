@@ -162,13 +162,18 @@ MỤC LỤC TỔNG QUAN CÁC MODULE CHỨC NĂNG ĐÃ LÀM:
   [x] Thanh tiến độ kinh nghiệm (XP bar) hiển thị % tiến độ và số XP cần để thăng cấp tiếp theo.
   [x] Thuật toán dự báo ngày hoàn thành cấp bậc: Tự động phân tích tốc độ tích lũy XP trung bình mỗi ngày để tính ngày thăng cấp dự kiến.
 
-[x] 2.5. Thống kê thời gian học tập (Time Spent Learning Analytics)
-- Route: GET /dashboard
-- Model: DailyActivity
+[x] 2.5. Thống kê thời gian học tập (Time Spent Learning Analytics) & Thời gian mỗi bài học (Time per Lesson)
+- Route: GET /dashboard, POST /lessons/<id>/complete
+- Model: DailyActivity, LessonProgress (duration_seconds, formatted_duration)
 - Chi tiết chức năng:
-  [x] Tính toán thời gian học tập hôm nay (phút).
+  [x] Tính toán thời gian học tập hôm nay (phút) dựa trên `DailyActivity` và thời gian thực tế `LessonProgress.duration_seconds`.
   [x] Tính toán tổng thời gian học tập trong tuần (phút).
   [x] Tổng thời gian học tập tích lũy từ khi tạo tài khoản (giờ).
+  [x] Theo dõi thời gian chi tiết cho từng bài học (Time per Lesson):
+    [x] Bộ đếm thời gian Live Timer theo thời gian thực khi người học mở bài học (`lesson_detail.html`).
+    [x] Tự động gửi kèm `duration_seconds` khi hoàn thành bài học qua form POST ở cả 5 kỹ năng (Listening, Reading, Writing, Speaking, General).
+    [x] Tự động cộng dồn thời gian học khi người học ôn tập lại bài học đã hoàn thành.
+    [x] Hiển thị huy hiệu thời gian hoàn thành (`formatted_duration` ví dụ: `⏱️ 2p 5s`) trên thẻ bài học (`lessons.html`), trang chi tiết (`lesson_detail.html`) và trang tổng quan tiến độ (`progress.html`).
 
 [x] 2.6. Bản đồ nhiệt hoạt động học tập & Bộ lọc tương tác (Activity Heatmap & Interactive Filter)
 - Route: GET /dashboard?timeframe=<7d|30d|quarter|year|custom>&year=<year>&from_date=<Y-m-d>&to_date=<Y-m-d>

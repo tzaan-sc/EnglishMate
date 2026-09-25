@@ -138,9 +138,14 @@
                 <span class="text-muted" style="font-size: 0.76rem;">{{ item.lesson.level }} · {{ item.lesson.skill }}</span>
               </div>
             </div>
-            {% if item.completed_at %}
-            <span class="text-muted small flex-shrink-0 ms-2" style="font-size: 0.74rem;">{{ item.completed_at.strftime('%d/%m') }}</span>
-            {% endif %}
+            <div class="text-end flex-shrink-0 ms-2">
+              <span class="badge bg-light text-secondary border rounded-pill px-2 py-0.5 d-inline-flex align-items-center gap-1 mb-1" style="font-size: 0.72rem;" title="Thời gian học">
+                <i class="ph-bold ph-timer text-primary"></i> {{ item.formatted_duration }}
+              </span>
+              {% if item.completed_at %}
+              <span class="text-muted small d-block" style="font-size: 0.72rem;">{{ item.completed_at.strftime('%d/%m/%Y') }}</span>
+              {% endif %}
+            </div>
           </div>
           {% else %}
           <div class="text-center py-5 text-muted">
