@@ -132,7 +132,7 @@ NỀN TẢNG HỌC TIẾNG ANH TRỰC TUYẾN THÔNG MINH
 [x] - Exam Pause Allow - Cho phép tạm dừng thi
 [x] - Exam Realtime Score - Hiển thị điểm thời gian thực
 [x] - Exam Auto Submit - Tự động nộp bài
-[ ] - Exam Sound Effects - Hiệu ứng âm thanh thi
+[x] - Exam Sound Effects - Hiệu ứng âm thanh thi
 
 ================================================================================
 3. DASHBOARD & ANALYTICS (BẢNG ĐIỀU KHIỂN & PHÂN TÍCH)

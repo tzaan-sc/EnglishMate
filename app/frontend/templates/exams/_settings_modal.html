@@ -107,10 +107,21 @@
 
                 <div class="mt-2">
                   <div class="form-check form-switch p-2 bg-white rounded-3 border d-flex align-items-center justify-content-between m-0">
-                    <label class="form-check-label small fw-semibold text-dark cursor-pointer pe-2" for="modalSoundSwitch">
-                      🔊 Âm thanh phản hồi hiệu ứng (click, nộp bài)
-                    </label>
+                    <div>
+                      <label class="form-check-label small fw-semibold text-dark cursor-pointer pe-2 d-block" for="modalSoundSwitch">
+                        🔊 Âm thanh phản hồi hiệu ứng (tích tắc 10s, chọn câu, nộp bài)
+                      </label>
+                      <span class="text-secondary" style="font-size: 0.75rem;">Phát âm thanh tích tắc 10s cuối, click chọn câu, hết giờ và nộp bài.</span>
+                    </div>
                     <input class="form-check-input ms-0 mt-0 cursor-pointer" type="checkbox" id="modalSoundSwitch" name="exam_sound_effects" {% if current_user.exam_sound_effects %}checked{% endif %}>
+                  </div>
+                  <!-- Sound preview buttons inside modal -->
+                  <div class="d-flex align-items-center gap-1.5 mt-2 px-1 flex-wrap">
+                    <span class="text-secondary" style="font-size: 0.75rem;">Thử âm thanh:</span>
+                    <button type="button" class="btn btn-xs btn-outline-secondary rounded-pill px-2 py-0.5" style="font-size: 0.72rem;" onclick="ensureAndPlayExamSound('select')">🔘 Chọn câu</button>
+                    <button type="button" class="btn btn-xs btn-outline-secondary rounded-pill px-2 py-0.5" style="font-size: 0.72rem;" onclick="ensureAndPlayExamSound('tick')">⏱️ Tích tắc</button>
+                    <button type="button" class="btn btn-xs btn-outline-secondary rounded-pill px-2 py-0.5" style="font-size: 0.72rem;" onclick="ensureAndPlayExamSound('timeout')">⌛ Hết giờ</button>
+                    <button type="button" class="btn btn-xs btn-outline-secondary rounded-pill px-2 py-0.5" style="font-size: 0.72rem;" onclick="ensureAndPlayExamSound('submit')">🎉 Nộp bài</button>
                   </div>
                 </div>
 
@@ -137,3 +148,23 @@
     </div>
   </div>
 </div>
+
+<script>
+function ensureAndPlayExamSound(type) {
+  function doPlay() {
+    if (!window.ExamSoundEffects) return;
+    if (type === 'select') window.ExamSoundEffects.playSelect();
+    else if (type === 'tick') window.ExamSoundEffects.playTick();
+    else if (type === 'timeout') window.ExamSoundEffects.playTimeout();
+    else if (type === 'submit') window.ExamSoundEffects.playSubmit();
+  }
+  if (!window.ExamSoundEffects) {
+    const s = document.createElement('script');
+    s.src = "{{ url_for('static', filename='js/exam_audio.js') }}";
+    s.onload = doPlay;
+    document.body.appendChild(s);
+  } else {
+    doPlay();
+  }
+}
+</script>

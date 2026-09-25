@@ -550,7 +550,7 @@ MỤC LỤC TỔNG QUAN CÁC MODULE CHỨC NĂNG ĐÃ LÀM:
   [x] Bật/Tắt tính năng cho phép tạm dừng bài thi.
   [x] Tùy chọn hiển thị điểm số thời gian thực.
   [x] Bật/Tắt cơ chế tự động nộp bài khi hết giờ.
-  [x] Bật/Tắt hiệu ứng âm thanh thông báo.
+  [x] Bật/Tắt hiệu ứng âm thanh phòng thi (`exam_sound_effects`): tích hợp audio engine đa nền tảng (`exam_audio.js`) với Web Audio API và WAV fallback (`tick.wav`, `select.wav`, `timeout.wav`, `success.wav`), phát tiếng click chọn đáp án, tích tắc 10 giây cuối, chuông hết giờ và âm thanh nộp bài trong phòng thi chuẩn và TOEIC; kèm thanh nút nghe thử trực quan tại trang Cài Đặt.
 
 ====================================================================================================
 [x] 8. MODULE TRÒ CHƠI HÓA, HUY HIỆU & SẢNH GAME (GAMIFICATION & ARCADE GAMES)

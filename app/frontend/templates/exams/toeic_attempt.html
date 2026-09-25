@@ -341,8 +341,13 @@
 {% endblock %}
 
 {% block scripts %}
+<script src="{{ url_for('static', filename='js/exam_audio.js') }}"></script>
 <script>
 document.addEventListener("DOMContentLoaded", function() {
+  if (window.ExamSoundEffects) {
+    window.ExamSoundEffects.setEnabled({{ 'true' if current_user.exam_sound_effects else 'false' }});
+  }
+
   const TOTAL_TIME = 75 * 60; // 75 minutes in seconds
   let timeRemaining = TOTAL_TIME;
   let timeSpent = 0;
@@ -354,21 +359,9 @@ document.addEventListener("DOMContentLoaded", function() {
   const DRAFT_KEY = "toeic_draft_{{ current_user.id }}_{{ attempt.id }}";
   
   function playClickSound() {
-    {% if current_user.exam_sound_effects %}
-    try {
-      let ctx = new (window.AudioContext || window.webkitAudioContext)();
-      let osc = ctx.createOscillator();
-      let gain = ctx.createGain();
-      osc.connect(gain);
-      gain.connect(ctx.destination);
-      osc.type = "sine";
-      osc.frequency.setValueAtTime(600, ctx.currentTime);
-      gain.gain.setValueAtTime(0.04, ctx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.00001, ctx.currentTime + 0.08);
-      osc.start();
-      osc.stop(ctx.currentTime + 0.08);
-    } catch(e) {}
-    {% endif %}
+    if (window.ExamSoundEffects) {
+      window.ExamSoundEffects.playSelect();
+    }
   }
 
   // --- LocalStorage Auto-save & Restore ---
@@ -484,6 +477,9 @@ document.addEventListener("DOMContentLoaded", function() {
     // Time expired
     if (timeRemaining <= 0) {
       clearInterval(timerInterval);
+      if (window.ExamSoundEffects) {
+        window.ExamSoundEffects.playTimeout();
+      }
       isTimerExpiredInput.value = "true";
       cleanDraft();
       {% if current_user.exam_auto_submit %}
@@ -494,6 +490,11 @@ document.addEventListener("DOMContentLoaded", function() {
       timerDisplay.classList.remove("bg-navy");
       timerDisplay.classList.add("bg-danger");
       {% endif %}
+    } else if (timeRemaining <= 10 && timeRemaining > 0) {
+      // 10s countdown tick sound effect!
+      if (window.ExamSoundEffects) {
+        window.ExamSoundEffects.playTick();
+      }
     }
   }, 1000);
 
@@ -544,11 +545,17 @@ document.addEventListener("DOMContentLoaded", function() {
   // Form submit handlers
   testForm.addEventListener("submit", function() {
     clearInterval(timerInterval);
+    if (window.ExamSoundEffects) {
+      window.ExamSoundEffects.playSubmit();
+    }
     cleanDraft();
   });
 
   document.getElementById("btn-modal-submit").addEventListener("click", function() {
     clearInterval(timerInterval);
+    if (window.ExamSoundEffects) {
+      window.ExamSoundEffects.playSubmit();
+    }
     cleanDraft();
     testForm.submit();
   });

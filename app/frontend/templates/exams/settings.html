@@ -142,12 +142,33 @@
           </div>
 
           <!-- 7. Sound effects toggle -->
-          <div class="form-check form-switch bg-light border rounded-4 p-3 d-flex align-items-center justify-content-between">
+          <div class="form-check form-switch bg-light border rounded-4 p-3 d-flex align-items-center justify-content-between mb-3">
             <div>
               <label class="form-check-label fw-bold text-dark cursor-pointer d-block" for="soundEffectsSwitch">🔊 Âm thanh phản hồi hiệu ứng</label>
-              <span class="text-secondary small">Phát âm thanh click nhẹ vui nhộn khi chọn đáp án và nộp bài.</span>
+              <span class="text-secondary small">Phát âm thanh tích tắc 10 giây cuối, click chọn đáp án, hết giờ và nộp bài.</span>
             </div>
             <input class="form-check-input fs-4 ms-2 mt-0 cursor-pointer" type="checkbox" id="soundEffectsSwitch" name="exam_sound_effects" {% if current_user.exam_sound_effects %}checked{% endif %}>
+          </div>
+
+          <!-- Sound preview controls -->
+          <div class="p-3 bg-light rounded-4 border">
+            <span class="fw-bold text-dark d-block small mb-2">
+              <i class="ph ph-headphones text-primary me-1"></i> Nghe thử hiệu ứng âm thanh:
+            </span>
+            <div class="d-flex flex-wrap gap-2">
+              <button type="button" class="btn btn-sm btn-white bg-white border rounded-pill px-3 py-1 shadow-xs fw-semibold" onclick="window.ExamSoundEffects && window.ExamSoundEffects.playSelect()">
+                🔘 Chọn câu
+              </button>
+              <button type="button" class="btn btn-sm btn-white bg-white border rounded-pill px-3 py-1 shadow-xs fw-semibold" onclick="window.ExamSoundEffects && window.ExamSoundEffects.playTick()">
+                ⏱️ Tích tắc 10s
+              </button>
+              <button type="button" class="btn btn-sm btn-white bg-white border rounded-pill px-3 py-1 shadow-xs fw-semibold" onclick="window.ExamSoundEffects && window.ExamSoundEffects.playTimeout()">
+                ⌛ Hết giờ
+              </button>
+              <button type="button" class="btn btn-sm btn-white bg-white border rounded-pill px-3 py-1 shadow-xs fw-semibold" onclick="window.ExamSoundEffects && window.ExamSoundEffects.playSubmit()">
+                🎉 Nộp bài
+              </button>
+            </div>
           </div>
 
         </div>
@@ -161,7 +182,7 @@
           </h5>
           <div class="space-y-3 small text-secondary">
             <p class="mb-2">💡 <strong>Mẹo Luyện Thi:</strong> Khi ôn thi thử mô phỏng TOEIC hoặc IELTS, bạn nên <strong>tắt tính năng tạm dừng</strong> và <strong>bật tự động nộp bài</strong> để tập quen với áp lực phòng thi thật.</p>
-            <p class="mb-0">🎧 <strong>Tai nghe & Thiết bị:</strong> Cài đặt âm thanh sử dụng thư viện âm thanh trình duyệt chuẩn. Đảm bảo âm lượng thiết bị của bạn đã bật để nghe thấy tiếng động hiệu ứng.</p>
+            <p class="mb-0">🎧 <strong>Tai nghe & Thiết bị:</strong> Cài đặt âm thanh sử dụng Web Audio API và âm thanh WAV tiêu chuẩn không độ trễ. Đảm bảo âm lượng thiết bị của bạn đã bật để nghe thấy tiếng động hiệu ứng.</p>
           </div>
         </div>
       </div>
@@ -177,4 +198,23 @@
 
   </form>
 </div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/exam_audio.js') }}"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const switchEl = document.getElementById('soundEffectsSwitch');
+  if (switchEl) {
+    switchEl.addEventListener('change', function() {
+      if (window.ExamSoundEffects) {
+        window.ExamSoundEffects.setEnabled(this.checked);
+        if (this.checked) {
+          window.ExamSoundEffects.playSelect();
+        }
+      }
+    });
+  }
+});
+</script>
 {% endblock %}

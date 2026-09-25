@@ -7,14 +7,14 @@ Căn cứ so sánh:
   1. EnglishMate_Features.txt (Tổng hợp các tính năng đã hoàn thành trong codebase)
   2. List-Advantage-EnglishMate_Features.txt (Bảng tiêu chuẩn toàn diện 864 tính năng hệ thống)
 Ngày tạo: 2026-09-24
-Trạng thái: 126 / 864 tính năng đang chờ triển khai (Tỷ lệ hoàn thành hiện tại: 85.4%)
+Trạng thái: 123 / 864 tính năng đang chờ triển khai (Tỷ lệ hoàn thành hiện tại: 85.8%)
 ====================================================================================================
 
 MỤC LỤC TỔNG QUAN:
 ----------------------------------------------------------------------------------------------------
 PHẦN I: BẢNG TỔNG HỢP NHANH SỐ LƯỢNG TÍNH NĂNG CHƯA LÀM THEO MODULE
-PHẦN II: CHI TIẾT 126 TÍNH NĂNG CHƯA LÀM (SO SÁNH HIỆN TRẠNG, KHIẾM KHUYẾT & GIẢI PHÁP KỸ THUẬT)
-  - Module 2: User Profile & Settings (3 tính năng)
+PHẦN II: CHI TIẾT 123 TÍNH NĂNG CHƯA LÀM (SO SÁNH HIỆN TRẠNG, KHIẾM KHUYẾT & GIẢI PHÁP KỸ THUẬT)
+  - Module 2: User Profile & Settings (ĐÃ HOÀN THÀNH 100% - 0 tính năng)
   - Module 3: Dashboard & Analytics (3 tính năng)
   - Module 4: Lessons & 4 Skills (9 tính năng)
   - Module 5: Vocabulary & Flashcard System (2 tính năng)
@@ -38,7 +38,7 @@ PHẦN I: BẢNG TỔNG HỢP NHANH SỐ LƯỢNG TÍNH NĂNG CHƯA LÀM THEO MO
 | STT| Module Hệ Thống                                    | Đã Làm   | Chưa Làm  | Tỷ Lệ     |
 +----+---------------------------------------------------+----------+-----------+-----------+
 | 01 | 1. Authentication & User Management               |  60 / 60 |  00 tính  |  100.0%   |
-| 02 | 2. User Profile & Settings                        |  37 / 40 |  03 tính  |   92.5%   |
+| 02 | 2. User Profile & Settings                        |  40 / 40 |  00 tính  |  100.0%   |
 | 03 | 3. Dashboard & Analytics                          |  45 / 48 |  03 tính  |   93.8%   |
 | 04 | 4. Lessons & 4 Skills                             |  54 / 63 |  09 tính  |   85.7%   |
 | 05 | 5. Vocabulary & Flashcard System                  |  76 / 78 |  02 tính  |   97.4%   |
@@ -53,16 +53,16 @@ PHẦN I: BẢNG TỔNG HỢP NHANH SỐ LƯỢNG TÍNH NĂNG CHƯA LÀM THEO MO
 | 14 | 14. Data Integrity & Validation                   |  25 / 30 |  05 tính  |   83.3%   |
 | 15 | 15. Error Handling & Recovery                     |  17 / 30 |  13 tính  |   56.7%   |
 +----+---------------------------------------------------+----------+-----------+-----------+
-|    | TỔNG CỘNG HỆ THỐNG                                | 738 / 864| 126 tính  |   85.4%   |
+|    | TỔNG CỘNG HỆ THỐNG                                | 741 / 864| 123 tính  |   85.8%   |
 +----+---------------------------------------------------+----------+-----------+-----------+
 
 ====================================================================================================
-PHẦN II: CHI TIẾT 126 TÍNH NĂNG CHƯA LÀM
+PHẦN II: CHI TIẾT 123 TÍNH NĂNG CHƯA LÀM
 (ĐỐI CHIẾU VỚI ENGLISHMATE_FEATURES.TXT & ĐỀ XUẤT GIẢI PHÁP KỸ THUẬT)
 ====================================================================================================
 
 ----------------------------------------------------------------------------------------------------
-MODULE 2. USER PROFILE & SETTINGS (HỒ SƠ & CÀI ĐẶT) — 1 TÍNH NĂNG CHƯA LÀM
+MODULE 2. USER PROFILE & SETTINGS (HỒ SƠ & CÀI ĐẶT) — ĐÃ HOÀN THÀNH 100% (0 TÍNH NĂNG CHƯA LÀM)
 ----------------------------------------------------------------------------------------------------
 
 [x] 2.1. Email Change History - Lịch sử thay đổi email (Mục 2.2) (ĐÃ HOÀN THÀNH)
@@ -84,16 +84,16 @@ MODULE 2. USER PROFILE & SETTINGS (HỒ SƠ & CÀI ĐẶT) — 1 TÍNH NĂNG CH�
   + Bổ sung bộ điều khiển chọn giờ nhắc nhở và nút bắn thông báo thử nghiệm tại `/vocabulary/settings`.
 - Trạng thái: ĐÃ HOÀN THÀNH (100% test passed)
 
-[ ] 2.3. Exam Sound Effects - Hiệu ứng âm thanh thi (Mục 2.5)
-- Hiện trạng trong EnglishMate_Features.txt:
-  Trang cài đặt `/settings` của exam đã có giới hạn thời gian thi, hiển thị đồng hồ, tự động nộp bài khi hết giờ.
-- Phần còn thiếu chưa làm:
-  Chưa có toggle bật/tắt âm thanh hiệu ứng (tiếng tích tắc 10s cuối, tiếng chuông báo hết giờ, tiếng ting báo nộp bài thành công).
-- Giải pháp kỹ thuật cần làm:
-  + Thêm trường `sound_effects_enabled` (Boolean, default=True) vào cấu hình người dùng.
-  + Bổ sung các file âm thanh nhỏ (`tick.mp3`, `timeout.mp3`, `success.mp3`) vào thư mục `static/sounds/`.
-  + Tích hợp Audio JS phát âm thanh tương ứng trong trang làm bài thi.
-- Mức độ ưu tiên: Thấp (Low)
+[x] 2.3. Exam Sound Effects - Hiệu ứng âm thanh thi (Mục 2.5) (ĐÃ HOÀN THÀNH)
+- Hiện trạng:
+  Đã hoàn thành toàn diện tính năng cấu hình và hiệu ứng âm thanh trong phòng thi.
+- Giải pháp kỹ thuật đã triển khai:
+  + Cấu hình trường `exam_sound_effects` trong model User, route `/settings` và modal cài đặt nhanh `_settings_modal.html`.
+  + Tạo các file âm thanh tiêu chuẩn WAV (`tick.wav`, `select.wav`, `timeout.wav`, `success.wav`) trong thư mục `app/frontend/static/sounds/`.
+  + Xây dựng Audio Engine `exam_audio.js` hỗ trợ đồng thời Web Audio API synthesizer tự sinh tần số chuẩn không độ trễ và fallback audio buffer/WAV.
+  + Tích hợp đầy đủ sự kiện âm thanh tương tác: phát âm thanh khi chọn đáp án (click/select), tích tắc 10 giây cuối trước khi hết giờ (countdown tick), âm thanh cảnh báo hết giờ (timeout), và âm thanh chúc mừng nộp bài (success/submit) tại cả trang làm bài thi thường (`attempt.html`) và phòng thi TOEIC mô phỏng (`toeic_attempt.html`).
+  + Cung cấp thanh nút nghe thử trực quan 4 loại âm thanh ngay tại trang Cài Đặt Đề Thi.
+- Trạng thái: ĐÃ HOÀN THÀNH (100% test passed)
 
 ----------------------------------------------------------------------------------------------------
 MODULE 3. DASHBOARD & ANALYTICS (BẢNG ĐIỀU KHIỂN & PHÂN TÍCH) — 3 TÍNH NĂNG CHƯA LÀM

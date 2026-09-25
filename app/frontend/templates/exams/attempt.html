@@ -168,8 +168,13 @@
 {% endblock %}
 
 {% block scripts %}
+<script src="{{ url_for('static', filename='js/exam_audio.js') }}"></script>
 <script>
 document.addEventListener("DOMContentLoaded", function() {
+  if (window.ExamSoundEffects) {
+    window.ExamSoundEffects.setEnabled({{ 'true' if current_user.exam_sound_effects else 'false' }});
+  }
+
   const DRAFT_KEY = "exam_draft_{{ current_user.id }}_{{ submission.id }}";
   const autosaveStatus = document.getElementById("autosave-status");
   const form = document.getElementById('exam-form');
@@ -177,20 +182,9 @@ document.addEventListener("DOMContentLoaded", function() {
   const textareas = document.querySelectorAll('textarea');
 
   function playClickSound() {
-    {% if current_user.exam_sound_effects %}
-    try {
-      let ctx = new (window.AudioContext || window.webkitAudioContext)();
-      let osc = ctx.createOscillator();
-      let gain = ctx.createGain();
-      osc.connect(gain);
-      gain.connect(ctx.destination);
-      osc.frequency.setValueAtTime(600, ctx.currentTime);
-      gain.gain.setValueAtTime(0.04, ctx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.08);
-      osc.start();
-      osc.stop(ctx.currentTime + 0.08);
-    } catch(e) {}
-    {% endif %}
+    if (window.ExamSoundEffects) {
+      window.ExamSoundEffects.playSelect();
+    }
   }
 
   // --- Auto-Save & Restore with LocalStorage ---
@@ -272,8 +266,13 @@ document.addEventListener("DOMContentLoaded", function() {
     } catch(e) {}
   }
 
-  // Clear draft on form submit
-  form.addEventListener("submit", cleanDraft);
+  // Clear draft and play sound on form submit
+  form.addEventListener("submit", function() {
+    if (window.ExamSoundEffects) {
+      window.ExamSoundEffects.playSubmit();
+    }
+    cleanDraft();
+  });
 
   {% if mode == 'real' and current_user.exam_allow_pause %}
   let isPaused = false;
@@ -387,6 +386,9 @@ document.addEventListener("DOMContentLoaded", function() {
     {% endif %}
     if (timeLeft <= 0) {
       clearInterval(timer);
+      if (window.ExamSoundEffects) {
+        window.ExamSoundEffects.playTimeout();
+      }
       cleanDraft();
       {% if current_user.exam_auto_submit %}
       timerDisplay.innerHTML = "HẾT GIỜ";
@@ -400,6 +402,14 @@ document.addEventListener("DOMContentLoaded", function() {
       let m = Math.floor(timeLeft / 60);
       let s = timeLeft % 60;
       timerDisplay.innerHTML = `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+      
+      // Play 10s tick countdown sound
+      if (timeLeft <= 10 && timeLeft > 0) {
+        if (window.ExamSoundEffects) {
+          window.ExamSoundEffects.playTick();
+        }
+      }
+
       timeLeft--;
 
       // Periodically persist remaining time every 10 seconds

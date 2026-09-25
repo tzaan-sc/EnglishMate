@@ -13,16 +13,16 @@ BẢNG ĐỐI CHIẾU TỔNG QUAN HỆ THỐNG (SYSTEM STATUS COMPARISON)
 | Chỉ số thống kê                                    | Giá trị          | Ghi chú                               |
 |:---------------------------------------------------|:-----------------|:--------------------------------------|
 | Tổng số tính năng khảo sát toàn hệ thống           | 864 tính năng    | Đầy đủ từ cơ bản đến nâng cao         |
-| Tổng số tính năng ĐÃ HOÀN THÀNH [x]                | 740 tính năng    | Đã có Route, Model, Logic, UI chuẩn   |
-| Tổng số tính năng CHƯA TRIỂN KHAI [ ]              | 124 tính năng    | Nằm trong danh sách backlog dưới đây  |
-| Tỷ lệ hoàn thiện hiện tại của hệ thống             | 85.6%            | 189/189 Pytest tests PASSED 100%      |
-| Số Module đã hoàn thành 100%                       | 1 Module         | Module 1: Xác thực & Quản lý user    |
-| Số Module còn tính năng đang chờ phát triển        | 14 Module        | Từ Module 2 đến Module 15             |
+| Tổng số tính năng ĐÃ HOÀN THÀNH [x]                | 741 tính năng    | Đã có Route, Model, Logic, UI chuẩn   |
+| Tổng số tính năng CHƯA TRIỂN KHAI [ ]              | 123 tính năng    | Nằm trong danh sách backlog dưới đây  |
+| Tỷ lệ hoàn thiện hiện tại của hệ thống             | 85.8%            | Pytest test suite PASSED 100%         |
+| Số Module đã hoàn thành 100%                       | 2 Module         | Module 1: Xác thực; Module 2: Hồ sơ   |
+| Số Module còn tính năng đang chờ phát triển        | 13 Module        | Từ Module 3 đến Module 15             |
 ----------------------------------------------------------------------------------------------------
 
-MỤC LỤC 14 MODULE CHỨA CÁC TÍNH NĂNG CHƯA LÀM:
+MỤC LỤC 13 MODULE CHỨA CÁC TÍNH NĂNG CHƯA LÀM (MODULE 1 & 2 ĐÃ HOÀN THÀNH 100%):
 ----------------------------------------------------------------------------------------------------
-- [ ] 2. USER PROFILE & SETTINGS (HỒ SƠ & CÀI ĐẶT): 1 tính năng chưa làm
+- [x] 2. USER PROFILE & SETTINGS (HỒ SƠ & CÀI ĐẶT): ĐÃ HOÀN THÀNH 100% (0 tính năng chưa làm)
 - [ ] 3. DASHBOARD & ANALYTICS (BẢNG ĐIỀU KHIỂN & PHÂN TÍCH): 3 tính năng chưa làm
 - [ ] 4. LESSONS & 4 SKILLS (BÀI HỌC & 4 KỸ NĂNG): 9 tính năng chưa làm
 - [ ] 5. VOCABULARY & FLASHCARD SYSTEM (HỆ THỐNG TỪ VỰNG & FLASHCARD): 2 tính năng chưa làm
@@ -39,7 +39,7 @@ MỤC LỤC 14 MODULE CHỨA CÁC TÍNH NĂNG CHƯA LÀM:
 ----------------------------------------------------------------------------------------------------
 
 ====================================================================================================
-MODULE: 2. USER PROFILE & SETTINGS (HỒ SƠ & CÀI ĐẶT) (1 tính năng chưa làm)
+MODULE: 2. USER PROFILE & SETTINGS (HỒ SƠ & CÀI ĐẶT) (ĐÃ HOÀN THÀNH 100% - 0 tính năng chưa làm)
 ====================================================================================================
 
 ### 2.2. Email Management (Quản lý email) (1 tính năng đã hoàn thành):
@@ -50,17 +50,17 @@ MODULE: 2. USER PROFILE & SETTINGS (HỒ SƠ & CÀI ĐẶT) (1 tính năng chưa
    - Hiện trạng thực hiện: Đã tạo model EmailChangeHistory (user_id, old_email, new_email, ip_address, user_agent, changed_at); ghi nhận lịch sử tự động sau khi xác thực OTP thành công tại /profile/verify-email; hiển thị bảng nhật ký lịch sử đổi email trực quan kèm badge số lần cập nhật tại tab Thay đổi Email trang /profile; hỗ trợ cascade delete tự động khi tài khoản bị xóa.
 
 
-### 2.5. User Settings (Cài đặt người dùng) (1 tính năng chưa làm):
+### 2.5. User Settings (Cài đặt người dùng) (2 tính năng đã hoàn thành):
 ----------------------------------------------------------------------------------------------------
 2. [x] Vocabulary Notification - Thông báo ôn tập (ĐÃ HOÀN THÀNH)
    - Mức độ ưu tiên: Trung bình
    - Mô tả yêu cầu: Hệ thống thông báo đẩy (Web Push Notifications) hoặc email định kỳ nhắc nhở người dùng vào ôn tập từ vựng đến hạn SRS.
    - Hiện trạng thực hiện: Đã bổ sung các trường vocab_reminder_enabled, vocab_reminder_time, vocab_push_subscription trong bảng User; xây dựng các API /api/vocabulary/notification-check, /api/vocabulary/subscribe-push, /api/vocabulary/send-test-notification; tích hợp Web Notifications API, Service Worker (sw.js) và bộ điều khiển giao diện chọn giờ nhắc nhở kèm nút bấm gửi thử thông báo tại /vocabulary/settings.
 
-3. [ ] Exam Sound Effects - Hiệu ứng âm thanh thi
+3. [x] Exam Sound Effects - Hiệu ứng âm thanh thi (ĐÃ HOÀN THÀNH)
    - Mức độ ưu tiên: Thấp
    - Mô tả yêu cầu: Tùy chọn bật/tắt hiệu ứng âm thanh trong phòng thi (tiếng tích tắc 10 giây cuối, âm thanh khi chọn câu trả lời, âm thanh nộp bài).
-   - Đối chiếu hiện trạng: Đã có cấu hình thời gian thi, tự động nộp bài, cho phép tạm dừng tại /settings, nhưng chưa tích hợp audio sound effects trong quá trình làm bài thi.
+   - Hiện trạng thực hiện: Đã tích hợp cấu hình `exam_sound_effects` trong model User và form `/settings` cùng modal cài đặt nhanh `_settings_modal.html`; xây dựng Audio Engine `exam_audio.js` hỗ trợ song song Web Audio API Synthesizer và static WAV files (`tick.wav`, `select.wav`, `timeout.wav`, `success.wav`); tích hợp phát âm thanh tương tác khi chọn câu, đếm ngược tích tắc 10 giây cuối, hết giờ và nộp bài ở cả phòng thi tiêu chuẩn (`attempt.html`) và phòng thi mô phỏng TOEIC (`toeic_attempt.html`); cung cấp thanh nút bấm nghe thử âm thanh trực quan tại trang Cài Đặt Đề Thi.
 
 
 ====================================================================================================
