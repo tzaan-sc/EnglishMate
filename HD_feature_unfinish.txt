@@ -62,19 +62,17 @@ PHẦN II: CHI TIẾT 126 TÍNH NĂNG CHƯA LÀM
 ====================================================================================================
 
 ----------------------------------------------------------------------------------------------------
-MODULE 2. USER PROFILE & SETTINGS (HỒ SƠ & CÀI ĐẶT) — 3 TÍNH NĂNG CHƯA LÀM
+MODULE 2. USER PROFILE & SETTINGS (HỒ SƠ & CÀI ĐẶT) — 2 TÍNH NĂNG CHƯA LÀM
 ----------------------------------------------------------------------------------------------------
 
-[ ] 2.1. Email Change History - Lịch sử thay đổi email (Mục 2.2)
-- Hiện trạng trong EnglishMate_Features.txt:
-  Hệ thống đã có quy trình đổi email bảo mật 2 bước (`/profile/change-email` và `/profile/verify-email`), kiểm tra trùng lặp email và gửi OTP xác nhận.
-- Phần còn thiếu chưa làm:
-  Chưa có bảng CSDL lưu vết lịch sử các lần đổi email cũ của người dùng. Khi người dùng đổi email, trường `email` bị ghi đè trực tiếp mà không lưu lại dấu vết trước đó.
-- Giải pháp kỹ thuật cần làm:
-  + Tạo model `EmailChangeHistory` (id, user_id, old_email, new_email, ip_address, changed_at).
-  + Trong route `verify_new_email()`, sau khi đổi thành công thì ghi nhận 1 bản ghi vào bảng này.
-  + Thêm tab "Lịch sử bảo mật" trong trang `/profile` để người dùng xem lại.
-- Mức độ ưu tiên: Trung bình (Medium)
+[x] 2.1. Email Change History - Lịch sử thay đổi email (Mục 2.2) (ĐÃ HOÀN THÀNH)
+- Hiện trạng:
+  Đã hoàn thành toàn diện tính năng lưu vết và hiển thị lịch sử thay đổi email.
+- Giải pháp kỹ thuật đã triển khai:
+  + Tạo model `EmailChangeHistory` (id, user_id, old_email, new_email, ip_address, user_agent, changed_at, relationship cascade delete với User).
+  + Trong route `verify_new_email()`, sau khi đổi thành công tự động ghi nhận 1 bản ghi vào bảng này.
+  + Thêm card "Nhật ký & Lịch sử thay đổi Email" trong tab "Thay đổi Email" trang `/profile` kèm badge số lần cập nhật để người dùng xem lại.
+- Trạng thái: ĐÃ HOÀN THÀNH (100% test passed)
 
 [ ] 2.2. Vocabulary Notification - Thông báo ôn tập từ vựng (Mục 2.5)
 - Hiện trạng trong EnglishMate_Features.txt:

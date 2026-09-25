@@ -1,5 +1,5 @@
-﻿from app.extensions import db
-from app.backend.auth.models import User
+from app.extensions import db
+from app.backend.auth.models import EmailChangeHistory, User
 
 
 def test_view_profile_info(client):
@@ -12,6 +12,8 @@ def test_view_profile_info(client):
     assert "student@test.com".encode("utf-8") in res.data
     assert "Ngày tham gia".encode("utf-8") in res.data
     assert "Đăng nhập gần nhất".encode("utf-8") in res.data
+    assert "Nhật ký & Lịch sử thay đổi Email".encode("utf-8") in res.data
+    assert "Chưa có nhật ký thay đổi email".encode("utf-8") in res.data
 
 
 def test_edit_full_name(client):
@@ -49,6 +51,24 @@ def test_change_email_with_otp_verification(client):
         user = User.query.filter_by(username="student").first()
         assert user.email == "updatedstudent@test.com"
         assert user.pending_email is None
+
+        # Verify EmailChangeHistory was recorded
+        history = EmailChangeHistory.query.filter_by(user_id=user.id).order_by(EmailChangeHistory.changed_at.desc()).all()
+        assert len(history) == 1
+        record = history[0]
+        assert record.old_email == "student@test.com"
+        assert record.new_email == "updatedstudent@test.com"
+        assert record.ip_address is not None
+        assert record.changed_at is not None
+        assert record.device_info is not None
+
+    # Step 3: Check profile view shows the change history record
+    res_profile = client.get("/profile")
+    assert res_profile.status_code == 200
+    assert "student@test.com".encode("utf-8") in res_profile.data
+    assert "updatedstudent@test.com".encode("utf-8") in res_profile.data
+    assert "Đã xác thực OTP".encode("utf-8") in res_profile.data
+    assert "1 lần cập nhật".encode("utf-8") in res_profile.data
 
 
 def test_change_password_profile(client):
@@ -138,4 +158,56 @@ def test_admin_cannot_delete_account(client):
     with client.application.app_context():
         admin = User.query.filter_by(email="admin_profile@test.com").first()
         assert admin is not None
+
+
+def test_email_change_history_multiple_and_cascade_delete(client):
+    with client.application.app_context():
+        user = User.query.filter_by(username="history_tester").first()
+        if not user:
+            user = User(username="history_tester", email="tester_origin@test.com", role="USER")
+            user.set_password("user123")
+            db.session.add(user)
+            db.session.commit()
+
+    # Login
+    client.post("/auth/login", data={"email": "tester_origin@test.com", "password": "user123"}, follow_redirects=True)
+
+    # First change: tester_origin@test.com -> tester_v2@test.com
+    client.post("/profile/change-email", data={"new_email": "tester_v2@test.com"}, follow_redirects=True)
+    with client.application.app_context():
+        user = User.query.filter_by(username="history_tester").first()
+        otp1 = user.pending_email_otp
+    client.post("/profile/verify-email", data={"otp_code": otp1}, follow_redirects=True)
+
+    # Second change: tester_v2@test.com -> tester_v3@test.com
+    client.post("/profile/change-email", data={"new_email": "tester_v3@test.com"}, follow_redirects=True)
+    with client.application.app_context():
+        user = User.query.filter_by(username="history_tester").first()
+        otp2 = user.pending_email_otp
+    client.post("/profile/verify-email", data={"otp_code": otp2}, follow_redirects=True)
+
+    with client.application.app_context():
+        user = User.query.filter_by(username="history_tester").first()
+        assert user.email == "tester_v3@test.com"
+        records = user.email_change_history.all()
+        assert len(records) == 2
+        # Ordered by changed_at desc: most recent first
+        assert records[0].old_email == "tester_v2@test.com"
+        assert records[0].new_email == "tester_v3@test.com"
+        assert records[1].old_email == "tester_origin@test.com"
+        assert records[1].new_email == "tester_v2@test.com"
+        uid = user.id
+
+    # Check that profile shows 2 updates
+    res_prof = client.get("/profile")
+    assert "2 lần cập nhật".encode("utf-8") in res_prof.data
+    assert "tester_v2@test.com".encode("utf-8") in res_prof.data
+    assert "tester_v3@test.com".encode("utf-8") in res_prof.data
+
+    # Delete account and verify cascade deletion of email change history
+    client.post("/profile/delete", data={"confirm_password": "user123"}, follow_redirects=True)
+    with client.application.app_context():
+        remaining_history = EmailChangeHistory.query.filter_by(user_id=uid).all()
+        assert len(remaining_history) == 0
+
 

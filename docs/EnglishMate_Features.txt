@@ -93,11 +93,12 @@ MỤC LỤC TỔNG QUAN CÁC MODULE CHỨC NĂNG ĐÃ LÀM:
 
 [x] 1.8. Thay đổi địa chỉ Email bảo mật 2 bước (Change Email with OTP)
 - Route: POST /profile/change-email, POST /profile/verify-email
-- Model: User (pending_email, pending_email_otp, pending_email_expiry)
+- Model: User (pending_email, pending_email_otp, pending_email_expiry), EmailChangeHistory (user_id, old_email, new_email, ip_address, user_agent, changed_at)
 - Chi tiết chức năng:
   [x] Nhập email mới, kiểm tra trùng lặp với các tài khoản khác.
   [x] Gửi mã OTP xác nhận đến hòm thư mới.
   [x] Chỉ chuyển đổi email chính thức sau khi người dùng nhập đúng mã OTP xác thực.
+  [x] Lưu trữ và hiển thị nhật ký các lần thay đổi địa chỉ email (EmailChangeHistory: user_id, old_email, new_email, ip_address, user_agent, changed_at) trên giao diện /profile.
 
 [x] 1.9. Đổi mật khẩu cá nhân (Change Password)
 - Route: POST /profile/change-password

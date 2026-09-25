@@ -1,6 +1,6 @@
 import os
 import uuid
-from datetime import date, datetime, timedelta
+from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
 
 from flask import current_app, flash, redirect, render_template, request, session, url_for
@@ -8,7 +8,7 @@ from flask_login import current_user, login_required, logout_user
 from sqlalchemy import func
 
 from ...extensions import db
-from ..auth.models import DailyActivity, User, UserSession
+from ..auth.models import DailyActivity, EmailChangeHistory, User, UserSession
 from ..auth.routes import log_dev_otp_code
 from ..learning.models import (FlashcardProgress, GrammarProgress, GrammarTopic, Lesson,
                                LessonProgress, QuizAttempt, Vocabulary, VocabularyProgress)
@@ -293,6 +293,7 @@ def profile():
 
     current_session_id = session.get("session_key")
     active_sessions = UserSession.query.filter_by(user_id=current_user.id, is_active=True).order_by(UserSession.last_activity.desc()).all()
+    email_history = EmailChangeHistory.query.filter_by(user_id=current_user.id).order_by(EmailChangeHistory.changed_at.desc()).all()
 
     admin_audit_logs = []
     admin_audit_count = 0
@@ -313,6 +314,7 @@ def profile():
         show_verify_modal=show_verify_modal,
         active_sessions=active_sessions,
         current_session_id=current_session_id,
+        email_history=email_history,
         admin_audit_logs=admin_audit_logs,
         admin_audit_count=admin_audit_count,
         assigned_roles=assigned_roles,
@@ -374,9 +376,29 @@ def change_email_request():
 def verify_new_email():
     form = VerifyNewEmailForm()
     if form.validate_on_submit():
+        old_email = current_user.email
+        new_email = current_user.pending_email
         if current_user.verify_pending_email_otp(form.otp_code.data):
+            forwarded = request.headers.get("X-Forwarded-For")
+            if forwarded:
+                client_ip = forwarded.split(",")[0].strip()
+            else:
+                client_ip = request.remote_addr or "127.0.0.1"
+
+            user_agent_str = request.user_agent.string if request.user_agent else ""
+
+            history_entry = EmailChangeHistory(
+                user_id=current_user.id,
+                old_email=old_email,
+                new_email=new_email or current_user.email,
+                ip_address=client_ip[:45],
+                user_agent=user_agent_str[:255] if user_agent_str else None,
+                changed_at=datetime.now(timezone.utc),
+            )
+            db.session.add(history_entry)
             db.session.commit()
             flash("Cập nhật địa chỉ email mới thành công!", "success")
+            return redirect(url_for("main.profile", _anchor="tab-email"))
         else:
             flash("Mã OTP không chính xác hoặc đã hết hạn (15 phút). Vui lòng thử lại.", "danger")
             return redirect(url_for("main.profile", verify_email="1"))
@@ -384,7 +406,7 @@ def verify_new_email():
         for error in form.errors.values():
             flash(f"Lỗi: {error[0]}", "danger")
 
-    return redirect(url_for("main.profile"))
+    return redirect(url_for("main.profile", _anchor="tab-email"))
 
 
 @bp.post("/profile/change-password")

@@ -13,16 +13,16 @@ BẢNG ĐỐI CHIẾU TỔNG QUAN HỆ THỐNG (SYSTEM STATUS COMPARISON)
 | Chỉ số thống kê                                    | Giá trị          | Ghi chú                               |
 |:---------------------------------------------------|:-----------------|:--------------------------------------|
 | Tổng số tính năng khảo sát toàn hệ thống           | 864 tính năng    | Đầy đủ từ cơ bản đến nâng cao         |
-| Tổng số tính năng ĐÃ HOÀN THÀNH [x]                | 738 tính năng    | Đã có Route, Model, Logic, UI chuẩn   |
-| Tổng số tính năng CHƯA TRIỂN KHAI [ ]              | 126 tính năng    | Nằm trong danh sách backlog dưới đây  |
-| Tỷ lệ hoàn thiện hiện tại của hệ thống             | 85.4%            | 185/185 Pytest tests PASSED 100%      |
+| Tổng số tính năng ĐÃ HOÀN THÀNH [x]                | 739 tính năng    | Đã có Route, Model, Logic, UI chuẩn   |
+| Tổng số tính năng CHƯA TRIỂN KHAI [ ]              | 125 tính năng    | Nằm trong danh sách backlog dưới đây  |
+| Tỷ lệ hoàn thiện hiện tại của hệ thống             | 85.5%            | 186/186 Pytest tests PASSED 100%      |
 | Số Module đã hoàn thành 100%                       | 1 Module         | Module 1: Xác thực & Quản lý user    |
 | Số Module còn tính năng đang chờ phát triển        | 14 Module        | Từ Module 2 đến Module 15             |
 ----------------------------------------------------------------------------------------------------
 
 MỤC LỤC 14 MODULE CHỨA CÁC TÍNH NĂNG CHƯA LÀM:
 ----------------------------------------------------------------------------------------------------
-- [ ] 2. USER PROFILE & SETTINGS (HỒ SƠ & CÀI ĐẶT): 3 tính năng chưa làm
+- [ ] 2. USER PROFILE & SETTINGS (HỒ SƠ & CÀI ĐẶT): 2 tính năng chưa làm
 - [ ] 3. DASHBOARD & ANALYTICS (BẢNG ĐIỀU KHIỂN & PHÂN TÍCH): 3 tính năng chưa làm
 - [ ] 4. LESSONS & 4 SKILLS (BÀI HỌC & 4 KỸ NĂNG): 9 tính năng chưa làm
 - [ ] 5. VOCABULARY & FLASHCARD SYSTEM (HỆ THỐNG TỪ VỰNG & FLASHCARD): 2 tính năng chưa làm
@@ -39,15 +39,15 @@ MỤC LỤC 14 MODULE CHỨA CÁC TÍNH NĂNG CHƯA LÀM:
 ----------------------------------------------------------------------------------------------------
 
 ====================================================================================================
-MODULE: 2. USER PROFILE & SETTINGS (HỒ SƠ & CÀI ĐẶT) (3 tính năng chưa làm)
+MODULE: 2. USER PROFILE & SETTINGS (HỒ SƠ & CÀI ĐẶT) (2 tính năng chưa làm)
 ====================================================================================================
 
-### 2.2. Email Management (Quản lý email) (1 tính năng):
+### 2.2. Email Management (Quản lý email) (1 tính năng đã hoàn thành):
 ----------------------------------------------------------------------------------------------------
-1. [ ] Email Change History - Lịch sử thay đổi email
+1. [x] Email Change History - Lịch sử thay đổi email (ĐÃ HOÀN THÀNH)
    - Mức độ ưu tiên: Thấp
    - Mô tả yêu cầu: Lưu trữ và hiển thị nhật ký các lần thay đổi địa chỉ email của tài khoản (email cũ, email mới, thời gian đổi, IP thực hiện).
-   - Đối chiếu hiện trạng: Đã có luồng đổi email xác thực qua OTP gửi về mail mới (/profile/change-email, /profile/verify-email), nhưng chưa có bảng DB riêng ghi lại lịch sử các lần đổi email cũ.
+   - Hiện trạng thực hiện: Đã tạo model EmailChangeHistory (user_id, old_email, new_email, ip_address, user_agent, changed_at); ghi nhận lịch sử tự động sau khi xác thực OTP thành công tại /profile/verify-email; hiển thị bảng nhật ký lịch sử đổi email trực quan kèm badge số lần cập nhật tại tab Thay đổi Email trang /profile; hỗ trợ cascade delete tự động khi tài khoản bị xóa.
 
 
 ### 2.5. User Settings (Cài đặt người dùng) (2 tính năng):

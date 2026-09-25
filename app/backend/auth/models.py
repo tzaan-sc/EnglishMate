@@ -513,3 +513,29 @@ def create_or_update_user_session(user_id, session_id, ip_address, user_agent_st
         user_sess.device_info = device_info
     db.session.commit()
     return user_sess
+
+
+class EmailChangeHistory(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False, index=True)
+    old_email = db.Column(db.String(120), nullable=False)
+    new_email = db.Column(db.String(120), nullable=False)
+    ip_address = db.Column(db.String(45), nullable=True)
+    user_agent = db.Column(db.String(255), nullable=True)
+    changed_at = db.Column(db.DateTime(timezone=True), default=now, nullable=False)
+
+    user = db.relationship(
+        "User",
+        backref=db.backref("email_change_history", cascade="all, delete-orphan", lazy="dynamic", order_by="desc(EmailChangeHistory.changed_at)")
+    )
+
+    @property
+    def device_info(self):
+        return parse_device_info(self.user_agent)
+
+    @property
+    def changed_at_vn(self):
+        if not self.changed_at:
+            return None
+        return self.changed_at + timedelta(hours=7)
+

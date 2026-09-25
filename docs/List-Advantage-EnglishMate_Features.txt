@@ -100,7 +100,7 @@ NỀN TẢNG HỌC TIẾNG ANH TRỰC TUYẾN THÔNG MINH
 [x] - Email OTP Verification - Xác thực email bằng OTP
 [x] - Pending Email Storage - Lưu email đang chờ
 [x] - Email Update Confirmation - Xác nhận cập nhật email
-[ ] - Email Change History - Lịch sử thay đổi email
+[x] - Email Change History - Lịch sử thay đổi email
 
 2.3. Password Management (Quản lý mật khẩu)
 [x] - Password Change - Đổi mật khẩu
