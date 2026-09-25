@@ -13,16 +13,16 @@ BẢNG ĐỐI CHIẾU TỔNG QUAN HỆ THỐNG (SYSTEM STATUS COMPARISON)
 | Chỉ số thống kê                                    | Giá trị          | Ghi chú                               |
 |:---------------------------------------------------|:-----------------|:--------------------------------------|
 | Tổng số tính năng khảo sát toàn hệ thống           | 864 tính năng    | Đầy đủ từ cơ bản đến nâng cao         |
-| Tổng số tính năng ĐÃ HOÀN THÀNH [x]                | 739 tính năng    | Đã có Route, Model, Logic, UI chuẩn   |
-| Tổng số tính năng CHƯA TRIỂN KHAI [ ]              | 125 tính năng    | Nằm trong danh sách backlog dưới đây  |
-| Tỷ lệ hoàn thiện hiện tại của hệ thống             | 85.5%            | 186/186 Pytest tests PASSED 100%      |
+| Tổng số tính năng ĐÃ HOÀN THÀNH [x]                | 740 tính năng    | Đã có Route, Model, Logic, UI chuẩn   |
+| Tổng số tính năng CHƯA TRIỂN KHAI [ ]              | 124 tính năng    | Nằm trong danh sách backlog dưới đây  |
+| Tỷ lệ hoàn thiện hiện tại của hệ thống             | 85.6%            | 189/189 Pytest tests PASSED 100%      |
 | Số Module đã hoàn thành 100%                       | 1 Module         | Module 1: Xác thực & Quản lý user    |
 | Số Module còn tính năng đang chờ phát triển        | 14 Module        | Từ Module 2 đến Module 15             |
 ----------------------------------------------------------------------------------------------------
 
 MỤC LỤC 14 MODULE CHỨA CÁC TÍNH NĂNG CHƯA LÀM:
 ----------------------------------------------------------------------------------------------------
-- [ ] 2. USER PROFILE & SETTINGS (HỒ SƠ & CÀI ĐẶT): 2 tính năng chưa làm
+- [ ] 2. USER PROFILE & SETTINGS (HỒ SƠ & CÀI ĐẶT): 1 tính năng chưa làm
 - [ ] 3. DASHBOARD & ANALYTICS (BẢNG ĐIỀU KHIỂN & PHÂN TÍCH): 3 tính năng chưa làm
 - [ ] 4. LESSONS & 4 SKILLS (BÀI HỌC & 4 KỸ NĂNG): 9 tính năng chưa làm
 - [ ] 5. VOCABULARY & FLASHCARD SYSTEM (HỆ THỐNG TỪ VỰNG & FLASHCARD): 2 tính năng chưa làm
@@ -39,7 +39,7 @@ MỤC LỤC 14 MODULE CHỨA CÁC TÍNH NĂNG CHƯA LÀM:
 ----------------------------------------------------------------------------------------------------
 
 ====================================================================================================
-MODULE: 2. USER PROFILE & SETTINGS (HỒ SƠ & CÀI ĐẶT) (2 tính năng chưa làm)
+MODULE: 2. USER PROFILE & SETTINGS (HỒ SƠ & CÀI ĐẶT) (1 tính năng chưa làm)
 ====================================================================================================
 
 ### 2.2. Email Management (Quản lý email) (1 tính năng đã hoàn thành):
@@ -50,12 +50,12 @@ MODULE: 2. USER PROFILE & SETTINGS (HỒ SƠ & CÀI ĐẶT) (2 tính năng chưa
    - Hiện trạng thực hiện: Đã tạo model EmailChangeHistory (user_id, old_email, new_email, ip_address, user_agent, changed_at); ghi nhận lịch sử tự động sau khi xác thực OTP thành công tại /profile/verify-email; hiển thị bảng nhật ký lịch sử đổi email trực quan kèm badge số lần cập nhật tại tab Thay đổi Email trang /profile; hỗ trợ cascade delete tự động khi tài khoản bị xóa.
 
 
-### 2.5. User Settings (Cài đặt người dùng) (2 tính năng):
+### 2.5. User Settings (Cài đặt người dùng) (1 tính năng chưa làm):
 ----------------------------------------------------------------------------------------------------
-2. [ ] Vocabulary Notification - Thông báo ôn tập
+2. [x] Vocabulary Notification - Thông báo ôn tập (ĐÃ HOÀN THÀNH)
    - Mức độ ưu tiên: Trung bình
    - Mô tả yêu cầu: Hệ thống thông báo đẩy (Web Push Notifications) hoặc email định kỳ nhắc nhở người dùng vào ôn tập từ vựng đến hạn SRS.
-   - Đối chiếu hiện trạng: Đã có tính năng tính toán ngày ôn tập SRS (next_review_at) trên Dashboard và trang /vocabulary/review, nhưng chưa có Web Push / Notification Service đẩy tin về trình duyệt.
+   - Hiện trạng thực hiện: Đã bổ sung các trường vocab_reminder_enabled, vocab_reminder_time, vocab_push_subscription trong bảng User; xây dựng các API /api/vocabulary/notification-check, /api/vocabulary/subscribe-push, /api/vocabulary/send-test-notification; tích hợp Web Notifications API, Service Worker (sw.js) và bộ điều khiển giao diện chọn giờ nhắc nhở kèm nút bấm gửi thử thông báo tại /vocabulary/settings.
 
 3. [ ] Exam Sound Effects - Hiệu ứng âm thanh thi
    - Mức độ ưu tiên: Thấp

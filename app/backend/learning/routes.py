@@ -2647,12 +2647,87 @@ def vocabulary_settings():
             current_user.vocab_srs_algorithm = srs_algo
 
         current_user.vocab_notify_review_due = (request.form.get("vocab_notify_review_due") == "on")
+        current_user.vocab_reminder_enabled = (request.form.get("vocab_reminder_enabled") == "on")
+        reminder_time = request.form.get("vocab_reminder_time", "09:00")
+        if reminder_time:
+            current_user.vocab_reminder_time = reminder_time[:10]
 
         db.session.commit()
         flash("Đã cập nhật các cài đặt từ vựng cá nhân thành công!", "success")
         return redirect(url_for("learning.vocabulary_settings"))
 
     return render_template("learning/vocabulary_settings.html")
+
+
+@bp.get("/api/vocabulary/notification-check")
+@login_required
+def vocabulary_notification_check():
+    now_dt = datetime.now(timezone.utc)
+    due_count = VocabularyProgress.query.filter(
+        VocabularyProgress.user_id == current_user.id,
+        (VocabularyProgress.learned_count > 0) | (VocabularyProgress.review_count > 0),
+        (VocabularyProgress.next_review_at <= now_dt) | (VocabularyProgress.next_review_at.is_(None))
+    ).count()
+
+    is_enabled = getattr(current_user, "vocab_reminder_enabled", True)
+    reminder_time = getattr(current_user, "vocab_reminder_time", "09:00") or "09:00"
+
+    title = "EnglishMate - Nhắc nhở ôn tập từ vựng 🔔"
+    if due_count > 0:
+        body = f"Bạn đang có {due_count} từ vựng đến hạn ôn tập SRS hôm nay. Dành 5 phút ôn luyện để duy trì trí nhớ nhé!"
+    else:
+        body = "Tuyệt vời! Bạn không có từ vựng nào tồn đọng đến hạn ôn tập hôm nay."
+
+    return jsonify({
+        "success": True,
+        "enabled": is_enabled,
+        "reminder_time": reminder_time,
+        "due_count": due_count,
+        "has_due": due_count > 0,
+        "title": title,
+        "body": body,
+        "review_url": url_for("learning.review_vocabulary"),
+        "icon": url_for("static", filename="images/brand-icon.png", _external=False),
+    })
+
+
+@bp.post("/api/vocabulary/subscribe-push")
+@login_required
+def vocabulary_subscribe_push():
+    data = request.get_json(silent=True) or request.form.to_dict()
+    subscription_data = data.get("subscription")
+    if subscription_data:
+        import json
+        if isinstance(subscription_data, (dict, list)):
+            current_user.vocab_push_subscription = json.dumps(subscription_data)
+        else:
+            current_user.vocab_push_subscription = str(subscription_data)
+
+    if "enabled" in data:
+        current_user.vocab_reminder_enabled = bool(data.get("enabled"))
+
+    db.session.commit()
+    return jsonify({"success": True, "message": "Cập nhật đăng ký nhận thông báo Web Push thành công."})
+
+
+@bp.post("/api/vocabulary/send-test-notification")
+@login_required
+def vocabulary_send_test_notification():
+    now_dt = datetime.now(timezone.utc)
+    due_count = VocabularyProgress.query.filter(
+        VocabularyProgress.user_id == current_user.id,
+        (VocabularyProgress.learned_count > 0) | (VocabularyProgress.review_count > 0),
+        (VocabularyProgress.next_review_at <= now_dt) | (VocabularyProgress.next_review_at.is_(None))
+    ).count()
+
+    return jsonify({
+        "success": True,
+        "title": "EnglishMate - Kiểm tra thông báo trình duyệt 🔔",
+        "body": f"Thông báo Web Push hoạt động hoàn hảo! Hiện có {due_count} từ vựng sẵn sàng để ôn tập.",
+        "due_count": due_count,
+        "review_url": url_for("learning.review_vocabulary"),
+        "icon": url_for("static", filename="images/brand-icon.png", _external=False),
+    })
 
 
 # ==========================================

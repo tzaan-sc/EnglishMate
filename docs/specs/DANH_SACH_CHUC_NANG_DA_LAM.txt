@@ -353,8 +353,8 @@ MỤC LỤC TỔNG QUAN CÁC MODULE CHỨC NĂNG ĐÃ LÀM:
   [x] Biểu đồ tăng trưởng vốn từ theo Ngày (7 ngày qua), Tuần (4 tuần qua) và Tháng (6 tháng qua).
 
 [x] 4.8. Cài đặt tùy chỉnh hệ thống từ vựng (Vocabulary Settings)
-- Route: GET/POST /vocabulary/settings
-- Model: User (daily_vocab_goal, vocab_review_priority, vocab_auto_play_audio, vocab_accent, vocab_display_mode, vocab_review_time, vocab_srs_algorithm, vocab_notify_review_due)
+- Route: GET/POST /vocabulary/settings, GET /api/vocabulary/notification-check, POST /api/vocabulary/subscribe-push, POST /api/vocabulary/send-test-notification
+- Model: User (daily_vocab_goal, vocab_review_priority, vocab_auto_play_audio, vocab_accent, vocab_display_mode, vocab_review_time, vocab_srs_algorithm, vocab_notify_review_due, vocab_reminder_enabled, vocab_reminder_time, vocab_push_subscription)
 - Chi tiết chức năng:
   [x] Cài đặt mục tiêu số từ học mỗi ngày (10 - 50 từ).
   [x] Thứ tự ưu tiên ôn tập: Theo ngày đến hạn, SRS từ thấp đến cao, SRS từ cao đến thấp, hoặc ngẫu nhiên.
@@ -363,7 +363,8 @@ MỤC LỤC TỔNG QUAN CÁC MODULE CHỨC NĂNG ĐÃ LÀM:
   [x] Chế độ hiển thị mặc định: Thẻ Flashcard 3D hoặc Dạng danh sách (List view).
   [x] Thời điểm ôn tập ưu tiên: Buổi sáng, Buổi tối hoặc Bất cứ lúc nào.
   [x] Lựa chọn thuật toán SRS: Tiêu chuẩn, Tăng tốc hoặc Nhẹ nhàng.
-  [x] Bật/Tắt thông báo nhắc nhở khi có từ vựng đến hạn ôn tập.
+  [x] Bật/Tắt thông báo nhắc nhở khi có từ vựng đến hạn ôn tập (Banner trong ứng dụng và Thông báo đẩy trình duyệt Web Notifications API / Service Worker sw.js).
+  [x] Cài đặt khung giờ nhắc nhở hàng ngày (07:00 - 22:00) và nút kiểm tra bắn thử thông báo trực tiếp trên trình duyệt.
 
 [x] 4.9. Tự tạo & Quản lý bộ thẻ Flashcard tùy chỉnh (Custom User Flashcard Sets)
 - Route: GET /flashcard-sets, GET/POST /flashcard-sets/new, GET/POST /flashcard-sets/<set_id>/edit, GET /flashcard-sets/<set_id>, POST /flashcard-sets/<set_id>/sync, POST /flashcard-sets/<set_id>/delete

@@ -45,6 +45,9 @@ class User(UserMixin, db.Model):
     vocab_review_time = db.Column(db.String(20), nullable=False, default="anytime")
     vocab_srs_algorithm = db.Column(db.String(20), nullable=False, default="standard")
     vocab_notify_review_due = db.Column(db.Boolean, nullable=False, default=True)
+    vocab_reminder_enabled = db.Column(db.Boolean, nullable=False, default=True)
+    vocab_reminder_time = db.Column(db.String(10), nullable=False, default="09:00")
+    vocab_push_subscription = db.Column(db.Text, nullable=True)
     
     # Exam Settings
     exam_default_type = db.Column(db.String(50), nullable=False, default="TOEIC")

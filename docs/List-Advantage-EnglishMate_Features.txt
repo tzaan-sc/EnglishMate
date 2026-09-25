@@ -125,7 +125,7 @@ NỀN TẢNG HỌC TIẾNG ANH TRỰC TUYẾN THÔNG MINH
 [x] - Vocabulary Display Mode - Chế độ hiển thị từ vựng
 [x] - Vocabulary Review Time - Thời gian ôn tập
 [x] - Vocabulary SRS Algorithm - Thuật toán SRS
-[ ] - Vocabulary Notification - Thông báo ôn tập
+[x] - Vocabulary Notification - Thông báo ôn tập
 [x] - Exam Default Type - Loại thi mặc định
 [x] - Exam Time Limit - Giới hạn thời gian thi
 [x] - Exam Timer Display - Hiển thị đồng hồ thi

@@ -1,4 +1,4 @@
-﻿from app.extensions import db
+from app.extensions import db
 from app.backend.auth.models import User
 from app.backend.learning.models import Vocabulary, VocabularyProgress
 
@@ -48,6 +48,8 @@ def test_save_vocabulary_settings(client):
             "vocab_review_time": "morning",
             "vocab_srs_algorithm": "aggressive",
             "vocab_notify_review_due": "on",
+            "vocab_reminder_enabled": "on",
+            "vocab_reminder_time": "20:00",
         },
         follow_redirects=True,
     )
@@ -61,6 +63,8 @@ def test_save_vocabulary_settings(client):
         assert user.vocab_accent == "en-GB"
         assert user.vocab_srs_algorithm == "aggressive"
         assert user.vocab_review_time == "morning"
+        assert user.vocab_reminder_enabled is True
+        assert user.vocab_reminder_time == "20:00"
 
 
 def test_srs_algorithm_intervals_impact(client):
@@ -89,3 +93,47 @@ def test_srs_algorithm_intervals_impact(client):
         prog = VocabularyProgress.query.filter_by(vocabulary_id=word_id).first()
         assert prog is not None
         assert prog.srs_level == 2
+
+
+def test_vocabulary_notification_check_api(client):
+    login_student(client)
+
+    res = client.get("/api/vocabulary/notification-check")
+    assert res.status_code == 200
+    data = res.get_json()
+    assert data["success"] is True
+    assert "due_count" in data
+    assert "has_due" in data
+    assert "title" in data
+    assert "body" in data
+    assert "review_url" in data
+
+
+def test_vocabulary_subscribe_push_api(client):
+    login_student(client)
+
+    # Test saving subscription
+    res = client.post(
+        "/api/vocabulary/subscribe-push",
+        json={"enabled": True, "subscription": {"endpoint": "https://push.example.com/test", "keys": {"auth": "123"}}},
+    )
+    assert res.status_code == 200
+    data = res.get_json()
+    assert data["success"] is True
+
+    with client.application.app_context():
+        user = User.query.filter_by(email="student@test.com").first()
+        assert user.vocab_reminder_enabled is True
+        assert "https://push.example.com/test" in user.vocab_push_subscription
+
+
+def test_vocabulary_send_test_notification_api(client):
+    login_student(client)
+
+    res = client.post("/api/vocabulary/send-test-notification")
+    assert res.status_code == 200
+    data = res.get_json()
+    assert data["success"] is True
+    assert "Kiểm tra thông báo" in data["title"]
+    assert "review_url" in data
+

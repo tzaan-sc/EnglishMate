@@ -153,21 +153,67 @@
       <!-- Card 4: Thông báo & Nhắc nhở -->
       <div class="col-md-6">
         <div class="card border-0 shadow-sm rounded-4 p-4 bg-white h-100">
-          <h5 class="fw-bold text-dark mb-3 d-flex align-items-center gap-2">
-            <i class="ph ph-bell text-info fs-4"></i> Thông báo & Nhắc nhở
-          </h5>
+          <div class="d-flex align-items-center justify-content-between mb-3">
+            <h5 class="fw-bold text-dark mb-0 d-flex align-items-center gap-2">
+              <i class="ph ph-bell text-info fs-4"></i> Thông báo & Nhắc nhở
+            </h5>
+            <span id="notifPermissionBadge" class="badge bg-light text-secondary border rounded-pill px-2.5 py-1 small">
+              <i class="ph ph-shield-check me-1"></i>Web Push API
+            </span>
+          </div>
 
-          <!-- 8. Notification settings for review due -->
+          <!-- 8. Notification settings for in-app banner -->
           <div class="form-check form-switch bg-light border rounded-4 p-3 mb-3 d-flex align-items-center justify-content-between">
             <div>
-              <label class="form-check-label fw-bold text-dark cursor-pointer d-block" for="notifySwitch">🔔 Banner thông báo từ đến hạn ôn</label>
-              <span class="text-secondary small">Hiển thị Banner nhắc nhở trên Bảng điều khiển từ vựng khi có từ đến hạn ôn tập SRS.</span>
+              <label class="form-check-label fw-bold text-dark cursor-pointer d-block" for="notifySwitch">🔔 Banner nhắc nhở trong ứng dụng</label>
+              <span class="text-secondary small">Hiển thị thanh Banner nổi bật trên Bảng điều khiển từ vựng khi có từ đến hạn ôn tập SRS.</span>
             </div>
             <input class="form-check-input fs-4 ms-2 mt-0 cursor-pointer" type="checkbox" id="notifySwitch" name="vocab_notify_review_due" {% if current_user.vocab_notify_review_due %}checked{% endif %}>
           </div>
 
+          <!-- 9. Web Push Notification switch -->
+          <div class="form-check form-switch bg-light border rounded-4 p-3 mb-3 d-flex align-items-center justify-content-between">
+            <div>
+              <label class="form-check-label fw-bold text-dark cursor-pointer d-block" for="pushSwitch">🌐 Thông báo đẩy trình duyệt (Web Push Notifications)</label>
+              <span class="text-secondary small">Nhận thông báo đẩy trực tiếp trên máy tính hoặc điện thoại ngay cả khi đang duyệt tab khác.</span>
+            </div>
+            <input class="form-check-input fs-4 ms-2 mt-0 cursor-pointer" type="checkbox" id="pushSwitch" name="vocab_reminder_enabled" {% if current_user.vocab_reminder_enabled %}checked{% endif %}>
+          </div>
+
+          <!-- 10. Reminder Time selector -->
+          <div class="mb-3">
+            <label class="form-label fw-bold text-dark mb-1">Khung giờ nhắc nhở ôn tập hàng ngày</label>
+            <div class="input-group">
+              <span class="input-group-text bg-light border-end-0 text-muted">
+                <i class="ph-bold ph-clock"></i>
+              </span>
+              <select name="vocab_reminder_time" class="form-select border-start-0 rounded-end-3" style="font-size: 0.92rem;">
+                <option value="07:00" {% if current_user.vocab_reminder_time == '07:00' %}selected{% endif %}>07:00 Sáng (Khởi động ngày mới)</option>
+                <option value="08:00" {% if current_user.vocab_reminder_time == '08:00' %}selected{% endif %}>08:00 Sáng (Trước giờ làm việc)</option>
+                <option value="09:00" {% if current_user.vocab_reminder_time == '09:00' or not current_user.vocab_reminder_time %}selected{% endif %}>09:00 Sáng (Mặc định tối ưu)</option>
+                <option value="12:00" {% if current_user.vocab_reminder_time == '12:00' %}selected{% endif %}>12:00 Trưa (Giờ nghỉ trưa)</option>
+                <option value="18:00" {% if current_user.vocab_reminder_time == '18:00' %}selected{% endif %}>18:00 Chiều (Sau giờ tan làm)</option>
+                <option value="19:00" {% if current_user.vocab_reminder_time == '19:00' %}selected{% endif %}>19:00 Tối (Sau bữa tối)</option>
+                <option value="20:00" {% if current_user.vocab_reminder_time == '20:00' %}selected{% endif %}>20:00 Tối (Thời gian tự học)</option>
+                <option value="21:00" {% if current_user.vocab_reminder_time == '21:00' %}selected{% endif %}>21:00 Đêm (Trước khi đi ngủ)</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Test Web Push Button -->
+          <div class="p-3 bg-light-subtle rounded-4 border mb-3 d-flex flex-column flex-sm-row justify-content-between align-items-sm-center gap-2">
+            <div>
+              <span class="fw-bold small text-dark d-block">Kiểm tra thông báo trình duyệt:</span>
+              <span class="text-muted small" style="font-size: 0.78rem;">Bấm để xin cấp quyền và gửi thử thông báo mẫu.</span>
+            </div>
+            <button type="button" class="btn btn-sm btn-outline-primary rounded-pill px-3 py-1.5 fw-semibold d-inline-flex align-items-center gap-1.5 flex-shrink-0" id="btnTestWebPush">
+              <i class="ph-bold ph-paper-plane-tilt"></i>
+              <span>Gửi thông báo thử</span>
+            </button>
+          </div>
+
           <div class="p-3 bg-info-subtle text-info-emphasis rounded-4 small">
-            💡 <strong>Mẹo:</strong> Bật thông báo sẽ giúp bạn không bao giờ bỏ lỡ điểm vàng lặp lại ngắt quãng để ghi nhớ từ vựng lâu nhất.
+            💡 <strong>Mẹo SRS:</strong> Thông báo sẽ nhắc nhở đúng thời điểm lặp lại ngắt quãng (Spaced Repetition) giúp não bộ củng cố từ vựng từ trí nhớ ngắn hạn sang dài hạn.
           </div>
         </div>
       </div>

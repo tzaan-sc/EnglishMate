@@ -50,6 +50,9 @@ def create_app(config_object=Config):
                 if is_pg:
                     conn.execute(text("ALTER TABLE exam ADD COLUMN IF NOT EXISTS part_distribution JSON;"))
                     conn.execute(text("ALTER TABLE lesson ADD COLUMN IF NOT EXISTS skill_data JSON;"))
+                    conn.execute(text('ALTER TABLE "user" ADD COLUMN IF NOT EXISTS vocab_reminder_enabled BOOLEAN DEFAULT TRUE;'))
+                    conn.execute(text('ALTER TABLE "user" ADD COLUMN IF NOT EXISTS vocab_reminder_time VARCHAR(10) DEFAULT \'09:00\';'))
+                    conn.execute(text('ALTER TABLE "user" ADD COLUMN IF NOT EXISTS vocab_push_subscription TEXT;'))
                     conn.commit()
                 elif "sqlite" in str(db.engine.url):
                     insp = inspect(db.engine)
@@ -63,6 +66,17 @@ def create_app(config_object=Config):
                         cols = [c["name"] for c in insp.get_columns("lesson")]
                         if "skill_data" not in cols:
                             conn.execute(text("ALTER TABLE lesson ADD COLUMN skill_data JSON;"))
+                            conn.commit()
+                    if "user" in tables:
+                        cols = [c["name"] for c in insp.get_columns("user")]
+                        if "vocab_reminder_enabled" not in cols:
+                            conn.execute(text('ALTER TABLE "user" ADD COLUMN vocab_reminder_enabled BOOLEAN DEFAULT 1;'))
+                            conn.commit()
+                        if "vocab_reminder_time" not in cols:
+                            conn.execute(text('ALTER TABLE "user" ADD COLUMN vocab_reminder_time VARCHAR(10) DEFAULT \'09:00\';'))
+                            conn.commit()
+                        if "vocab_push_subscription" not in cols:
+                            conn.execute(text('ALTER TABLE "user" ADD COLUMN vocab_push_subscription TEXT;'))
                             conn.commit()
         except Exception:
             pass

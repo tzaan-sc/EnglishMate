@@ -57,12 +57,12 @@ PHẦN I: BẢNG TỔNG HỢP NHANH SỐ LƯỢNG TÍNH NĂNG CHƯA LÀM THEO MO
 +----+---------------------------------------------------+----------+-----------+-----------+
 
 ====================================================================================================
-PHẦN II: CHI TIẾT 125 TÍNH NĂNG CHƯA LÀM
+PHẦN II: CHI TIẾT 124 TÍNH NĂNG CHƯA LÀM
 (ĐỐI CHIẾU VỚI ENGLISHMATE_FEATURES.TXT & ĐỀ XUẤT GIẢI PHÁP KỸ THUẬT)
 ====================================================================================================
 
 ----------------------------------------------------------------------------------------------------
-MODULE 2. USER PROFILE & SETTINGS (HỒ SƠ & CÀI ĐẶT) — 2 TÍNH NĂNG CHƯA LÀM
+MODULE 2. USER PROFILE & SETTINGS (HỒ SƠ & CÀI ĐẶT) — 1 TÍNH NĂNG CHƯA LÀM
 ----------------------------------------------------------------------------------------------------
 
 [x] 2.1. Email Change History - Lịch sử thay đổi email (Mục 2.2) (ĐÃ HOÀN THÀNH)
@@ -74,16 +74,15 @@ MODULE 2. USER PROFILE & SETTINGS (HỒ SƠ & CÀI ĐẶT) — 2 TÍNH NĂNG CH�
   + Thêm card "Nhật ký & Lịch sử thay đổi Email" trong tab "Thay đổi Email" trang `/profile` kèm badge số lần cập nhật để người dùng xem lại.
 - Trạng thái: ĐÃ HOÀN THÀNH (100% test passed)
 
-[ ] 2.2. Vocabulary Notification - Thông báo ôn tập từ vựng (Mục 2.5)
-- Hiện trạng trong EnglishMate_Features.txt:
-  Đã có thuật toán Spaced Repetition (SRS) tính ngày ôn tập tiếp theo (`next_review`) và cài đặt mục tiêu số từ học mỗi ngày (10 - 50 từ).
-- Phần còn thiếu chưa làm:
-  Chưa có cơ chế thông báo (Web Push Notification hoặc Email Alert) tự động nhắc nhở người dùng khi có từ vựng đến hạn cần ôn tập hôm nay.
-- Giải pháp kỹ thuật cần làm:
-  + Tích hợp Web Notifications API trên trình duyệt (Service Worker).
-  + Thêm trường `vocab_reminder_enabled` và `vocab_reminder_time` trong bảng `User`.
-  + Tạo endpoint background job kiểm tra từ đến hạn và gửi thông báo nhắc học.
-- Mức độ ưu tiên: Cao (High)
+[x] 2.2. Vocabulary Notification - Thông báo ôn tập từ vựng (Mục 2.5) (ĐÃ HOÀN THÀNH)
+- Hiện trạng:
+  Đã hoàn thành toàn diện hệ thống Web Push & Browser Notifications nhắc nhở ôn tập từ vựng SRS.
+- Giải pháp kỹ thuật đã triển khai:
+  + Bổ sung các trường `vocab_reminder_enabled`, `vocab_reminder_time`, `vocab_push_subscription` trong bảng `User`.
+  + Tạo API endpoint `/api/vocabulary/notification-check`, `/api/vocabulary/subscribe-push`, `/api/vocabulary/send-test-notification`.
+  + Tích hợp Service Worker (`sw.js`) và Web Notifications API client (`vocab_notifications.js`) phát thông báo đẩy trực tiếp trên máy tính / điện thoại kèm sự kiện click điều hướng thẳng tới `/vocabulary/review`.
+  + Bổ sung bộ điều khiển chọn giờ nhắc nhở và nút bắn thông báo thử nghiệm tại `/vocabulary/settings`.
+- Trạng thái: ĐÃ HOÀN THÀNH (100% test passed)
 
 [ ] 2.3. Exam Sound Effects - Hiệu ứng âm thanh thi (Mục 2.5)
 - Hiện trạng trong EnglishMate_Features.txt:

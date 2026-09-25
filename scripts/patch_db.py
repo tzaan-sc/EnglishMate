@@ -45,6 +45,20 @@ def patch_database_all():
                     db.session.execute(text(f"ALTER TABLE grammar_topic ADD COLUMN {col_name} {col_type}"))
             db.session.commit()
 
+        # Check and patch user columns for vocabulary notifications
+        if "user" in inspector.get_table_names():
+            user_cols = {col["name"] for col in inspector.get_columns("user")}
+            new_user_cols = [
+                ("vocab_reminder_enabled", "BOOLEAN DEFAULT TRUE"),
+                ("vocab_reminder_time", "VARCHAR(10) DEFAULT '09:00'"),
+                ("vocab_push_subscription", "TEXT"),
+            ]
+            for col_name, col_type in new_user_cols:
+                if col_name not in user_cols:
+                    print(f"[*] Bổ sung cột '{col_name}' vào bảng 'user'...")
+                    db.session.execute(text(f'ALTER TABLE "user" ADD COLUMN {col_name} {col_type}'))
+            db.session.commit()
+
         print("[OK] Đã đồng bộ toàn bộ cấu trúc bảng từ Models!")
 
 
