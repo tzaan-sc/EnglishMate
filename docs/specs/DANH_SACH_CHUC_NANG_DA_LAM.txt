@@ -170,15 +170,19 @@ MỤC LỤC TỔNG QUAN CÁC MODULE CHỨC NĂNG ĐÃ LÀM:
   [x] Tính toán tổng thời gian học tập trong tuần (phút).
   [x] Tổng thời gian học tập tích lũy từ khi tạo tài khoản (giờ).
 
-[x] 2.6. Bản đồ nhiệt hoạt động học tập cả năm kiểu GitHub (Calendar Activity Heatmap)
-- Route: GET /dashboard?year=<selected_year>
+[x] 2.6. Bản đồ nhiệt hoạt động học tập & Bộ lọc tương tác (Activity Heatmap & Interactive Filter)
+- Route: GET /dashboard?timeframe=<7d|30d|quarter|year|custom>&year=<year>&from_date=<Y-m-d>&to_date=<Y-m-d>
 - Model: DailyActivity
 - Chi tiết chức năng:
-  [x] Lưới ma trận trực quan hóa hoạt động học tập 365 ngày theo năm (Heatmap).
-  [x] Bộ lọc chuyển đổi giữa các năm (Năm hiện tại, Năm ngoái, Năm trước nữa).
+  [x] Lưới ma trận trực quan hóa hoạt động học tập theo tuần và tháng (GitHub-style Heatmap).
+  [x] Bộ lọc khoảng thời gian linh hoạt (Activity Filter):
+    [x] Lọc nhanh theo cài đặt sẵn: 7 ngày qua (`7d`), 30 ngày qua (`30d`), Quý này / 90 ngày (`quarter`).
+    [x] Lọc theo năm (`year`): Năm hiện tại, năm ngoái, năm trước nữa.
+    [x] Lọc tùy chọn khoảng ngày (`custom`): Chọn linh hoạt ngày bắt đầu (`from_date`) và ngày kết thúc (`to_date`) qua date-picker form.
+  [x] Tự động căn chỉnh lưới ma trận từ Thứ Hai đến Chủ Nhật, tính toán thống kê tổng số bài hoàn thành và số ngày hoạt động trong khoảng thời gian được lọc.
   [x] 5 cấp độ màu sắc biểu thị cường độ học tập (từ không hoạt động đến 5+ bài học/ngày).
   [x] Nhãn hiển thị tháng và ngày trong tuần, tooltip hiển thị số bài học hoàn thành vào ngày cụ thể.
-  [x] Thống kê tổng số bài học đã hoàn thành trong toàn bộ năm được chọn.
+  [x] Thống kê tổng số bài học đã hoàn thành và số ngày có hoạt động trong khoảng lọc được chọn.
 
 [x] 2.7. Biểu đồ xu hướng hiệu suất 7 bài kiểm tra gần nhất (Performance Trends Chart)
 - Route: GET /dashboard

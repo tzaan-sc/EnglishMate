@@ -121,17 +121,50 @@ def dashboard():
     total_time_spent_minutes = sum((a.completed_lessons * 15 + 10) for a in all_acts) or (completed * 15)
     total_time_hours = round(total_time_spent_minutes / 60, 1)
 
-    # 3. Activity Heatmap (Calendar Year like GitHub, e.g. 2026)
+    # 3. Activity Heatmap & Activity Filter (Preset 7d, 30d, quarter, year, or custom from_date -> to_date)
+    timeframe = request.args.get("timeframe", "year")
+    from_date_str = request.args.get("from_date", "").strip()
+    to_date_str = request.args.get("to_date", "").strip()
     selected_year = request.args.get("year", type=int) or today.year
     available_years = [today.year, today.year - 1, today.year - 2]
 
-    # Calendar Year Start and End (Jan 1 to Dec 31)
-    year_start = date(selected_year, 1, 1)
-    year_end = date(selected_year, 12, 31)
+    filter_title = f"Năm {selected_year}"
+    is_custom = False
+
+    if timeframe == "7d":
+        filter_start = today - timedelta(days=6)
+        filter_end = today
+        filter_title = "7 ngày qua"
+    elif timeframe == "30d":
+        filter_start = today - timedelta(days=29)
+        filter_end = today
+        filter_title = "30 ngày qua"
+    elif timeframe == "quarter":
+        filter_start = today - timedelta(days=89)
+        filter_end = today
+        filter_title = "Quý này (90 ngày qua)"
+    elif timeframe == "custom" and from_date_str and to_date_str:
+        try:
+            filter_start = datetime.strptime(from_date_str, "%Y-%m-%d").date()
+            filter_end = datetime.strptime(to_date_str, "%Y-%m-%d").date()
+            if filter_start > filter_end:
+                filter_start, filter_end = filter_end, filter_start
+            filter_title = f"{filter_start.strftime('%d/%m/%Y')} - {filter_end.strftime('%d/%m/%Y')}"
+            is_custom = True
+        except ValueError:
+            timeframe = "year"
+            filter_start = date(selected_year, 1, 1)
+            filter_end = date(selected_year, 12, 31)
+            filter_title = f"Năm {selected_year}"
+    else:
+        timeframe = "year"
+        filter_start = date(selected_year, 1, 1)
+        filter_end = date(selected_year, 12, 31)
+        filter_title = f"Năm {selected_year}"
 
     # Align start to Monday of that week and end to Sunday
-    cal_start = year_start - timedelta(days=year_start.weekday())
-    cal_end = year_end + timedelta(days=(6 - year_end.weekday()))
+    cal_start = filter_start - timedelta(days=filter_start.weekday())
+    cal_end = filter_end + timedelta(days=(6 - filter_end.weekday()))
     total_days = (cal_end - cal_start).days + 1
 
     heatmap_acts = {
@@ -142,7 +175,18 @@ def dashboard():
             DailyActivity.activity_date <= cal_end
         ).all()
     }
-    total_yearly_lessons = sum(heatmap_acts.values())
+    
+    # Filtered range statistics
+    filtered_lessons = sum(
+        cnt for dt, cnt in heatmap_acts.items()
+        if filter_start <= dt <= filter_end
+    )
+    filtered_active_days = sum(
+        1 for dt, cnt in heatmap_acts.items()
+        if filter_start <= dt <= filter_end and cnt > 0
+    )
+    total_days_in_filter = (filter_end - filter_start).days + 1
+    total_yearly_lessons = filtered_lessons
 
     activity_heatmap = []
     month_labels = []
@@ -150,8 +194,8 @@ def dashboard():
 
     for i in range(total_days):
         d = cal_start + timedelta(days=i)
-        is_in_year = (d.year == selected_year)
-        cnt = heatmap_acts.get(d, 0)
+        is_in_range = (filter_start <= d <= filter_end)
+        cnt = heatmap_acts.get(d, 0) if is_in_range else 0
         lvl = 0
         if cnt >= 5: lvl = 4
         elif cnt >= 3: lvl = 3
@@ -159,7 +203,7 @@ def dashboard():
         elif cnt >= 1: lvl = 1
 
         col_index = i // 7
-        if is_in_year and d.day <= 7 and d.month != last_month:
+        if (is_in_range or i == 0) and d.month != last_month:
             last_month = d.month
             month_names = ["", "Thg 1", "Thg 2", "Thg 3", "Thg 4", "Thg 5", "Thg 6", "Thg 7", "Thg 8", "Thg 9", "Thg 10", "Thg 11", "Thg 12"]
             month_labels.append({
@@ -173,7 +217,7 @@ def dashboard():
             "count": cnt,
             "level": lvl,
             "day_name": d.strftime("%a"),
-            "in_year": is_in_year
+            "in_year": is_in_range
         })
 
     # 4. Performance trends (Last 7 attempts)
@@ -267,7 +311,17 @@ def dashboard():
         level_progress_pct=level_progress_pct,
         estimated_completion_date=estimated_completion_date,
         selected_year=selected_year,
-        available_years=available_years
+        available_years=available_years,
+        timeframe=timeframe,
+        from_date=from_date_str or filter_start.strftime("%Y-%m-%d"),
+        to_date=to_date_str or filter_end.strftime("%Y-%m-%d"),
+        filter_start=filter_start,
+        filter_end=filter_end,
+        filter_title=filter_title,
+        filtered_lessons=filtered_lessons,
+        filtered_active_days=filtered_active_days,
+        total_days_in_filter=total_days_in_filter,
+        is_custom_filter=is_custom
     )
 
 

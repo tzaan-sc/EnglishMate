@@ -1,4 +1,4 @@
-﻿import pytest
+import pytest
 from datetime import date, timedelta
 from app.extensions import db
 from app.backend.auth.models import User, DailyActivity, record_daily_activity
@@ -96,4 +96,47 @@ def test_dashboard_streak_colors_gray_when_not_learned_and_orange_when_learned(c
     assert "Học liên tục để duy trì!" in html
     assert "streak-flame-lit" in html
     assert "streak-active" in html
+
+
+def test_dashboard_activity_filters(client, dashboard_setup):
+    login(client)
+
+    # 1. Test 7 days filter
+    res_7d = client.get("/dashboard?timeframe=7d")
+    assert res_7d.status_code == 200
+    html_7d = res_7d.get_data(as_text=True)
+    assert "7 ngày qua" in html_7d
+    assert "Bộ lọc: <strong class=\"text-primary\">7 ngày qua</strong>" in html_7d
+    assert "heatmap-grid" in html_7d
+
+    # 2. Test 30 days filter
+    res_30d = client.get("/dashboard?timeframe=30d")
+    assert res_30d.status_code == 200
+    html_30d = res_30d.get_data(as_text=True)
+    assert "30 ngày qua" in html_30d
+    assert "Bộ lọc: <strong class=\"text-primary\">30 ngày qua</strong>" in html_30d
+
+    # 3. Test quarter (90 days) filter
+    res_quarter = client.get("/dashboard?timeframe=quarter")
+    assert res_quarter.status_code == 200
+    html_quarter = res_quarter.get_data(as_text=True)
+    assert "Quý này" in html_quarter
+    assert "90 ngày qua" in html_quarter
+
+    # 4. Test custom date range filter
+    today = date.today()
+    from_date = (today - timedelta(days=15)).strftime("%Y-%m-%d")
+    to_date = today.strftime("%Y-%m-%d")
+    res_custom = client.get(f"/dashboard?timeframe=custom&from_date={from_date}&to_date={to_date}")
+    assert res_custom.status_code == 200
+    html_custom = res_custom.get_data(as_text=True)
+    assert (today - timedelta(days=15)).strftime("%d/%m/%Y") in html_custom
+    assert today.strftime("%d/%m/%Y") in html_custom
+
+    # 5. Test specific year filter
+    res_year = client.get("/dashboard?timeframe=year&year=2025")
+    assert res_year.status_code == 200
+    html_year = res_year.get_data(as_text=True)
+    assert "Năm 2025" in html_year
+
 

@@ -155,7 +155,7 @@ NỀN TẢNG HỌC TIẾNG ANH TRỰC TUYẾN THÔNG MINH
 [x] - Activity Heatmap - Bản đồ nhiệt hoạt động
 [x] - Yearly Activity View - Xem hoạt động năm
 [x] - Activity Statistics - Thống kê hoạt động
-[ ] - Activity Filter - Lọc hoạt động
+[x] - Activity Filter - Lọc hoạt động
 
 3.3. Progress Analytics (Phân tích tiến độ)
 [x] - Skill Breakdown - Phân tích kỹ năng

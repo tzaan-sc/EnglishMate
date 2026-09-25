@@ -377,22 +377,88 @@
               <span class="rounded-circle d-flex align-items-center justify-content-center" style="width: 32px; height: 32px; background-color: var(--primary-subtle); color: var(--primary);">
                 <i class="ph-bold ph-squares-four fs-5"></i>
               </span>
-              <h6 class="fw-bold text-dark text-uppercase small mb-0" style="letter-spacing: 0.05em;">Bản đồ hoạt động (365 ngày qua)</h6>
+              <div>
+                <h6 class="fw-bold text-dark text-uppercase small mb-0" style="letter-spacing: 0.05em;">Bản đồ hoạt động (365 ngày qua)</h6>
+                <span class="text-secondary" style="font-size: 0.72rem;">Bộ lọc: <strong class="text-primary">{{ filter_title }}</strong></span>
+              </div>
             </div>
             
-            <!-- GitHub Style Year Filter Selector -->
-            <div class="d-flex align-items-center gap-1.5">
-              {% for yr in available_years %}
-              <a href="{{ url_for('main.dashboard', year=yr) }}" 
-                 class="btn btn-sm rounded-pill px-2.5 py-0.5 fw-bold {% if yr == selected_year %}btn-primary shadow-sm{% else %}btn-light border text-secondary{% endif %}" 
+            <!-- Activity Filter Options (Presets: 7d, 30d, Quarter, Year, Custom Date Picker) -->
+            <div class="d-flex align-items-center flex-wrap gap-1.5">
+              <a href="{{ url_for('main.dashboard', timeframe='7d') }}" 
+                 class="btn btn-sm rounded-pill px-2.5 py-0.5 fw-bold {% if timeframe == '7d' %}btn-primary shadow-xs{% else %}btn-light border text-secondary{% endif %}" 
                  style="font-size: 0.74rem;">
-                {{ yr }}
+                7 ngày
               </a>
-              {% endfor %}
+              <a href="{{ url_for('main.dashboard', timeframe='30d') }}" 
+                 class="btn btn-sm rounded-pill px-2.5 py-0.5 fw-bold {% if timeframe == '30d' %}btn-primary shadow-xs{% else %}btn-light border text-secondary{% endif %}" 
+                 style="font-size: 0.74rem;">
+                30 ngày
+              </a>
+              <a href="{{ url_for('main.dashboard', timeframe='quarter') }}" 
+                 class="btn btn-sm rounded-pill px-2.5 py-0.5 fw-bold {% if timeframe == 'quarter' %}btn-primary shadow-xs{% else %}btn-light border text-secondary{% endif %}" 
+                 style="font-size: 0.74rem;">
+                Quý này
+              </a>
+
+              <!-- Year selector dropdown -->
+              <div class="dropdown d-inline-block">
+                <button class="btn btn-sm rounded-pill px-2.5 py-0.5 fw-bold {% if timeframe == 'year' %}btn-primary shadow-xs{% else %}btn-light border text-secondary{% endif %} dropdown-toggle" 
+                        type="button" data-bs-toggle="dropdown" aria-expanded="false" style="font-size: 0.74rem;">
+                  {{ 'Năm ' ~ selected_year if timeframe == 'year' else 'Theo Năm' }}
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0 rounded-3 p-1" style="font-size: 0.8rem; min-width: 110px;">
+                  {% for yr in available_years %}
+                  <li>
+                    <a class="dropdown-item rounded-2 py-1 px-2.5 fw-semibold {% if timeframe == 'year' and yr == selected_year %}active bg-primary text-white{% endif %}" 
+                       href="{{ url_for('main.dashboard', timeframe='year', year=yr) }}">
+                      Năm {{ yr }}
+                    </a>
+                  </li>
+                  {% endfor %}
+                </ul>
+              </div>
+
+              <!-- Custom Date Range Toggle Button -->
+              <button class="btn btn-sm rounded-pill px-2.5 py-0.5 fw-bold {% if timeframe == 'custom' %}btn-primary shadow-xs{% else %}btn-light border text-secondary{% endif %}" 
+                      type="button" data-bs-toggle="collapse" data-bs-target="#customDateFilterCollapse" aria-expanded="{{ 'true' if is_custom_filter else 'false' }}" style="font-size: 0.74rem;">
+                <i class="ph-bold ph-calendar-blank me-0.5"></i> Tùy chọn ngày
+              </button>
             </div>
           </div>
 
-          <!-- GitHub Heatmap Matrix Layout (52 Weeks / 1 Year) -->
+          <!-- Custom Date Filter Form (Collapsible) -->
+          <div class="collapse {% if is_custom_filter %}show{% endif %} mb-3" id="customDateFilterCollapse">
+            <div class="p-3 bg-light rounded-4 border">
+              <form method="GET" action="{{ url_for('main.dashboard') }}" class="row g-2 align-items-center">
+                <input type="hidden" name="timeframe" value="custom">
+                <div class="col-auto">
+                  <span class="small fw-bold text-secondary" style="font-size: 0.78rem;">Từ ngày:</span>
+                </div>
+                <div class="col-auto">
+                  <input type="date" name="from_date" class="form-control form-control-sm rounded-pill px-3 shadow-xs" 
+                         value="{{ from_date }}" required style="font-size: 0.78rem;">
+                </div>
+                <div class="col-auto">
+                  <span class="small fw-bold text-secondary" style="font-size: 0.78rem;">Đến ngày:</span>
+                </div>
+                <div class="col-auto">
+                  <input type="date" name="to_date" class="form-control form-control-sm rounded-pill px-3 shadow-xs" 
+                         value="{{ to_date }}" required style="font-size: 0.78rem;">
+                </div>
+                <div class="col-auto d-flex gap-1.5">
+                  <button type="submit" class="btn btn-sm btn-primary rounded-pill px-3 fw-bold shadow-xs" style="font-size: 0.78rem;">
+                    <i class="ph-bold ph-funnel me-1"></i> Lọc dữ liệu
+                  </button>
+                  <a href="{{ url_for('main.dashboard') }}" class="btn btn-sm btn-light border rounded-pill px-2.5 fw-semibold" style="font-size: 0.78rem;" title="Đặt lại về mặc định">
+                    Đặt lại
+                  </a>
+                </div>
+              </form>
+            </div>
+          </div>
+
+          <!-- GitHub Heatmap Matrix Layout -->
           <div class="github-heatmap-container">
             <div class="github-heatmap-body">
               <!-- Day of week labels on the left (GitHub style) -->
@@ -421,9 +487,18 @@
           </div>
         </div>
 
-        <!-- Heatmap Footer with Calendar Year Range & GitHub Legend -->
-        <div class="d-flex justify-content-between align-items-center text-muted mt-3" style="font-size: 0.74rem;">
-          <span class="fw-bold text-dark">Năm {{ selected_year }} (01/01/{{ selected_year }} &rarr; 31/12/{{ selected_year }})</span>
+        <!-- Heatmap Footer with Filter Range & Stats & GitHub Legend -->
+        <div class="d-flex flex-wrap justify-content-between align-items-center text-muted mt-3 gap-2" style="font-size: 0.74rem;">
+          <div class="d-flex align-items-center flex-wrap gap-2">
+            <span class="fw-bold text-dark">{{ filter_title }}</span>
+            <span class="text-secondary">({{ filter_start.strftime('%d/%m/%Y') }} &rarr; {{ filter_end.strftime('%d/%m/%Y') }})</span>
+            <span class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill px-2 py-0.5 font-semibold">
+              {{ filtered_lessons }} bài hoàn thành
+            </span>
+            <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-2 py-0.5 font-semibold">
+              {{ filtered_active_days }} ngày có hoạt động
+            </span>
+          </div>
           <div class="d-flex align-items-center gap-1.5">
             <span>Ít</span>
             <span class="heatmap-legend-box lvl-0"></span>

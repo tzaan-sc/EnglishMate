@@ -7,15 +7,15 @@ Căn cứ so sánh:
   1. EnglishMate_Features.txt (Tổng hợp các tính năng đã hoàn thành trong codebase)
   2. List-Advantage-EnglishMate_Features.txt (Bảng tiêu chuẩn toàn diện 864 tính năng hệ thống)
 Ngày tạo: 2026-09-24
-Trạng thái: 123 / 864 tính năng đang chờ triển khai (Tỷ lệ hoàn thành hiện tại: 85.8%)
+Trạng thái: 122 / 864 tính năng đang chờ triển khai (Tỷ lệ hoàn thành hiện tại: 85.9%)
 ====================================================================================================
 
 MỤC LỤC TỔNG QUAN:
 ----------------------------------------------------------------------------------------------------
 PHẦN I: BẢNG TỔNG HỢP NHANH SỐ LƯỢNG TÍNH NĂNG CHƯA LÀM THEO MODULE
-PHẦN II: CHI TIẾT 123 TÍNH NĂNG CHƯA LÀM (SO SÁNH HIỆN TRẠNG, KHIẾM KHUYẾT & GIẢI PHÁP KỸ THUẬT)
+PHẦN II: CHI TIẾT 122 TÍNH NĂNG CHƯA LÀM (SO SÁNH HIỆN TRẠNG, KHIẾM KHUYẾT & GIẢI PHÁP KỸ THUẬT)
   - Module 2: User Profile & Settings (ĐÃ HOÀN THÀNH 100% - 0 tính năng)
-  - Module 3: Dashboard & Analytics (3 tính năng)
+  - Module 3: Dashboard & Analytics (2 tính năng)
   - Module 4: Lessons & 4 Skills (9 tính năng)
   - Module 5: Vocabulary & Flashcard System (2 tính năng)
   - Module 6: Grammar System (1 tính năng)
@@ -39,7 +39,7 @@ PHẦN I: BẢNG TỔNG HỢP NHANH SỐ LƯỢNG TÍNH NĂNG CHƯA LÀM THEO MO
 +----+---------------------------------------------------+----------+-----------+-----------+
 | 01 | 1. Authentication & User Management               |  60 / 60 |  00 tính  |  100.0%   |
 | 02 | 2. User Profile & Settings                        |  40 / 40 |  00 tính  |  100.0%   |
-| 03 | 3. Dashboard & Analytics                          |  45 / 48 |  03 tính  |   93.8%   |
+| 03 | 3. Dashboard & Analytics                          |  46 / 48 |  02 tính  |   95.8%   |
 | 04 | 4. Lessons & 4 Skills                             |  54 / 63 |  09 tính  |   85.7%   |
 | 05 | 5. Vocabulary & Flashcard System                  |  76 / 78 |  02 tính  |   97.4%   |
 | 06 | 6. Grammar System                                 |  60 / 61 |  01 tính  |   98.4%   |
@@ -53,11 +53,11 @@ PHẦN I: BẢNG TỔNG HỢP NHANH SỐ LƯỢNG TÍNH NĂNG CHƯA LÀM THEO MO
 | 14 | 14. Data Integrity & Validation                   |  25 / 30 |  05 tính  |   83.3%   |
 | 15 | 15. Error Handling & Recovery                     |  17 / 30 |  13 tính  |   56.7%   |
 +----+---------------------------------------------------+----------+-----------+-----------+
-|    | TỔNG CỘNG HỆ THỐNG                                | 741 / 864| 123 tính  |   85.8%   |
+|    | TỔNG CỘNG HỆ THỐNG                                | 742 / 864| 122 tính  |   85.9%   |
 +----+---------------------------------------------------+----------+-----------+-----------+
 
 ====================================================================================================
-PHẦN II: CHI TIẾT 123 TÍNH NĂNG CHƯA LÀM
+PHẦN II: CHI TIẾT 122 TÍNH NĂNG CHƯA LÀM
 (ĐỐI CHIẾU VỚI ENGLISHMATE_FEATURES.TXT & ĐỀ XUẤT GIẢI PHÁP KỸ THUẬT)
 ====================================================================================================
 
@@ -96,19 +96,17 @@ MODULE 2. USER PROFILE & SETTINGS (HỒ SƠ & CÀI ĐẶT) — ĐÃ HOÀN THÀNH
 - Trạng thái: ĐÃ HOÀN THÀNH (100% test passed)
 
 ----------------------------------------------------------------------------------------------------
-MODULE 3. DASHBOARD & ANALYTICS (BẢNG ĐIỀU KHIỂN & PHÂN TÍCH) — 3 TÍNH NĂNG CHƯA LÀM
+MODULE 3. DASHBOARD & ANALYTICS (BẢNG ĐIỀU KHIỂN & PHÂN TÍCH) — 2 TÍNH NĂNG CHƯA LÀM
 ----------------------------------------------------------------------------------------------------
 
-[ ] 3.1. Activity Filter - Bộ lọc khoảng thời gian hoạt động (Mục 3.2)
-- Hiện trạng trong EnglishMate_Features.txt:
-  Dashboard đã có Activity Heatmap cả năm (GitHub-style) và biểu đồ hoạt động tuần hiện tại.
-- Phần còn thiếu chưa làm:
-  Chưa có dropdown/picker cho phép người dùng lọc biểu đồ theo khoảng thời gian tùy chọn (7 ngày qua, 30 ngày qua, Quý này, Năm nay, hoặc Tùy chỉnh `from_date` đến `to_date`).
-- Giải pháp kỹ thuật cần làm:
-  + Thêm query param `?timeframe=30d` vào route `/dashboard`.
-  + Viết query SQLAlchemy lọc `DailyActivity` theo khoảng ngày được chọn.
-  + Cập nhật biểu đồ Chart.js tự động vẽ lại dữ liệu tương ứng.
-- Mức độ ưu tiên: Trung bình (Medium)
+[x] 3.1. Activity Filter - Bộ lọc khoảng thời gian hoạt động (Mục 3.2) (ĐÃ HOÀN THÀNH)
+- Hiện trạng:
+  Đã hoàn thành toàn diện bộ lọc tương tác cho phép xem lịch sử học tập theo các khoảng thời gian tùy chọn trên Activity Heatmap.
+- Giải pháp kỹ thuật đã triển khai:
+  + Bổ sung xử lý query params `timeframe` (7d, 30d, quarter, year, custom), `from_date`, `to_date`, `year` trong route `/dashboard`.
+  + Tự động căn chỉnh dải ngày lưới ma trận từ Thứ Hai đến Chủ Nhật, truy vấn DailyActivity trong khoảng lọc và tính toán thống kê tổng số bài hoàn thành cùng số ngày hoạt động.
+  + Bổ sung giao diện các nút lọc nhanh (7 ngày, 30 ngày, Quý này, dropdown chọn năm) kèm form date picker tùy chỉnh dạng collapse và badge trạng thái hiển thị trực quan.
+- Trạng thái: ĐÃ HOÀN THÀNH (100% test passed)
 
 [ ] 3.2. Time per Lesson - Thời gian học chi tiết từng bài học (Mục 3.4)
 - Hiện trạng trong EnglishMate_Features.txt:
