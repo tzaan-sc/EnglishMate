@@ -99,6 +99,10 @@ def create_app(config_object=Config):
                         if "duration_seconds" not in cols:
                             conn.execute(text("ALTER TABLE lesson_progress ADD COLUMN duration_seconds INTEGER DEFAULT 0;"))
                             conn.commit()
+                    if "lesson_rating" not in tables:
+                        from app.backend.learning.models import LessonRating
+                        LessonRating.__table__.create(conn)
+                        conn.commit()
         except Exception:
             pass
 

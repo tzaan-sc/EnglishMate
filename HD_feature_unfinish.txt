@@ -140,7 +140,7 @@ MODULE 3. DASHBOARD & ANALYTICS (BẢNG ĐIỀU KHIỂN & PHÂN TÍCH) — 2 TÍ
 MODULE 4. LESSONS & 4 SKILLS (BÀI HỌC & 4 KỸ NĂNG) — 9 TÍNH NĂNG CHƯA LÀM
 ----------------------------------------------------------------------------------------------------
 
-[ ] 4.1. Lesson Rating - Đánh giá & Chấm sao bài học (Mục 4.4)
+[x] 4.1. Lesson Rating - Đánh giá & Chấm sao bài học (Mục 4.4)
 - Hiện trạng trong EnglishMate_Features.txt:
   Bài học đã có Đánh dấu yêu thích (`LessonFavorite`), Ghi chú cá nhân (`LessonNote`), Báo cáo nội dung (`LessonReport`).
 - Phần còn thiếu chưa làm:

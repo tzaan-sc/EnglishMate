@@ -39,6 +39,52 @@ class Lesson(db.Model):
             return f"/{sk}"
         return "/lessons"
 
+    @property
+    def average_rating(self):
+        all_ratings = self.ratings
+        if not all_ratings:
+            return 0.0
+        total = sum(r.rating for r in all_ratings)
+        return round(total / len(all_ratings), 1)
+
+    @property
+    def ratings_count(self):
+        return len(self.ratings) if self.ratings else 0
+
+    def get_rating_distribution(self):
+        dist = {5: 0, 4: 0, 3: 0, 2: 0, 1: 0}
+        all_ratings = self.ratings or []
+        for r in all_ratings:
+            if 1 <= r.rating <= 5:
+                dist[r.rating] += 1
+        total = len(all_ratings)
+        dist_pct = {k: round((v / total * 100)) if total > 0 else 0 for k, v in dist.items()}
+        return {"counts": dist, "percentages": dist_pct, "total": total}
+
+
+class LessonRating(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False, index=True)
+    lesson_id = db.Column(db.Integer, db.ForeignKey("lesson.id"), nullable=False, index=True)
+    rating = db.Column(db.Integer, nullable=False)
+    review_text = db.Column(db.Text, nullable=True)
+    created_at = db.Column(db.DateTime(timezone=True), default=now, nullable=False)
+    updated_at = db.Column(db.DateTime(timezone=True), default=now, onupdate=now, nullable=False)
+
+    user = db.relationship("User", backref="lesson_ratings")
+    lesson = db.relationship("Lesson", backref=db.backref("ratings", cascade="all, delete-orphan", lazy="select"))
+    __table_args__ = (
+        db.UniqueConstraint("user_id", "lesson_id", name="uq_user_lesson_rating"),
+        db.CheckConstraint("rating >= 1 AND rating <= 5", name="ck_lesson_rating_range"),
+    )
+
+    @property
+    def created_at_vn(self):
+        from datetime import timedelta
+        if not self.created_at:
+            return None
+        return self.created_at + timedelta(hours=7)
+
 
 class LessonFavorite(db.Model):
     id = db.Column(db.Integer, primary_key=True)

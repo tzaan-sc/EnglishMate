@@ -9,7 +9,7 @@ from ...extensions import db, csrf
 from ..auth.models import record_daily_activity
 from .models import (Badge, Challenge, GrammarErrorLog, GrammarExerciseAttempt, GrammarProgress, GrammarRule,
                        GrammarRuleBookmark, GrammarTopic, Lesson, LessonBookmark, LessonFavorite,
-                       LessonNote, LessonProgress, LessonReport, Question, Quiz, QuizAttempt,
+                       LessonNote, LessonProgress, LessonRating, LessonReport, Question, Quiz, QuizAttempt,
                        QuizAttemptAnswer, UserBadge, UserChallenge, Vocabulary, VocabularyProgress, WordReport)
 from .vocab_catalog import (VOCAB_CATEGORIES, get_category_info, get_subcategory_info,
                            normalize_category_key, normalize_subcategory_key)
@@ -717,6 +717,9 @@ def _render_lesson_page(lesson):
     note_record = LessonNote.query.filter_by(user_id=current_user.id, lesson_id=lesson.id).first()
     bookmarks = [b.section_index for b in LessonBookmark.query.filter_by(user_id=current_user.id, lesson_id=lesson.id).all()]
     is_favorite = LessonFavorite.query.filter_by(user_id=current_user.id, lesson_id=lesson.id).first() is not None
+    user_rating = LessonRating.query.filter_by(user_id=current_user.id, lesson_id=lesson.id).first()
+    rating_distribution = lesson.get_rating_distribution()
+    recent_ratings = LessonRating.query.filter_by(lesson_id=lesson.id).order_by(LessonRating.updated_at.desc()).limit(15).all()
 
     return render_template(
         "learning/lesson_detail.html",
@@ -739,6 +742,9 @@ def _render_lesson_page(lesson):
         user_note=note_record.content if note_record else "",
         bookmarks=bookmarks,
         is_favorite=is_favorite,
+        user_rating=user_rating,
+        rating_distribution=rating_distribution,
+        recent_ratings=recent_ratings,
         form=ActionForm()
     )
 
@@ -885,6 +891,111 @@ def report_lesson(lesson_id):
 
     flash(msg, "success")
     return redirect(lesson.url)
+
+
+@bp.post("/lessons/<int:lesson_id>/rate")
+@login_required
+def rate_lesson(lesson_id):
+    """
+    Submits or updates a 1-5 star rating and optional review text for the lesson.
+    """
+    lesson = Lesson.query.filter_by(id=lesson_id, is_active=True).first_or_404()
+
+    rating_val = None
+    review_text = ""
+
+    if request.is_json and request.json:
+        rating_val = request.json.get("rating")
+        review_text = (request.json.get("review_text") or "").strip()
+    else:
+        rating_val = request.form.get("rating")
+        review_text = (request.form.get("review_text") or "").strip()
+
+    try:
+        rating_val = int(rating_val)
+    except (ValueError, TypeError):
+        rating_val = None
+
+    if not rating_val or rating_val < 1 or rating_val > 5:
+        if request.is_json or request.headers.get("X-Requested-With") == "XMLHttpRequest":
+            return jsonify({"success": False, "message": "Số sao đánh giá phải từ 1 đến 5 sao."}), 400
+        flash("Vui lòng chọn số sao từ 1 đến 5 sao.", "warning")
+        return redirect(lesson.url)
+
+    if len(review_text) > 1000:
+        review_text = review_text[:1000]
+
+    rating_record = LessonRating.query.filter_by(user_id=current_user.id, lesson_id=lesson.id).first()
+    is_update = bool(rating_record)
+
+    if rating_record:
+        rating_record.rating = rating_val
+        rating_record.review_text = review_text
+        rating_record.updated_at = datetime.now(timezone.utc)
+    else:
+        rating_record = LessonRating(
+            user_id=current_user.id,
+            lesson_id=lesson.id,
+            rating=rating_val,
+            review_text=review_text
+        )
+        db.session.add(rating_record)
+
+    db.session.commit()
+
+    msg = "Đã cập nhật đánh giá bài học của bạn!" if is_update else "Cảm ơn bạn đã gửi đánh giá bài học!"
+    if request.is_json or request.headers.get("X-Requested-With") == "XMLHttpRequest":
+        return jsonify({
+            "success": True,
+            "message": msg,
+            "rating": {
+                "id": rating_record.id,
+                "rating": rating_record.rating,
+                "review_text": rating_record.review_text or "",
+                "user_name": current_user.full_name or current_user.username,
+                "updated_at": rating_record.updated_at.strftime("%d/%m/%Y %H:%M") if rating_record.updated_at else ""
+            },
+            "rating_val": rating_record.rating,
+            "review_text": rating_record.review_text or "",
+            "average_rating": lesson.average_rating,
+            "ratings_count": lesson.ratings_count,
+            "distribution": lesson.get_rating_distribution(),
+            "user_name": current_user.full_name or current_user.username,
+            "updated_at": rating_record.updated_at.strftime("%d/%m/%Y %H:%M") if rating_record.updated_at else ""
+        })
+
+    flash(msg, "success")
+    return redirect(lesson.url)
+
+
+@bp.get("/lessons/<int:lesson_id>/ratings")
+@login_required
+def get_lesson_ratings(lesson_id):
+    """
+    Returns list of reviews and rating metrics for the lesson.
+    """
+    lesson = Lesson.query.filter_by(id=lesson_id, is_active=True).first_or_404()
+    ratings = LessonRating.query.filter_by(lesson_id=lesson.id).order_by(LessonRating.updated_at.desc()).limit(20).all()
+
+    data = []
+    for r in ratings:
+        data.append({
+            "id": r.id,
+            "user_id": r.user_id,
+            "user_name": r.user.full_name or r.user.username if r.user else "Học viên",
+            "avatar": r.user.avatar if r.user and r.user.avatar else "default_avatar.png",
+            "rating": r.rating,
+            "review_text": r.review_text or "",
+            "date": r.updated_at.strftime("%d/%m/%Y") if r.updated_at else ""
+        })
+
+    return jsonify({
+        "success": True,
+        "average_rating": lesson.average_rating,
+        "ratings_count": lesson.ratings_count,
+        "distribution": lesson.get_rating_distribution(),
+        "ratings": data
+    })
 
 
 @bp.post("/lessons/<int:lesson_id>/complete")

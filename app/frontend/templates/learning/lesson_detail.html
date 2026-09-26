@@ -133,6 +133,11 @@
         <small class="text-muted d-inline-flex align-items-center gap-1 ms-2" style="font-size: 0.74rem;">
           <i class="ph-bold ph-eye"></i> {{ lesson.view_count or 1 }} lượt học
         </small>
+        <a href="#lessonRatingSection" class="badge bg-warning-subtle text-dark border border-warning-subtle rounded-pill px-2.5 py-1 fw-semibold text-decoration-none d-inline-flex align-items-center gap-1 ms-1" title="Xem đánh giá bài học" style="font-size: 0.74rem;">
+          <i class="ph-fill ph-star text-warning"></i>
+          <span class="lesson-header-avg-val">{{ lesson.average_rating if lesson.average_rating > 0 else 'Mới' }}</span>
+          <span class="text-muted fw-normal lesson-header-count-val">({{ lesson.ratings_count }})</span>
+        </a>
       </div>
 
       {% if completed %}
@@ -1357,6 +1362,11 @@
         <small class="text-muted d-inline-flex align-items-center gap-1 ms-2" style="font-size: 0.74rem;">
           <i class="ph-bold ph-eye"></i> {{ lesson.view_count or 1 }} lượt học
         </small>
+        <a href="#lessonRatingSection" class="badge bg-warning-subtle text-dark border border-warning-subtle rounded-pill px-2.5 py-1 fw-semibold text-decoration-none d-inline-flex align-items-center gap-1 ms-1" title="Xem đánh giá bài học" style="font-size: 0.74rem;">
+          <i class="ph-fill ph-star text-warning"></i>
+          <span class="lesson-header-avg-val">{{ lesson.average_rating if lesson.average_rating > 0 else 'Mới' }}</span>
+          <span class="text-muted fw-normal lesson-header-count-val">({{ lesson.ratings_count }})</span>
+        </a>
       </div>
 
       {% if completed %}
@@ -1570,6 +1580,178 @@
     </button>
   </div>
 {% endif %}
+
+  <!-- ========================================== -->
+  <!-- 4.1. LESSON RATING & COMMUNITY REVIEWS     -->
+  <!-- ========================================== -->
+  <div class="card-modern p-4 p-md-4 mt-4" id="lessonRatingSection" style="border: 1.5px solid #e2e8f0; border-radius: 16px;">
+    <!-- Section Title -->
+    <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3 pb-2 border-bottom">
+      <div class="d-flex align-items-center gap-2.5">
+        <div class="rounded-circle d-flex align-items-center justify-content-center shadow-xs" style="width: 38px; height: 38px; background-color: #fef3c7; color: #d97706;">
+          <i class="ph-fill ph-star fs-5"></i>
+        </div>
+        <div>
+          <h5 class="fw-bold text-dark mb-0">Đánh Giá & Nhận Xét Bài Học</h5>
+          <span class="text-muted small" style="font-size: 0.78rem;">Phản hồi thực tế từ học viên giúp nâng cao chất lượng bài giảng.</span>
+        </div>
+      </div>
+      <span class="badge bg-warning-subtle text-dark border border-warning-subtle rounded-pill px-3 py-1 fw-bold small d-inline-flex align-items-center gap-1">
+        <i class="ph-fill ph-star text-warning"></i>
+        <span id="headerAvgRating">{{ lesson.average_rating if lesson.average_rating > 0 else 'Chưa có' }}</span>
+        <span class="text-muted fw-normal" id="headerRatingsCount">({{ lesson.ratings_count }} đánh giá)</span>
+      </span>
+    </div>
+
+    <!-- Rating Summary Overview -->
+    <div class="row g-4 align-items-center mb-4 pb-3 border-bottom">
+      <!-- Big Score Box -->
+      <div class="col-12 col-md-4 text-center border-end-md">
+        <div class="display-4 fw-900 text-dark lh-1 mb-1" id="bigAverageRating" style="letter-spacing: -0.03em;">
+          {{ lesson.average_rating if lesson.average_rating > 0 else '0.0' }}
+        </div>
+        <div class="rating-stars-visual mb-1" id="overallStarsVisual" style="font-size: 1.25rem; color: #f59e0b;">
+          {% set full_stars = lesson.average_rating|int %}
+          {% for i in range(1, 6) %}
+            {% if i <= full_stars %}
+              <i class="ph-fill ph-star"></i>
+            {% elif i == full_stars + 1 and (lesson.average_rating - full_stars) >= 0.3 %}
+              <i class="ph-fill ph-star-half"></i>
+            {% else %}
+              <i class="ph-bold ph-star text-muted opacity-25"></i>
+            {% endif %}
+          {% endfor %}
+        </div>
+        <div class="text-muted small" id="totalReviewsCountText">
+          {{ lesson.ratings_count }} lượt đánh giá của học viên
+        </div>
+      </div>
+
+      <!-- Rating Breakdown Bars -->
+      <div class="col-12 col-md-8">
+        <div class="d-flex flex-column gap-1.5 px-md-3" id="ratingBreakdownContainer">
+          {% for star_num in [5, 4, 3, 2, 1] %}
+          {% set star_cnt = rating_distribution.counts.get(star_num, 0) if rating_distribution else 0 %}
+          {% set star_pct = rating_distribution.percentages.get(star_num, 0) if rating_distribution else 0 %}
+          <div class="d-flex align-items-center gap-2 small">
+            <span class="fw-semibold text-muted text-nowrap" style="width: 44px; font-size: 0.78rem;">{{ star_num }} sao</span>
+            <div class="progress flex-grow-1 rounded-pill" style="height: 7px; background-color: #f1f5f9;">
+              <div class="progress-bar rounded-pill" role="progressbar" id="ratingBar-{{ star_num }}"
+                   style="width: {{ star_pct }}%; background-color: #f59e0b;"></div>
+            </div>
+            <span class="text-muted fw-semibold text-end" id="ratingCount-{{ star_num }}" style="width: 32px; font-size: 0.74rem;">{{ star_cnt }}</span>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+
+    <!-- User Rating Form Card -->
+    <div class="p-3.5 p-md-4 rounded-4 mb-4" style="background: linear-gradient(135deg, #fffbeb 0%, #fff7ed 100%); border: 1.5px solid #fde68a;">
+      <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-2.5">
+        <h6 class="fw-bold text-dark mb-0 d-flex align-items-center gap-1.5">
+          <i class="ph-bold ph-pencil-simple text-warning fs-5"></i>
+          <span id="ratingFormTitle">{{ 'Chỉnh sửa đánh giá của bạn' if user_rating else 'Đánh giá chất lượng bài học này' }}</span>
+        </h6>
+        {% if user_rating %}
+        <span class="badge bg-white text-success border border-success-subtle rounded-pill px-2.5 py-1 small fw-semibold" id="userRatedBadge">
+          ✓ Bạn đã chấm {{ user_rating.rating }} sao
+        </span>
+        {% endif %}
+      </div>
+
+      <form id="lessonRatingForm" method="post" action="{{ url_for('learning.rate_lesson', lesson_id=lesson.id) }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <input type="hidden" name="rating" id="inputRatingValue" value="{{ user_rating.rating if user_rating else 5 }}">
+
+        <!-- Star Picker -->
+        <div class="d-flex align-items-center gap-3 mb-3 flex-wrap">
+          <div class="interactive-star-picker d-inline-flex align-items-center gap-1" id="starPickerGroup">
+            {% set current_selected = user_rating.rating if user_rating else 5 %}
+            {% for star_val in [1, 2, 3, 4, 5] %}
+            <button type="button" class="btn p-0 border-0 bg-transparent star-btn" data-val="{{ star_val }}" title="{{ star_val }} sao" style="line-height: 1; cursor: pointer;">
+              <i class="ph-fill ph-star fs-3 {{ 'text-warning' if star_val <= current_selected else 'text-muted opacity-25' }} transition-transform"></i>
+            </button>
+            {% endfor %}
+          </div>
+          <span class="badge bg-white text-warning-emphasis border border-warning-subtle rounded-pill px-3 py-1 fw-bold" id="starRatingLabel">
+            {% if current_selected == 5 %}⭐⭐⭐⭐⭐ Xuất sắc! Rất dễ hiểu
+            {% elif current_selected == 4 %}⭐⭐⭐⭐ Tốt, bài học hữu ích
+            {% elif current_selected == 3 %}⭐⭐⭐ Bình thường
+            {% elif current_selected == 2 %}⭐⭐ Cần cải thiện thêm
+            {% else %}⭐ Chưa tốt
+            {% endif %}
+          </span>
+        </div>
+
+        <!-- Review Text -->
+        <div class="mb-3">
+          <textarea class="form-control rounded-3 shadow-none bg-white" name="review_text" id="reviewTextInput" rows="2"
+                    placeholder="Viết nhận xét ngắn về bài giảng này (ví dụ: nội dung dễ hiểu, giọng đọc chuẩn, bài tập hay...)..."
+                    maxlength="1000" style="border-color: #fed7aa; font-size: 0.88rem;">{{ user_rating.review_text if user_rating and user_rating.review_text else '' }}</textarea>
+        </div>
+
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+          <small class="text-muted" style="font-size: 0.76rem;">
+            Đánh giá của bạn sẽ hiển thị công khai cho cộng đồng học viên cùng tham khảo.
+          </small>
+          <button type="submit" class="btn btn-primary rounded-pill px-4 py-2 fw-bold shadow-xs d-inline-flex align-items-center gap-1.5" id="btnSubmitRating" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); border: none;">
+            <i class="ph-bold ph-paper-plane-tilt"></i>
+            <span id="btnSubmitRatingText">{{ 'Cập nhật đánh giá' if user_rating else 'Gửi đánh giá' }}</span>
+          </button>
+        </div>
+      </form>
+    </div>
+
+    <!-- Recent Community Reviews List -->
+    <div>
+      <h6 class="fw-bold text-dark mb-3 d-flex align-items-center gap-2">
+        <i class="ph-bold ph-chat-teardrop-dots text-primary"></i>
+        <span>Nhận xét từ học viên (<span id="recentReviewsHeaderCount">{{ recent_ratings|length }}</span>)</span>
+      </h6>
+
+      <div class="d-flex flex-column gap-2.5" id="reviewsListContainer">
+        {% if recent_ratings %}
+          {% for r in recent_ratings %}
+          <div class="p-3 bg-white rounded-3 border shadow-2xs transition-hover" id="reviewCard-{{ r.id }}" data-user-id="{{ r.user_id }}" style="border-color: var(--border-light) !important;">
+            <div class="d-flex justify-content-between align-items-start mb-1.5">
+              <div class="d-flex align-items-center gap-2.5">
+                <div class="rounded-circle d-flex align-items-center justify-content-center bg-primary text-white fw-bold small flex-shrink-0" style="width: 32px; height: 32px; font-size: 0.8rem;">
+                  {{ (r.user.full_name or r.user.username)[0].upper() if r.user else 'U' }}
+                </div>
+                <div>
+                  <strong class="text-dark small d-block mb-0">{{ r.user.full_name or r.user.username if r.user else 'Học viên' }}</strong>
+                  <div class="text-warning" style="font-size: 0.82rem;">
+                    {% for s in range(1, 6) %}
+                      {% if s <= r.rating %}
+                        <i class="ph-fill ph-star"></i>
+                      {% else %}
+                        <i class="ph-bold ph-star text-muted opacity-25"></i>
+                      {% endif %}
+                    {% endfor %}
+                  </div>
+                </div>
+              </div>
+              <span class="text-muted small" style="font-size: 0.74rem;">
+                {{ r.updated_at.strftime('%d/%m/%Y') if r.updated_at else '' }}
+              </span>
+            </div>
+            {% if r.review_text %}
+            <p class="text-secondary small mb-0 mt-1" style="font-size: 0.84rem; line-height: 1.5;">
+              {{ r.review_text }}
+            </p>
+            {% endif %}
+          </div>
+          {% endfor %}
+        {% else %}
+          <div class="p-4 rounded-3 border bg-light-subtle text-center text-muted small" id="noReviewsPlaceholder">
+            <i class="ph-bold ph-star-half text-warning fs-3 mb-1 d-block"></i>
+            Chưa có đánh giá nào cho bài học này. Hãy là người đầu tiên để lại nhận xét nhé!
+          </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
 
 </div>
 
@@ -2813,6 +2995,255 @@ document.addEventListener("DOMContentLoaded", function() {
       input.value = lessonDurationSeconds;
     });
   }, 1000);
+
+  // ==========================================
+  // Lesson Rating & Review System
+  // ==========================================
+  const currentUserId = {{ current_user.id if current_user.is_authenticated else 'null' }};
+  const starPickerGroup = document.getElementById("starPickerGroup");
+  const inputRatingValue = document.getElementById("inputRatingValue");
+  const starRatingLabel = document.getElementById("starRatingLabel");
+  const lessonRatingForm = document.getElementById("lessonRatingForm");
+  const btnSubmitRating = document.getElementById("btnSubmitRating");
+  const btnSubmitRatingText = document.getElementById("btnSubmitRatingText");
+
+  const ratingDescriptions = {
+    5: "⭐⭐⭐⭐⭐ Xuất sắc! Rất dễ hiểu",
+    4: "⭐⭐⭐⭐ Tốt, bài học hữu ích",
+    3: "⭐⭐⭐ Bình thường",
+    2: "⭐⭐ Cần cải thiện thêm",
+    1: "⭐ Chưa tốt"
+  };
+
+  function updateStarVisuals(activeVal) {
+    if (!starPickerGroup) return;
+    const buttons = starPickerGroup.querySelectorAll(".star-btn");
+    buttons.forEach(btn => {
+      const val = parseInt(btn.getAttribute("data-val"));
+      const icon = btn.querySelector("i");
+      if (icon) {
+        if (val <= activeVal) {
+          icon.className = "ph-fill ph-star fs-3 text-warning transition-transform";
+        } else {
+          icon.className = "ph-fill ph-star fs-3 text-muted opacity-25 transition-transform";
+        }
+      }
+    });
+  }
+
+  if (starPickerGroup && inputRatingValue) {
+    const starButtons = starPickerGroup.querySelectorAll(".star-btn");
+    starButtons.forEach(btn => {
+      btn.addEventListener("mouseenter", function() {
+        const val = parseInt(this.getAttribute("data-val"));
+        updateStarVisuals(val);
+        if (starRatingLabel && ratingDescriptions[val]) {
+          starRatingLabel.textContent = ratingDescriptions[val];
+        }
+      });
+
+      btn.addEventListener("click", function() {
+        const val = parseInt(this.getAttribute("data-val"));
+        inputRatingValue.value = val;
+        updateStarVisuals(val);
+        if (starRatingLabel && ratingDescriptions[val]) {
+          starRatingLabel.textContent = ratingDescriptions[val];
+        }
+      });
+    });
+
+    starPickerGroup.addEventListener("mouseleave", function() {
+      const currentSelected = parseInt(inputRatingValue.value) || 5;
+      updateStarVisuals(currentSelected);
+      if (starRatingLabel && ratingDescriptions[currentSelected]) {
+        starRatingLabel.textContent = ratingDescriptions[currentSelected];
+      }
+    });
+  }
+
+  if (lessonRatingForm) {
+    lessonRatingForm.addEventListener("submit", function(e) {
+      e.preventDefault();
+
+      if (btnSubmitRating) {
+        btnSubmitRating.disabled = true;
+        if (btnSubmitRatingText) btnSubmitRatingText.innerHTML = '<span class="spinner-border spinner-border-sm me-1" role="status"></span> Đang gửi...';
+      }
+
+      const formData = new FormData(lessonRatingForm);
+      const actionUrl = lessonRatingForm.getAttribute("action");
+
+      fetch(actionUrl, {
+        method: "POST",
+        body: formData,
+        headers: {
+          "X-Requested-With": "XMLHttpRequest"
+        }
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          // 1. Update big score display
+          const bigAvgEl = document.getElementById("bigAverageRating");
+          if (bigAvgEl) bigAvgEl.textContent = Number(data.average_rating).toFixed(1);
+
+          const totalReviewsEl = document.getElementById("totalReviewsCountText");
+          if (totalReviewsEl) totalReviewsEl.textContent = `${data.ratings_count} lượt đánh giá của học viên`;
+
+          // 2. Update header badge if present
+          const headerAvgEl = document.getElementById("headerAvgRating");
+          if (headerAvgEl) headerAvgEl.textContent = Number(data.average_rating).toFixed(1);
+          const headerReviewsEl = document.getElementById("headerRatingsCount");
+          if (headerReviewsEl) headerReviewsEl.textContent = `(${data.ratings_count} đánh giá)`;
+
+          // Update top layout badges if present
+          document.querySelectorAll(".lesson-header-avg-val").forEach(el => {
+            el.textContent = Number(data.average_rating).toFixed(1);
+          });
+          document.querySelectorAll(".lesson-header-count-val").forEach(el => {
+            el.textContent = `(${data.ratings_count})`;
+          });
+
+          // 3. Update stars visual
+          const overallStarsVisual = document.getElementById("overallStarsVisual");
+          if (overallStarsVisual) {
+            const avg = Number(data.average_rating);
+            const fullStars = Math.floor(avg);
+            const hasHalfStar = (avg - fullStars) >= 0.3;
+            let starsHtml = "";
+            for (let i = 1; i <= 5; i++) {
+              if (i <= fullStars) {
+                starsHtml += '<i class="ph-fill ph-star"></i> ';
+              } else if (i === fullStars + 1 && hasHalfStar) {
+                starsHtml += '<i class="ph-fill ph-star-half"></i> ';
+              } else {
+                starsHtml += '<i class="ph-bold ph-star text-muted opacity-25"></i> ';
+              }
+            }
+            overallStarsVisual.innerHTML = starsHtml;
+          }
+
+          // 4. Update distribution progress bars
+          if (data.distribution) {
+            for (let s = 1; s <= 5; s++) {
+              const bar = document.getElementById(`ratingBar-${s}`);
+              const cnt = document.getElementById(`ratingCount-${s}`);
+              const pct = (data.distribution.percentages && data.distribution.percentages[s]) || 0;
+              const count = (data.distribution.counts && data.distribution.counts[s]) || 0;
+              if (bar) bar.style.width = pct + "%";
+              if (cnt) cnt.textContent = count;
+            }
+          }
+
+          // 5. Update form titles & user rating badge
+          const ratingFormTitle = document.getElementById("ratingFormTitle");
+          if (ratingFormTitle) ratingFormTitle.textContent = "Chỉnh sửa đánh giá của bạn";
+          if (btnSubmitRatingText) btnSubmitRatingText.textContent = "Cập nhật đánh giá";
+
+          let userRatedBadge = document.getElementById("userRatedBadge");
+          if (!userRatedBadge) {
+            const badgeContainer = document.querySelector("#lessonRatingSection .p-3\\.5, #lessonRatingSection [style*='linear-gradient'] > div:first-child");
+            if (badgeContainer) {
+              userRatedBadge = document.createElement("span");
+              userRatedBadge.id = "userRatedBadge";
+              userRatedBadge.className = "badge bg-white text-success border border-success-subtle rounded-pill px-2.5 py-1 small fw-semibold";
+              badgeContainer.appendChild(userRatedBadge);
+            }
+          }
+          if (userRatedBadge) {
+            userRatedBadge.textContent = `✓ Bạn đã chấm ${data.rating.rating} sao`;
+          }
+
+          // 6. Update or prepend review card in recent reviews list
+          const placeholder = document.getElementById("noReviewsPlaceholder");
+          if (placeholder) placeholder.remove();
+
+          const reviewsContainer = document.getElementById("reviewsListContainer");
+          const existingUserCard = (currentUserId ? document.querySelector(`[data-user-id="${currentUserId}"]`) : null) || document.getElementById(`reviewCard-user-${data.rating.id}`) || document.getElementById(`reviewCard-${data.rating.id}`);
+          
+          let starsMarkup = "";
+          for (let s = 1; s <= 5; s++) {
+            starsMarkup += (s <= data.rating.rating) ? '<i class="ph-fill ph-star"></i>' : '<i class="ph-bold ph-star text-muted opacity-25"></i>';
+          }
+
+          const reviewTextMarkup = data.rating.review_text ? `
+            <p class="text-secondary small mb-0 mt-1" style="font-size: 0.84rem; line-height: 1.5;">
+              ${data.rating.review_text.replace(/</g, "&lt;").replace(/>/g, "&gt;")}
+            </p>
+          ` : '';
+
+          const userInitial = (data.rating.user_name || "B")[0].toUpperCase();
+
+          const cardHtml = `
+            <div class="d-flex justify-content-between align-items-start mb-1.5">
+              <div class="d-flex align-items-center gap-2.5">
+                <div class="rounded-circle d-flex align-items-center justify-content-center bg-primary text-white fw-bold small flex-shrink-0" style="width: 32px; height: 32px; font-size: 0.8rem;">
+                  ${userInitial}
+                </div>
+                <div>
+                  <div class="d-flex align-items-center gap-1.5">
+                    <strong class="text-dark small d-block mb-0">${data.rating.user_name || "Bạn"}</strong>
+                    <span class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill px-1.5 py-0.5" style="font-size: 0.65rem;">Bạn</span>
+                  </div>
+                  <div class="text-warning" style="font-size: 0.82rem;">
+                    ${starsMarkup}
+                  </div>
+                </div>
+              </div>
+              <span class="text-muted small" style="font-size: 0.74rem;">Vừa xong</span>
+            </div>
+            ${reviewTextMarkup}
+          `;
+
+          if (existingUserCard) {
+            existingUserCard.innerHTML = cardHtml;
+          } else if (reviewsContainer) {
+            const newCard = document.createElement("div");
+            newCard.id = `reviewCard-${data.rating.id}`;
+            if (currentUserId) newCard.setAttribute("data-user-id", currentUserId);
+            newCard.className = "p-3 bg-white rounded-3 border shadow-2xs transition-hover";
+            newCard.style.borderColor = "var(--border-light)";
+            newCard.innerHTML = cardHtml;
+            reviewsContainer.insertBefore(newCard, reviewsContainer.firstChild);
+
+            const reviewsHeaderCount = document.getElementById("recentReviewsHeaderCount");
+            if (reviewsHeaderCount) {
+              const currentVal = parseInt(reviewsHeaderCount.textContent) || 0;
+              reviewsHeaderCount.textContent = currentVal + 1;
+            }
+          }
+
+          // Show floating success notification
+          const notif = document.createElement("div");
+          notif.className = "alert alert-success border-0 shadow-sm rounded-pill py-2 px-3.5 position-fixed bottom-0 start-50 translate-middle-x mb-4 d-flex align-items-center gap-2 z-index-1050";
+          notif.style.zIndex = "9999";
+          notif.innerHTML = '<i class="ph-bold ph-check-circle fs-5"></i> <span>' + data.message + '</span>';
+          document.body.appendChild(notif);
+          setTimeout(() => {
+            notif.style.transition = "opacity 0.4s ease, transform 0.4s ease";
+            notif.style.opacity = "0";
+            notif.style.transform = "translate(-50%, 20px)";
+            setTimeout(() => notif.remove(), 400);
+          }, 3000);
+        } else {
+          alert(data.message || "Có lỗi xảy ra khi lưu đánh giá.");
+        }
+      })
+      .catch(err => {
+        console.error("Lỗi gửi đánh giá:", err);
+        alert("Không thể kết nối đến máy chủ. Vui lòng thử lại sau!");
+      })
+      .finally(() => {
+        if (btnSubmitRating) {
+          btnSubmitRating.disabled = false;
+          if (btnSubmitRatingText) {
+            btnSubmitRatingText.innerHTML = (userRatingExists ? 'Cập nhật đánh giá' : 'Gửi đánh giá');
+          }
+        }
+      });
+    });
+  }
+  const userRatingExists = {% if user_rating %}true{% else %}false{% endif %};
 });
 </script>
 {% endblock %}
