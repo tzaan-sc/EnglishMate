@@ -79,6 +79,21 @@ def create_app(config_object=Config):
                         if "vocab_push_subscription" not in cols:
                             conn.execute(text('ALTER TABLE "user" ADD COLUMN vocab_push_subscription TEXT;'))
                             conn.commit()
+                        if "daily_goal_reminder_enabled" not in cols:
+                            conn.execute(text('ALTER TABLE "user" ADD COLUMN daily_goal_reminder_enabled BOOLEAN DEFAULT 1;'))
+                            conn.commit()
+                        if "daily_goal_reminder_time" not in cols:
+                            conn.execute(text('ALTER TABLE "user" ADD COLUMN daily_goal_reminder_time VARCHAR(10) DEFAULT \'20:00\';'))
+                            conn.commit()
+                        if "daily_goal_reminder_email" not in cols:
+                            conn.execute(text('ALTER TABLE "user" ADD COLUMN daily_goal_reminder_email BOOLEAN DEFAULT 1;'))
+                            conn.commit()
+                        if "daily_goal_reminder_popup" not in cols:
+                            conn.execute(text('ALTER TABLE "user" ADD COLUMN daily_goal_reminder_popup BOOLEAN DEFAULT 1;'))
+                            conn.commit()
+                        if "last_daily_goal_reminder_date" not in cols:
+                            conn.execute(text('ALTER TABLE "user" ADD COLUMN last_daily_goal_reminder_date DATE;'))
+                            conn.commit()
                     if "lesson_progress" in tables:
                         cols = [c["name"] for c in insp.get_columns("lesson_progress")]
                         if "duration_seconds" not in cols:
@@ -89,13 +104,27 @@ def create_app(config_object=Config):
 
     @app.context_processor
     def inject_streak_event():
-        from flask import session
+        from flask import has_request_context, session
+        if not has_request_context():
+            return {"streak_activated_event": None}
         return {"streak_activated_event": session.pop("streak_activated_popup", None)}
 
     @app.context_processor
-    def inject_admin_notifications():
+    def inject_daily_goal_stat():
+        from flask import has_request_context
         from flask_login import current_user
-        if not current_user.is_authenticated or not getattr(current_user, "is_admin", False):
+        if not has_request_context() or not current_user.is_authenticated or getattr(current_user, "is_admin", False):
+            return {"daily_goal_stat": None}
+        try:
+            return {"daily_goal_stat": current_user.get_daily_goal_info()}
+        except Exception:
+            return {"daily_goal_stat": None}
+
+    @app.context_processor
+    def inject_admin_notifications():
+        from flask import has_request_context
+        from flask_login import current_user
+        if not has_request_context() or not current_user.is_authenticated or not getattr(current_user, "is_admin", False):
             return {"admin_notif_data": None}
         try:
             from .backend.auth.models import User
@@ -113,6 +142,13 @@ def create_app(config_object=Config):
             }
         except Exception:
             return {"admin_notif_data": None}
+
+    @app.cli.command("goal-reminders-check")
+    def run_goal_reminders_cli():
+        """Command to run automated Daily Goal email reminders for learners who have not completed daily goal."""
+        from .backend.learning.goal_reminder import send_daily_goal_reminders
+        stats = send_daily_goal_reminders(force=False)
+        print(f"Goal reminders check finished: {stats}")
 
     @app.errorhandler(403)
     def forbidden(_error):

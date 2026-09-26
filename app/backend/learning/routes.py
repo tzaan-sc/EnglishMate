@@ -2743,6 +2743,126 @@ def vocabulary_send_test_notification():
 
 
 # ==========================================
+# GOAL REMINDER API & CONTROLS
+# ==========================================
+
+@bp.get("/api/goal/notification-check")
+@login_required
+def goal_notification_check():
+    """
+    Checks if current student needs an in-app popup or browser notification reminder
+    before 24:00 midnight for Daily Goal completion.
+    """
+    if current_user.is_admin:
+        return jsonify({"success": False, "reason": "admin_excluded"})
+
+    from .goal_reminder import check_user_goal_reminder_alert, get_user_daily_goal_status, get_vietnam_time
+    force_hour = request.args.get("force_hour", type=int)
+    alert_info = check_user_goal_reminder_alert(current_user, force_hour=force_hour)
+    status = alert_info.get("status") or get_user_daily_goal_status(current_user)
+
+    from flask import session
+    dismissed_date = session.get("goal_reminder_dismissed_date")
+    today_str = str(get_vietnam_time().date())
+    is_dismissed = (dismissed_date == today_str)
+
+    should_show_popup = bool(alert_info.get("should_popup") and not is_dismissed)
+
+    return jsonify({
+        "success": True,
+        "should_remind": alert_info.get("should_remind", False),
+        "should_popup": should_show_popup,
+        "is_evening_near_deadline": alert_info.get("is_evening_near_deadline", False),
+        "is_dismissed": is_dismissed,
+        "title": alert_info.get("title", "⏰ Sắp hết ngày! Nhắc nhở Mục tiêu học tập"),
+        "message": alert_info.get("message", ""),
+        "status": status,
+        "learn_url": alert_info.get("learn_url", url_for("learning.lessons")),
+        "review_url": alert_info.get("review_url", url_for("learning.review_vocabulary")),
+        "reward_url": alert_info.get("reward_url", url_for("learning.gamification_hub", tab="challenges")),
+        "icon": url_for("static", filename="images/brand-icon.png", _external=False),
+    })
+
+
+@bp.post("/api/goal/dismiss-popup")
+@login_required
+def goal_dismiss_popup():
+    """
+    Marks the goal reminder popup as dismissed for today's session.
+    """
+    from .goal_reminder import get_vietnam_time
+    from flask import session
+    today_str = str(get_vietnam_time().date())
+    session["goal_reminder_dismissed_date"] = today_str
+    return jsonify({"success": True, "dismissed_date": today_str})
+
+
+@bp.post("/api/goal/settings")
+@login_required
+def goal_update_settings():
+    """
+    Updates user's daily goal reminder preferences and target XP.
+    """
+    if current_user.is_admin:
+        return jsonify({"success": False, "message": "Quản trị viên không áp dụng mục tiêu ngày."}), 403
+
+    data = request.get_json(silent=True) or request.form.to_dict()
+    
+    if "enabled" in data:
+        val = data.get("enabled")
+        current_user.daily_goal_reminder_enabled = val in [True, 1, "1", "true", "True", "on"]
+    if "reminder_time" in data and data.get("reminder_time"):
+        current_user.daily_goal_reminder_time = str(data.get("reminder_time")).strip()
+    if "email_enabled" in data:
+        val = data.get("email_enabled")
+        current_user.daily_goal_reminder_email = val in [True, 1, "1", "true", "True", "on"]
+    if "popup_enabled" in data:
+        val = data.get("popup_enabled")
+        current_user.daily_goal_reminder_popup = val in [True, 1, "1", "true", "True", "on"]
+    if "daily_goal_xp" in data:
+        try:
+            val = int(data.get("daily_goal_xp"))
+            if 10 <= val <= 500:
+                current_user.daily_goal_xp = val
+        except (ValueError, TypeError):
+            pass
+
+    db.session.commit()
+    return jsonify({
+        "success": True,
+        "message": "Đã lưu cài đặt Nhắc nhở Mục tiêu ngày thành công!",
+        "settings": {
+            "daily_goal_reminder_enabled": current_user.daily_goal_reminder_enabled,
+            "daily_goal_reminder_time": current_user.daily_goal_reminder_time,
+            "daily_goal_reminder_email": current_user.daily_goal_reminder_email,
+            "daily_goal_reminder_popup": current_user.daily_goal_reminder_popup,
+            "daily_goal_xp": current_user.daily_goal_xp,
+        }
+    })
+
+
+@bp.post("/api/goal/send-test-reminder")
+@login_required
+def goal_send_test_reminder():
+    """
+    Sends a test goal reminder email to current user and returns sample popup data.
+    """
+    if current_user.is_admin:
+        return jsonify({"success": False, "message": "Quản trị viên không áp dụng tính năng này."}), 400
+
+    from .goal_reminder import check_user_goal_reminder_alert, send_daily_goal_reminders
+    result = send_daily_goal_reminders(force=True, target_user_id=current_user.id)
+    alert = check_user_goal_reminder_alert(current_user, force_hour=21)
+
+    return jsonify({
+        "success": True,
+        "message": f"Đã gửi email nhắc nhở thử nghiệm tới {current_user.email}!",
+        "result": result,
+        "sample_alert": alert,
+    })
+
+
+# ==========================================
 # GRAMMAR LEARNING ROUTES
 # ==========================================
 

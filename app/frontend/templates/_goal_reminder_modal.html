@@ -1,0 +1,215 @@
+<!-- DAILY GOAL REMINDER MODAL -->
+<div class="modal fade" id="goalReminderModal" tabindex="-1" aria-labelledby="goalReminderModalLabel" aria-hidden="true" data-bs-backdrop="static">
+  <div class="modal-dialog modal-dialog-centered" style="max-width: 460px;">
+    <div class="modal-content border-0 rounded-5 shadow-2xl overflow-hidden position-relative" style="background: linear-gradient(180deg, #ffffff 0%, #fff7ed 100%); border: 2px solid rgba(251, 146, 60, 0.4) !important;">
+      
+      <!-- Close Button -->
+      <button type="button" class="btn-close position-absolute top-0 end-0 m-3 z-3" data-bs-dismiss="modal" id="btnGoalModalClose" aria-label="Close"></button>
+
+      <div class="modal-body p-4 p-md-5 text-center position-relative z-2">
+        
+        <!-- Glowing Animated Clock & Flame Badge -->
+        <div class="d-flex justify-content-center mb-3">
+          <div class="goal-clock-wrapper position-relative">
+            <!-- Pulsing outer halo -->
+            <div class="goal-clock-halo position-absolute top-50 start-50 translate-middle rounded-circle"></div>
+            <!-- Main circle -->
+            <div class="rounded-circle d-flex align-items-center justify-content-center position-relative shadow-lg"
+                 style="width: 86px; height: 86px; background: linear-gradient(135deg, #fff7ed 0%, #ffedd5 50%, #fee2e2 100%); border: 3px solid #fb923c;">
+              <span class="goal-clock-icon d-flex align-items-center justify-content-center">
+                <i class="ph-fill ph-alarm" style="font-size: 3.2rem; color: #ea580c; background: linear-gradient(180deg, #f97316 0%, #dc2626 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;"></i>
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tag Pill -->
+        <div class="d-inline-flex align-items-center gap-1.5 px-3 py-1 rounded-pill mb-2" style="background-color: #ffedd5; border: 1px solid #fdba74;">
+          <span style="font-size: 0.76rem; font-weight: 800; color: #c2410c; letter-spacing: 0.04em;">
+            ⏰ SẮP HẾT NGÀY · ĐỪNG QUÊN MỤC TIÊU!
+          </span>
+        </div>
+
+        <h4 class="fw-900 text-dark mb-1" id="goalReminderModalLabel" style="letter-spacing: -0.02em;">
+          Giữ Lửa Chuỗi Học Tập
+        </h4>
+        <p class="text-muted small mb-3" style="font-size: 0.85rem;" id="goalModalSubtitle">
+          Chỉ cần thêm vài phút học tập để bảo toàn chuỗi streak và mở rương quà hôm nay!
+        </p>
+
+        <!-- Progress Box -->
+        <div class="p-3.5 rounded-4 border bg-white shadow-2xs mb-3 text-start" style="border-color: #fed7aa !important;">
+          <div class="d-flex justify-content-between align-items-center mb-1.5">
+            <span class="small fw-bold text-dark d-flex align-items-center gap-1.5">
+              <i class="ph-bold ph-target text-warning"></i> Tiến độ Daily Goal
+            </span>
+            <span class="small fw-800 text-warning-emphasis" id="goalModalProgressXp">
+              {{ daily_goal_stat.progress_xp if daily_goal_stat else 0 }} / {{ daily_goal_stat.target_xp if daily_goal_stat else 50 }} XP
+            </span>
+          </div>
+
+          <!-- Progress Bar -->
+          <div class="progress rounded-pill mb-2" style="height: 10px; background-color: #ffedd5;">
+            {% set current_pct = [100, ((daily_goal_stat.progress_xp / daily_goal_stat.target_xp) * 100)|int]|min if daily_goal_stat and daily_goal_stat.target_xp > 0 else 0 %}
+            <div id="goalModalProgressBar" class="progress-bar rounded-pill" role="progressbar"
+                 style="width: {{ current_pct }}%; background: linear-gradient(90deg, #f97316 0%, #ea580c 100%);"></div>
+          </div>
+
+          <!-- Remaining Badge & Streak alert -->
+          <div class="d-flex justify-content-between align-items-center pt-1" style="font-size: 0.78rem;">
+            <span class="text-muted">
+              Còn thiếu: <strong class="text-danger fw-bold" id="goalModalRemainingXp">{{ daily_goal_stat.remaining_xp if daily_goal_stat else 50 }} XP</strong>
+            </span>
+            <span class="badge bg-warning-subtle text-warning-emphasis rounded-pill px-2.5 py-0.5 fw-bold">
+              🔥 Streak: <span id="goalModalStreak">{{ daily_goal_stat.streak if daily_goal_stat else (current_user.current_streak if current_user.is_authenticated else 0) }}</span> ngày
+            </span>
+          </div>
+        </div>
+
+        <!-- Reward preview strip -->
+        <div class="p-2.5 rounded-3 mb-3 d-flex align-items-center justify-content-center gap-2" style="background-color: #ecfdf5; border: 1px dashed #6ee7b7;">
+          <span style="font-size: 1.2rem;">🎁</span>
+          <span class="small text-success-emphasis fw-bold" style="font-size: 0.8rem;">
+            Phần thưởng rương ngày <strong>+50 XP</strong> đang chờ bạn mở!
+          </span>
+        </div>
+
+        <!-- CTA Buttons -->
+        <div class="d-flex flex-column gap-2">
+          <a href="{{ url_for('learning.lessons') }}" id="goalModalCtaBtn" class="btn btn-primary rounded-pill py-2.5 fw-bold shadow-sm d-flex align-items-center justify-content-center gap-2 text-decoration-none"
+             style="background: linear-gradient(135deg, #f97316 0%, #ea580c 100%); border: none; font-size: 0.95rem;">
+            <span>🚀 Bắt đầu bài học ngay</span>
+            <i class="ph-bold ph-arrow-right"></i>
+          </a>
+
+          <div class="d-flex gap-2">
+            <a href="{{ url_for('learning.review_vocabulary') }}" class="btn btn-outline-warning rounded-pill py-1.5 flex-grow-1 fw-semibold small text-decoration-none" style="font-size: 0.82rem;">
+              <i class="ph-bold ph-cards me-1"></i>Ôn 10 từ SRS
+            </a>
+            <button type="button" class="btn btn-light rounded-pill py-1.5 px-3 text-muted fw-semibold small" id="btnGoalModalDismiss" data-bs-dismiss="modal" style="font-size: 0.82rem;">
+              Để sau
+            </button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+  .goal-clock-wrapper {
+    width: 86px;
+    height: 86px;
+  }
+  .goal-clock-halo {
+    width: 120px;
+    height: 120px;
+    background: radial-gradient(circle, rgba(249, 115, 22, 0.35) 0%, rgba(249, 115, 22, 0) 70%);
+    animation: goal-halo-pulse 2.2s ease-in-out infinite;
+  }
+  @keyframes goal-halo-pulse {
+    0%, 100% {
+      transform: translate(-50%, -50%) scale(0.92);
+      opacity: 0.6;
+    }
+    50% {
+      transform: translate(-50%, -50%) scale(1.22);
+      opacity: 1;
+    }
+  }
+</style>
+
+<script>
+(function() {
+  'use strict';
+
+  // Global helper to show Goal Reminder Modal programmatically
+  window.showGoalReminderModal = function(data) {
+    const modalEl = document.getElementById('goalReminderModal');
+    if (!modalEl || !window.bootstrap) return;
+
+    if (data && data.status) {
+      const s = data.status;
+      const progressEl = document.getElementById('goalModalProgressXp');
+      if (progressEl) progressEl.textContent = `${s.progress_xp} / ${s.target_xp} XP`;
+
+      const barEl = document.getElementById('goalModalProgressBar');
+      if (barEl && s.target_xp > 0) {
+        const pct = Math.min(100, Math.round((s.progress_xp / s.target_xp) * 100));
+        barEl.style.width = pct + '%';
+      }
+
+      const remEl = document.getElementById('goalModalRemainingXp');
+      if (remEl) remEl.textContent = `${s.remaining_xp} XP`;
+
+      const streakEl = document.getElementById('goalModalStreak');
+      if (streakEl) streakEl.textContent = s.streak;
+
+      if (data.learn_url) {
+        const ctaBtn = document.getElementById('goalModalCtaBtn');
+        if (ctaBtn) ctaBtn.href = data.learn_url;
+      }
+    }
+
+    const modalObj = bootstrap.Modal.getOrCreateInstance(modalEl);
+    modalObj.show();
+  };
+
+  // Dismiss helper
+  async function dismissGoalReminder() {
+    try {
+      await fetch('/api/goal/dismiss-popup', { method: 'POST' });
+    } catch (e) {}
+    try {
+      sessionStorage.setItem('goal_reminder_dismissed', new Date().toDateString());
+    } catch (e) {}
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    const btnDismiss = document.getElementById('btnGoalModalDismiss');
+    if (btnDismiss) {
+      btnDismiss.addEventListener('click', dismissGoalReminder);
+    }
+    const btnClose = document.getElementById('btnGoalModalClose');
+    if (btnClose) {
+      btnClose.addEventListener('click', dismissGoalReminder);
+    }
+
+    // Auto-check reminder requirement if student is logged in
+    {% if current_user.is_authenticated and not current_user.is_admin %}
+    const todayStr = new Date().toDateString();
+    if (sessionStorage.getItem('goal_reminder_dismissed') === todayStr) {
+      return;
+    }
+
+    setTimeout(async () => {
+      try {
+        const res = await fetch('/api/goal/notification-check');
+        if (!res.ok) return;
+        const data = await res.json();
+
+        if (data.success && data.should_popup && !data.is_dismissed) {
+          window.showGoalReminderModal(data);
+
+          // If browser notifications are permitted, trigger desktop notification too
+          if ('Notification' in window && Notification.permission === 'granted') {
+            try {
+              new Notification(data.title, {
+                body: data.message,
+                icon: data.icon || '/static/favicon.ico',
+                badge: '/static/favicon.ico',
+                tag: 'englishmate-goal-reminder'
+              }).onclick = function() {
+                window.focus();
+                if (data.learn_url) window.location.href = data.learn_url;
+              };
+            } catch (err) {}
+          }
+        }
+      } catch (e) {}
+    }, 1200);
+    {% endif %}
+  });
+})();
+</script>

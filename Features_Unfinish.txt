@@ -85,10 +85,10 @@ MODULE: 3. DASHBOARD & ANALYTICS (BẢNG ĐIỀU KHIỂN & PHÂN TÍCH) (1 tính
 
 ### 3.6. Goal Tracking (Theo dõi mục tiêu) (1 tính năng):
 ----------------------------------------------------------------------------------------------------
-6. [ ] Goal Reminder - Nhắc nhở mục tiêu
+6. [x] Goal Reminder - Nhắc nhở mục tiêu (ĐÃ HOÀN THÀNH)
    - Mức độ ưu tiên: Trung bình
    - Mô tả yêu cầu: Gửi tin nhắn hoặc popup nhắc nhở khi sắp hết ngày mà người dùng chưa hoàn thành mục tiêu học tập (Daily Goal).
-   - Đối chiếu hiện trạng: Đã có hộp quà thưởng Daily Goal Chest nhận 50 XP khi đạt mục tiêu, nhưng chưa có thông báo nhắc nhở trước mốc 24h.
+   - Hiện trạng thực hiện: Đã bổ sung các trường `daily_goal_reminder_enabled`, `daily_goal_reminder_time`, `daily_goal_reminder_email`, `daily_goal_reminder_popup`, `last_daily_goal_reminder_date` vào model `User` kèm method `get_daily_goal_info()`; tự động kiểm tra migration schema trong `app/__init__.py`; xây dựng module dịch vụ nhắc nhở `app/backend/learning/goal_reminder.py` hỗ trợ gửi email HTML tự động trước mốc 24h kèm thống kê tiến độ, rương +50 XP và bảo toàn chuỗi streak; tạo các API `/api/goal/notification-check`, `/api/goal/dismiss-popup`, `/api/goal/settings`, `/api/goal/send-test-reminder`; thiết kế popup modal `_goal_reminder_modal.html` với animation hiệu ứng phát sáng, thanh tiến độ trực quan, nút học nhanh và lưu trạng thái tắt trong phiên; tích hợp mục cảnh báo tiến độ Daily Goal kèm thanh bar trực tiếp trong dropdown chuông thông báo Topbar (`base.html`); bổ sung bảng điều khiển cấu hình bật/tắt email/popup kèm nút gửi thử nghiệm ngay trên tab Thử thách & Mục tiêu ngày (`gamification.html`); đồng thời hỗ trợ CLI command `flask goal-reminders-check` phục vụ chạy cron định kỳ (100% unit & integration test passed).
 
 
 ====================================================================================================

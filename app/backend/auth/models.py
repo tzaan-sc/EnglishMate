@@ -64,6 +64,11 @@ class User(UserMixin, db.Model):
     level_start_date = db.Column(db.Date, nullable=True)
     daily_goal_xp = db.Column(db.Integer, nullable=False, default=50)
     daily_reward_claimed_date = db.Column(db.Date, nullable=True)
+    daily_goal_reminder_enabled = db.Column(db.Boolean, nullable=False, default=True)
+    daily_goal_reminder_time = db.Column(db.String(10), nullable=False, default="20:00")
+    daily_goal_reminder_email = db.Column(db.Boolean, nullable=False, default=True)
+    daily_goal_reminder_popup = db.Column(db.Boolean, nullable=False, default=True)
+    last_daily_goal_reminder_date = db.Column(db.Date, nullable=True)
     
     created_at = db.Column(db.DateTime(timezone=True), default=now, nullable=False)
     updated_at = db.Column(db.DateTime(timezone=True), default=now, onupdate=now, nullable=False)
@@ -367,6 +372,35 @@ class User(UserMixin, db.Model):
                 "status_message": f"Chuỗi trước đó: {prev or self.longest_streak or 0} ngày. Hãy bắt đầu lại hôm nay!",
                 "btn_text": "Bắt đầu chuỗi mới",
             }
+
+    def get_daily_goal_info(self, target_date=None):
+        """
+        Returns structured Daily Goal information for user on target_date (default today).
+        """
+        if self.is_admin:
+            return None
+        today = target_date or date.today()
+        activity = DailyActivity.query.filter_by(user_id=self.id, activity_date=today).first()
+        target_xp = self.daily_goal_xp or 50
+        progress_xp = min(target_xp, (activity.completed_lessons * 20) if activity else 0)
+        is_completed = bool((activity and activity.goal_completed) or (progress_xp >= target_xp))
+        remaining_xp = max(0, target_xp - progress_xp)
+        is_claimed = bool(self.daily_reward_claimed_date == today)
+
+        return {
+            "target_xp": target_xp,
+            "progress_xp": progress_xp,
+            "remaining_xp": remaining_xp,
+            "is_completed": is_completed,
+            "completed_lessons": activity.completed_lessons if activity else 0,
+            "is_claimed": is_claimed,
+            "streak": self.get_current_streak(),
+            "longest_streak": self.longest_streak or 0,
+            "reminder_enabled": getattr(self, "daily_goal_reminder_enabled", True),
+            "reminder_time": getattr(self, "daily_goal_reminder_time", "20:00") or "20:00",
+            "reminder_email": getattr(self, "daily_goal_reminder_email", True),
+            "reminder_popup": getattr(self, "daily_goal_reminder_popup", True),
+        }
 
 
 class DailyActivity(db.Model):

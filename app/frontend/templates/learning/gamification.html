@@ -516,6 +516,106 @@
         </div>
       </div>
 
+      <!-- DAILY GOAL REMINDER SETTINGS & PREFERENCES CARD -->
+      <div class="card card-modern p-4 mb-4" style="background: linear-gradient(180deg, #ffffff 0%, #fff7ed 100%); border: 1.5px solid #fed7aa !important;">
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3 pb-2 border-bottom" style="border-color: #ffedd5 !important;">
+          <div class="d-flex align-items-center gap-2.5">
+            <div class="rounded-circle d-flex align-items-center justify-content-center shadow-xs" style="width: 40px; height: 40px; background: #ffedd5; color: #ea580c;">
+              <i class="ph-bold ph-alarm fs-5"></i>
+            </div>
+            <div>
+              <h6 class="fw-bold text-dark mb-0">Hệ Thống Nhắc Nhở Mục Tiêu (Goal Reminder)</h6>
+              <span class="text-muted small" style="font-size: 0.78rem;">Tự động gửi email & cảnh báo popup trước mốc 24:00 để bảo toàn chuỗi streak và rương +50 XP.</span>
+            </div>
+          </div>
+          <span id="goalReminderStatusBadge" class="badge {% if current_user.daily_goal_reminder_enabled %}bg-success-subtle text-success border border-success-subtle{% else %}bg-secondary-subtle text-secondary{% endif %} rounded-pill px-3 py-1.5 fw-bold small">
+            {% if current_user.daily_goal_reminder_enabled %}
+            <i class="ph-bold ph-bell-ringing me-1"></i>Đang bật ({{ current_user.daily_goal_reminder_time or '20:00' }})
+            {% else %}
+            <i class="ph-bold ph-bell-slash me-1"></i>Đang tắt
+            {% endif %}
+          </span>
+        </div>
+
+        <form id="goalReminderForm" class="row g-3">
+          <div class="col-md-6 col-lg-3">
+            <div class="p-3 bg-white rounded-3 border h-100 d-flex flex-column justify-content-between shadow-2xs">
+              <div>
+                <label class="form-check-label fw-bold text-dark small cursor-pointer d-block" for="chkGoalReminderEnabled">
+                  🔔 Kích hoạt nhắc nhở
+                </label>
+                <span class="text-muted" style="font-size: 0.74rem;">Nhắc nhở khi sắp hết ngày mà chưa đạt Daily Goal.</span>
+              </div>
+              <div class="form-check form-switch mt-2">
+                <input class="form-check-input cursor-pointer" type="checkbox" id="chkGoalReminderEnabled" {% if current_user.daily_goal_reminder_enabled %}checked{% endif %}>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-md-6 col-lg-3">
+            <div class="p-3 bg-white rounded-3 border h-100 d-flex flex-column justify-content-between shadow-2xs">
+              <div>
+                <label class="form-check-label fw-bold text-dark small cursor-pointer d-block" for="chkGoalEmailEnabled">
+                  📧 Email nhắc nhở
+                </label>
+                <span class="text-muted" style="font-size: 0.74rem;">Gửi email tự động kèm liên kết bài học trực tiếp.</span>
+              </div>
+              <div class="form-check form-switch mt-2">
+                <input class="form-check-input cursor-pointer" type="checkbox" id="chkGoalEmailEnabled" {% if current_user.daily_goal_reminder_email %}checked{% endif %}>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-md-6 col-lg-3">
+            <div class="p-3 bg-white rounded-3 border h-100 d-flex flex-column justify-content-between shadow-2xs">
+              <div>
+                <label class="form-check-label fw-bold text-dark small cursor-pointer d-block" for="chkGoalPopupEnabled">
+                  💬 Popup cảnh báo 24h
+                </label>
+                <span class="text-muted" style="font-size: 0.74rem;">Hiển thị popup cảnh báo nổi bật khi truy cập buổi tối.</span>
+              </div>
+              <div class="form-check form-switch mt-2">
+                <input class="form-check-input cursor-pointer" type="checkbox" id="chkGoalPopupEnabled" {% if current_user.daily_goal_reminder_popup %}checked{% endif %}>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-md-6 col-lg-3">
+            <div class="p-3 bg-white rounded-3 border h-100 d-flex flex-column justify-content-between shadow-2xs">
+              <div>
+                <label class="form-label fw-bold text-dark small mb-1 d-block" for="selGoalReminderTime">
+                  ⏰ Khung giờ nhắc nhở
+                </label>
+                <span class="text-muted d-block mb-1.5" style="font-size: 0.74rem;">Thời điểm tối ưu trước nửa đêm:</span>
+              </div>
+              <select class="form-select form-select-sm rounded-pill fw-semibold" id="selGoalReminderTime">
+                <option value="18:00" {% if current_user.daily_goal_reminder_time == '18:00' %}selected{% endif %}>18:00 Chiều</option>
+                <option value="19:00" {% if current_user.daily_goal_reminder_time == '19:00' %}selected{% endif %}>19:00 Tối</option>
+                <option value="20:00" {% if current_user.daily_goal_reminder_time == '20:00' or not current_user.daily_goal_reminder_time %}selected{% endif %}>20:00 Tối (Khuyên dùng)</option>
+                <option value="21:00" {% if current_user.daily_goal_reminder_time == '21:00' %}selected{% endif %}>21:00 Đêm</option>
+                <option value="22:00" {% if current_user.daily_goal_reminder_time == '22:00' %}selected{% endif %}>22:00 Khuya</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="col-12 d-flex justify-content-between align-items-center flex-wrap gap-2 pt-2">
+            <span class="text-muted small" style="font-size: 0.76rem;">
+              💡 <em>Email sẽ gửi tự động đến hộp thư <strong>{{ current_user.email }}</strong> mỗi ngày khi chưa hoàn thành mục tiêu.</em>
+            </span>
+            <div class="d-flex align-items-center gap-2">
+              <button type="button" id="btnTestGoalReminder" class="btn btn-outline-warning rounded-pill px-3.5 py-1.5 fw-bold small d-inline-flex align-items-center gap-1.5 shadow-2xs">
+                <i class="ph-bold ph-paper-plane-tilt"></i>
+                <span>Gửi thử email & Popup mẫu</span>
+              </button>
+              <button type="button" id="btnSaveGoalSettings" class="btn btn-primary rounded-pill px-4 py-1.5 fw-bold small d-inline-flex align-items-center gap-1.5 shadow-xs" style="background: linear-gradient(135deg, #f97316 0%, #ea580c 100%); border: none;">
+                <i class="ph-bold ph-check"></i>
+                <span>Lưu Cài Đặt</span>
+              </button>
+            </div>
+          </div>
+        </form>
+      </div>
+
       <!-- CHALLENGES GRID -->
       <div class="row g-4 mb-5">
         <!-- Daily Challenges Column -->
@@ -677,6 +777,92 @@ document.addEventListener("DOMContentLoaded", () => {
       e.target.classList.add('btn-primary', 'shadow-xs', 'fw-bold');
     });
   });
+
+  // Goal Reminder Settings AJAX Save
+  const btnSaveGoalSettings = document.getElementById('btnSaveGoalSettings');
+  if (btnSaveGoalSettings) {
+    btnSaveGoalSettings.addEventListener('click', async () => {
+      const enabled = document.getElementById('chkGoalReminderEnabled').checked;
+      const email_enabled = document.getElementById('chkGoalEmailEnabled').checked;
+      const popup_enabled = document.getElementById('chkGoalPopupEnabled').checked;
+      const reminder_time = document.getElementById('selGoalReminderTime').value;
+
+      btnSaveGoalSettings.disabled = true;
+      btnSaveGoalSettings.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Đang lưu...';
+
+      try {
+        const res = await fetch('/api/goal/settings', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            enabled: enabled,
+            email_enabled: email_enabled,
+            popup_enabled: popup_enabled,
+            reminder_time: reminder_time
+          })
+        });
+        const data = await res.json();
+        if (data.success) {
+          // Update status badge
+          const badgeEl = document.getElementById('goalReminderStatusBadge');
+          if (badgeEl) {
+            if (enabled) {
+              badgeEl.className = 'badge bg-success-subtle text-success border border-success-subtle rounded-pill px-3 py-1.5 fw-bold small';
+              badgeEl.innerHTML = `<i class="ph-bold ph-bell-ringing me-1"></i>Đang bật (${reminder_time})`;
+            } else {
+              badgeEl.className = 'badge bg-secondary-subtle text-secondary rounded-pill px-3 py-1.5 fw-bold small';
+              badgeEl.innerHTML = '<i class="ph-bold ph-bell-slash me-1"></i>Đang tắt';
+            }
+          }
+          if (window.showCustomFlashToast) {
+            window.showCustomFlashToast(data.message, 'success', 'Cài đặt đã lưu');
+          } else {
+            alert(data.message);
+          }
+        }
+      } catch (err) {
+        if (window.showCustomFlashToast) {
+          window.showCustomFlashToast('Có lỗi xảy ra khi lưu cài đặt.', 'danger', 'Lỗi');
+        }
+      } finally {
+        btnSaveGoalSettings.disabled = false;
+        btnSaveGoalSettings.innerHTML = '<i class="ph-bold ph-check"></i><span>Lưu Cài Đặt</span>';
+      }
+    });
+  }
+
+  // Goal Reminder Test Button
+  const btnTestGoalReminder = document.getElementById('btnTestGoalReminder');
+  if (btnTestGoalReminder) {
+    btnTestGoalReminder.addEventListener('click', async () => {
+      btnTestGoalReminder.disabled = true;
+      btnTestGoalReminder.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Đang gửi thử...';
+
+      try {
+        const res = await fetch('/api/goal/send-test-reminder', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' }
+        });
+        const data = await res.json();
+        if (data.success) {
+          if (window.showCustomFlashToast) {
+            window.showCustomFlashToast(data.message, 'success', 'Thử nghiệm thành công');
+          }
+          // Launch the preview popup modal!
+          if (window.showGoalReminderModal && data.sample_alert) {
+            window.showGoalReminderModal(data.sample_alert);
+          }
+        }
+      } catch (err) {
+        if (window.showCustomFlashToast) {
+          window.showCustomFlashToast('Không thể gửi email thử nghiệm.', 'danger', 'Lỗi');
+        }
+      } finally {
+        btnTestGoalReminder.disabled = false;
+        btnTestGoalReminder.innerHTML = '<i class="ph-bold ph-paper-plane-tilt"></i><span>Gửi thử email & Popup mẫu</span>';
+      }
+    });
+  }
 });
 </script>
 {% endblock %}

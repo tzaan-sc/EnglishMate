@@ -120,15 +120,21 @@ MODULE 3. DASHBOARD & ANALYTICS (BẢNG ĐIỀU KHIỂN & PHÂN TÍCH) — 2 TÍ
   + Tích hợp `LessonProgress.duration_seconds` vào tính toán thời gian học tập trên Dashboard (`main/routes.py`).
 - Trạng thái: ĐÃ HOÀN THÀNH (100% test passed)
 
-[ ] 3.3. Goal Reminder - Nhắc nhở mục tiêu hàng ngày (Mục 3.6)
+[x] 3.3. Goal Reminder - Nhắc nhở mục tiêu hàng ngày (Mục 3.6)
 - Hiện trạng trong EnglishMate_Features.txt:
   Đã có thanh tiến độ Daily Goal (ví dụ 10/20 từ) và hộp quà Daily Goal Chest nhận thưởng 50 XP khi đạt 100%.
 - Phần còn thiếu chưa làm:
   Chưa có hệ thống tự động nhắc nhở (Notification/Email) vào 20:00 tối nếu học viên chưa hoàn thành mục tiêu ngày để tránh bị đứt chuỗi streak.
-- Giải pháp kỹ thuật cần làm:
-  + Bổ sung cron job kiểm tra các user chưa đạt Daily Goal trước 21:00 hàng ngày.
-  + Gửi email nhắc nhở kèm link học nhanh bài học đề xuất.
-- Mức độ ưu tiên: Trung bình (Medium)
+- Giải pháp kỹ thuật đã làm:
+  + Bổ sung các trường `daily_goal_reminder_enabled`, `daily_goal_reminder_time`, `daily_goal_reminder_email`, `daily_goal_reminder_popup`, `last_daily_goal_reminder_date` vào model `User` kèm method `get_daily_goal_info()`.
+  + Tự động migration schema kiểm tra các cột trong `app/__init__.py`.
+  + Xây dựng module dịch vụ nhắc nhở `app/backend/learning/goal_reminder.py` kiểm tra tiến độ Daily Goal và gửi email tự động với giao diện HTML thương hiệu EnglishMate.
+  + Thêm các API endpoint `/api/goal/notification-check`, `/api/goal/dismiss-popup`, `/api/goal/settings`, `/api/goal/send-test-reminder`.
+  + Thiết kế popup modal `_goal_reminder_modal.html` với animation phát sáng, thanh tiến độ real-time và nút chuyển nhanh đến bài học/ôn từ vựng.
+  + Tích hợp cảnh báo tiến độ và thanh progress bar Daily Goal trực tiếp trong dropdown chuông thông báo Topbar (`base.html`).
+  + Bổ sung bảng điều khiển cấu hình thời gian và bật/tắt email/popup kèm nút test thử nghiệm trên tab Thử thách & Mục tiêu ngày (`gamification.html`).
+  + Bổ sung CLI command `flask goal-reminders-check` phục vụ chạy cron job định kỳ.
+- Trạng thái: ĐÃ HOÀN THÀNH (100% test passed)
 
 ----------------------------------------------------------------------------------------------------
 MODULE 4. LESSONS & 4 SKILLS (BÀI HỌC & 4 KỸ NĂNG) — 9 TÍNH NĂNG CHƯA LÀM
