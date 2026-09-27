@@ -279,7 +279,15 @@ MỤC LỤC TỔNG QUAN CÁC MODULE CHỨC NĂNG ĐÃ LÀM:
     [x] Nếu hôm nay chưa học: Tăng chuỗi Streak liên tiếp (+1), cập nhật `last_activity_date`.
     [x] Cập nhật kỷ lục chuỗi dài nhất (`longest_streak`).
     [x] Bắn sự kiện hiển thị Modal chúc mừng kích hoạt ngọn lửa Streak (`_streak_modal.html`).
-    [x] Tự động cập nhật tiến độ các Thử thách (Challenges) loại "lesson" và "streak".
+[x] 3.9. Đánh giá & Chấm sao bài học (Lesson Rating & Community Reviews)
+- Route: POST /lessons/<lesson_id>/rate, GET /lessons/<lesson_id>/ratings
+- Model: LessonRating (id, user_id, lesson_id, rating, review_text, created_at, updated_at)
+- Chi tiết chức năng:
+  [x] Học viên đánh giá bài học từ 1 - 5 sao và để lại nhận xét bằng văn bản.
+  [x] Hiển thị widget 5 sao tương tác ở chân trang bài học (`lesson_detail.html`) với hiệu ứng chọn sao mượt mà và nhãn cảm xúc trực quan.
+  [x] Tự động tính điểm đánh giá trung bình (`average_rating`), tổng số lượt đánh giá (`ratings_count`) và biểu đồ phân bổ tỷ lệ phần trăm các mức sao (5★ - 1★).
+  [x] Hỗ trợ gửi và cập nhật đánh giá qua AJAX tức thời, cập nhật điểm và danh sách nhận xét cộng đồng mà không cần tải lại trang.
+
 
 ====================================================================================================
 [x] 4. MODULE TỪ VỰNG, FLASHCARD 3D & THUẬT TOÁN SRS (VOCABULARY & SPACED REPETITION)

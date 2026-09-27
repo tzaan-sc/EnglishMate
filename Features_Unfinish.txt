@@ -97,10 +97,10 @@ MODULE: 4. LESSONS & 4 SKILLS (BÀI HỌC & 4 KỸ NĂNG) (9 tính năng chưa l
 
 ### 4.4. Lesson Interaction (Tương tác bài học) (2 tính năng):
 ----------------------------------------------------------------------------------------------------
-7. [ ] Lesson Rating - Đánh giá bài học
+7. [x] Lesson Rating - Đánh giá bài học (ĐÃ HOÀN THÀNH)
    - Mức độ ưu tiên: Trung bình
    - Mô tả yêu cầu: Cho phép học viên chấm điểm đánh giá bài học từ 1 đến 5 sao và để lại nhận xét ngắn về chất lượng bài giảng.
-   - Đối chiếu hiện trạng: Đã có tính năng Yêu thích (Favorite), Đánh dấu (Bookmark), Báo cáo nội dung (Report), nhưng chưa có bảng xếp hạng vote sao.
+   - Hiện trạng thực hiện: Đã tạo model `LessonRating` (id, user_id, lesson_id, rating, review_text, created_at, updated_at) với ràng buộc duy nhất và check constraint rating 1-5; bổ sung các helper property/method trên model `Lesson` (`average_rating`, `ratings_count`, `get_rating_distribution`); xây dựng route `POST /lessons/<id>/rate` và `GET /lessons/<id>/ratings` xử lý gửi/cập nhật đánh giá qua AJAX; thiết kế khu vực đánh giá trực quan ở chân trang `lesson_detail.html` với cụm chọn sao tương tác (1-5 sao), thanh phân phối tỷ lệ % số sao, danh sách nhận xét cộng đồng và cập nhật realtime trên giao diện không cần tải lại trang (100% test passed).
 
 8. [ ] Lesson Sharing - Chia sẻ bài học
    - Mức độ ưu tiên: Thấp
