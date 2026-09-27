@@ -146,14 +146,18 @@ MODULE 4. LESSONS & 4 SKILLS (BÀI HỌC & 4 KỸ NĂNG) — 9 TÍNH NĂNG CHƯA
   + Thiết kế widget đánh giá chất lượng bài học 5 sao tương tác ở chân trang bài học (`lesson_detail.html`) kèm bảng phân phối điểm (5 sao -> 1 sao), biểu đồ tỷ lệ %, danh sách nhận xét cộng đồng và xử lý realtime qua AJAX không cần reload trang.
 - Trạng thái: ĐÃ HOÀN THÀNH (100% test passed)
 
-[ ] 4.2. Lesson Sharing - Chia sẻ bài học (Mục 4.4)
+[x] 4.2. Lesson Sharing - Chia sẻ bài học (Mục 4.4)
 - Hiện trạng trong EnglishMate_Features.txt:
   Chưa có nút chia sẻ bài học ra bên ngoài.
 - Phần còn thiếu chưa làm:
   Chưa có nút chia sẻ nhanh link bài học lên Facebook, X (Twitter), LinkedIn, Zalo hoặc nút 1-click Copy Link vào clipboard.
-- Giải pháp kỹ thuật cần làm:
-  + Bổ sung nút Share với Web Share API trên mobile và Modal chia sẻ link mạng xã hội trên desktop.
-- Mức độ ưu tiên: Thấp (Low)
+- Giải pháp kỹ thuật đã làm:
+  + Tích hợp Open Graph & Twitter Card meta tags trong template `base.html` và `lesson_detail.html` giúp hiển thị thumbnail, tiêu đề và tóm tắt bài học khi chia sẻ trên mạng xã hội.
+  + Nâng cấp nút Chia sẻ trên Action bar và Modal `#shareLessonModal` với giao diện trực quan, hiển thị mini card xem trước bài học.
+  + Hỗ trợ các kênh chia sẻ mạng xã hội 1-click: Facebook, Zalo, X (Twitter), LinkedIn, Telegram, Email.
+  + Hỗ trợ Web Share API chuẩn (`navigator.share`) trên mobile/trình duyệt hỗ trợ để mở trực tiếp khay chia sẻ hệ thống.
+  + Tích hợp tính năng 1-Click Copy Link vào bộ nhớ tạm với hiệu ứng phản hồi trực quan và tạo mã QR Code quét nhanh bằng camera điện thoại.
+- Trạng thái: ĐÃ HOÀN THÀNH (100% test passed)
 
 [ ] 4.3. Audio Accent Selection - Chuyển đổi giọng đọc bài nghe US/UK (Mục 4.5)
 - Hiện trạng trong EnglishMate_Features.txt:

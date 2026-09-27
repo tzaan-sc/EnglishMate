@@ -286,7 +286,14 @@ MỤC LỤC TỔNG QUAN CÁC MODULE CHỨC NĂNG ĐÃ LÀM:
   [x] Học viên đánh giá bài học từ 1 - 5 sao và để lại nhận xét bằng văn bản.
   [x] Hiển thị widget 5 sao tương tác ở chân trang bài học (`lesson_detail.html`) với hiệu ứng chọn sao mượt mà và nhãn cảm xúc trực quan.
   [x] Tự động tính điểm đánh giá trung bình (`average_rating`), tổng số lượt đánh giá (`ratings_count`) và biểu đồ phân bổ tỷ lệ phần trăm các mức sao (5★ - 1★).
-  [x] Hỗ trợ gửi và cập nhật đánh giá qua AJAX tức thời, cập nhật điểm và danh sách nhận xét cộng đồng mà không cần tải lại trang.
+[x] 3.10. Chia sẻ bài học & Lan tỏa học tập (Lesson Social Sharing & Web Share API)
+- Giao diện & Tương tác: `base.html`, `lesson_detail.html`
+- Chi tiết chức năng:
+  [x] Tích hợp bộ thẻ chuẩn Open Graph & Twitter Card meta tags trên header từng bài học.
+  [x] Nút Chia sẻ chuyên nghiệp trên Action bar bài học kèm Modal `#shareLessonModal` với mini card xem trước nội dung.
+  [x] Hỗ trợ chia sẻ 1-click qua 6 kênh mạng xã hội & liên lạc phổ biến: Facebook, Zalo, X (Twitter), LinkedIn, Telegram, Email.
+  [x] Tích hợp Web Share API (`navigator.share`) cho trải nghiệm mở khay chia sẻ hệ thống trực tiếp trên thiết bị di động.
+  [x] Sao chép liên kết vào clipboard (Copy Link) tức thì kèm hiệu ứng phản hồi trực quan và tạo mã QR Code quét nhanh bằng camera điện thoại.
 
 
 ====================================================================================================
