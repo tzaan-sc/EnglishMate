@@ -1,4 +1,4 @@
-﻿import csv
+import csv
 import io
 import json
 import uuid
@@ -33,7 +33,7 @@ CONTENT_SCHEMAS = {
         "title": "Bài học (Lessons)",
         "required_columns": ["title", "level", "skill", "short_description", "content", "examples"],
         "optional_columns": [
-            "thumbnail_url", "audio_url", "accent", "audio_duration", "listening_transcript", "transcript",
+            "thumbnail_url", "audio_url", "audio_url_uk", "accent", "audio_duration", "listening_transcript", "transcript",
             "reading_genre", "reading_passage", "reading_questions",
             "speaking_genre", "speaking_sentences", "speaking_tips",
             "writing_genre", "min_words", "max_words", "writing_templates", "template"
@@ -65,6 +65,13 @@ HEADER_ALIASES = {
     "description": "summary",
     "name": "title",
 }
+
+
+def _resolve_header(header_val, schema):
+    h = str(header_val or "").strip().lower()
+    if h in schema["required_columns"] or h in schema.get("optional_columns", []):
+        return h
+    return HEADER_ALIASES.get(h, h)
 
 
 def _normalize_grammar_examples(val):
@@ -113,6 +120,8 @@ def _extract_lesson_skill_data_from_dict(d):
     # Listening
     if d.get("audio_url"):
         skill_data["audio_url"] = str(d["audio_url"]).strip()
+    if d.get("audio_url_uk"):
+        skill_data["audio_url_uk"] = str(d["audio_url_uk"]).strip()
     if d.get("accent"):
         skill_data["accent"] = str(d["accent"]).strip().upper()
     if d.get("audio_duration"):
@@ -312,7 +321,7 @@ def parse_and_validate_csv(file_stream, content_type):
             "error": "File CSV trống, không có dữ liệu."
         }
 
-    raw_headers = [HEADER_ALIASES.get(str(h or "").strip().lower(), str(h or "").strip().lower()) for h in rows[0]]
+    raw_headers = [_resolve_header(h, schema) for h in rows[0]]
     missing_cols = [col for col in schema["required_columns"] if col not in raw_headers]
     if missing_cols:
         return {
@@ -471,7 +480,7 @@ def parse_and_validate_excel(file_stream, content_type):
         }
 
     # Header check
-    raw_headers = [HEADER_ALIASES.get(str(h or "").strip().lower(), str(h or "").strip().lower()) for h in rows[0]]
+    raw_headers = [_resolve_header(h, schema) for h in rows[0]]
     missing_cols = [col for col in schema["required_columns"] if col not in raw_headers]
     if missing_cols:
         return {
@@ -674,6 +683,10 @@ def commit_import_records(content_type, valid_records, user_id=None, mode="inser
                 existing.examples = d.get("examples", existing.examples)
                 if d.get("thumbnail_url"):
                     existing.thumbnail_url = d["thumbnail_url"]
+                if d.get("audio_url"):
+                    existing.audio_url = d["audio_url"]
+                if d.get("audio_url_uk"):
+                    existing.audio_url_uk = d["audio_url_uk"]
                 if skill_data:
                     existing.skill_data = {**(existing.skill_data or {}), **skill_data}
                 updated_count += 1
@@ -686,6 +699,8 @@ def commit_import_records(content_type, valid_records, user_id=None, mode="inser
                     content=d.get("content", ""),
                     examples=d.get("examples", ""),
                     thumbnail_url=d.get("thumbnail_url") or None,
+                    audio_url=d.get("audio_url") or (skill_data.get("audio_url") if skill_data else None),
+                    audio_url_uk=d.get("audio_url_uk") or (skill_data.get("audio_url_uk") if skill_data else None),
                     skill_data=skill_data if skill_data else None,
                     is_active=True,
                 )

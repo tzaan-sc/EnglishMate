@@ -159,7 +159,7 @@ MODULE 4. LESSONS & 4 SKILLS (BÀI HỌC & 4 KỸ NĂNG) — 9 TÍNH NĂNG CHƯA
   + Tích hợp tính năng 1-Click Copy Link vào bộ nhớ tạm với hiệu ứng phản hồi trực quan và tạo mã QR Code quét nhanh bằng camera điện thoại.
 - Trạng thái: ĐÃ HOÀN THÀNH (100% test passed)
 
-[ ] 4.3. Audio Accent Selection - Chuyển đổi giọng đọc bài nghe US/UK (Mục 4.5)
+[x] 4.3. Audio Accent Selection - Chuyển đổi giọng đọc bài nghe US/UK (Mục 4.5)
 - Hiện trạng trong EnglishMate_Features.txt:
   Mục từ vựng đã có audio US và UK riêng. Nhưng bài học kỹ năng Nghe (`listening_detail.html`) hiện tại chỉ gắn 1 file audio duy nhất.
 - Phần còn thiếu chưa làm:
@@ -167,7 +167,7 @@ MODULE 4. LESSONS & 4 SKILLS (BÀI HỌC & 4 KỸ NĂNG) — 9 TÍNH NĂNG CHƯA
 - Giải pháp kỹ thuật cần làm:
   + Thêm trường `audio_url_uk` trong model `Lesson`.
   + Bổ sung nút gạt [US | UK] trên giao diện Audio Player để chuyển nguồn `src` của thẻ `<audio>`.
-- Mức độ ưu tiên: Trung bình (Medium)
+- Trạng thái: ĐÃ HOÀN THÀNH (100% test passed)
 
 [ ] 4.4. Reading Annotation - Ghi chú trực tiếp trên bài đọc (Mục 4.6)
 - Hiện trạng trong EnglishMate_Features.txt:

@@ -12,6 +12,8 @@ class Lesson(db.Model):
     content = db.Column(db.Text, nullable=False)
     examples = db.Column(db.Text, nullable=False)
     thumbnail_url = db.Column(db.String(255), nullable=True)
+    audio_url = db.Column(db.String(255), nullable=True)
+    audio_url_uk = db.Column(db.String(255), nullable=True)
     view_count = db.Column(db.Integer, nullable=False, default=0)
     is_active = db.Column(db.Boolean, nullable=False, default=True)
     skill_data = db.Column(db.JSON, nullable=True, default=dict)

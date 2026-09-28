@@ -107,25 +107,34 @@
               </div>
 
               <div class="row g-3 mb-3">
-                <div class="col-md-7">
-                  <label class="form-label fw-bold text-dark small">Audio File URL (MP3 / WAV)</label>
+                <div class="col-md-6">
+                  <label class="form-label fw-bold text-dark small">Audio File URL - Giọng Mỹ 🇺🇸 (US / Mặc định)</label>
                   <div class="input-group input-group-sm">
                     <span class="input-group-text bg-light text-muted"><i class="ph-bold ph-link"></i></span>
-                    <input type="url" name="audio_url" value="{{ skill_data.get('audio_url', '') }}" class="form-control" placeholder="https://domain.com/audio.mp3 hoặc /static/audio/...">
+                    <input type="url" name="audio_url" value="{{ skill_data.get('audio_url', '') }}" class="form-control" placeholder="https://domain.com/audio_us.mp3 hoặc /static/audio/...">
                   </div>
-                  <small class="text-muted" style="font-size: 0.75rem;">Nếu để trống, hệ thống sẽ tự động dùng giọng đọc phát âm chuẩn của trình duyệt.</small>
+                  <small class="text-muted" style="font-size: 0.75rem;">Nguồn audio giọng Mỹ (US Accent). Nếu để trống, hệ thống dùng Web Speech API.</small>
                 </div>
 
-                <div class="col-md-3">
-                  <label class="form-label fw-bold text-dark small">Giọng đọc (Accent)</label>
+                <div class="col-md-6">
+                  <label class="form-label fw-bold text-dark small">Audio File URL - Giọng Anh 🇬🇧 (UK - Tuỳ chọn)</label>
+                  <div class="input-group input-group-sm">
+                    <span class="input-group-text bg-light text-muted"><i class="ph-bold ph-link"></i></span>
+                    <input type="url" name="audio_url_uk" value="{{ skill_data.get('audio_url_uk', '') }}" class="form-control" placeholder="https://domain.com/audio_uk.mp3 hoặc /static/audio/...">
+                  </div>
+                  <small class="text-muted" style="font-size: 0.75rem;">Nguồn audio giọng Anh (UK Accent). Nếu để trống, hệ thống dùng Web Speech API.</small>
+                </div>
+
+                <div class="col-md-6">
+                  <label class="form-label fw-bold text-dark small">Giọng đọc khởi tạo ban đầu (Default Accent)</label>
                   <select name="accent" class="form-select form-select-sm">
                     <option value="US" {{ 'selected' if skill_data.get('accent') == 'US' }}>🇺🇸 Giọng Mỹ (US)</option>
                     <option value="UK" {{ 'selected' if skill_data.get('accent') == 'UK' }}>🇬🇧 Giọng Anh (UK)</option>
                   </select>
                 </div>
 
-                <div class="col-md-2">
-                  <label class="form-label fw-bold text-dark small">Thời lượng</label>
+                <div class="col-md-6">
+                  <label class="form-label fw-bold text-dark small">Thời lượng bài nghe (Ví dụ: 02:45)</label>
                   <input type="text" name="audio_duration" value="{{ skill_data.get('audio_duration', '') }}" class="form-control form-control-sm" placeholder="03:15">
                 </div>
               </div>

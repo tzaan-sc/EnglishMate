@@ -136,7 +136,7 @@ def get_sample_lessons_data():
     headers = [
         "title", "level", "skill", "short_description",
         "content", "examples", "thumbnail_url",
-        "audio_url", "accent", "audio_duration", "listening_transcript",
+        "audio_url", "audio_url_uk", "accent", "audio_duration", "listening_transcript",
         "reading_genre", "reading_passage",
         "speaking_genre", "speaking_sentences", "speaking_tips",
         "writing_genre", "min_words", "max_words", "writing_templates"
@@ -150,7 +150,7 @@ def get_sample_lessons_data():
             "### 1. Introduction\nWriting effective business emails is essential in professional settings.\n\n### 2. Email Structure\n- **Subject Line**: Concise and clear\n- **Salutation**: Dear Mr./Ms. [Last Name] or Dear [First Name]\n- **Opening**: I hope this email finds you well.\n- **Main Body**: State the purpose clearly.\n- **Call to Action**: Please let me know your availability.\n- **Sign-off**: Best regards / Sincerely.",
             "Could you please confirm receipt of this document?|Bạn có thể vui lòng xác nhận đã nhận tài liệu này không?\nI look forward to hearing from you soon.|Tôi rất mong sớm nhận được phản hồi từ bạn.",
             "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=500",
-            "", "", "", "",
+            "", "", "", "", "",
             "", "",
             "", "", "",
             "Email công việc (Business Email)", "50", "120",

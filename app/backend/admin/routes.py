@@ -89,6 +89,7 @@ def _extract_skill_data(skill, form_data):
     data = {}
     if skill == "Listening":
         data["audio_url"] = form_data.get("audio_url", "").strip()
+        data["audio_url_uk"] = form_data.get("audio_url_uk", "").strip()
         data["accent"] = form_data.get("accent", "US").strip()
         data["audio_duration"] = form_data.get("audio_duration", "").strip()
         data["transcript"] = form_data.get("listening_transcript", "").strip()
@@ -166,6 +167,9 @@ def lesson_create():
         lesson = Lesson()
         form.populate_obj(lesson)
         lesson.skill_data = _extract_skill_data(lesson.skill, request.form)
+        if lesson.skill == "Listening":
+            lesson.audio_url = lesson.skill_data.get("audio_url") or None
+            lesson.audio_url_uk = lesson.skill_data.get("audio_url_uk") or None
         db.session.add(lesson)
         db.session.commit()
         log_audit_action(current_user.id, "CREATE_LESSON", "Lesson", lesson.id, f"Tạo bài học '{lesson.title}' ({lesson.skill} - {lesson.level})")
@@ -182,6 +186,9 @@ def lesson_edit(lesson_id):
     if form.validate_on_submit():
         form.populate_obj(lesson)
         lesson.skill_data = _extract_skill_data(lesson.skill, request.form)
+        if lesson.skill == "Listening":
+            lesson.audio_url = lesson.skill_data.get("audio_url") or None
+            lesson.audio_url_uk = lesson.skill_data.get("audio_url_uk") or None
         db.session.commit()
         log_audit_action(current_user.id, "UPDATE_LESSON", "Lesson", lesson.id, f"Cập nhật bài học '{lesson.title}' ({lesson.skill} - {lesson.level})")
         flash("Đã cập nhật bài học.", "success")

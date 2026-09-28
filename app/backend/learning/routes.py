@@ -336,8 +336,8 @@ def _render_lesson_page(lesson):
         lesson.accent = sd.get("accent") or ("UK" if (lesson.id % 2 == 0) else "US")
         duration_pool = ["02:15", "02:45", "03:10", "03:35", "04:15", "04:50"]
         lesson.audio_duration = sd.get("audio_duration") or duration_pool[lesson.id % len(duration_pool)]
-        if sd.get("audio_url"):
-            lesson.audio_url = sd.get("audio_url")
+        lesson.audio_url = getattr(lesson, "audio_url", None) or sd.get("audio_url") or ""
+        lesson.audio_url_uk = getattr(lesson, "audio_url_uk", None) or sd.get("audio_url_uk") or ""
 
         raw_source = sd.get("transcript") or lesson.examples or lesson.content or ""
         lines = [l.strip() for l in raw_source.splitlines() if l.strip()]

@@ -138,8 +138,8 @@
           <i class="ph-bold ph-headphones text-warning"></i>
           <span>Luyện Nghe</span>
         </span>
-        <span class="badge bg-light text-secondary border rounded-pill px-2.5 py-1 fw-semibold" style="font-size: 0.74rem;">
-          <i class="ph-bold ph-waveform me-1"></i>{{ lesson.accent or 'US' }} Accent
+        <span class="badge bg-light text-secondary border rounded-pill px-2.5 py-1 fw-semibold" id="lessonHeaderAccentBadge" style="font-size: 0.74rem;">
+          <i class="ph-bold ph-waveform me-1"></i><span id="headerAccentDisplay">{{ lesson.accent or 'US' }}</span> Accent
         </span>
         <small class="text-muted d-inline-flex align-items-center gap-1 ms-2" style="font-size: 0.74rem;">
           <i class="ph-bold ph-eye"></i> {{ lesson.view_count or 1 }} lượt học
@@ -172,6 +172,9 @@
 
     <!-- STUDIO AUDIO CONTROLLER BOX -->
     <div class="audio-studio-player-box mb-3">
+      <!-- Hidden HTML5 Audio Element for Direct MP3 Audio Playback -->
+      <audio id="studioAudioElement" preload="metadata" class="d-none"></audio>
+
       <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3">
         <!-- Play / Pause & Title/Time -->
         <div class="d-flex align-items-center gap-3">
@@ -180,15 +183,18 @@
           </button>
           <div>
             <div class="fw-bold text-dark small mb-0.5">Phát bài nghe toàn diện</div>
-            <div class="text-muted small d-flex align-items-center gap-1.5" style="font-size: 0.78rem;">
+            <div class="text-muted small d-flex align-items-center gap-1.5 flex-wrap" style="font-size: 0.78rem;">
               <span id="studioCurrentTime">00:00</span> / <span id="studioTotalTime">{{ lesson.audio_duration or '02:45' }}</span>
-              <span class="badge bg-warning-subtle text-dark border border-warning-subtle py-0.5 px-1.5 fw-semibold" style="font-size: 0.68rem;">{{ lesson.accent or 'US' }}</span>
+              <span class="badge bg-warning-subtle text-dark border border-warning-subtle py-0.5 px-1.5 fw-semibold" id="studioAccentBadge" style="font-size: 0.68rem;">{{ lesson.accent or 'US' }} Accent</span>
+              <span class="badge bg-light text-secondary border py-0.5 px-1.5 fw-normal" id="studioSourceTypeBadge" style="font-size: 0.68rem;" title="Nguồn âm thanh phát bài học">
+                <i class="ph-bold ph-broadcast me-0.5"></i><span id="studioSourceTypeText">TTS</span>
+              </span>
             </div>
           </div>
         </div>
 
         <!-- Seekbar & Controls -->
-        <div class="d-flex align-items-center gap-2 flex-grow-1 mx-md-3" style="max-width: 380px;">
+        <div class="d-flex align-items-center gap-2 flex-grow-1 mx-md-3" style="max-width: 360px;">
           <button type="button" id="studioSkipBackBtn" class="btn btn-sm btn-light border rounded-circle p-0 d-flex align-items-center justify-content-center flex-shrink-0" style="width: 32px; height: 32px;" title="Lùi 5 giây">
             <i class="ph-bold ph-arrow-counter-clockwise text-secondary fs-6"></i>
           </button>
@@ -200,8 +206,18 @@
           </button>
         </div>
 
-        <!-- Speed & Blind Listening -->
-        <div class="d-flex align-items-center gap-2 justify-content-end">
+        <!-- Accent Switcher [ US | UK ], Speed & Blind Listening -->
+        <div class="d-flex align-items-center gap-2 justify-content-end flex-wrap">
+          <!-- US | UK Accent Switcher Segmented Control -->
+          <div class="btn-group btn-group-sm p-0.5 bg-light rounded-pill border shadow-2xs" role="group" aria-label="Accent selection" id="accentSwitchGroup" style="background-color: #f1f5f9;">
+            <button type="button" class="btn btn-sm rounded-pill px-2.5 py-1 fw-bold text-nowrap transition-all {{ 'btn-primary text-white shadow-xs' if (lesson.accent or 'US') == 'US' else 'btn-light text-secondary border-0' }}" id="btnAccentUS" data-accent="US" title="Chuyển sang giọng Mỹ (US Accent)">
+              🇺🇸 US
+            </button>
+            <button type="button" class="btn btn-sm rounded-pill px-2.5 py-1 fw-bold text-nowrap transition-all {{ 'btn-primary text-white shadow-xs' if (lesson.accent or 'US') == 'UK' else 'btn-light text-secondary border-0' }}" id="btnAccentUK" data-accent="UK" title="Chuyển sang giọng Anh (UK Accent)">
+              🇬🇧 UK
+            </button>
+          </div>
+
           <button type="button" id="studioRateBtn" class="btn btn-sm btn-light border rounded-pill px-2.5 py-1 fw-bold text-secondary" style="font-size: 0.78rem;" title="Tốc độ phát">
             1.0x
           </button>
@@ -2166,6 +2182,7 @@ document.addEventListener("DOMContentLoaded", function() {
   // ==========================================
   // LISTENING DETAIL STUDIO & DICTATION SCRIPT
   // ==========================================
+  const studioAudio = document.getElementById("studioAudioElement");
   const studioPlayBtn = document.getElementById("studioMainPlayBtn");
   const studioPlayIcon = document.getElementById("studioPlayIcon");
   const studioCurrentTime = document.getElementById("studioCurrentTime");
@@ -2177,10 +2194,17 @@ document.addEventListener("DOMContentLoaded", function() {
   const studioBlindBtn = document.getElementById("studioBlindBtn");
   const studioBlindIcon = document.getElementById("studioBlindIcon");
   const studioBlindText = document.getElementById("studioBlindText");
+  const btnAccentUS = document.getElementById("btnAccentUS");
+  const btnAccentUK = document.getElementById("btnAccentUK");
+  const studioAccentBadge = document.getElementById("studioAccentBadge");
+  const studioSourceTypeText = document.getElementById("studioSourceTypeText");
+  const studioSourceTypeBadge = document.getElementById("studioSourceTypeBadge");
+  const headerAccentDisplay = document.getElementById("headerAccentDisplay");
 
   const transcriptCards = document.querySelectorAll(".transcript-card");
-  const lessonAccent = "{{ lesson.accent or 'US' }}";
-  const lessonLang = lessonAccent === "UK" ? "en-GB" : "en-US";
+  const audioUrlUS = "{{ lesson.audio_url or '' }}";
+  const audioUrlUK = "{{ lesson.audio_url_uk or '' }}";
+  let currentAccent = "{{ lesson.accent or 'US' }}";
   const rawDuration = "{{ lesson.audio_duration or '02:45' }}";
 
   let studioPlaying = false;
@@ -2196,6 +2220,30 @@ document.addEventListener("DOMContentLoaded", function() {
     studioTotalSec = parseInt(durationParts[0]) * 60 + parseInt(durationParts[1]);
   }
 
+  function getAudioUrlForAccent(acc) {
+    if (acc === "UK") {
+      return audioUrlUK || "";
+    }
+    return audioUrlUS || "";
+  }
+
+  function getLessonLang() {
+    return currentAccent === "UK" ? "en-GB" : "en-US";
+  }
+
+  function updateSourceBadge() {
+    const url = getAudioUrlForAccent(currentAccent);
+    if (studioSourceTypeText && studioSourceTypeBadge) {
+      if (url) {
+        studioSourceTypeText.innerText = `MP3 ${currentAccent}`;
+        studioSourceTypeBadge.className = "badge bg-primary-subtle text-primary border border-primary-subtle py-0.5 px-1.5 fw-semibold";
+      } else {
+        studioSourceTypeText.innerText = `TTS ${currentAccent}`;
+        studioSourceTypeBadge.className = "badge bg-light text-secondary border py-0.5 px-1.5 fw-normal";
+      }
+    }
+  }
+
   function formatTimeStudio(seconds) {
     const m = Math.floor(seconds / 60);
     const s = Math.floor(seconds % 60);
@@ -2203,6 +2251,9 @@ document.addEventListener("DOMContentLoaded", function() {
   }
 
   function stopStudioPlayback() {
+    if (studioAudio) {
+      studioAudio.pause();
+    }
     if ('speechSynthesis' in window) {
       window.speechSynthesis.cancel();
     }
@@ -2225,6 +2276,58 @@ document.addEventListener("DOMContentLoaded", function() {
     });
   }
 
+  function playViaTTS(text) {
+    if ('speechSynthesis' in window) {
+      window.speechSynthesis.cancel();
+      studioUtterance = new SpeechSynthesisUtterance(text);
+      studioUtterance.lang = getLessonLang();
+      studioUtterance.rate = studioRate;
+      studioUtterance.onend = stopStudioPlayback;
+      studioUtterance.onerror = stopStudioPlayback;
+      window.speechSynthesis.speak(studioUtterance);
+    }
+
+    if (studioTimer) clearInterval(studioTimer);
+    studioTimer = setInterval(() => {
+      if (!studioPlaying) return;
+      studioProgressSec += 1;
+      if (studioCurrentTime) studioCurrentTime.innerText = formatTimeStudio(studioProgressSec);
+      if (studioSeekbar) studioSeekbar.value = Math.min(100, Math.round((studioProgressSec / studioTotalSec) * 100));
+      if (studioProgressSec >= studioTotalSec) {
+        stopStudioPlayback();
+      }
+    }, 1000);
+  }
+
+  function startStudioPlayback() {
+    stopStudioPlayback();
+    studioPlaying = true;
+    if (studioPlayIcon) {
+      studioPlayIcon.classList.remove("ph-play");
+      studioPlayIcon.classList.add("ph-pause");
+    }
+
+    const audioUrl = getAudioUrlForAccent(currentAccent);
+    if (audioUrl && studioAudio) {
+      if (studioAudio.src !== audioUrl && !studioAudio.src.endsWith(audioUrl)) {
+        studioAudio.src = audioUrl;
+        studioAudio.currentTime = studioProgressSec;
+      }
+      studioAudio.playbackRate = studioRate;
+      const playPromise = studioAudio.play();
+      if (playPromise !== undefined) {
+        playPromise.catch(err => {
+          console.warn("HTML5 audio playback error, falling back to Web Speech TTS:", err);
+          const fullText = Array.from(transcriptCards).map(c => c.dataset.lineText).join(". ");
+          playViaTTS(fullText);
+        });
+      }
+    } else {
+      const fullText = Array.from(transcriptCards).map(c => c.dataset.lineText).join(". ");
+      playViaTTS(fullText);
+    }
+  }
+
   function playStudioSentence(text, cardEl) {
     stopStudioPlayback();
 
@@ -2239,7 +2342,7 @@ document.addEventListener("DOMContentLoaded", function() {
 
     if ('speechSynthesis' in window) {
       const utt = new SpeechSynthesisUtterance(text);
-      utt.lang = lessonLang;
+      utt.lang = getLessonLang();
       utt.rate = studioRate;
       utt.onend = function() {
         stopStudioPlayback();
@@ -2250,6 +2353,74 @@ document.addEventListener("DOMContentLoaded", function() {
       window.speechSynthesis.speak(utt);
     }
   }
+
+  // Bind HTML5 Audio events
+  if (studioAudio) {
+    studioAudio.addEventListener("timeupdate", function() {
+      if (!studioPlaying) return;
+      if (this.duration && !isNaN(this.duration)) {
+        studioProgressSec = Math.floor(this.currentTime);
+        studioTotalSec = Math.floor(this.duration);
+        if (studioCurrentTime) studioCurrentTime.innerText = formatTimeStudio(studioProgressSec);
+        if (studioTotalTime) studioTotalTime.innerText = formatTimeStudio(studioTotalSec);
+        if (studioSeekbar) studioSeekbar.value = Math.min(100, Math.round((studioProgressSec / studioTotalSec) * 100));
+      }
+    });
+
+    studioAudio.addEventListener("loadedmetadata", function() {
+      if (this.duration && !isNaN(this.duration)) {
+        studioTotalSec = Math.floor(this.duration);
+        if (studioTotalTime) studioTotalTime.innerText = formatTimeStudio(studioTotalSec);
+      }
+    });
+
+    studioAudio.addEventListener("ended", function() {
+      stopStudioPlayback();
+    });
+  }
+
+  // Accent Switcher Logic [ US | UK ]
+  function switchAccent(newAccent) {
+    if (newAccent === currentAccent) return;
+    const wasPlaying = studioPlaying;
+    const prevTime = studioProgressSec;
+    stopStudioPlayback();
+    currentAccent = newAccent;
+
+    if (btnAccentUS && btnAccentUK) {
+      if (currentAccent === "US") {
+        btnAccentUS.className = "btn btn-sm rounded-pill px-2.5 py-1 fw-bold text-nowrap transition-all btn-primary text-white shadow-xs";
+        btnAccentUK.className = "btn btn-sm rounded-pill px-2.5 py-1 fw-bold text-nowrap transition-all btn-light text-secondary border-0";
+      } else {
+        btnAccentUK.className = "btn btn-sm rounded-pill px-2.5 py-1 fw-bold text-nowrap transition-all btn-primary text-white shadow-xs";
+        btnAccentUS.className = "btn btn-sm rounded-pill px-2.5 py-1 fw-bold text-nowrap transition-all btn-light text-secondary border-0";
+      }
+    }
+
+    if (studioAccentBadge) studioAccentBadge.innerText = `${currentAccent} Accent`;
+    if (headerAccentDisplay) headerAccentDisplay.innerText = currentAccent;
+    updateSourceBadge();
+
+    const targetUrl = getAudioUrlForAccent(currentAccent);
+    if (targetUrl && studioAudio) {
+      studioAudio.src = targetUrl;
+    }
+
+    if (wasPlaying) {
+      studioProgressSec = prevTime;
+      startStudioPlayback();
+    }
+  }
+
+  if (btnAccentUS) {
+    btnAccentUS.addEventListener("click", () => switchAccent("US"));
+  }
+  if (btnAccentUK) {
+    btnAccentUK.addEventListener("click", () => switchAccent("UK"));
+  }
+
+  // Initial source badge update
+  updateSourceBadge();
 
   // Bind Transcript Lines
   transcriptCards.forEach((card, idx) => {
@@ -2270,36 +2441,7 @@ document.addEventListener("DOMContentLoaded", function() {
       if (studioPlaying) {
         stopStudioPlayback();
       } else {
-        stopStudioPlayback();
-        const fullText = Array.from(transcriptCards).map(c => c.dataset.lineText).join(". ");
-        studioPlaying = true;
-        if (studioPlayIcon) {
-          studioPlayIcon.classList.remove("ph-play");
-          studioPlayIcon.classList.add("ph-pause");
-        }
-
-        if ('speechSynthesis' in window) {
-          studioUtterance = new SpeechSynthesisUtterance(fullText);
-          studioUtterance.lang = lessonLang;
-          studioUtterance.rate = studioRate;
-          studioUtterance.onend = function() {
-            stopStudioPlayback();
-          };
-          studioUtterance.onerror = function() {
-            stopStudioPlayback();
-          };
-          window.speechSynthesis.speak(studioUtterance);
-        }
-
-        studioTimer = setInterval(() => {
-          if (!studioPlaying) return;
-          studioProgressSec += 1;
-          if (studioCurrentTime) studioCurrentTime.innerText = formatTimeStudio(studioProgressSec);
-          if (studioSeekbar) studioSeekbar.value = Math.min(100, Math.round((studioProgressSec / studioTotalSec) * 100));
-          if (studioProgressSec >= studioTotalSec) {
-            stopStudioPlayback();
-          }
-        }, 1000);
+        startStudioPlayback();
       }
     });
   }
@@ -2310,6 +2452,11 @@ document.addEventListener("DOMContentLoaded", function() {
       const pct = parseInt(this.value);
       studioProgressSec = Math.round((pct / 100) * studioTotalSec);
       if (studioCurrentTime) studioCurrentTime.innerText = formatTimeStudio(studioProgressSec);
+
+      const audioUrl = getAudioUrlForAccent(currentAccent);
+      if (audioUrl && studioAudio && studioAudio.duration) {
+        studioAudio.currentTime = (pct / 100) * studioAudio.duration;
+      }
     });
   }
 
@@ -2319,6 +2466,10 @@ document.addEventListener("DOMContentLoaded", function() {
       studioProgressSec = Math.max(0, studioProgressSec - 5);
       if (studioCurrentTime) studioCurrentTime.innerText = formatTimeStudio(studioProgressSec);
       if (studioSeekbar) studioSeekbar.value = Math.round((studioProgressSec / studioTotalSec) * 100);
+      const audioUrl = getAudioUrlForAccent(currentAccent);
+      if (audioUrl && studioAudio && studioAudio.duration) {
+        studioAudio.currentTime = studioProgressSec;
+      }
     });
   }
 
@@ -2327,6 +2478,10 @@ document.addEventListener("DOMContentLoaded", function() {
       studioProgressSec = Math.min(studioTotalSec, studioProgressSec + 5);
       if (studioCurrentTime) studioCurrentTime.innerText = formatTimeStudio(studioProgressSec);
       if (studioSeekbar) studioSeekbar.value = Math.round((studioProgressSec / studioTotalSec) * 100);
+      const audioUrl = getAudioUrlForAccent(currentAccent);
+      if (audioUrl && studioAudio && studioAudio.duration) {
+        studioAudio.currentTime = studioProgressSec;
+      }
     });
   }
 
@@ -2338,6 +2493,9 @@ document.addEventListener("DOMContentLoaded", function() {
       sRateIdx = (sRateIdx + 1) % studioRates.length;
       studioRate = studioRates[sRateIdx];
       this.innerText = `${studioRate}x`;
+      if (studioAudio) {
+        studioAudio.playbackRate = studioRate;
+      }
     });
   }
 
