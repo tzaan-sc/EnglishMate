@@ -4269,3 +4269,55 @@ a:hover {
     color: #4f46e5;
     border: 1px solid #c7d2fe;
 }
+
+/* --- READING ANNOTATIONS (Feature 4.4) --- */
+.reading-annotation-mark {
+    padding: 2px 4px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-decoration: none;
+    display: inline;
+}
+.reading-annotation-mark:hover {
+    filter: brightness(0.92);
+    box-shadow: 0 1px 4px rgba(0,0,0,0.12);
+}
+.reading-annotation-mark.color-yellow {
+    background-color: rgba(254, 240, 138, 0.7);
+    border-bottom: 2px solid #eab308;
+}
+.reading-annotation-mark.color-green {
+    background-color: rgba(187, 247, 208, 0.7);
+    border-bottom: 2px solid #22c55e;
+}
+.reading-annotation-mark.color-blue {
+    background-color: rgba(191, 219, 254, 0.7);
+    border-bottom: 2px solid #3b82f6;
+}
+.reading-annotation-mark.color-purple {
+    background-color: rgba(233, 213, 255, 0.7);
+    border-bottom: 2px solid #a855f7;
+}
+.reading-annotation-mark.color-pink {
+    background-color: rgba(251, 207, 232, 0.7);
+    border-bottom: 2px solid #ec4899;
+}
+.annotation-popover-card {
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.15), 0 8px 10px -6px rgba(0, 0, 0, 0.1) !important;
+    animation: fadeInAnnotation 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.annotation-color-btn.active {
+    outline: 2px solid var(--primary, #0d9488);
+    outline-offset: 2px;
+}
+@keyframes fadeInAnnotation {
+    from {
+        opacity: 0;
+        transform: translateY(6px) scale(0.98);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}

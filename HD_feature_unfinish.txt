@@ -175,15 +175,15 @@ MODULE 4. LESSONS & 4 SKILLS (BÀI HỌC & 4 KỸ NĂNG) — 9 TÍNH NĂNG CHƯA
   + Bổ sung nút gạt [US | UK] trên giao diện Audio Player để chuyển nguồn `src` của thẻ `<audio>`.
 - Trạng thái: ĐÃ HOÀN THÀNH (100% test passed)
 
-[ ] 4.4. Reading Annotation - Ghi chú trực tiếp trên bài đọc (Mục 4.6)
+[x] 4.4. Reading Annotation - Ghi chú trực tiếp trên bài đọc (Mục 4.6)
 - Hiện trạng trong EnglishMate_Features.txt:
   Đã có bảng ghi chú chung cuối bài `LessonNote`.
 - Phần còn thiếu chưa làm:
   Chưa cho phép học viên bôi chọn một câu hoặc một từ bất kỳ trong đoạn văn bản đọc để đính kèm một mẩu ghi chú nổi (annotation popover) ngay tại vị trí đó.
 - Giải pháp kỹ thuật cần làm:
-  + Tạo model `ReadingAnnotation` (id, lesson_id, user_id, selected_text, note_content, start_offset, end_offset).
+  + Tạo model `ReadingAnnotation` (id, lesson_id, user_id, selected_text, note_content, start_offset, end_offset, color).
   + Sử dụng JavaScript Range API / Selection API để bắt sự kiện bôi văn bản và hiển thị popover thêm ghi chú.
-- Mức độ ưu tiên: Cao (High)
+- Trạng thái: ĐÃ HOÀN THÀNH (100% test passed)
 
 [ ] 4.5. Reading Highlight - Bôi màu nổi bật văn bản bài đọc (Mục 4.6)
 - Hiện trạng trong EnglishMate_Features.txt:

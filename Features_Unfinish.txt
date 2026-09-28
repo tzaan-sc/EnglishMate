@@ -118,7 +118,7 @@ MODULE: 4. LESSONS & 4 SKILLS (BÀI HỌC & 4 KỸ NĂNG) (9 tính năng chưa l
 
 ### 4.6. Reading Features (Tính năng đọc) (2 tính năng):
 ----------------------------------------------------------------------------------------------------
-10. [ ] Reading Annotation - Ghi chú bài đọc
+10. [x] Reading Annotation - Ghi chú bài đọc
    - Mức độ ưu tiên: Trung bình
    - Mô tả yêu cầu: Công cụ ghi chú nhanh (Annotation / Sticky Notes) gắn trực tiếp vào các đoạn văn cụ thể trong bài đọc hiểu.
    - Đối chiếu hiện trạng: Đã có tính năng ghi chú toàn bài học (LessonNote) trong modal, nhưng chưa có công cụ gắn note trực tiếp vào từng câu trong bài đọc.
@@ -876,7 +876,7 @@ Các tính năng hoàn thiện chiều sâu nội dung và gia tăng sự gắn 
 1. [ ] Hệ thống phím tắt bàn phím (Shortcuts) khi lật Flashcard và làm bài Quiz [Module 13]
 2. [ ] Chia sẻ bộ Flashcard tự tạo và bộ câu hỏi cho bạn bè (Flashcard/Quiz Sharing) [Module 5 & 7]
 3. [ ] Danh mục bộ đề thi Tốt nghiệp THPT Quốc Gia môn Tiếng Anh [Module 8]
-4. [ ] Bôi màu từ vựng (Highlight) và ghi chú tương tác trên bài đọc hiểu (Reading Annotation) [Module 4]
+4. [x] Bôi màu từ vựng (Highlight) và ghi chú tương tác trên bài đọc hiểu (Reading Annotation) [Module 4]
 5. [ ] Chuyến tham quan hướng dẫn người mới (Onboarding Product Tour) [Module 13]
 6. [ ] Tự động cắt ảnh đại diện (Pillow Image Cropping) trước khi lưu [Module 12]
 7. [ ] Giao diện Web Admin bật tắt tính năng bằng Feature Flags [Module 10]

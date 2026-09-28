@@ -534,10 +534,64 @@
         </div>
 
         <!-- Main Reading Content Body -->
-        <div id="readerContentBody" class="reader-content-body text-dark" style="font-size: 1.05rem; line-height: 1.85; letter-spacing: -0.01em;">
+        <div id="readerContentBody" class="reader-content-body text-dark position-relative user-select-auto" style="font-size: 1.05rem; line-height: 1.85; letter-spacing: -0.01em;">
           {% for p in reading_paragraphs %}
-          <p class="mb-3.5 reader-paragraph">{{ p }}</p>
+          <p class="mb-3.5 reader-paragraph" data-paragraph-idx="{{ loop.index0 }}">{{ p }}</p>
           {% endfor %}
+        </div>
+
+        <!-- FLOATING SELECTION TOOLBAR -->
+        <div id="annotationSelectionToolbar" class="d-none position-absolute shadow-lg rounded-pill bg-dark text-white p-1 d-flex align-items-center gap-1 z-3" style="transform: translate(-50%, -100%); margin-top: -8px;">
+          <button type="button" id="btnOpenAnnotationEditor" class="btn btn-sm text-white px-2.5 py-1 rounded-pill fw-semibold d-inline-flex align-items-center gap-1.5" style="font-size: 0.78rem; background: rgba(255,255,255,0.18);">
+            <i class="ph-bold ph-note-pencil text-warning"></i>
+            <span>Ghi chú đoạn này</span>
+          </button>
+        </div>
+
+        <!-- INLINE ANNOTATION EDITOR POPOVER -->
+        <div id="annotationEditorPopover" class="d-none annotation-popover-card bg-white border p-3 rounded-4 shadow-lg z-3" style="min-width: 290px; max-width: 360px;">
+          <div class="d-flex align-items-center justify-content-between mb-2">
+            <span class="fw-bold text-dark small d-flex align-items-center gap-1">
+              <i class="ph-bold ph-notepad text-primary"></i>
+              <span>Ghi chú trực tiếp trên bài</span>
+            </span>
+            <button type="button" class="btn-close btn-close-sm" id="btnCloseAnnotationEditor" aria-label="Close"></button>
+          </div>
+          <div class="p-2 mb-2 rounded-2 bg-light text-muted small fst-italic text-truncate border-start border-3 border-primary" id="annotationSelectedQuotePreview" style="font-size: 0.76rem; max-height: 48px;">
+            "Đoạn trích dẫn..."
+          </div>
+          <!-- Color choices -->
+          <div class="d-flex align-items-center gap-1.5 mb-2">
+            <span class="text-muted small" style="font-size: 0.72rem;">Màu nền:</span>
+            <button type="button" class="btn btn-sm p-0 rounded-circle border annotation-color-btn active" data-color="yellow" style="width: 20px; height: 20px; background: #fef08a;" title="Vàng"></button>
+            <button type="button" class="btn btn-sm p-0 rounded-circle border annotation-color-btn" data-color="green" style="width: 20px; height: 20px; background: #bbf7d0;" title="Xanh lá"></button>
+            <button type="button" class="btn btn-sm p-0 rounded-circle border annotation-color-btn" data-color="blue" style="width: 20px; height: 20px; background: #bfdbfe;" title="Xanh dương"></button>
+            <button type="button" class="btn btn-sm p-0 rounded-circle border annotation-color-btn" data-color="purple" style="width: 20px; height: 20px; background: #e9d5ff;" title="Tím"></button>
+            <button type="button" class="btn btn-sm p-0 rounded-circle border annotation-color-btn" data-color="pink" style="width: 20px; height: 20px; background: #fbcfe8;" title="Hồng"></button>
+          </div>
+          <textarea id="annotationNoteTextInput" class="form-control rounded-3 p-2 mb-2.5 small shadow-none" rows="2" placeholder="Nhập ghi chú cấu trúc hoặc ý nghĩa đoạn này..." style="font-size: 0.82rem;"></textarea>
+          <div class="d-flex justify-content-end gap-1.5">
+            <button type="button" class="btn btn-sm btn-light border rounded-pill px-2.5 py-1 text-secondary small" id="btnCancelAnnotation">Hủy</button>
+            <button type="button" class="btn btn-sm btn-primary rounded-pill px-3 py-1 fw-bold small shadow-2xs" id="btnSaveAnnotation">Lưu ghi chú</button>
+          </div>
+        </div>
+
+        <!-- ANNOTATION PREVIEW POPOVER -->
+        <div id="annotationPreviewPopover" class="d-none annotation-popover-card bg-white border p-3 rounded-4 shadow-lg z-3" style="min-width: 280px; max-width: 340px;">
+          <div class="d-flex align-items-center justify-content-between mb-1.5 pb-1 border-bottom">
+            <span class="badge bg-warning-subtle text-dark border border-warning-subtle rounded-pill px-2 py-0.5 fw-semibold" style="font-size: 0.7rem;">
+              <i class="ph-bold ph-note me-0.5"></i>Ghi chú nổi
+            </span>
+            <small class="text-muted" id="previewAnnotationDate" style="font-size: 0.72rem;">Vừa xong</small>
+          </div>
+          <p class="mb-2 text-dark small fw-semibold" id="previewAnnotationContent" style="font-size: 0.85rem; line-height: 1.45;"></p>
+          <div class="d-flex justify-content-between align-items-center pt-1 border-top">
+            <button type="button" class="btn btn-sm btn-link text-danger p-0 small text-decoration-none d-inline-flex align-items-center gap-1" id="btnDeleteAnnotationFromPreview">
+              <i class="ph-bold ph-trash"></i>
+              <span>Xóa ghi chú</span>
+            </button>
+            <button type="button" class="btn btn-sm btn-light border rounded-pill px-2.5 py-0.5 small text-secondary" id="btnCloseAnnotationPreview">Đóng</button>
+          </div>
         </div>
 
         {% if reading_guideline %}
@@ -579,7 +633,7 @@
               <button class="nav-link rounded-pill py-1.5 fw-bold small d-inline-flex align-items-center justify-content-center gap-1 w-100" 
                       id="tab-read-notes-btn" data-bs-toggle="tab" data-bs-target="#tab-read-notes" type="button" role="tab">
                 <i class="ph-bold ph-notepad"></i>
-                <span>Ghi chú</span>
+                <span>Ghi chú (<span id="tabNotesCountBadge">{{ (user_annotations|length if user_annotations else 0) + (1 if user_note else 0) }}</span>)</span>
               </button>
             </li>
           </ul>
@@ -663,7 +717,7 @@
               <form id="readingNoteForm" action="{{ url_for('learning.save_lesson_note', lesson_id=lesson.id) }}" method="post" class="mb-3">
                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                 <div class="mb-2">
-                  <label class="form-label fw-bold text-dark small">Ghi chép mẹo đọc / từ mới của bạn:</label>
+                  <label class="form-label fw-bold text-dark small">Ghi chép chung của bạn:</label>
                   <textarea class="form-control rounded-3 p-2.5 shadow-none" 
                             name="note" id="readingNoteInput" rows="3" 
                             placeholder="Ghi chú cấu trúc ngữ pháp, từ mới hoặc cảm nghĩ về bài đọc..."
@@ -676,6 +730,44 @@
                   </button>
                 </div>
               </form>
+
+              <!-- INLINE ANNOTATIONS LIST SECTION -->
+              <div class="mt-3 pt-3 border-top">
+                <div class="d-flex align-items-center justify-content-between mb-2">
+                  <span class="fw-bold text-dark small d-flex align-items-center gap-1.5">
+                    <i class="ph-bold ph-highlighter" style="color: #0d9488;"></i>
+                    <span>Ghi chú nổi trên bài đọc</span>
+                  </span>
+                  <span class="badge bg-light text-secondary border rounded-pill" id="annotationsCountBadge">{{ user_annotations|length if user_annotations else 0 }}</span>
+                </div>
+
+                <div id="annotationsListContainer" class="overflow-auto pe-1 mb-3" style="max-height: 240px;">
+                  {% if user_annotations and user_annotations|length > 0 %}
+                    {% for a in user_annotations %}
+                    <div class="p-2.5 mb-2 rounded-3 border bg-light-subtle annotation-list-item position-relative transition-hover" data-annotation-id="{{ a.id }}" style="font-size: 0.82rem; border-left: 3px solid {{ '#eab308' if a.color == 'yellow' else ('#22c55e' if a.color == 'green' else ('#3b82f6' if a.color == 'blue' else ('#a855f7' if a.color == 'purple' else '#ec4899'))) }} !important;">
+                      <div class="d-flex align-items-start justify-content-between gap-2 mb-1">
+                        <div class="text-muted small fst-italic text-truncate" style="max-width: 170px;" title="{{ a.selected_text }}">
+                          "{{ a.selected_text }}"
+                        </div>
+                        <button type="button" class="btn btn-link text-danger p-0 border-0 btn-delete-annotation" data-annotation-id="{{ a.id }}" title="Xóa ghi chú">
+                          <i class="ph-bold ph-trash"></i>
+                        </button>
+                      </div>
+                      <div class="fw-semibold text-dark mb-1">{{ a.note_content }}</div>
+                      <div class="text-muted d-flex justify-content-between align-items-center" style="font-size: 0.72rem;">
+                        <span>{{ a.created_at.strftime('%H:%M %d/%m/%Y') if a.created_at else '' }}</span>
+                        <a href="javascript:void(0)" class="text-primary text-decoration-none btn-jump-annotation fw-semibold" data-annotation-id="{{ a.id }}">Xem trên bài ➔</a>
+                      </div>
+                    </div>
+                    {% endfor %}
+                  {% else %}
+                    <div class="text-center py-2.5 px-2 text-muted small bg-light rounded-3 border border-dashed" id="emptyAnnotationsNotice" style="font-size: 0.78rem;">
+                      <i class="ph-bold ph-cursor-click fs-5 d-block mb-1 text-secondary opacity-50"></i>
+                      <span>Bôi đen đoạn văn bản trên bài đọc để tạo ghi chú nổi tức thì.</span>
+                    </div>
+                  {% endif %}
+                </div>
+              </div>
 
               <!-- Milestone Complete Box -->
               <div class="p-3 rounded-4 text-center border" style="background: linear-gradient(135deg, #f0fdfa 0%, #ccfbf1 100%); border-color: #99f6e4 !important;">
@@ -2788,12 +2880,401 @@ document.addEventListener("DOMContentLoaded", function() {
     });
   });
 
-  // Reading notes auto save
+  // --- READING ANNOTATIONS & INLINE NOTES (Feature 4.4) ---
+  const rawAnnotations = [
+    {% for a in (user_annotations or []) %}
+    {
+      id: {{ a.id }},
+      paragraph_index: {{ a.paragraph_index if a.paragraph_index is not none else 0 }},
+      start_offset: {{ a.start_offset or 0 }},
+      end_offset: {{ a.end_offset or 0 }},
+      selected_text: {{ a.selected_text|tojson }},
+      note_content: {{ a.note_content|tojson }},
+      color: {{ (a.color or 'yellow')|tojson }},
+      created_at: {{ (a.created_at.strftime('%H:%M %d/%m/%Y') if a.created_at else '')|tojson }}
+    },
+    {% endfor %}
+  ];
+
+  const readerBody = document.getElementById("readerContentBody");
+  const annotToolbar = document.getElementById("annotationSelectionToolbar");
+  const annotEditor = document.getElementById("annotationEditorPopover");
+  const annotPreview = document.getElementById("annotationPreviewPopover");
+  const btnOpenEditor = document.getElementById("btnOpenAnnotationEditor");
+  const btnCloseEditor = document.getElementById("btnCloseAnnotationEditor");
+  const btnCancelAnnot = document.getElementById("btnCancelAnnotation");
+  const btnSaveAnnot = document.getElementById("btnSaveAnnotation");
+  const btnClosePreview = document.getElementById("btnCloseAnnotationPreview");
+  const btnDeletePreview = document.getElementById("btnDeleteAnnotationFromPreview");
+  const annotQuotePreview = document.getElementById("annotationSelectedQuotePreview");
+  const annotTextInput = document.getElementById("annotationNoteTextInput");
+  const annotListContainer = document.getElementById("annotationsListContainer");
+  const annotCountBadge = document.getElementById("annotationsCountBadge");
+  const tabNotesCountBadge = document.getElementById("tabNotesCountBadge");
+
+  let currentSelectionData = null;
+  let selectedColor = "yellow";
+  let activePreviewAnnotationId = null;
+  let annotationsStore = [...rawAnnotations];
+
+  // Helper to update count badges
+  function updateAnnotationBadges() {
+    const totalAnn = annotationsStore.length;
+    if (annotCountBadge) annotCountBadge.textContent = totalAnn;
+    if (tabNotesCountBadge) {
+      const hasGeneralNote = (readingNoteInput && readingNoteInput.value.trim().length > 0) ? 1 : 0;
+      tabNotesCountBadge.textContent = totalAnn + hasGeneralNote;
+    }
+  }
+
+  // Render initial highlights on paragraph elements
+  function renderAnnotationMarks() {
+    if (!readerBody) return;
+    annotationsStore.forEach(ann => {
+      const pElem = readerBody.querySelector(`.reader-paragraph[data-paragraph-idx="${ann.paragraph_index}"]`);
+      if (pElem && ann.selected_text) {
+        // Only replace if not already wrapped
+        if (!pElem.querySelector(`.reading-annotation-mark[data-annotation-id="${ann.id}"]`)) {
+          const rawText = pElem.innerHTML;
+          const escapedText = ann.selected_text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+          const reg = new RegExp(`(${escapedText})`, 'i');
+          if (reg.test(rawText)) {
+            pElem.innerHTML = rawText.replace(reg, `<mark class="reading-annotation-mark color-${ann.color || 'yellow'}" data-annotation-id="${ann.id}" title="${ann.note_content || 'Ghi chú'}">$1</mark>`);
+          }
+        }
+      }
+    });
+    bindAnnotationMarkEvents();
+  }
+
+  // Bind click event to all marks in reading body
+  function bindAnnotationMarkEvents() {
+    if (!readerBody) return;
+    readerBody.querySelectorAll(".reading-annotation-mark").forEach(mark => {
+      mark.onclick = function(e) {
+        e.stopPropagation();
+        const annId = parseInt(this.getAttribute("data-annotation-id"), 10);
+        const ann = annotationsStore.find(a => a.id === annId);
+        if (!ann) return;
+
+        activePreviewAnnotationId = annId;
+        const prevContent = document.getElementById("previewAnnotationContent");
+        const prevDate = document.getElementById("previewAnnotationDate");
+        if (prevContent) prevContent.textContent = ann.note_content;
+        if (prevDate) prevDate.textContent = ann.created_at || "Vừa xong";
+
+        // Position preview near mark
+        const rect = mark.getBoundingClientRect();
+        const bodyRect = readerBody.getBoundingClientRect();
+        annotPreview.style.position = "absolute";
+        annotPreview.style.top = (rect.bottom - bodyRect.top + 8) + "px";
+        annotPreview.style.left = Math.max(10, Math.min(bodyRect.width - 300, rect.left - bodyRect.left)) + "px";
+
+        annotPreview.classList.remove("d-none");
+        if (annotToolbar) annotToolbar.classList.add("d-none");
+        if (annotEditor) annotEditor.classList.add("d-none");
+      };
+    });
+  }
+
+  // Handle text selection in readerBody
+  if (readerBody) {
+    function handleSelectionCheck() {
+      const selection = window.getSelection();
+      if (!selection || selection.isCollapsed || !selection.toString().trim()) {
+        if (annotToolbar && !annotToolbar.classList.contains("d-none") && (!annotEditor || annotEditor.classList.contains("d-none"))) {
+          annotToolbar.classList.add("d-none");
+        }
+        return;
+      }
+
+      const selectedText = selection.toString().trim();
+      if (selectedText.length < 2) return;
+
+      const range = selection.getRangeAt(0);
+      let container = range.commonAncestorContainer;
+      if (container.nodeType === 3) container = container.parentNode;
+
+      const pElem = container.closest(".reader-paragraph");
+      if (!pElem || !readerBody.contains(pElem)) {
+        if (annotToolbar) annotToolbar.classList.add("d-none");
+        return;
+      }
+
+      const pIdx = parseInt(pElem.getAttribute("data-paragraph-idx") || "0", 10);
+      const startOffset = range.startOffset;
+      const endOffset = range.endOffset;
+
+      currentSelectionData = {
+        selected_text: selectedText,
+        paragraph_index: pIdx,
+        start_offset: startOffset,
+        end_offset: endOffset
+      };
+
+      const rect = range.getBoundingClientRect();
+      const bodyRect = readerBody.getBoundingClientRect();
+
+      if (annotToolbar) {
+        annotToolbar.style.top = (rect.top - bodyRect.top - 12) + "px";
+        annotToolbar.style.left = (rect.left - bodyRect.left + rect.width / 2) + "px";
+        annotToolbar.classList.remove("d-none");
+      }
+    }
+
+    readerBody.addEventListener("mouseup", () => setTimeout(handleSelectionCheck, 10));
+    readerBody.addEventListener("keyup", () => setTimeout(handleSelectionCheck, 10));
+  }
+
+  // Open editor popover
+  if (btnOpenEditor) {
+    btnOpenEditor.addEventListener("click", function(e) {
+      e.stopPropagation();
+      if (!currentSelectionData) return;
+      if (annotToolbar) annotToolbar.classList.add("d-none");
+      if (annotPreview) annotPreview.classList.add("d-none");
+
+      if (annotQuotePreview) annotQuotePreview.textContent = `"${currentSelectionData.selected_text}"`;
+      if (annotTextInput) {
+        annotTextInput.value = "";
+        setTimeout(() => annotTextInput.focus(), 50);
+      }
+
+      // Position editor where toolbar was
+      if (annotToolbar && annotEditor) {
+        annotEditor.style.position = "absolute";
+        annotEditor.style.top = annotToolbar.style.top;
+        annotEditor.style.left = Math.max(10, Math.min(readerBody.clientWidth - 320, parseFloat(annotToolbar.style.left) - 150)) + "px";
+        annotEditor.classList.remove("d-none");
+      }
+    });
+  }
+
+  // Close editor popover
+  function hideAnnotationEditor() {
+    if (annotEditor) annotEditor.classList.add("d-none");
+    if (annotToolbar) annotToolbar.classList.add("d-none");
+  }
+  if (btnCloseEditor) btnCloseEditor.addEventListener("click", hideAnnotationEditor);
+  if (btnCancelAnnot) btnCancelAnnot.addEventListener("click", hideAnnotationEditor);
+
+  // Close preview popover
+  if (btnClosePreview) {
+    btnClosePreview.addEventListener("click", () => {
+      if (annotPreview) annotPreview.classList.add("d-none");
+      activePreviewAnnotationId = null;
+    });
+  }
+
+  // Color picker selection
+  document.querySelectorAll(".annotation-color-btn").forEach(btn => {
+    btn.addEventListener("click", function() {
+      document.querySelectorAll(".annotation-color-btn").forEach(b => b.classList.remove("active"));
+      this.classList.add("active");
+      selectedColor = this.getAttribute("data-color") || "yellow";
+    });
+  });
+
+  // Save annotation AJAX
+  if (btnSaveAnnot) {
+    btnSaveAnnot.addEventListener("click", function() {
+      if (!currentSelectionData) return;
+      const noteContent = annotTextInput ? annotTextInput.value.trim() : "";
+      if (!noteContent) {
+        alert("Vui lòng nhập nội dung ghi chú!");
+        if (annotTextInput) annotTextInput.focus();
+        return;
+      }
+
+      btnSaveAnnot.disabled = true;
+      btnSaveAnnot.innerHTML = `<span class="spinner-border spinner-border-sm me-1"></span>Đang lưu...`;
+
+      const payload = {
+        selected_text: currentSelectionData.selected_text,
+        note_content: noteContent,
+        paragraph_index: currentSelectionData.paragraph_index,
+        start_offset: currentSelectionData.start_offset,
+        end_offset: currentSelectionData.end_offset,
+        color: selectedColor
+      };
+
+      fetch(`/lessons/{{ lesson.id }}/annotations`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-CSRFToken": "{{ csrf_token() }}"
+        },
+        body: JSON.stringify(payload)
+      })
+      .then(res => res.json())
+      .then(data => {
+        btnSaveAnnot.disabled = false;
+        btnSaveAnnot.innerHTML = "Lưu ghi chú";
+
+        if (data.status === "success" && data.annotation) {
+          const ann = data.annotation;
+          annotationsStore.push(ann);
+          hideAnnotationEditor();
+          renderAnnotationMarks();
+          appendAnnotationToList(ann);
+          updateAnnotationBadges();
+
+          // Switch to notes tab to show feedback
+          const tabNotesBtn = document.getElementById("tab-read-notes-btn");
+          if (tabNotesBtn && window.bootstrap) {
+            const tabInstance = bootstrap.Tab.getOrCreateInstance(tabNotesBtn);
+            tabInstance.show();
+          }
+        } else {
+          alert(data.message || "Không thể lưu ghi chú!");
+        }
+      })
+      .catch(err => {
+        btnSaveAnnot.disabled = false;
+        btnSaveAnnot.innerHTML = "Lưu ghi chú";
+        console.error("Save annotation error:", err);
+        alert("Lỗi kết nối máy chủ khi lưu ghi chú.");
+      });
+    });
+  }
+
+  // Append new annotation to right sidebar list
+  function appendAnnotationToList(ann) {
+    if (!annotListContainer) return;
+    const emptyNotice = document.getElementById("emptyAnnotationsNotice");
+    if (emptyNotice) emptyNotice.remove();
+
+    const colorBorderMap = {
+      yellow: '#eab308',
+      green: '#22c55e',
+      blue: '#3b82f6',
+      purple: '#a855f7',
+      pink: '#ec4899'
+    };
+    const borderCol = colorBorderMap[ann.color] || '#eab308';
+
+    const card = document.createElement("div");
+    card.className = "p-2.5 mb-2 rounded-3 border bg-light-subtle annotation-list-item position-relative transition-hover";
+    card.setAttribute("data-annotation-id", ann.id);
+    card.style.fontSize = "0.82rem";
+    card.style.borderLeft = `3px solid ${borderCol} !important`;
+
+    card.innerHTML = `
+      <div class="d-flex align-items-start justify-content-between gap-2 mb-1">
+        <div class="text-muted small fst-italic text-truncate" style="max-width: 170px;" title="${ann.selected_text}">
+          "${ann.selected_text}"
+        </div>
+        <button type="button" class="btn btn-link text-danger p-0 border-0 btn-delete-annotation" data-annotation-id="${ann.id}" title="Xóa ghi chú">
+          <i class="ph-bold ph-trash"></i>
+        </button>
+      </div>
+      <div class="fw-semibold text-dark mb-1">${ann.note_content}</div>
+      <div class="text-muted d-flex justify-content-between align-items-center" style="font-size: 0.72rem;">
+        <span>${ann.created_at || 'Vừa xong'}</span>
+        <a href="javascript:void(0)" class="text-primary text-decoration-none btn-jump-annotation fw-semibold" data-annotation-id="${ann.id}">Xem trên bài ➔</a>
+      </div>
+    `;
+    annotListContainer.prepend(card);
+    bindSidebarAnnotationActions();
+  }
+
+  // Delete annotation handler (supports preview popover and sidebar list)
+  function deleteAnnotation(annId) {
+    if (!confirm("Bạn có chắc chắn muốn xóa ghi chú này?")) return;
+
+    fetch(`/lessons/{{ lesson.id }}/annotations/${annId}`, {
+      method: "DELETE",
+      headers: {
+        "X-CSRFToken": "{{ csrf_token() }}"
+      }
+    })
+    .then(res => res.json())
+    .then(data => {
+      if (data.status === "success") {
+        annotationsStore = annotationsStore.filter(a => a.id !== annId);
+
+        // Remove highlight mark from reading body
+        if (readerBody) {
+          const mark = readerBody.querySelector(`.reading-annotation-mark[data-annotation-id="${annId}"]`);
+          if (mark) {
+            const parent = mark.parentNode;
+            while (mark.firstChild) parent.insertBefore(mark.firstChild, mark);
+            parent.removeChild(mark);
+          }
+        }
+
+        // Remove item from sidebar list
+        if (annotListContainer) {
+          const listItem = annotListContainer.querySelector(`.annotation-list-item[data-annotation-id="${annId}"]`);
+          if (listItem) listItem.remove();
+
+          if (annotationsStore.length === 0) {
+            annotListContainer.innerHTML = `
+              <div class="text-center py-2.5 px-2 text-muted small bg-light rounded-3 border border-dashed" id="emptyAnnotationsNotice" style="font-size: 0.78rem;">
+                <i class="ph-bold ph-cursor-click fs-5 d-block mb-1 text-secondary opacity-50"></i>
+                Bôi đen một cụm từ trên bài đọc để tạo ghi chú nổi.
+              </div>
+            `;
+          }
+        }
+
+        if (annotPreview) annotPreview.classList.add("d-none");
+        activePreviewAnnotationId = null;
+        updateAnnotationBadges();
+      } else {
+        alert(data.message || "Không thể xóa ghi chú!");
+      }
+    })
+    .catch(err => {
+      console.error("Delete annotation error:", err);
+      alert("Lỗi khi xóa ghi chú.");
+    });
+  }
+
+  // Bind actions on sidebar list items (Jump to mark & Delete)
+  function bindSidebarAnnotationActions() {
+    if (!annotListContainer) return;
+    annotListContainer.querySelectorAll(".btn-delete-annotation").forEach(btn => {
+      btn.onclick = function(e) {
+        e.stopPropagation();
+        const annId = parseInt(this.getAttribute("data-annotation-id"), 10);
+        deleteAnnotation(annId);
+      };
+    });
+
+    annotListContainer.querySelectorAll(".btn-jump-annotation").forEach(btn => {
+      btn.onclick = function(e) {
+        e.stopPropagation();
+        const annId = parseInt(this.getAttribute("data-annotation-id"), 10);
+        const mark = readerBody ? readerBody.querySelector(`.reading-annotation-mark[data-annotation-id="${annId}"]`) : null;
+        if (mark) {
+          mark.scrollIntoView({ behavior: "smooth", block: "center" });
+          mark.click();
+        }
+      };
+    });
+  }
+
+  // Delete from preview popover button
+  if (btnDeletePreview) {
+    btnDeletePreview.addEventListener("click", function() {
+      if (activePreviewAnnotationId) {
+        deleteAnnotation(activePreviewAnnotationId);
+      }
+    });
+  }
+
+  // Initialize reading annotations on page ready
+  renderAnnotationMarks();
+  bindSidebarAnnotationActions();
+
+  // Reading general notes auto save
   const readingNoteInput = document.getElementById("readingNoteInput");
   let readingNoteTimer = null;
   if (readingNoteInput) {
     readingNoteInput.addEventListener("input", function() {
       clearTimeout(readingNoteTimer);
+      updateAnnotationBadges();
       readingNoteTimer = setTimeout(() => {
         const formData = new FormData();
         formData.append("note", readingNoteInput.value);

@@ -10,7 +10,7 @@ from ..auth.models import record_daily_activity
 from .models import (Badge, Challenge, GrammarErrorLog, GrammarExerciseAttempt, GrammarProgress, GrammarRule,
                        GrammarRuleBookmark, GrammarTopic, Lesson, LessonBookmark, LessonFavorite,
                        LessonNote, LessonProgress, LessonRating, LessonReport, Question, Quiz, QuizAttempt,
-                       QuizAttemptAnswer, UserBadge, UserChallenge, Vocabulary, VocabularyProgress, WordReport)
+                       QuizAttemptAnswer, ReadingAnnotation, UserBadge, UserChallenge, Vocabulary, VocabularyProgress, WordReport)
 from .vocab_catalog import (VOCAB_CATEGORIES, get_category_info, get_subcategory_info,
                            normalize_category_key, normalize_subcategory_key)
 from . import bp
@@ -719,7 +719,12 @@ def _render_lesson_page(lesson):
     is_favorite = LessonFavorite.query.filter_by(user_id=current_user.id, lesson_id=lesson.id).first() is not None
     user_rating = LessonRating.query.filter_by(user_id=current_user.id, lesson_id=lesson.id).first()
     rating_distribution = lesson.get_rating_distribution()
-    recent_ratings = LessonRating.query.filter_by(lesson_id=lesson.id).order_by(LessonRating.updated_at.desc()).limit(15).all()
+    recent_ratings = LessonRating.query.filter_by(lesson_id=lesson.id).order_by(LessonRating.created_at.desc()).limit(10).all()
+    user_annotations = []
+    if current_user.is_authenticated and lesson.skill == "Reading":
+        user_annotations = ReadingAnnotation.query.filter_by(
+            user_id=current_user.id, lesson_id=lesson.id
+        ).order_by(ReadingAnnotation.created_at.asc()).all()
 
     return render_template(
         "learning/lesson_detail.html",
@@ -730,6 +735,7 @@ def _render_lesson_page(lesson):
         reading_paragraphs=reading_paragraphs,
         reading_vocab=reading_vocab,
         reading_questions=reading_questions,
+        user_annotations=user_annotations,
         writing_prompt=writing_prompt,
         writing_model=writing_model,
         writing_templates=writing_templates,
@@ -995,6 +1001,97 @@ def get_lesson_ratings(lesson_id):
         "ratings_count": lesson.ratings_count,
         "distribution": lesson.get_rating_distribution(),
         "ratings": data
+    })
+
+
+@bp.get("/lessons/<int:lesson_id>/annotations")
+@login_required
+def get_reading_annotations(lesson_id):
+    """
+    Returns list of reading annotations made by current user for this lesson.
+    """
+    lesson = Lesson.query.filter_by(id=lesson_id, is_active=True).first_or_404()
+    annotations = ReadingAnnotation.query.filter_by(
+        lesson_id=lesson.id, user_id=current_user.id
+    ).order_by(ReadingAnnotation.created_at.asc()).all()
+    return jsonify({
+        "status": "success",
+        "success": True,
+        "annotations": [a.to_dict() for a in annotations]
+    })
+
+
+@bp.post("/lessons/<int:lesson_id>/annotations")
+@login_required
+def save_reading_annotation(lesson_id):
+    """
+    Creates or updates an inline reading annotation for a selected text passage.
+    """
+    lesson = Lesson.query.filter_by(id=lesson_id, is_active=True).first_or_404()
+    data = request.get_json() if request.is_json else request.form
+
+    selected_text = (data.get("selected_text") or "").strip()
+    note_content = (data.get("note_content") or "").strip()
+    annotation_id = data.get("id")
+
+    if not selected_text:
+        return jsonify({"success": False, "message": "Đoạn văn bản được chọn không được để trống."}), 400
+    if not note_content:
+        return jsonify({"success": False, "message": "Nội dung ghi chú không được để trống."}), 400
+
+    paragraph_index = int(data.get("paragraph_index") or 0)
+    start_offset = int(data.get("start_offset") or 0)
+    end_offset = int(data.get("end_offset") or 0)
+    color = (data.get("color") or "yellow").strip()
+
+    if annotation_id:
+        ann = ReadingAnnotation.query.filter_by(id=annotation_id, lesson_id=lesson.id, user_id=current_user.id).first()
+        if ann:
+            ann.note_content = note_content
+            ann.color = color
+            db.session.commit()
+            return jsonify({
+                "status": "success",
+                "success": True,
+                "message": "Đã cập nhật ghi chú thành công!",
+                "annotation": ann.to_dict()
+            })
+
+    ann = ReadingAnnotation(
+        lesson_id=lesson.id,
+        user_id=current_user.id,
+        selected_text=selected_text,
+        note_content=note_content,
+        paragraph_index=paragraph_index,
+        start_offset=start_offset,
+        end_offset=end_offset,
+        color=color
+    )
+    db.session.add(ann)
+    db.session.commit()
+
+    return jsonify({
+        "status": "success",
+        "success": True,
+        "message": "Đã thêm ghi chú trực tiếp vào bài đọc thành công!",
+        "annotation": ann.to_dict()
+    }), 201
+
+
+@bp.delete("/lessons/<int:lesson_id>/annotations/<int:annotation_id>")
+@bp.post("/lessons/<int:lesson_id>/annotations/<int:annotation_id>/delete")
+@login_required
+def delete_reading_annotation(lesson_id, annotation_id):
+    """
+    Deletes an inline reading annotation.
+    """
+    ann = ReadingAnnotation.query.filter_by(id=annotation_id, lesson_id=lesson_id, user_id=current_user.id).first_or_404()
+    db.session.delete(ann)
+    db.session.commit()
+    return jsonify({
+        "status": "success",
+        "success": True,
+        "message": "Đã xóa ghi chú thành công!"
     })
 
 

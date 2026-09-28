@@ -274,6 +274,38 @@ class LessonNote(db.Model):
     __table_args__ = (db.UniqueConstraint("user_id", "lesson_id", name="uq_user_lesson_note"),)
 
 
+class ReadingAnnotation(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    lesson_id = db.Column(db.Integer, db.ForeignKey("lesson.id"), nullable=False, index=True)
+    user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False, index=True)
+    selected_text = db.Column(db.Text, nullable=False)
+    note_content = db.Column(db.Text, nullable=False)
+    paragraph_index = db.Column(db.Integer, nullable=True, default=0)
+    start_offset = db.Column(db.Integer, nullable=True, default=0)
+    end_offset = db.Column(db.Integer, nullable=True, default=0)
+    color = db.Column(db.String(20), nullable=True, default="yellow")
+    created_at = db.Column(db.DateTime(timezone=True), default=now, nullable=False)
+    updated_at = db.Column(db.DateTime(timezone=True), default=now, onupdate=now, nullable=False)
+
+    user = db.relationship("User", backref=db.backref("reading_annotations", cascade="all, delete-orphan"))
+    lesson = db.relationship("Lesson", backref=db.backref("reading_annotations", cascade="all, delete-orphan"))
+
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "lesson_id": self.lesson_id,
+            "user_id": self.user_id,
+            "selected_text": self.selected_text,
+            "note_content": self.note_content,
+            "paragraph_index": self.paragraph_index or 0,
+            "start_offset": self.start_offset or 0,
+            "end_offset": self.end_offset or 0,
+            "color": self.color or "yellow",
+            "created_at": self.created_at.strftime("%H:%M %d/%m/%Y") if self.created_at else "",
+            "updated_at": self.updated_at.strftime("%H:%M %d/%m/%Y") if self.updated_at else "",
+        }
+
+
 class LessonBookmark(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False, index=True)
