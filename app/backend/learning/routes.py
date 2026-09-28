@@ -1035,9 +1035,7 @@ def save_reading_annotation(lesson_id):
     annotation_id = data.get("id")
 
     if not selected_text:
-        return jsonify({"success": False, "message": "Đoạn văn bản được chọn không được để trống."}), 400
-    if not note_content:
-        return jsonify({"success": False, "message": "Nội dung ghi chú không được để trống."}), 400
+        return jsonify({"status": "error", "success": False, "message": "Đoạn văn bản được chọn không được để trống."}), 400
 
     paragraph_index = int(data.get("paragraph_index") or 0)
     start_offset = int(data.get("start_offset") or 0)
@@ -1053,7 +1051,7 @@ def save_reading_annotation(lesson_id):
             return jsonify({
                 "status": "success",
                 "success": True,
-                "message": "Đã cập nhật ghi chú thành công!",
+                "message": "Đã cập nhật đánh dấu/ghi chú thành công!",
                 "annotation": ann.to_dict()
             })
 
@@ -1073,7 +1071,7 @@ def save_reading_annotation(lesson_id):
     return jsonify({
         "status": "success",
         "success": True,
-        "message": "Đã thêm ghi chú trực tiếp vào bài đọc thành công!",
+        "message": "Đã đánh dấu nổi bật bài đọc thành công!",
         "annotation": ann.to_dict()
     }), 201
 
@@ -1083,7 +1081,7 @@ def save_reading_annotation(lesson_id):
 @login_required
 def delete_reading_annotation(lesson_id, annotation_id):
     """
-    Deletes an inline reading annotation.
+    Deletes an inline reading annotation or highlight.
     """
     ann = ReadingAnnotation.query.filter_by(id=annotation_id, lesson_id=lesson_id, user_id=current_user.id).first_or_404()
     db.session.delete(ann)
@@ -1091,7 +1089,23 @@ def delete_reading_annotation(lesson_id, annotation_id):
     return jsonify({
         "status": "success",
         "success": True,
-        "message": "Đã xóa ghi chú thành công!"
+        "message": "Đã xóa đánh dấu thành công!"
+    })
+
+
+@bp.post("/lessons/<int:lesson_id>/annotations/clear-all")
+@login_required
+def clear_all_reading_annotations(lesson_id):
+    """
+    Clears all inline reading annotations/highlights made by current user for this lesson.
+    """
+    lesson = Lesson.query.filter_by(id=lesson_id, is_active=True).first_or_404()
+    ReadingAnnotation.query.filter_by(lesson_id=lesson.id, user_id=current_user.id).delete()
+    db.session.commit()
+    return jsonify({
+        "status": "success",
+        "success": True,
+        "message": "Đã xóa toàn bộ đánh dấu và ghi chú bài đọc!"
     })
 
 

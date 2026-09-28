@@ -501,6 +501,11 @@
           <i class="ph-bold ph-highlighter" style="color: #0d9488;"></i>
           <span class="d-none d-sm-inline">Làm nổi từ vựng</span>
         </button>
+
+        <button type="button" id="btnClearAllHighlights" class="btn btn-sm btn-light border border-danger-subtle text-danger rounded-pill px-2.5 py-1 d-inline-flex align-items-center gap-1 shadow-2xs {{ '' if (user_annotations and user_annotations|length > 0) else 'd-none' }}" style="font-size: 0.78rem;" title="Xóa toàn bộ đánh dấu trên bài đọc">
+          <i class="ph-bold ph-eraser"></i>
+          <span class="d-none d-md-inline">Xóa đánh dấu</span>
+        </button>
       </div>
 
       <div class="d-flex align-items-center gap-2">
@@ -541,10 +546,19 @@
         </div>
 
         <!-- FLOATING SELECTION TOOLBAR -->
-        <div id="annotationSelectionToolbar" class="d-none position-absolute shadow-lg rounded-pill bg-dark text-white p-1 d-flex align-items-center gap-1 z-3" style="transform: translate(-50%, -100%); margin-top: -8px;">
-          <button type="button" id="btnOpenAnnotationEditor" class="btn btn-sm text-white px-2.5 py-1 rounded-pill fw-semibold d-inline-flex align-items-center gap-1.5" style="font-size: 0.78rem; background: rgba(255,255,255,0.18);">
+        <div id="annotationSelectionToolbar" class="d-none position-absolute shadow-lg rounded-pill bg-dark text-white p-1.5 d-flex align-items-center gap-1.5 z-3" style="transform: translate(-50%, -100%); margin-top: -8px;">
+          <!-- 1-Click Quick Color Palette -->
+          <div class="d-flex align-items-center gap-1 px-1">
+            <button type="button" class="btn btn-sm p-0 rounded-circle border-0 quick-highlight-btn" data-color="yellow" style="width: 20px; height: 20px; background: #fef08a;" title="Highlight Vàng"></button>
+            <button type="button" class="btn btn-sm p-0 rounded-circle border-0 quick-highlight-btn" data-color="green" style="width: 20px; height: 20px; background: #bbf7d0;" title="Highlight Xanh lá"></button>
+            <button type="button" class="btn btn-sm p-0 rounded-circle border-0 quick-highlight-btn" data-color="pink" style="width: 20px; height: 20px; background: #fbcfe8;" title="Highlight Hồng"></button>
+            <button type="button" class="btn btn-sm p-0 rounded-circle border-0 quick-highlight-btn" data-color="blue" style="width: 20px; height: 20px; background: #bfdbfe;" title="Highlight Xanh dương"></button>
+            <button type="button" class="btn btn-sm p-0 rounded-circle border-0 quick-highlight-btn" data-color="purple" style="width: 20px; height: 20px; background: #e9d5ff;" title="Highlight Tím"></button>
+          </div>
+          <span class="text-white-50 small" style="opacity: 0.4;">|</span>
+          <button type="button" id="btnOpenAnnotationEditor" class="btn btn-sm text-white px-2.5 py-1 rounded-pill fw-semibold d-inline-flex align-items-center gap-1.5" style="font-size: 0.78rem; background: rgba(255,255,255,0.18);" title="Thêm ghi chú chi tiết">
             <i class="ph-bold ph-note-pencil text-warning"></i>
-            <span>Ghi chú đoạn này</span>
+            <span>Ghi chú</span>
           </button>
         </div>
 
@@ -2917,10 +2931,19 @@ document.addEventListener("DOMContentLoaded", function() {
   let activePreviewAnnotationId = null;
   let annotationsStore = [...rawAnnotations];
 
-  // Helper to update count badges
+  const btnClearAllHighlights = document.getElementById("btnClearAllHighlights");
+
+  // Helper to update count badges & toolbar clear button
   function updateAnnotationBadges() {
     const totalAnn = annotationsStore.length;
     if (annotCountBadge) annotCountBadge.textContent = totalAnn;
+    if (btnClearAllHighlights) {
+      if (totalAnn > 0) {
+        btnClearAllHighlights.classList.remove("d-none");
+      } else {
+        btnClearAllHighlights.classList.add("d-none");
+      }
+    }
     if (tabNotesCountBadge) {
       const hasGeneralNote = (readingNoteInput && readingNoteInput.value.trim().length > 0) ? 1 : 0;
       tabNotesCountBadge.textContent = totalAnn + hasGeneralNote;
@@ -2939,7 +2962,7 @@ document.addEventListener("DOMContentLoaded", function() {
           const escapedText = ann.selected_text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
           const reg = new RegExp(`(${escapedText})`, 'i');
           if (reg.test(rawText)) {
-            pElem.innerHTML = rawText.replace(reg, `<mark class="reading-annotation-mark color-${ann.color || 'yellow'}" data-annotation-id="${ann.id}" title="${ann.note_content || 'Ghi chú'}">$1</mark>`);
+            pElem.innerHTML = rawText.replace(reg, `<mark class="reading-annotation-mark color-${ann.color || 'yellow'}" data-annotation-id="${ann.id}" title="${ann.note_content || 'Đánh dấu nổi bật'}">$1</mark>`);
           }
         }
       }
@@ -2960,7 +2983,14 @@ document.addEventListener("DOMContentLoaded", function() {
         activePreviewAnnotationId = annId;
         const prevContent = document.getElementById("previewAnnotationContent");
         const prevDate = document.getElementById("previewAnnotationDate");
-        if (prevContent) prevContent.textContent = ann.note_content;
+        if (prevContent) {
+          prevContent.textContent = ann.note_content || "Đoạn văn được đánh dấu nổi bật (" + (ann.color || 'màu vàng') + ")";
+          if (!ann.note_content) {
+            prevContent.classList.add("text-muted", "fst-italic");
+          } else {
+            prevContent.classList.remove("text-muted", "fst-italic");
+          }
+        }
         if (prevDate) prevDate.textContent = ann.created_at || "Vừa xong";
 
         // Position preview near mark
@@ -3026,6 +3056,52 @@ document.addEventListener("DOMContentLoaded", function() {
     readerBody.addEventListener("keyup", () => setTimeout(handleSelectionCheck, 10));
   }
 
+  // Quick 1-Click Highlighting Palette Handler
+  document.querySelectorAll(".quick-highlight-btn").forEach(btn => {
+    btn.addEventListener("click", function(e) {
+      e.stopPropagation();
+      if (!currentSelectionData) return;
+
+      const color = this.getAttribute("data-color") || "yellow";
+      const payload = {
+        selected_text: currentSelectionData.selected_text,
+        note_content: "",
+        paragraph_index: currentSelectionData.paragraph_index,
+        start_offset: currentSelectionData.start_offset,
+        end_offset: currentSelectionData.end_offset,
+        color: color
+      };
+
+      fetch(`/lessons/{{ lesson.id }}/annotations`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-CSRFToken": "{{ csrf_token() }}"
+        },
+        body: JSON.stringify(payload)
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data.status === "success" && data.annotation) {
+          const ann = data.annotation;
+          annotationsStore.push(ann);
+          if (annotToolbar) annotToolbar.classList.add("d-none");
+          renderAnnotationMarks();
+          appendAnnotationToList(ann);
+          updateAnnotationBadges();
+
+          // Clear selection
+          if (window.getSelection) {
+            window.getSelection().removeAllRanges();
+          }
+        }
+      })
+      .catch(err => {
+        console.error("Quick highlight error:", err);
+      });
+    });
+  });
+
   // Open editor popover
   if (btnOpenEditor) {
     btnOpenEditor.addEventListener("click", function(e) {
@@ -3066,7 +3142,7 @@ document.addEventListener("DOMContentLoaded", function() {
     });
   }
 
-  // Color picker selection
+  // Color picker selection in editor
   document.querySelectorAll(".annotation-color-btn").forEach(btn => {
     btn.addEventListener("click", function() {
       document.querySelectorAll(".annotation-color-btn").forEach(b => b.classList.remove("active"));
@@ -3075,7 +3151,7 @@ document.addEventListener("DOMContentLoaded", function() {
     });
   });
 
-  // Save annotation AJAX
+  // Save annotation AJAX from editor
   if (btnSaveAnnot) {
     btnSaveAnnot.addEventListener("click", function() {
       if (!currentSelectionData) return;
@@ -3138,7 +3214,7 @@ document.addEventListener("DOMContentLoaded", function() {
     });
   }
 
-  // Append new annotation to right sidebar list
+  // Append new annotation/highlight to right sidebar list
   function appendAnnotationToList(ann) {
     if (!annotListContainer) return;
     const emptyNotice = document.getElementById("emptyAnnotationsNotice");
@@ -3159,16 +3235,18 @@ document.addEventListener("DOMContentLoaded", function() {
     card.style.fontSize = "0.82rem";
     card.style.borderLeft = `3px solid ${borderCol} !important`;
 
+    const noteDisplay = ann.note_content ? ann.note_content : '<span class="text-muted fst-italic">Đánh dấu nổi bật</span>';
+
     card.innerHTML = `
       <div class="d-flex align-items-start justify-content-between gap-2 mb-1">
         <div class="text-muted small fst-italic text-truncate" style="max-width: 170px;" title="${ann.selected_text}">
           "${ann.selected_text}"
         </div>
-        <button type="button" class="btn btn-link text-danger p-0 border-0 btn-delete-annotation" data-annotation-id="${ann.id}" title="Xóa ghi chú">
+        <button type="button" class="btn btn-link text-danger p-0 border-0 btn-delete-annotation" data-annotation-id="${ann.id}" title="Xóa đánh dấu">
           <i class="ph-bold ph-trash"></i>
         </button>
       </div>
-      <div class="fw-semibold text-dark mb-1">${ann.note_content}</div>
+      <div class="fw-semibold text-dark mb-1">${noteDisplay}</div>
       <div class="text-muted d-flex justify-content-between align-items-center" style="font-size: 0.72rem;">
         <span>${ann.created_at || 'Vừa xong'}</span>
         <a href="javascript:void(0)" class="text-primary text-decoration-none btn-jump-annotation fw-semibold" data-annotation-id="${ann.id}">Xem trên bài ➔</a>
@@ -3178,9 +3256,9 @@ document.addEventListener("DOMContentLoaded", function() {
     bindSidebarAnnotationActions();
   }
 
-  // Delete annotation handler (supports preview popover and sidebar list)
+  // Delete single annotation/highlight handler
   function deleteAnnotation(annId) {
-    if (!confirm("Bạn có chắc chắn muốn xóa ghi chú này?")) return;
+    if (!confirm("Bạn có chắc chắn muốn xóa đánh dấu này?")) return;
 
     fetch(`/lessons/{{ lesson.id }}/annotations/${annId}`, {
       method: "DELETE",
@@ -3212,7 +3290,7 @@ document.addEventListener("DOMContentLoaded", function() {
             annotListContainer.innerHTML = `
               <div class="text-center py-2.5 px-2 text-muted small bg-light rounded-3 border border-dashed" id="emptyAnnotationsNotice" style="font-size: 0.78rem;">
                 <i class="ph-bold ph-cursor-click fs-5 d-block mb-1 text-secondary opacity-50"></i>
-                Bôi đen một cụm từ trên bài đọc để tạo ghi chú nổi.
+                Bôi đen một cụm từ trên bài đọc để tạo ghi chú nổi hoặc highlight màu.
               </div>
             `;
           }
@@ -3222,12 +3300,61 @@ document.addEventListener("DOMContentLoaded", function() {
         activePreviewAnnotationId = null;
         updateAnnotationBadges();
       } else {
-        alert(data.message || "Không thể xóa ghi chú!");
+        alert(data.message || "Không thể xóa đánh dấu!");
       }
     })
     .catch(err => {
       console.error("Delete annotation error:", err);
-      alert("Lỗi khi xóa ghi chú.");
+      alert("Lỗi khi xóa đánh dấu.");
+    });
+  }
+
+  // Clear all highlights handler
+  if (btnClearAllHighlights) {
+    btnClearAllHighlights.addEventListener("click", function() {
+      if (annotationsStore.length === 0) return;
+      if (!confirm("Bạn có chắc muốn xóa TOÀN BỘ highlight và ghi chú trên bài đọc này?")) return;
+
+      fetch(`/lessons/{{ lesson.id }}/annotations/clear-all`, {
+        method: "POST",
+        headers: {
+          "X-CSRFToken": "{{ csrf_token() }}"
+        }
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data.status === "success") {
+          annotationsStore = [];
+
+          // Remove all highlight marks from reading body
+          if (readerBody) {
+            readerBody.querySelectorAll(".reading-annotation-mark").forEach(mark => {
+              const parent = mark.parentNode;
+              while (mark.firstChild) parent.insertBefore(mark.firstChild, mark);
+              parent.removeChild(mark);
+            });
+          }
+
+          if (annotListContainer) {
+            annotListContainer.innerHTML = `
+              <div class="text-center py-2.5 px-2 text-muted small bg-light rounded-3 border border-dashed" id="emptyAnnotationsNotice" style="font-size: 0.78rem;">
+                <i class="ph-bold ph-cursor-click fs-5 d-block mb-1 text-secondary opacity-50"></i>
+                Bôi đen một cụm từ trên bài đọc để tạo ghi chú nổi hoặc highlight màu.
+              </div>
+            `;
+          }
+
+          if (annotPreview) annotPreview.classList.add("d-none");
+          activePreviewAnnotationId = null;
+          updateAnnotationBadges();
+        } else {
+          alert(data.message || "Không thể xóa tất cả đánh dấu!");
+        }
+      })
+      .catch(err => {
+        console.error("Clear all highlights error:", err);
+        alert("Lỗi khi xóa tất cả đánh dấu.");
+      });
     });
   }
 

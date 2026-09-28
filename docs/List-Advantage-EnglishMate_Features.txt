@@ -264,8 +264,8 @@ NỀN TẢNG HỌC TIẾNG ANH TRỰC TUYẾN THÔNG MINH
 [x] - Reading Questions - Câu hỏi đọc
 [x] - Reading Vocabulary - Từ vựng đọc
 [x] - Reading Translation - Dịch bài đọc
-[ ] - Reading Annotation - Ghi chú bài đọc
-[ ] - Reading Highlight - Highlight bài đọc
+[x] - Reading Annotation - Ghi chú bài đọc
+[x] - Reading Highlight - Highlight bài đọc
 
 4.7. Speaking Features (Tính năng nói)
 [x] - Speaking Practice - Luyện nói

@@ -185,15 +185,15 @@ MODULE 4. LESSONS & 4 SKILLS (BÀI HỌC & 4 KỸ NĂNG) — 9 TÍNH NĂNG CHƯA
   + Sử dụng JavaScript Range API / Selection API để bắt sự kiện bôi văn bản và hiển thị popover thêm ghi chú.
 - Trạng thái: ĐÃ HOÀN THÀNH (100% test passed)
 
-[ ] 4.5. Reading Highlight - Bôi màu nổi bật văn bản bài đọc (Mục 4.6)
+[x] 4.5. Reading Highlight - Bôi màu nổi bật văn bản bài đọc (Mục 4.6)
 - Hiện trạng trong EnglishMate_Features.txt:
   Chưa có công cụ highlight trực tiếp trên bài đọc.
 - Phần còn thiếu chưa làm:
-  Chưa có bảng chọn màu highlight (Vàng, Xanh lá, Hồng) để người dùng đánh dấu các từ mới hoặc cấu trúc hay trong đoạn văn đọc hiểu.
+  Chưa có bảng chọn màu highlight (Vàng, Xanh lá, Hồng, Xanh dương, Tím) để người dùng đánh dấu các từ mới hoặc cấu trúc hay trong đoạn văn đọc hiểu.
 - Giải pháp kỹ thuật cần làm:
-  + Dùng thư viện JavaScript nhẹ (như `mark.js` hoặc custom highlighter) để bao bọc thẻ `<mark class="highlight-yellow">` quanh vùng chọn.
-  + Lưu các dải vị trí đã highlight vào CSDL hoặc `localStorage`.
-- Mức độ ưu tiên: Cao (High)
+  + Thanh công cụ nổi 1-click Quick Highlight (Vàng, Xanh lá, Hồng, Xanh dương, Tím) gắn trực tiếp với Selection/Range API.
+  + Lưu các dải vị trí đã highlight vào CSDL và đồng bộ qua API `/lessons/<id>/annotations`.
+- Trạng thái: ĐÃ HOÀN THÀNH (100% test passed)
 
 [ ] 4.6. Speaking Recording - Thu âm giọng nói trực tiếp qua Micro (Mục 4.7)
 - Hiện trạng trong EnglishMate_Features.txt:

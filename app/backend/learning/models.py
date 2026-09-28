@@ -279,7 +279,7 @@ class ReadingAnnotation(db.Model):
     lesson_id = db.Column(db.Integer, db.ForeignKey("lesson.id"), nullable=False, index=True)
     user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False, index=True)
     selected_text = db.Column(db.Text, nullable=False)
-    note_content = db.Column(db.Text, nullable=False)
+    note_content = db.Column(db.Text, nullable=True, default="")
     paragraph_index = db.Column(db.Integer, nullable=True, default=0)
     start_offset = db.Column(db.Integer, nullable=True, default=0)
     end_offset = db.Column(db.Integer, nullable=True, default=0)

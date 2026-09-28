@@ -108,3 +108,71 @@ def test_reading_annotation_api_flow(client):
     with client.application.app_context():
         deleted = ReadingAnnotation.query.filter_by(id=ann_id).first()
         assert deleted is None
+
+
+def test_reading_quick_highlight_and_clear_all(client):
+    """Test 1-click quick highlight (no note required) and clear-all annotations."""
+    login(client)
+
+    with client.application.app_context():
+        lesson = Lesson(
+            title="Ocean Exploration Discoveries",
+            level="B1",
+            skill="Reading",
+            short_description="Discovering deep sea marine life.",
+            content="Deep ocean ecosystems contain extraordinary biodiversity.\nMany hydrothermal vents host rare species.",
+            examples="Deep ocean|Đại dương sâu",
+            skill_data={"reading_genre": "Nature Article"}
+        )
+        db.session.add(lesson)
+        db.session.commit()
+        lesson_id = lesson.id
+
+    # 1. Quick Highlight in Pink with empty note_content
+    res_pink = client.post(
+        f"/lessons/{lesson_id}/annotations",
+        json={
+            "selected_text": "extraordinary biodiversity",
+            "note_content": "",
+            "paragraph_index": 0,
+            "start_offset": 30,
+            "end_offset": 56,
+            "color": "pink"
+        }
+    )
+    assert res_pink.status_code == 201
+    pink_data = res_pink.get_json()
+    assert pink_data["status"] == "success"
+    assert pink_data["annotation"]["color"] == "pink"
+    assert pink_data["annotation"]["note_content"] == ""
+
+    # 2. Quick Highlight in Blue
+    res_blue = client.post(
+        f"/lessons/{lesson_id}/annotations",
+        json={
+            "selected_text": "hydrothermal vents",
+            "note_content": "",
+            "paragraph_index": 1,
+            "start_offset": 5,
+            "end_offset": 23,
+            "color": "blue"
+        }
+    )
+    assert res_blue.status_code == 201
+
+    # 3. Check list has 2 highlights
+    res_list = client.get(f"/lessons/{lesson_id}/annotations")
+    assert res_list.status_code == 200
+    list_data = res_list.get_json()
+    assert len(list_data["annotations"]) == 2
+
+    # 4. Clear all annotations
+    res_clear = client.post(f"/lessons/{lesson_id}/annotations/clear-all")
+    assert res_clear.status_code == 200
+    clear_data = res_clear.get_json()
+    assert clear_data["status"] == "success"
+
+    # Verify all deleted in DB
+    with client.application.app_context():
+        remaining = ReadingAnnotation.query.filter_by(lesson_id=lesson_id).all()
+        assert len(remaining) == 0
