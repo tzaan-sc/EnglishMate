@@ -131,10 +131,10 @@ MODULE: 4. LESSONS & 4 SKILLS (BÀI HỌC & 4 KỸ NĂNG) (9 tính năng chưa l
 
 ### 4.7. Speaking Features (Tính năng nói) (2 tính năng):
 ----------------------------------------------------------------------------------------------------
-12. [ ] Speaking Recording - Ghi âm nói
+12. [x] Speaking Recording - Ghi âm nói
    - Mức độ ưu tiên: Cao
    - Mô tả yêu cầu: Thu âm trực tiếp giọng nói của người học qua Micro trình duyệt (Web Audio API / MediaRecorder) trong bài luyện nói.
-   - Đối chiếu hiện trạng: Đã có hiển thị câu mẫu, phiên âm IPA, mẹo nói và audio mẫu, nhưng chưa có nút thu âm trực tiếp qua mic của học viên.
+   - Đối chiếu hiện trạng: Đã tích hợp Web Audio API, MediaRecorder thu âm qua micro trình duyệt, sóng âm visualizer canvas, timer và nút nghe lại bản thu.
 
 13. [ ] Speaking Feedback - Phản hồi nói
    - Mức độ ưu tiên: Cao

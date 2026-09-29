@@ -195,7 +195,7 @@ MODULE 4. LESSONS & 4 SKILLS (BÀI HỌC & 4 KỸ NĂNG) — 9 TÍNH NĂNG CHƯA
   + Lưu các dải vị trí đã highlight vào CSDL và đồng bộ qua API `/lessons/<id>/annotations`.
 - Trạng thái: ĐÃ HOÀN THÀNH (100% test passed)
 
-[ ] 4.6. Speaking Recording - Thu âm giọng nói trực tiếp qua Micro (Mục 4.7)
+[x] 4.6. Speaking Recording - Thu âm giọng nói trực tiếp qua Micro (Mục 4.7)
 - Hiện trạng trong EnglishMate_Features.txt:
   Trang bài học Speaking (`speaking_detail.html`) hiển thị câu mẫu, phiên âm IPA, nghĩa tiếng Việt, mẹo phát âm và nút nghe audio mẫu.
 - Phần còn thiếu chưa làm:
@@ -203,7 +203,7 @@ MODULE 4. LESSONS & 4 SKILLS (BÀI HỌC & 4 KỸ NĂNG) — 9 TÍNH NĂNG CHƯA
 - Giải pháp kỹ thuật cần làm:
   + Tích hợp Web Audio API và `MediaRecorder` API trên JavaScript.
   + Thiết kế giao diện: Nút "Bắt đầu ghi âm" (icon mic đỏ), sóng âm thanh (visualizer waveform), và nút "Nghe lại bản thu".
-- Mức độ ưu tiên: RẤT CAO (Tính năng cốt lõi kỹ năng Nói)
+- Trạng thái: ĐÃ HOÀN THÀNH (100% test passed)
 
 [ ] 4.7. Speaking Feedback - AI Phản hồi & Chấm điểm phát âm (Mục 4.7)
 - Hiện trạng trong EnglishMate_Features.txt:

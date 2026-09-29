@@ -273,7 +273,7 @@ NỀN TẢNG HỌC TIẾNG ANH TRỰC TUYẾN THÔNG MINH
 [x] - Speaking IPA Display - Hiển thị phiên âm
 [x] - Speaking Translation - Dịch câu nói
 [x] - Speaking Tips - Mẹo nói
-[ ] - Speaking Recording - Ghi âm nói
+[x] - Speaking Recording - Ghi âm nói
 [ ] - Speaking Feedback - Phản hồi nói
 
 4.8. Writing Features (Tính năng viết)
