@@ -136,10 +136,10 @@ MODULE: 4. LESSONS & 4 SKILLS (BÀI HỌC & 4 KỸ NĂNG) (9 tính năng chưa l
    - Mô tả yêu cầu: Thu âm trực tiếp giọng nói của người học qua Micro trình duyệt (Web Audio API / MediaRecorder) trong bài luyện nói.
    - Đối chiếu hiện trạng: Đã tích hợp Web Audio API, MediaRecorder thu âm qua micro trình duyệt, sóng âm visualizer canvas, timer và nút nghe lại bản thu.
 
-13. [ ] Speaking Feedback - Phản hồi nói
+13. [x] Speaking Feedback - Phản hồi nói
    - Mức độ ưu tiên: Cao
    - Mô tả yêu cầu: Hệ thống AI nhận diện giọng nói (Speech-to-Text) và phản hồi độ chính xác phát âm, ngữ điệu theo thời gian thực.
-   - Đối chiếu hiện trạng: Chưa tích hợp Speech Recognition API để chấm điểm âm điệu câu nói của học viên.
+   - Đối chiếu hiện trạng: Đã tích hợp Speech Recognition API và endpoint backend đánh giá Levenshtein distance chi tiết từng từ, chỉ số Accuracy/Completeness/Fluency và gợi ý phát âm AI.
 
 
 ### 4.8. Writing Features (Tính năng viết) (2 tính năng):

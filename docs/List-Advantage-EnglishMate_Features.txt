@@ -274,7 +274,7 @@ NỀN TẢNG HỌC TIẾNG ANH TRỰC TUYẾN THÔNG MINH
 [x] - Speaking Translation - Dịch câu nói
 [x] - Speaking Tips - Mẹo nói
 [x] - Speaking Recording - Ghi âm nói
-[ ] - Speaking Feedback - Phản hồi nói
+[x] - Speaking Feedback - Phản hồi nói
 
 4.8. Writing Features (Tính năng viết)
 [x] - Writing Practice - Luyện viết

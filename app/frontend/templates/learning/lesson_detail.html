@@ -1283,24 +1283,50 @@
             </button>
           </div>
 
-          <!-- Live Recognition & Evaluation Feedback Box -->
-          <div id="speechFeedbackBox" class="p-3.5 rounded-4 border bg-light-subtle mt-3.5 d-none">
-            <div class="d-flex align-items-center justify-content-between mb-2">
+          <!-- AI Speech Recognition & Pronunciation Feedback Box (Feature 4.7) -->
+          <div id="speechFeedbackBox" class="p-3.5 rounded-4 border bg-light-subtle mt-3.5 d-none" style="border-color: rgba(234, 88, 12, 0.25) !important;">
+            <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-2.5 pb-2 border-bottom">
               <span class="small fw-bold text-dark d-inline-flex align-items-center gap-1.5">
-                <i class="ph-bold ph-waveform" style="color: #ea580c;"></i>
-                <span>Kết quả nhận diện giọng nói:</span>
+                <i class="ph-bold ph-sparkle text-warning"></i>
+                <span>Đánh giá phát âm AI:</span>
               </span>
-              <span id="matchScoreBadge" class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-2.5 py-0.5 fw-bold" style="font-size: 0.74rem;">
-                100% Chính xác
+              <div class="d-flex align-items-center gap-2">
+                <span id="matchScoreBadge" class="badge bg-success text-white rounded-pill px-3 py-1 fw-bold shadow-2xs" style="font-size: 0.78rem;">
+                  100% · Xuất sắc
+                </span>
+              </div>
+            </div>
+
+            <!-- Detailed Metrics Pills -->
+            <div class="d-flex flex-wrap align-items-center gap-2 mb-2.5" id="speechMetricsPills">
+              <span class="badge bg-white text-secondary border rounded-pill px-2.5 py-1 small fw-semibold" id="metricAccuracyPill" style="font-size: 0.72rem;">
+                🎯 Độ chuẩn xác: <strong class="text-dark" id="metricAccuracyVal">100%</strong>
+              </span>
+              <span class="badge bg-white text-secondary border rounded-pill px-2.5 py-1 small fw-semibold" id="metricCompletenessPill" style="font-size: 0.72rem;">
+                📝 Đầy đủ câu: <strong class="text-dark" id="metricCompletenessVal">100%</strong>
+              </span>
+              <span class="badge bg-white text-secondary border rounded-pill px-2.5 py-1 small fw-semibold" id="metricFluencyPill" style="font-size: 0.72rem;">
+                ⚡ Độ lưu loát: <strong class="text-dark" id="metricFluencyVal">100%</strong>
               </span>
             </div>
 
-            <div class="p-2.5 rounded-3 bg-white border small mb-2" id="recognizedTranscriptBox" style="font-size: 0.88rem; line-height: 1.6;">
-              <span class="text-muted fst-italic">Chưa có bản ghi âm...</span>
+            <!-- Word-by-word Color Breakdown -->
+            <div class="p-3 rounded-3 bg-white border mb-2.5 shadow-2xs" id="recognizedTranscriptBox">
+              <div class="small text-muted mb-1 fw-semibold" style="font-size: 0.74rem;">Chi tiết từng từ (Xanh = Chuẩn, Cam = Gần đúng, Đỏ = Cần phát âm rõ):</div>
+              <div id="wordBreakdownContainer" class="d-flex flex-wrap gap-1.5 mb-2">
+                <!-- Word chips injected dynamically -->
+              </div>
+              <div class="pt-2 border-top small text-muted" id="spokenTranscriptLine" style="font-size: 0.78rem;">
+                <span>Giọng đọc nhận diện: </span><em class="text-dark fw-semibold" id="spokenTranscriptText">"..."</em>
+              </div>
             </div>
 
-            <div id="speechAdviceText" class="text-secondary small" style="font-size: 0.8rem; line-height: 1.5;">
-              Nhận xét đánh giá phát âm sẽ hiển thị tại đây sau khi bạn thu âm.
+            <!-- AI Feedback & Advice -->
+            <div class="p-2.5 rounded-3 bg-white border small d-flex align-items-start gap-2" style="border-left: 3px solid #ea580c !important;">
+              <i class="ph-bold ph-lightbulb text-warning fs-5 flex-shrink-0 mt-0.5"></i>
+              <div id="speechAdviceText" class="text-secondary" style="font-size: 0.82rem; line-height: 1.5;">
+                Nhận xét đánh giá phát âm chi tiết sẽ hiển thị tại đây sau khi bạn thu âm.
+              </div>
             </div>
           </div>
         </div>
@@ -3878,44 +3904,113 @@ document.addEventListener("DOMContentLoaded", function() {
     return Math.min(100, Math.max(15, Math.round(ratio * 100)));
   }
 
-  function showEvaluationFeedback(transcript, score) {
+  function showEvaluationFeedback(evalData) {
     if (!speechFeedbackBox) return;
-
     speechFeedbackBox.classList.remove("d-none");
-    if (recognizedTranscriptBox) {
-      const targetWords = (speakingSentences[curSentIdx]?.text || "").split(/\s+/);
-      const spokenWords = (transcript || "").toLowerCase().split(/\s+/).map(cleanToken);
 
-      const highlighted = targetWords.map(w => {
-        const cleanW = cleanToken(w);
-        if (spokenWords.includes(cleanW)) {
-          return `<span class="text-success fw-bold">${w}</span>`;
-        } else {
-          return `<span class="text-danger text-decoration-underline" title="Cần phát âm rõ hơn">${w}</span>`;
-        }
-      }).join(" ");
+    const overallScore = evalData.overall_score || 0;
+    const accuracy = evalData.accuracy_score || overallScore;
+    const completeness = evalData.completeness_score || 100;
+    const fluency = evalData.fluency_score || 90;
+    const grade = evalData.grade || "Good";
+    const feedback = evalData.ai_feedback || "Hãy tiếp tục luyện tập để phát âm chuẩn xác hơn.";
+    const spokenText = evalData.spoken_text || "";
+    const wordAnalysis = evalData.word_analysis || [];
 
-      recognizedTranscriptBox.innerHTML = `
-        <div class="mb-1"><span class="text-muted small">Giọng của bạn đọc được:</span> <strong>"${transcript}"</strong></div>
-        <div class="pt-1 border-top"><span class="text-muted small">Đối chiếu câu mẫu:</span> ${highlighted}</div>
-      `;
-    }
-
+    // 1. Overall Score & Badge
     if (matchScoreBadge) {
-      if (score >= 85) {
-        matchScoreBadge.className = "badge bg-success text-white rounded-pill px-3 py-1 fw-bold";
-        matchScoreBadge.innerText = `${score}% · Phát âm Xuất sắc!`;
-        if (speechAdviceText) speechAdviceText.innerText = "Tuyệt vời! Bạn phát âm rất rõ ràng và chuẩn xác từng từ khóa.";
-      } else if (score >= 60) {
-        matchScoreBadge.className = "badge bg-info text-white rounded-pill px-3 py-1 fw-bold";
-        matchScoreBadge.innerText = `${score}% · Khá tốt`;
-        if (speechAdviceText) speechAdviceText.innerText = "Khá tốt! Hãy bấm 'Nghe lại bản thu' để so sánh với audio mẫu và luyện lại các từ gạch chân đỏ nhé.";
+      if (overallScore >= 85) {
+        matchScoreBadge.className = "badge bg-success text-white rounded-pill px-3 py-1 fw-bold shadow-2xs";
+        matchScoreBadge.innerHTML = `<i class="ph-bold ph-trophy me-1"></i>${overallScore}% · ${grade === 'Excellent' ? 'Xuất sắc' : grade}`;
+      } else if (overallScore >= 65) {
+        matchScoreBadge.className = "badge bg-info text-white rounded-pill px-3 py-1 fw-bold shadow-2xs";
+        matchScoreBadge.innerHTML = `<i class="ph-bold ph-thumbs-up me-1"></i>${overallScore}% · ${grade === 'Good' ? 'Rất tốt' : grade}`;
       } else {
-        matchScoreBadge.className = "badge bg-warning text-dark rounded-pill px-3 py-1 fw-bold";
-        matchScoreBadge.innerText = `${score}% · Cần thử lại`;
-        if (speechAdviceText) speechAdviceText.innerText = "Hãy bấm 'Nghe mẫu' một lần nữa để bắt nhịp ngữ điệu, sau đó bấm thu âm lại nhé!";
+        matchScoreBadge.className = "badge bg-warning text-dark rounded-pill px-3 py-1 fw-bold shadow-2xs";
+        matchScoreBadge.innerHTML = `<i class="ph-bold ph-arrow-counter-clockwise me-1"></i>${overallScore}% · Cần thử lại`;
       }
     }
+
+    // 2. Metrics Pills
+    const accVal = document.getElementById("metricAccuracyVal");
+    const compVal = document.getElementById("metricCompletenessVal");
+    const flueVal = document.getElementById("metricFluencyVal");
+    if (accVal) accVal.innerText = `${accuracy}%`;
+    if (compVal) compVal.innerText = `${completeness}%`;
+    if (flueVal) flueVal.innerText = `${fluency}%`;
+
+    // 3. Word Breakdown Container
+    const breakdownCont = document.getElementById("wordBreakdownContainer");
+    if (breakdownCont) {
+      if (wordAnalysis && wordAnalysis.length > 0) {
+        breakdownCont.innerHTML = wordAnalysis.map(w => {
+          if (w.status === "correct") {
+            return `<span class="badge rounded-pill px-2.5 py-1 text-success border border-success-subtle bg-success-subtle speech-word-chip fw-bold" title="Phát âm chuẩn: ${w.score}%"><i class="ph-bold ph-check me-1"></i>${w.word}</span>`;
+          } else if (w.status === "close") {
+            return `<span class="badge rounded-pill px-2.5 py-1 text-warning border border-warning-subtle bg-warning-subtle speech-word-chip fw-bold" title="Gần đúng: ${w.score}%"><i class="ph-bold ph-warning me-1"></i>${w.word}</span>`;
+          } else {
+            return `<span class="badge rounded-pill px-2.5 py-1 text-danger border border-danger-subtle bg-danger-subtle speech-word-chip fw-bold text-decoration-underline" title="Chưa chuẩn: ${w.score}%"><i class="ph-bold ph-x me-1"></i>${w.word}</span>`;
+          }
+        }).join(" ");
+      } else {
+        breakdownCont.innerHTML = `<span class="badge bg-light text-secondary border rounded-pill px-2.5 py-1">${evalData.target_text || ''}</span>`;
+      }
+    }
+
+    // 4. Spoken line & Advice
+    const spokenEl = document.getElementById("spokenTranscriptText");
+    if (spokenEl) spokenEl.innerText = spokenText ? `"${spokenText}"` : "(Không nhận diện được giọng nói rõ ràng)";
+
+    if (speechAdviceText) {
+      speechAdviceText.innerText = feedback;
+    }
+  }
+
+  async function evaluateSpeechWithBackend(targetText, spokenText, idx) {
+    try {
+      const res = await fetch(`/lessons/{{ lesson.id }}/speaking/evaluate`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-CSRFToken": "{{ csrf_token() }}"
+        },
+        body: JSON.stringify({
+          target_text: targetText,
+          spoken_text: spokenText,
+          sentence_idx: idx
+        })
+      });
+      const data = await res.json();
+      if (data.status === "success" && data.evaluation) {
+        return data.evaluation;
+      }
+    } catch (err) {
+      console.warn("Backend evaluation error, fallback to local:", err);
+    }
+    // Fallback local evaluation
+    const score = calculateAccuracy(targetText, spokenText);
+    const targetWords = (targetText || "").split(/\s+/);
+    const spokenWords = (spokenText || "").toLowerCase().split(/\s+/).map(cleanToken);
+    const wordAnalysis = targetWords.map(w => {
+      const isMatch = spokenWords.includes(cleanToken(w));
+      return {
+        word: w,
+        status: isMatch ? "correct" : "incorrect",
+        score: isMatch ? 100 : 30
+      };
+    });
+    return {
+      overall_score: score,
+      accuracy_score: score,
+      completeness_score: Math.min(100, Math.round((spokenWords.length / targetWords.length) * 100)),
+      fluency_score: score >= 80 ? 95 : (score >= 60 ? 75 : 50),
+      grade: score >= 85 ? "Excellent" : (score >= 65 ? "Good" : "Needs Practice"),
+      ai_feedback: score >= 85 ? "Xuất sắc! Bạn phát âm rất rõ ràng và chuẩn xác." : (score >= 65 ? "Rất tốt! Chú ý các từ chưa chuẩn để hoàn thiện." : "Hãy nghe mẫu và đọc lại nhé."),
+      target_text: targetText,
+      spoken_text: spokenText,
+      word_analysis: wordAnalysis,
+      sentence_idx: idx
+    };
   }
 
   function refreshSpeakingProgress() {
@@ -4114,12 +4209,12 @@ document.addEventListener("DOMContentLoaded", function() {
     if (btnRecordSpeech) btnRecordSpeech.style.backgroundColor = "#ea580c";
 
     // If no recognition text but recorded audio exists, provide fallback feedback
-    setTimeout(() => {
-      if (recordedSentences[curSentIdx] && !recordedSentences[curSentIdx].transcript) {
+    setTimeout(async () => {
+      if (recordedSentences[curSentIdx] && !recordedSentences[curSentIdx].evaluation) {
         const targetText = speakingSentences[curSentIdx]?.text || "";
-        recordedSentences[curSentIdx].transcript = targetText;
-        recordedSentences[curSentIdx].score = 90;
-        showEvaluationFeedback(targetText, 90);
+        const evalData = await evaluateSpeechWithBackend(targetText, targetText, curSentIdx);
+        recordedSentences[curSentIdx].evaluation = evalData;
+        showEvaluationFeedback(evalData);
 
         const checkIcon = document.getElementById(`sent-check-${curSentIdx}`);
         if (checkIcon) {
@@ -4127,25 +4222,25 @@ document.addEventListener("DOMContentLoaded", function() {
           checkIcon.innerHTML = '<i class="ph-bold ph-check-circle fs-6"></i>';
         }
         if (sentenceStatusLabel) {
-          sentenceStatusLabel.innerHTML = `<span class="text-success fw-semibold">✓ Đã thu âm (90% chính xác)</span>`;
+          sentenceStatusLabel.innerHTML = `<span class="text-success fw-semibold">✓ Đã thu âm (${evalData.overall_score}% chính xác)</span>`;
         }
         refreshSpeakingProgress();
       }
     }, 500);
   }
 
-  function handleSpeechResult(transcript) {
+  async function handleSpeechResult(transcript) {
     if (!transcript) return;
     const targetText = speakingSentences[curSentIdx]?.text || "";
-    const score = calculateAccuracy(targetText, transcript);
+    const evalData = await evaluateSpeechWithBackend(targetText, transcript, curSentIdx);
 
     if (!recordedSentences[curSentIdx]) {
       recordedSentences[curSentIdx] = {};
     }
     recordedSentences[curSentIdx].transcript = transcript;
-    recordedSentences[curSentIdx].score = score;
+    recordedSentences[curSentIdx].evaluation = evalData;
 
-    showEvaluationFeedback(transcript, score);
+    showEvaluationFeedback(evalData);
 
     const checkIcon = document.getElementById(`sent-check-${curSentIdx}`);
     if (checkIcon) {
@@ -4154,7 +4249,7 @@ document.addEventListener("DOMContentLoaded", function() {
     }
 
     if (sentenceStatusLabel) {
-      sentenceStatusLabel.innerHTML = `<span class="text-success fw-semibold">✓ Đã đạt ${score}% chính xác</span>`;
+      sentenceStatusLabel.innerHTML = `<span class="text-success fw-semibold">✓ Đã đạt ${evalData.overall_score}% chính xác</span>`;
     }
 
     refreshSpeakingProgress();

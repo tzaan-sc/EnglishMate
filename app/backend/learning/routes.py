@@ -817,6 +817,123 @@ def writing_hub():
     return redirect(url_for("learning.lessons", skill="Writing"))
 
 
+def _calculate_word_similarity(w1, w2):
+    """Calculates normalized Levenshtein similarity ratio between two words."""
+    w1 = (w1 or "").lower().strip(".,!?:;\"'()")
+    w2 = (w2 or "").lower().strip(".,!?:;\"'()")
+    if not w1 and not w2:
+        return 1.0
+    if not w1 or not w2:
+        return 0.0
+    if w1 == w2:
+        return 1.0
+    m, n = len(w1), len(w2)
+    dp = [[0] * (n + 1) for _ in range(m + 1)]
+    for i in range(m + 1):
+        dp[i][0] = i
+    for j in range(n + 1):
+        dp[0][j] = j
+    for i in range(1, m + 1):
+        for j in range(1, n + 1):
+            cost = 0 if w1[i - 1] == w2[j - 1] else 1
+            dp[i][j] = min(dp[i - 1][j] + 1, dp[i][j - 1] + 1, dp[i - 1][j - 1] + cost)
+    dist = dp[m][n]
+    max_len = max(m, n)
+    return max(0.0, 1.0 - (dist / max_len))
+
+
+@bp.post("/lessons/<int:lesson_id>/speaking/evaluate")
+@login_required
+def evaluate_speaking_pronunciation(lesson_id):
+    """
+    Evaluates learner pronunciation against the target sentence with AI word-by-word feedback.
+    """
+    lesson = Lesson.query.filter_by(id=lesson_id, is_active=True).first_or_404()
+    data = request.get_json() if request.is_json else request.form
+    target_text = (data.get("target_text") or "").strip()
+    spoken_text = (data.get("spoken_text") or "").strip()
+    sentence_idx = int(data.get("sentence_idx") or 0)
+
+    if not target_text:
+        return jsonify({"status": "error", "message": "Câu mẫu không được để trống."}), 400
+
+    target_tokens = [w for w in target_text.split() if w.strip()]
+    spoken_tokens = [w for w in spoken_text.split() if w.strip()]
+
+    word_analysis = []
+    total_score = 0
+    matched_count = 0
+    spoken_remaining = list(spoken_tokens)
+
+    for tw in target_tokens:
+        clean_tw = tw.lower().strip(".,!?:;\"'()")
+        best_sim = 0.0
+        best_idx = -1
+        for idx, sw in enumerate(spoken_remaining):
+            sim = _calculate_word_similarity(clean_tw, sw)
+            if sim > best_sim:
+                best_sim = sim
+                best_idx = idx
+
+        if best_idx != -1 and best_sim >= 0.5:
+            spoken_remaining.pop(best_idx)
+
+        word_score = int(round(best_sim * 100))
+        if best_sim >= 0.85:
+            status = "correct"
+            matched_count += 1
+        elif best_sim >= 0.55:
+            status = "close"
+            matched_count += 0.5
+        else:
+            status = "incorrect"
+
+        word_analysis.append({
+            "word": tw,
+            "status": status,
+            "score": word_score,
+            "similarity": round(best_sim, 2)
+        })
+        total_score += word_score
+
+    word_count = len(target_tokens) or 1
+    accuracy_score = int(round(total_score / word_count))
+    completeness_score = int(round((len(spoken_tokens) / max(1, word_count)) * 100))
+    completeness_score = min(100, completeness_score)
+    fluency_score = min(100, max(20, int(round((matched_count / word_count) * 100))))
+    overall_score = int(round(0.6 * accuracy_score + 0.25 * completeness_score + 0.15 * fluency_score))
+    overall_score = max(10, min(100, overall_score))
+
+    if overall_score >= 85:
+        ai_feedback = "Xuất sắc! Bạn phát âm rất rõ ràng, chuẩn xác từng từ khóa và ngữ điệu tự nhiên."
+        grade = "Excellent"
+    elif overall_score >= 65:
+        ai_feedback = "Rất tốt! Bạn đã phát âm chuẩn phần lớn các từ. Chú ý các từ chưa chuẩn để ngữ điệu mượt hơn."
+        grade = "Good"
+    elif overall_score >= 45:
+        ai_feedback = "Khá ổn! Hãy chú ý phát âm rõ âm đuôi và các nguyên âm dài. Hãy nghe audio mẫu lại 1 lần nhé."
+        grade = "Needs Practice"
+    else:
+        ai_feedback = "Hãy nghe mẫu thật kỹ, đọc chậm rãi từng từ và nhấn nhá trọng âm trước khi thu âm lại nhé."
+        grade = "Try Again"
+
+    return jsonify({
+        "status": "success",
+        "evaluation": {
+            "overall_score": overall_score,
+            "accuracy_score": accuracy_score,
+            "completeness_score": completeness_score,
+            "fluency_score": fluency_score,
+            "grade": grade,
+            "ai_feedback": ai_feedback,
+            "target_text": target_text,
+            "spoken_text": spoken_text,
+            "word_analysis": word_analysis,
+            "sentence_idx": sentence_idx
+        }
+    })
+
+
 @bp.post("/lessons/<int:lesson_id>/notes")
 @login_required
 def save_lesson_note(lesson_id):
