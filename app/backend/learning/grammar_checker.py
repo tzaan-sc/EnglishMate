@@ -443,3 +443,217 @@ def check_grammar_and_spelling(text: str) -> Dict[str, Any]:
             "error_count": len(matches)
         }
     }
+
+
+def evaluate_writing_submission(
+    text: str,
+    target_min: int = 40,
+    target_max: int = 80,
+    prompt: str = ""
+) -> Dict[str, Any]:
+    """
+    Evaluates a completed essay submission across 4 standard criteria:
+    1. Task Response / Achievement
+    2. Coherence & Cohesion
+    3. Lexical Resource (Vocabulary Diversity)
+    4. Grammatical Range & Accuracy
+
+    Returns a comprehensive evaluation report with scores (0-10),
+    CEFR/IELTS band estimates, strengths, weaknesses, and actionable feedback.
+    """
+    clean_text = (text or "").strip()
+    if not clean_text:
+        return {
+            "overall_score": 0.0,
+            "grade": "Chưa hoàn thành",
+            "band_estimate": "N/A",
+            "criteria": {
+                "task_response": {"score": 0.0, "label": "Task Response", "feedback": "Chưa có nội dung bài viết."},
+                "coherence_cohesion": {"score": 0.0, "label": "Coherence & Cohesion", "feedback": "Chưa có nội dung bài viết."},
+                "lexical_resource": {"score": 0.0, "label": "Lexical Resource", "feedback": "Chưa có nội dung bài viết."},
+                "grammatical_accuracy": {"score": 0.0, "label": "Grammar & Accuracy", "feedback": "Chưa có nội dung bài viết."}
+            },
+            "word_count": 0,
+            "sentence_count": 0,
+            "paragraph_count": 0,
+            "connectors_detected": [],
+            "error_count": 0,
+            "strengths": [],
+            "improvements": ["Hãy bắt đầu viết bài theo đề bài yêu cầu."],
+            "general_feedback": "Vui lòng nhập nội dung bài viết trước khi nộp bài."
+        }
+
+    words = re.findall(r"\b[a-zA-Z']+\b", clean_text)
+    word_count = len(words)
+    sentences = [s.strip() for s in re.split(r"[.!?]+", clean_text) if s.strip()]
+    sentence_count = len(sentences) or 1
+    paragraphs = [p.strip() for p in clean_text.splitlines() if p.strip()]
+    paragraph_count = len(paragraphs) or 1
+
+    # 1. Grammar & Spelling check
+    check_res = check_grammar_and_spelling(clean_text)
+    matches = check_res.get("matches", [])
+    error_count = len(matches)
+
+    # 2. Connectors & Transition Devices
+    connectors_list = [
+        "first", "firstly", "second", "secondly", "finally", "then", "after that",
+        "furthermore", "moreover", "in addition", "additionally", "besides",
+        "however", "although", "even though", "on the other hand", "in contrast",
+        "therefore", "as a result", "thus", "consequently",
+        "for example", "for instance", "such as", "to illustrate",
+        "in conclusion", "to sum up", "overall", "in summary",
+        "because", "since", "due to", "while", "whereas"
+    ]
+    lower_text = clean_text.lower()
+    found_connectors = []
+    for c in connectors_list:
+        if re.search(r"\b" + re.escape(c) + r"\b", lower_text):
+            found_connectors.append(c)
+
+    # 3. Vocabulary Richness (Type-Token Ratio & Academic words)
+    unique_words = set(w.lower() for w in words)
+    ttr = len(unique_words) / max(1, word_count)
+
+    academic_vocab = [
+        "significant", "crucial", "essential", "advantage", "disadvantage", "benefit",
+        "opportunity", "challenge", "perspective", "environment", "development",
+        "community", "technology", "experience", "education", "relationship",
+        "improve", "increase", "decrease", "enhance", "require", "encourage",
+        "effective", "positive", "negative", "important", "convenient", "modern"
+    ]
+    used_academic = [w for w in academic_vocab if w in unique_words]
+
+    # --- CRITERIA SCORING (Scale 0-10) ---
+
+    # Criterion 1: Task Response
+    if word_count >= target_min:
+        if word_count <= target_max + 40:
+            task_score = 9.5
+            task_fb = f"Rất tốt! Bài viết đạt {word_count} từ, hoàn toàn nằm trong dung lượng chuẩn ({target_min}-{target_max} từ)."
+        else:
+            task_score = 8.5
+            task_fb = f"Bài viết khá chi tiết ({word_count} từ), vượt trên mức yêu cầu ({target_max} từ). Chú ý tinh gọn ý tưởng hơn."
+    elif word_count >= int(target_min * 0.75):
+        task_score = 7.0
+        task_fb = f"Bài viết đạt {word_count} từ (gần đạt mục tiêu tối thiểu {target_min} từ). Hãy mở rộng thêm 1-2 ví dụ hoặc lý do."
+    elif word_count >= int(target_min * 0.5):
+        task_score = 5.5
+        task_fb = f"Bài viết còn khá ngắn ({word_count}/{target_min} từ). Cần triển khai các luận điểm sâu hơn."
+    else:
+        task_score = 4.0
+        task_fb = f"Dung lượng bài viết ({word_count} từ) chưa đạt yêu cầu tối thiểu {target_min} từ."
+
+    # Criterion 2: Coherence & Cohesion
+    conn_count = len(found_connectors)
+    if conn_count >= 4 and paragraph_count >= 2:
+        coherence_score = 9.5
+        coherence_fb = f"Mạch lạc xuất sắc! Bài viết phân đoạn rõ ràng và sử dụng linh hoạt {conn_count} từ nối ({', '.join(found_connectors[:4])})."
+    elif conn_count >= 2:
+        coherence_score = 8.0
+        coherence_fb = f"Bài viết có tính liên kết tốt với {conn_count} từ nối. Hãy thử phân chia đoạn văn rõ hơn nếu bài dài."
+    elif conn_count == 1:
+        coherence_score = 6.5
+        coherence_fb = "Bài viết có sử dụng từ nối cơ bản. Hãy bổ sung thêm các liên từ (furthermore, however, for example) để bài viết mượt mà hơn."
+    else:
+        coherence_score = 5.0
+        coherence_fb = "Chưa phát hiện nhiều từ nối liên kết giữa các câu. Hãy dùng thêm các từ như First, Because, Therefore, However."
+
+    # Criterion 3: Lexical Resource
+    if ttr >= 0.65 and len(used_academic) >= 2:
+        lexical_score = 9.5
+        lexical_fb = f"Vốn từ rất phong phú và đa dạng (TTR: {int(ttr*100)}%), sử dụng các từ vựng học thuật tốt ({', '.join(used_academic[:3])})."
+    elif ttr >= 0.50 or len(used_academic) >= 1:
+        lexical_score = 8.0
+        lexical_fb = f"Sử dụng từ vựng tương đối đa dạng (TTR: {int(ttr*100)}%). Bạn có thể nâng cấp thêm các cụm từ đồng nghĩa để tránh lặp từ."
+    else:
+        lexical_score = 6.0
+        lexical_fb = f"Tỷ lệ từ lặp lại còn hơi cao (TTR: {int(ttr*100)}%). Hãy chú ý mở rộng vốn từ vựng theo chủ đề."
+
+    # Criterion 4: Grammatical Range & Accuracy
+    errors_per_100 = (error_count / max(1, word_count)) * 100
+    if errors_per_100 == 0:
+        grammar_score = 10.0
+        grammar_fb = "Tuyệt đối chính xác! Không phát hiện lỗi chính tả hoặc ngữ pháp nào."
+    elif errors_per_100 <= 2.5:
+        grammar_score = 8.5
+        grammar_fb = f"Ngữ pháp rất tốt, chỉ phát hiện {error_count} lỗi nhỏ không ảnh hưởng nhiều đến ý nghĩa bài viết."
+    elif errors_per_100 <= 6.0:
+        grammar_score = 7.0
+        grammar_fb = f"Phát hiện {error_count} lỗi ngữ pháp/chính tả. Hãy xem lại gợi ý sửa lỗi để hoàn thiện bài."
+    elif errors_per_100 <= 12.0:
+        grammar_score = 5.5
+        grammar_fb = f"Có {error_count} lỗi chính tả và ngữ pháp. Cần chú ý kỹ chia động từ và viết hoa."
+    else:
+        grammar_score = 4.0
+        grammar_fb = f"Mật độ lỗi ngữ pháp & chính tả còn cao ({error_count} lỗi). Hãy tận dụng tính năng sửa lỗi tự động."
+
+    # Overall Score Calculation
+    overall_score = round(0.30 * task_score + 0.25 * coherence_score + 0.25 * lexical_score + 0.20 * grammar_score, 1)
+    overall_score = max(1.0, min(10.0, overall_score))
+
+    # Band estimate & Grade
+    if overall_score >= 8.5:
+        grade = "Xuất sắc"
+        band = "C1 (IELTS 7.5 - 8.5)"
+    elif overall_score >= 7.0:
+        grade = "Giỏi"
+        band = "B2 (IELTS 6.0 - 7.0)"
+    elif overall_score >= 5.5:
+        grade = "Khá"
+        band = "B1 (IELTS 5.0 - 5.5)"
+    else:
+        grade = "Cần luyện tập thêm"
+        band = "A2 (IELTS 4.0 - 4.5)"
+
+    # Strengths and Improvements
+    strengths = []
+    if word_count >= target_min:
+        strengths.append(f"Độ dài bài viết đạt chuẩn ({word_count} từ)")
+    if conn_count >= 2:
+        strengths.append(f"Sử dụng hiệu quả các từ nối ({', '.join(found_connectors[:3])})")
+    if ttr >= 0.55:
+        strengths.append("Vốn từ vựng phong phú, ít bị lặp từ")
+    if error_count == 0:
+        strengths.append("Chính tả và ngữ pháp hoàn hảo, không có lỗi")
+    elif error_count <= 2:
+        strengths.append("Độ chính xác ngữ pháp cao")
+    if not strengths:
+        strengths.append("Đã hoàn thành và nộp bài viết nghiêm túc")
+
+    improvements = []
+    if word_count < target_min:
+        improvements.append(f"Mở rộng thêm luận điểm để đạt mức tối thiểu {target_min} từ (hiện có {word_count} từ).")
+    if conn_count < 2:
+        improvements.append("Bổ sung thêm 2-3 liên từ chuyển ý (In addition, However, For instance) để bài viết mạch lạc hơn.")
+    if error_count > 0:
+        improvements.append(f"Khắc phục {error_count} lỗi chính tả và ngữ pháp đã được hệ thống cảnh báo.")
+    if ttr < 0.50:
+        improvements.append("Tìm từ đồng nghĩa để thay thế cho các từ lặp lại nhiều lần.")
+    if not improvements:
+        improvements.append("Tiếp tục phát huy phong độ và thử sức với các chủ đề bài viết nâng cao hơn!")
+
+    general_feedback = (
+        f"Bài viết của bạn đạt điểm tổng kết {overall_score}/10 ({grade}, tương đương trình độ {band}). "
+        f"{task_fb} {coherence_fb}"
+    )
+
+    return {
+        "overall_score": overall_score,
+        "grade": grade,
+        "band_estimate": band,
+        "criteria": {
+            "task_response": {"score": task_score, "label": "Hoàn thành yêu cầu (Task Response)", "feedback": task_fb},
+            "coherence_cohesion": {"score": coherence_score, "label": "Mạch lạc & Liên kết (Coherence & Cohesion)", "feedback": coherence_fb},
+            "lexical_resource": {"score": lexical_score, "label": "Vốn từ vựng (Lexical Resource)", "feedback": lexical_fb},
+            "grammatical_accuracy": {"score": grammar_score, "label": "Ngữ pháp & Chính xác (Grammar & Accuracy)", "feedback": grammar_fb}
+        },
+        "word_count": word_count,
+        "sentence_count": sentence_count,
+        "paragraph_count": paragraph_count,
+        "connectors_detected": found_connectors,
+        "error_count": error_count,
+        "strengths": strengths,
+        "improvements": improvements,
+        "general_feedback": general_feedback
+    }

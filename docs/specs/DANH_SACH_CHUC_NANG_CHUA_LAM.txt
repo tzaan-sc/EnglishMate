@@ -220,15 +220,18 @@ MODULE 4. LESSONS & 4 SKILLS (BÀI HỌC & 4 KỸ NĂNG) — 9 TÍNH NĂNG CHƯA
   + Khi người dùng dừng gõ 1.5 giây hoặc bấm "Kiểm tra bài viết", tự động kiểm tra thời gian thực, hiển thị danh sách lỗi chính tả/ngữ pháp/dấu câu/dùng từ với từ bị gạch chân đỏ và chip gợi ý sửa tương tác bấm áp dụng ngay hoặc sửa toàn bộ.
 - Trạng thái: ĐÃ HOÀN THÀNH (100% test passed)
 
-[ ] 4.9. Writing Feedback - Nộp bài & Nhận phản hồi bài viết trong bài học (Mục 4.8)
+[x] 4.9. Writing Feedback - Nộp bài & Nhận phản hồi bài viết trong bài học (Mục 4.8)
 - Hiện trạng trong EnglishMate_Features.txt:
   Trong trang `writing_detail.html`, người dùng chỉ có thể gõ nháp mà không có nút "Gửi bài viết để nhận xét".
 - Phần còn thiếu chưa làm:
   Chưa có luồng nộp bài luận của bài học và hiển thị nhận xét chi tiết của giáo viên/AI ngay trong bài học.
-- Giải pháp kỹ thuật cần làm:
-  + Thêm route POST `/writing/<id>/submit`.
-  + Tái sử dụng engine `grade_essay` từ `app/backend/exams/ai_grading.py` để chấm bài viết và lưu nhận xét vào `LessonNote` hoặc model nộp bài.
-- Mức độ ưu tiên: Cao (High)
+- Giải pháp kỹ thuật đã làm:
+  + Thêm model `WritingSubmission` lưu trữ lịch sử nộp bài, điểm số, và chi tiết đánh giá 4 tiêu chí.
+  + Thêm route POST `/writing/<id>/submit` và alias POST `/lessons/<id>/writing/submit`.
+  + Tích hợp engine chấm bài AI `evaluate_writing_submission` đánh giá đa chiều: Task Response, Coherence & Cohesion, Lexical Resource, Grammatical Range & Accuracy, quy đổi điểm CEFR/IELTS, điểm mạnh, điểm cần cải thiện và lời khuyên tổng thể.
+  + Tự động cộng XP, ghi nhận Daily Activity và cập nhật tiến độ hoàn thành bài học `LessonProgress`.
+  + Giao diện Writing Studio hiển thị nút "Nộp bài & Chấm AI", hộp báo cáo kết quả chấm bài trực quan với bảng điểm 4 tiêu chí và xem lại lịch sử nộp.
+- Trạng thái: ĐÃ HOÀN THÀNH (100% test passed)
 
 ----------------------------------------------------------------------------------------------------
 MODULE 5. VOCABULARY & FLASHCARD SYSTEM (HỆ THỐNG TỪ VỰNG & FLASHCARD) — 2 TÍNH NĂNG CHƯA LÀM

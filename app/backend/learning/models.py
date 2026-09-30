@@ -503,3 +503,20 @@ class UserChallenge(db.Model):
     challenge = db.relationship("Challenge", backref="user_challenges")
     __table_args__ = (db.UniqueConstraint("user_id", "challenge_id", "period_date", name="uq_user_challenge_period"),)
 
+
+class WritingSubmission(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False, index=True)
+    lesson_id = db.Column(db.Integer, db.ForeignKey("lesson.id"), nullable=False, index=True)
+    content = db.Column(db.Text, nullable=False)
+    word_count = db.Column(db.Integer, default=0, nullable=False)
+    score = db.Column(db.Float, default=0.0, nullable=False)
+    status = db.Column(db.String(20), default="GRADED", nullable=False)
+    feedback = db.Column(db.Text, nullable=True)
+    evaluation_data = db.Column(db.JSON, nullable=True)
+    created_at = db.Column(db.DateTime(timezone=True), default=now, nullable=False)
+    updated_at = db.Column(db.DateTime(timezone=True), default=now, onupdate=now, nullable=False)
+
+    user = db.relationship("User", backref=db.backref("writing_submissions", lazy="dynamic", cascade="all, delete-orphan"))
+    lesson = db.relationship("Lesson", backref=db.backref("writing_submissions", lazy="dynamic", cascade="all, delete-orphan"))
+

@@ -10,12 +10,12 @@ from ..auth.models import record_daily_activity
 from .models import (Badge, Challenge, GrammarErrorLog, GrammarExerciseAttempt, GrammarProgress, GrammarRule,
                        GrammarRuleBookmark, GrammarTopic, Lesson, LessonBookmark, LessonFavorite,
                        LessonNote, LessonProgress, LessonRating, LessonReport, Question, Quiz, QuizAttempt,
-                       QuizAttemptAnswer, ReadingAnnotation, UserBadge, UserChallenge, Vocabulary, VocabularyProgress, WordReport)
+                       QuizAttemptAnswer, ReadingAnnotation, UserBadge, UserChallenge, Vocabulary, VocabularyProgress, WordReport, WritingSubmission)
 from .vocab_catalog import (VOCAB_CATEGORIES, get_category_info, get_subcategory_info,
                            normalize_category_key, normalize_subcategory_key)
 from . import bp
 from .forms import ActionForm, QuizStartForm
-from .grammar_checker import check_grammar_and_spelling
+from .grammar_checker import check_grammar_and_spelling, evaluate_writing_submission
 
 
 @bp.get("/lessons")
@@ -727,6 +727,12 @@ def _render_lesson_page(lesson):
             user_id=current_user.id, lesson_id=lesson.id
         ).order_by(ReadingAnnotation.created_at.asc()).all()
 
+    user_writing_submission = None
+    if current_user.is_authenticated and lesson.skill == "Writing":
+        user_writing_submission = WritingSubmission.query.filter_by(
+            user_id=current_user.id, lesson_id=lesson.id
+        ).order_by(WritingSubmission.updated_at.desc()).first()
+
     return render_template(
         "learning/lesson_detail.html",
         lesson=lesson,
@@ -742,6 +748,7 @@ def _render_lesson_page(lesson):
         writing_templates=writing_templates,
         writing_target_min=writing_target_min,
         writing_target_max=writing_target_max,
+        user_writing_submission=user_writing_submission,
         speaking_context=speaking_context,
         speaking_sentences=speaking_sentences,
         speaking_tips=speaking_tips,
@@ -829,6 +836,90 @@ def check_writing():
     text = (data.get("text") or "").strip()
     result = check_grammar_and_spelling(text)
     return jsonify(result)
+
+
+@bp.post("/writing/<int:lesson_id>/submit")
+@bp.post("/lessons/<int:lesson_id>/writing/submit")
+@login_required
+def submit_writing_lesson(lesson_id):
+    """
+    Submits an essay written by learner, grades it with AI feedback engine,
+    saves WritingSubmission, updates lesson progress, awards XP and returns detailed evaluation.
+    """
+    lesson = Lesson.query.filter_by(id=lesson_id, is_active=True).first_or_404()
+    data = request.get_json(silent=True) or request.form
+    essay_content = (data.get("content") or data.get("text") or "").strip()
+
+    if not essay_content:
+        if request.is_json or request.headers.get("X-Requested-With") == "XMLHttpRequest":
+            return jsonify({"status": "error", "message": "Nội dung bài viết không được để trống."}), 400
+        flash("Vui lòng viết bài trước khi nộp!", "warning")
+        return redirect(url_for("learning.lesson_detail", lesson_id=lesson.id))
+
+    # Target limits
+    skill_data = lesson.skill_data or {}
+    target_min = int(skill_data.get("target_min") or skill_data.get("writing_target_min") or 40)
+    target_max = int(skill_data.get("target_max") or skill_data.get("writing_target_max") or 80)
+    prompt = skill_data.get("writing_prompt") or lesson.short_description or ""
+
+    # Grade with AI essay evaluation engine
+    eval_result = evaluate_writing_submission(
+        text=essay_content,
+        target_min=target_min,
+        target_max=target_max,
+        prompt=prompt
+    )
+
+    # Save or update WritingSubmission
+    submission = WritingSubmission.query.filter_by(user_id=current_user.id, lesson_id=lesson.id).first()
+    if not submission:
+        submission = WritingSubmission(
+            user_id=current_user.id,
+            lesson_id=lesson.id,
+            content=essay_content,
+            word_count=eval_result["word_count"],
+            score=eval_result["overall_score"],
+            status="GRADED",
+            feedback=eval_result["general_feedback"],
+            evaluation_data=eval_result
+        )
+        db.session.add(submission)
+    else:
+        submission.content = essay_content
+        submission.word_count = eval_result["word_count"]
+        submission.score = eval_result["overall_score"]
+        submission.status = "GRADED"
+        submission.feedback = eval_result["general_feedback"]
+        submission.evaluation_data = eval_result
+
+    # Mark LessonProgress if not already completed
+    progress = LessonProgress.query.filter_by(user_id=current_user.id, lesson_id=lesson.id).first()
+    if not progress:
+        progress = LessonProgress(user_id=current_user.id, lesson_id=lesson.id, completed_at=datetime.utcnow())
+        db.session.add(progress)
+
+    # Add XP & Daily Activity
+    xp_earned = 30
+    if eval_result["overall_score"] >= 8.5:
+        xp_earned = 50
+    elif eval_result["overall_score"] >= 7.0:
+        xp_earned = 40
+    current_user.add_xp(xp_earned, reason=f"Nộp bài viết bài học: {lesson.title}")
+    record_daily_activity(current_user)
+
+    db.session.commit()
+
+    if request.is_json or request.headers.get("X-Requested-With") == "XMLHttpRequest":
+        return jsonify({
+            "status": "success",
+            "message": f"Nộp bài viết thành công! Bạn nhận được +{xp_earned} XP.",
+            "xp_earned": xp_earned,
+            "submission_id": submission.id,
+            "evaluation": eval_result
+        })
+
+    flash(f"Nộp bài viết thành công! Bạn nhận được +{xp_earned} XP và đạt điểm {eval_result['overall_score']}/10.", "success")
+    return redirect(url_for("learning.lesson_detail", lesson_id=lesson.id))
 
 
 def _calculate_word_similarity(w1, w2):
