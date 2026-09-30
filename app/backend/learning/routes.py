@@ -15,6 +15,7 @@ from .vocab_catalog import (VOCAB_CATEGORIES, get_category_info, get_subcategory
                            normalize_category_key, normalize_subcategory_key)
 from . import bp
 from .forms import ActionForm, QuizStartForm
+from .grammar_checker import check_grammar_and_spelling
 
 
 @bp.get("/lessons")
@@ -815,6 +816,19 @@ def speaking_hub():
 @login_required
 def writing_hub():
     return redirect(url_for("learning.lessons", skill="Writing"))
+
+
+@bp.post("/check-writing")
+@bp.post("/lessons/check-writing")
+@login_required
+def check_writing():
+    """
+    Real-time writing grammar, spelling, and style correction endpoint.
+    """
+    data = request.get_json(silent=True) or request.form
+    text = (data.get("text") or "").strip()
+    result = check_grammar_and_spelling(text)
+    return jsonify(result)
 
 
 def _calculate_word_similarity(w1, w2):

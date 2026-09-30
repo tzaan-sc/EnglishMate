@@ -209,15 +209,16 @@ MODULE 4. LESSONS & 4 SKILLS (BÀI HỌC & 4 KỸ NĂNG) — 9 TÍNH NĂNG CHƯA
   + So khớp Levenshtein distance giữa văn bản nhận diện và câu mẫu để trả về điểm phát âm chi tiết từng từ, chỉ số Accuracy/Completeness/Fluency và nhận xét AI.
 - Trạng thái: ĐÃ HOÀN THÀNH (100% test passed)
 
-[ ] 4.8. Writing Correction - Sửa lỗi ngữ pháp & chính tả bài viết thời gian thực (Mục 4.8)
+[x] 4.8. Writing Correction - Sửa lỗi ngữ pháp & chính tả bài viết thời gian thực (Mục 4.8)
 - Hiện trạng trong EnglishMate_Features.txt:
   Bài học viết có khung soạn thảo và bộ đếm số từ (word counter). Tính năng chấm AI hiện mới chỉ có ở phần thi Exam.
 - Phần còn thiếu chưa làm:
   Chưa có công cụ bắt lỗi chính tả, ngữ pháp, dấu câu tức thì (tương tự Grammarly/LanguageTool) trong lúc học viên gõ bài trong bài học viết.
-- Giải pháp kỹ thuật cần làm:
-  + Tích hợp LanguageTool API (hoặc local rule-based grammar checker).
-  + Khi người dùng dừng gõ 1.5 giây, tự động gửi text kiểm tra và gạch chân đỏ các từ sai chính tả kèm gợi ý sửa.
-- Mức độ ưu tiên: Cao (High)
+- Giải pháp kỹ thuật đã làm:
+  + Tích hợp LanguageTool API và local rule-based grammar checker (`grammar_checker.py`).
+  + Route backend `/check-writing` (và alias `/lessons/check-writing`).
+  + Khi người dùng dừng gõ 1.5 giây hoặc bấm "Kiểm tra bài viết", tự động kiểm tra thời gian thực, hiển thị danh sách lỗi chính tả/ngữ pháp/dấu câu/dùng từ với từ bị gạch chân đỏ và chip gợi ý sửa tương tác bấm áp dụng ngay hoặc sửa toàn bộ.
+- Trạng thái: ĐÃ HOÀN THÀNH (100% test passed)
 
 [ ] 4.9. Writing Feedback - Nộp bài & Nhận phản hồi bài viết trong bài học (Mục 4.8)
 - Hiện trạng trong EnglishMate_Features.txt:

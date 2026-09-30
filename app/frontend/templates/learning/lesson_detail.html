@@ -908,27 +908,52 @@
                       style="border-color: var(--border-light); font-size: 1rem; line-height: 1.7; resize: vertical; min-height: 200px;"></textarea>
           </div>
 
-          <!-- Live Status Bar: Word count & Actions -->
-          <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 p-2.5 rounded-3 bg-light-subtle border mb-3" style="border-color: var(--border-light) !important;">
-            <div class="d-flex align-items-center gap-2">
+          <!-- Live Status Bar: Word count, Auto-Check switch & Actions -->
+          <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 p-2.5 rounded-3 bg-light-subtle border mb-2" style="border-color: var(--border-light) !important;">
+            <div class="d-flex flex-wrap align-items-center gap-2">
               <span class="badge bg-white border text-dark fw-bold px-2.5 py-1" style="font-size: 0.78rem;">
                 <span id="currentWordsCount">0</span> / {{ writing_target_min }}-{{ writing_target_max }} từ
               </span>
               <span id="targetStatusBadge" class="badge bg-secondary-subtle text-secondary rounded-pill px-2.5 py-0.5" style="font-size: 0.72rem;">
                 Chưa đạt mục tiêu
               </span>
+              <div class="form-check form-switch mb-0 ms-1 d-inline-flex align-items-center gap-1.5">
+                <input class="form-check-input my-0" type="checkbox" role="switch" id="toggleLiveCorrection" checked style="cursor: pointer;">
+                <label class="form-check-label small fw-semibold text-secondary" for="toggleLiveCorrection" style="font-size: 0.76rem; cursor: pointer;">
+                  <i class="ph-bold ph-spell-check text-primary"></i> Sửa lỗi tự động (1.5s)
+                </label>
+              </div>
             </div>
 
             <div class="d-flex align-items-center gap-1.5">
+              <span id="liveCorrectionStatus" class="badge bg-white border text-secondary rounded-pill px-2 py-0.5" style="font-size: 0.72rem;">
+                <i class="ph-bold ph-check text-success"></i> Sẵn sàng
+              </span>
               <button type="button" id="btnClearWriting" class="btn btn-sm btn-light border rounded-pill px-2.5 py-1 text-secondary shadow-2xs" title="Xóa nội dung viết lại">
                 <i class="ph-bold ph-arrow-counter-clockwise"></i>
                 <span class="small d-none d-sm-inline">Làm lại</span>
               </button>
-              <button type="button" id="btnAnalyzeWriting" class="btn btn-sm btn-primary rounded-pill px-3.5 py-1 fw-bold shadow-xs d-inline-flex align-items-center gap-1.5" style="font-size: 0.82rem;">
+              <button type="button" id="btnAnalyzeWriting" class="btn btn-sm btn-primary rounded-pill px-3 py-1 fw-bold shadow-xs d-inline-flex align-items-center gap-1.5" style="font-size: 0.82rem;">
                 <i class="ph-bold ph-magic-wand"></i>
                 <span>Kiểm tra bài viết</span>
               </button>
             </div>
+          </div>
+
+          <!-- Real-time Live Errors & Suggestions Box -->
+          <div id="writingLiveErrorsBox" class="d-none mb-3 p-3 rounded-3 border bg-white shadow-2xs" style="border-color: #fecdd3 !important;">
+            <div class="d-flex align-items-center justify-content-between mb-2">
+              <div class="d-flex align-items-center gap-2">
+                <span class="badge bg-danger-subtle text-danger rounded-pill px-2.5 py-1 fw-bold" id="liveErrorsCountBadge">
+                  <i class="ph-bold ph-warning-circle me-1"></i>0 lỗi phát hiện
+                </span>
+                <span class="text-muted small" style="font-size: 0.78rem;" id="liveErrorsProviderNote">Kiểm tra ngữ pháp & chính tả trực tiếp</span>
+              </div>
+              <button type="button" id="btnApplyAllCorrections" class="btn btn-xs btn-outline-success rounded-pill px-2 py-0.5 fw-semibold d-none" style="font-size: 0.74rem;">
+                <i class="ph-bold ph-check-circle me-0.5"></i> Sửa tất cả gợi ý
+              </button>
+            </div>
+            <div id="liveErrorsList" class="d-flex flex-column gap-2"></div>
           </div>
 
           <!-- Live Analysis Feedback Box -->
@@ -3466,9 +3491,207 @@ document.addEventListener("DOMContentLoaded", function() {
   const writingAdviceText = document.getElementById("writingAdviceText");
   const writingGradeBadge = document.getElementById("writingGradeBadge");
 
+  // Real-time live correction UI elements
+  const toggleLiveCorrection = document.getElementById("toggleLiveCorrection");
+  const liveCorrectionStatus = document.getElementById("liveCorrectionStatus");
+  const writingLiveErrorsBox = document.getElementById("writingLiveErrorsBox");
+  const liveErrorsCountBadge = document.getElementById("liveErrorsCountBadge");
+  const liveErrorsProviderNote = document.getElementById("liveErrorsProviderNote");
+  const btnApplyAllCorrections = document.getElementById("btnApplyAllCorrections");
+  const liveErrorsList = document.getElementById("liveErrorsList");
+
   const targetMin = {{ writing_target_min or 40 }};
   const targetMax = {{ writing_target_max or 80 }};
   const draftKey = "writing_draft_{{ lesson.id }}";
+
+  let debounceTimer = null;
+  let currentMatches = [];
+
+  function setLiveStatus(type, message) {
+    if (!liveCorrectionStatus) return;
+    if (type === "checking") {
+      liveCorrectionStatus.className = "badge bg-warning-subtle text-warning-emphasis border rounded-pill px-2 py-0.5";
+      liveCorrectionStatus.innerHTML = `<span class="spinner-border spinner-border-sm me-1" style="width: 0.7rem; height: 0.7rem;"></span> Đang kiểm tra...`;
+    } else if (type === "clean") {
+      liveCorrectionStatus.className = "badge bg-success-subtle text-success border rounded-pill px-2 py-0.5";
+      liveCorrectionStatus.innerHTML = `<i class="ph-bold ph-check-circle me-1"></i> Không có lỗi`;
+    } else if (type === "errors") {
+      liveCorrectionStatus.className = "badge bg-danger-subtle text-danger border rounded-pill px-2 py-0.5";
+      liveCorrectionStatus.innerHTML = `<i class="ph-bold ph-warning-circle me-1"></i> ${message || "Phát hiện lỗi"}`;
+    } else if (type === "disabled") {
+      liveCorrectionStatus.className = "badge bg-light text-secondary border rounded-pill px-2 py-0.5";
+      liveCorrectionStatus.innerHTML = `<i class="ph-bold ph-pause-circle me-1"></i> Đã tắt tự động`;
+    } else {
+      liveCorrectionStatus.className = "badge bg-white border text-secondary rounded-pill px-2 py-0.5";
+      liveCorrectionStatus.innerHTML = `<i class="ph-bold ph-check text-success"></i> Sẵn sàng`;
+    }
+  }
+
+  function renderMatches(matches, text) {
+    currentMatches = matches || [];
+    if (!writingLiveErrorsBox || !liveErrorsList) return;
+
+    if (!currentMatches.length) {
+      writingLiveErrorsBox.classList.add("d-none");
+      liveErrorsList.innerHTML = "";
+      if (btnApplyAllCorrections) btnApplyAllCorrections.classList.add("d-none");
+      if (text.trim().length > 0) {
+        setLiveStatus("clean");
+      } else {
+        setLiveStatus("idle");
+      }
+      return;
+    }
+
+    writingLiveErrorsBox.classList.remove("d-none");
+    setLiveStatus("errors", `${currentMatches.length} lỗi`);
+
+    if (liveErrorsCountBadge) {
+      liveErrorsCountBadge.innerHTML = `<i class="ph-bold ph-warning-circle me-1"></i>${currentMatches.length} lỗi chính tả & ngữ pháp`;
+    }
+
+    const hasFixable = currentMatches.some(m => m.replacements && m.replacements.length > 0);
+    if (btnApplyAllCorrections) {
+      if (hasFixable && currentMatches.length > 1) {
+        btnApplyAllCorrections.classList.remove("d-none");
+      } else {
+        btnApplyAllCorrections.classList.add("d-none");
+      }
+    }
+
+    liveErrorsList.innerHTML = "";
+    currentMatches.forEach((m, idx) => {
+      const item = document.createElement("div");
+      item.className = "p-2.5 rounded-3 bg-light border d-flex flex-column gap-1.5";
+      item.style.borderColor = "var(--border-light)";
+
+      const wrongSnippet = text.substring(m.offset, m.offset + m.length) || m.context || "Từ này";
+      const catName = m.category || (m.error_type === "spelling" ? "Chính tả" : "Ngữ pháp");
+      const catBadgeClass = m.error_type === "spelling" ? "bg-danger-subtle text-danger" : "bg-warning-subtle text-dark";
+
+      let suggestionsHtml = "";
+      if (m.replacements && m.replacements.length > 0) {
+        suggestionsHtml = `<div class="d-flex flex-wrap align-items-center gap-1.5 mt-1">
+          <span class="text-secondary small" style="font-size: 0.74rem;">Gợi ý sửa:</span>
+          ${m.replacements.map(rep => `
+            <button type="button" class="btn btn-xs btn-outline-primary rounded-pill px-2 py-0.5 fw-bold btn-apply-single-fix" data-match-idx="${idx}" data-replacement="${rep.replace(/"/g, '&quot;')}" style="font-size: 0.76rem;">
+              <i class="ph-bold ph-arrow-right me-0.5"></i> ${rep}
+            </button>
+          `).join("")}
+        </div>`;
+      }
+
+      item.innerHTML = `
+        <div class="d-flex flex-wrap align-items-center justify-content-between gap-1">
+          <div class="d-flex align-items-center gap-1.5">
+            <span class="badge ${catBadgeClass} rounded-pill px-2 py-0.5" style="font-size: 0.72rem;">${catName}</span>
+            <span class="badge bg-white border border-danger-subtle text-danger fw-bold text-decoration-underline px-2 py-0.5" style="font-size: 0.78rem;">${wrongSnippet}</span>
+          </div>
+          <span class="text-muted small" style="font-size: 0.72rem;">Vị trí ký tự: ${m.offset + 1}</span>
+        </div>
+        <div class="text-dark small" style="font-size: 0.8rem; line-height: 1.4;">${m.message}</div>
+        ${suggestionsHtml}
+      `;
+      liveErrorsList.appendChild(item);
+    });
+
+    // Attach click listeners to individual suggestions
+    liveErrorsList.querySelectorAll(".btn-apply-single-fix").forEach(btn => {
+      btn.addEventListener("click", function() {
+        const matchIdx = parseInt(this.dataset.matchIdx, 10);
+        const rep = this.dataset.replacement;
+        applySingleCorrection(matchIdx, rep);
+      });
+    });
+  }
+
+  function applySingleCorrection(matchIdx, replacement) {
+    if (!writingInput || !currentMatches[matchIdx]) return;
+    const m = currentMatches[matchIdx];
+    const text = writingInput.value;
+    const before = text.substring(0, m.offset);
+    const after = text.substring(m.offset + m.length);
+    const updated = before + replacement + after;
+    writingInput.value = updated;
+    localStorage.setItem(draftKey, updated);
+    updateWritingStats();
+    triggerCheck(true);
+  }
+
+  function applyAllCorrections() {
+    if (!writingInput || !currentMatches.length) return;
+    let text = writingInput.value;
+    // Sort descending by offset to preserve offsets during replacements
+    const fixable = [...currentMatches]
+      .filter(m => m.replacements && m.replacements.length > 0)
+      .sort((a, b) => b.offset - a.offset);
+
+    fixable.forEach(m => {
+      const rep = m.replacements[0];
+      const before = text.substring(0, m.offset);
+      const after = text.substring(m.offset + m.length);
+      text = before + rep + after;
+    });
+
+    writingInput.value = text;
+    localStorage.setItem(draftKey, text);
+    updateWritingStats();
+    triggerCheck(true);
+  }
+
+  if (btnApplyAllCorrections) {
+    btnApplyAllCorrections.addEventListener("click", applyAllCorrections);
+  }
+
+  function triggerCheck(immediate = false) {
+    if (!writingInput) return;
+    const isEnabled = toggleLiveCorrection ? toggleLiveCorrection.checked : true;
+    if (!isEnabled && !immediate) {
+      setLiveStatus("disabled");
+      return;
+    }
+
+    const text = writingInput.value;
+    if (!text.trim()) {
+      renderMatches([], "");
+      return;
+    }
+
+    setLiveStatus("checking");
+
+    fetch("{{ url_for('learning.check_writing') }}", {
+      method: "POST",
+      headers: { 
+        "Content-Type": "application/json",
+        "X-CSRFToken": "{{ csrf_token() }}"
+      },
+      body: JSON.stringify({ text })
+    })
+      .then(res => res.json())
+      .then(data => {
+        if (liveErrorsProviderNote) {
+          liveErrorsProviderNote.innerText = data.provider === "languagetool" 
+            ? "Được kiểm tra bởi LanguageTool AI" 
+            : "Được kiểm tra bởi Grammar Engine";
+        }
+        renderMatches(data.matches || [], text);
+      })
+      .catch(err => {
+        console.error("Grammar check error:", err);
+        setLiveStatus("idle");
+      });
+  }
+
+  if (toggleLiveCorrection) {
+    toggleLiveCorrection.addEventListener("change", function() {
+      if (this.checked) {
+        triggerCheck(true);
+      } else {
+        if (writingLiveErrorsBox) writingLiveErrorsBox.classList.add("d-none");
+        setLiveStatus("disabled");
+      }
+    });
+  }
 
   // Load saved draft from localStorage
   if (writingInput) {
@@ -3481,6 +3704,10 @@ document.addEventListener("DOMContentLoaded", function() {
     writingInput.addEventListener("input", function() {
       updateWritingStats();
       localStorage.setItem(draftKey, writingInput.value);
+      if (toggleLiveCorrection && toggleLiveCorrection.checked) {
+        if (debounceTimer) clearTimeout(debounceTimer);
+        debounceTimer = setTimeout(() => triggerCheck(false), 1500);
+      }
     });
   }
 
@@ -3520,6 +3747,9 @@ document.addEventListener("DOMContentLoaded", function() {
         localStorage.removeItem(draftKey);
         updateWritingStats();
         if (writingFeedbackBox) writingFeedbackBox.classList.add("d-none");
+        if (writingLiveErrorsBox) writingLiveErrorsBox.classList.add("d-none");
+        currentMatches = [];
+        setLiveStatus("idle");
       }
     });
   }
@@ -3538,6 +3768,9 @@ document.addEventListener("DOMContentLoaded", function() {
       writingInput.focus();
       updateWritingStats();
       localStorage.setItem(draftKey, writingInput.value);
+      if (toggleLiveCorrection && toggleLiveCorrection.checked) {
+        triggerCheck(true);
+      }
     });
   });
 
@@ -3555,7 +3788,7 @@ document.addEventListener("DOMContentLoaded", function() {
     });
   });
 
-  // Analyze Writing Assistant
+  // Analyze Writing Assistant & Grammar Check
   if (btnAnalyzeWriting && writingInput) {
     btnAnalyzeWriting.addEventListener("click", function() {
       const text = writingInput.value.trim();
@@ -3564,6 +3797,9 @@ document.addEventListener("DOMContentLoaded", function() {
         writingInput.focus();
         return;
       }
+
+      // Trigger instant grammar and spelling check
+      triggerCheck(true);
 
       const words = countWords(text);
       const sentences = text.split(/[.!?]+/).filter(s => s.trim().length > 0).length;
