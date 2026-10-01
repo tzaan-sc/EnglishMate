@@ -1475,6 +1475,7 @@ def vocabulary():
         (FlashcardSet.user_id == current_user.id) | (FlashcardSet.is_public == True)
     ).order_by(FlashcardSet.created_at.desc()).all()
     my_sets_count = sum(1 for s in flashcard_sets if s.user_id == current_user.id)
+    community_sets_count = sum(1 for s in flashcard_sets if s.user_id != current_user.id and s.is_public)
 
     return render_template(
         "learning/vocabulary.html",
@@ -1499,6 +1500,7 @@ def vocabulary():
         daily_goal_pct=daily_goal_pct,
         flashcard_sets=flashcard_sets,
         my_sets_count=my_sets_count,
+        community_sets_count=community_sets_count,
     )
 
 
@@ -2439,6 +2441,31 @@ def _clone_flashcard_set(share_code=None, set_id=None):
     db.session.commit()
     flash(f"Đã sao chép thành công bộ flashcard '{cloned_set.title}' vào tài khoản của bạn!", "success")
     return redirect(url_for("learning.flashcard_set_view", set_id=cloned_set.id))
+
+
+@bp.post("/flashcard-sets/<int:set_id>/toggle-privacy")
+@login_required
+def flashcard_set_toggle_privacy(set_id):
+    from .models import FlashcardSet
+    fset = FlashcardSet.query.get_or_404(set_id)
+    if fset.user_id != current_user.id:
+        abort(403)
+
+    fset.is_public = not fset.is_public
+    db.session.commit()
+
+    status_str = "Công khai (Hiển thị trên Thư viện cộng đồng)" if fset.is_public else "Riêng tư (Chỉ mình tôi)"
+    msg = f"Đã chuyển bộ thẻ '{fset.title}' sang chế độ {status_str}."
+
+    if request.headers.get("X-Requested-With") == "XMLHttpRequest" or request.is_json:
+        return jsonify({
+            "status": "ok",
+            "is_public": fset.is_public,
+            "message": msg
+        })
+
+    flash(msg, "success")
+    return redirect(request.referrer or url_for("learning.flashcard_set_view", set_id=fset.id))
 
 
 # ==========================================

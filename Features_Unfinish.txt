@@ -166,10 +166,10 @@ MODULE: 5. VOCABULARY & FLASHCARD SYSTEM (HỆ THỐNG TỪ VỰNG & FLASHCARD) 
    - Mô tả yêu cầu: Cho phép người dùng chia sẻ bộ Flashcard tự tạo của mình cho cộng đồng người học khác thông qua đường link hoặc mã PIN.
    - Trạng thái: ĐÃ HOÀN THÀNH. Đã có mã chia sẻ `share_code`, route `/flashcards/share/<share_code>`, clone set về tài khoản cá nhân, modal chia sẻ 1-click và mạng xã hội.
 
-17. [ ] Flashcard Set Privacy - Riêng tư bộ flashcard
+17. [x] Flashcard Set Privacy - Riêng tư bộ flashcard
    - Mức độ ưu tiên: Thấp
    - Mô tả yêu cầu: Cài đặt chế độ hiển thị cho bộ Flashcard tự tạo: Công khai (Public), Riêng tư (Private), hoặc Chỉ chia sẻ qua link (Unlisted).
-   - Đối chiếu hiện trạng: Hiện tại các bộ thẻ mặc định ở chế độ riêng tư theo user_id, chưa có cột cài đặt quyền riêng tư.
+   - Trạng thái: ĐÃ HOÀN THÀNH. Đã có trường `is_public` (default=False), route toggle privacy, tab Thư viện cộng đồng & Riêng tư, huy hiệu trạng thái trực quan và chuyển đổi nhanh 1-click.
 
 
 ====================================================================================================

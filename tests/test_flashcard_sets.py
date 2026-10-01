@@ -166,3 +166,46 @@ def test_flashcard_share_404_on_invalid_code(client):
     response = client.get("/flashcards/share/invalid_code_12345")
     assert response.status_code == 404
 
+
+def test_flashcard_set_privacy_toggle_and_filtering(client, app, flashcard_setup):
+    login(client)
+    set_id, _ = flashcard_setup
+    
+    # 1. Toggle privacy via POST
+    response = client.post(f"/flashcard-sets/{set_id}/toggle-privacy", headers={"X-Requested-With": "XMLHttpRequest"})
+    assert response.status_code == 200
+    assert response.json["status"] == "ok"
+    assert response.json["is_public"] is False # toggled from True to False
+
+    with app.app_context():
+        fset = FlashcardSet.query.get(set_id)
+        assert fset.is_public is False
+
+    # 2. Toggle back to public
+    response2 = client.post(f"/flashcard-sets/{set_id}/toggle-privacy", follow_redirects=True)
+    assert response2.status_code == 200
+
+    with app.app_context():
+        fset = FlashcardSet.query.get(set_id)
+        assert fset.is_public is True
+
+
+def test_flashcard_set_create_private(client, app):
+    login(client)
+    response = client.post("/flashcard-sets/new", data={
+        "title": "Private Vocab Set",
+        "description": "Only for me",
+        # is_public omitted -> default False
+        "terms[]": ["Secret"],
+        "definitions[]": ["Bí mật"],
+        "images[]": [""],
+        "item_ids[]": [""]
+    }, follow_redirects=True)
+    
+    assert response.status_code == 200
+    with app.app_context():
+        fset = FlashcardSet.query.filter_by(title="Private Vocab Set").first()
+        assert fset is not None
+        assert fset.is_public is False
+
+

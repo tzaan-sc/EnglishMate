@@ -240,7 +240,7 @@ MODULE 4. LESSONS & 4 SKILLS (BÀI HỌC & 4 KỸ NĂNG) — 9 TÍNH NĂNG CHƯA
 - Trạng thái: ĐÃ HOÀN THÀNH (100% test passed)
 
 ----------------------------------------------------------------------------------------------------
-MODULE 5. VOCABULARY & FLASHCARD SYSTEM (HỆ THỐNG TỪ VỰNG & FLASHCARD) — 1 TÍNH NĂNG CHƯA LÀM
+MODULE 5. VOCABULARY & FLASHCARD SYSTEM (HỆ THỐNG TỪ VỰNG & FLASHCARD) — ĐÃ HOÀN THÀNH TOÀN BỘ (0 CHƯA LÀM)
 ----------------------------------------------------------------------------------------------------
 
 [x] 5.1. Flashcard Set Sharing - Chia sẻ bộ flashcard (Mục 5.10)
@@ -255,15 +255,17 @@ MODULE 5. VOCABULARY & FLASHCARD SYSTEM (HỆ THỐNG TỪ VỰNG & FLASHCARD) �
   + Đã viết unit test đầy đủ trong `tests/test_flashcard_sets.py` (100% pass).
 - Trạng thái: ĐÃ HOÀN THÀNH (100% test passed)
 
-[ ] 5.2. Flashcard Set Privacy - Cài đặt quyền riêng tư bộ flashcard (Mục 5.10)
+[x] 5.2. Flashcard Set Privacy - Cài đặt quyền riêng tư bộ flashcard (Mục 5.10)
 - Hiện trạng trong EnglishMate_Features.txt:
   Mọi bộ thẻ hiện tại chỉ hiển thị duy nhất cho tài khoản người tạo (`user_id == current_user.id`).
-- Phần còn thiếu chưa làm:
-  Chưa có toggle cho phép người dùng chọn chế độ: "Riêng tư (Chỉ mình tôi)" hoặc "Công khai (Hiển thị trên thư viện cộng đồng)".
-- Giải pháp kỹ thuật cần làm:
-  + Bổ sung trường `is_public` (Boolean, default=False) trong model `FlashcardSet`.
-  + Thêm tab "Thư viện bộ thẻ cộng đồng" trên trang quản lý flashcard.
-- Mức độ ưu tiên: Trung bình (Medium)
+- Phần đã hoàn thiện:
+  + Chuẩn hóa trường `is_public` (Boolean, default=False) trong model `FlashcardSet`.
+  + Thêm route toggle riêng tư `POST /flashcard-sets/<set_id>/toggle-privacy` (hỗ trợ cả JSON AJAX và Form Submit).
+  + Bổ sung tab "Cộng đồng" (`data-filter="community"`) và tab "Riêng tư" (`data-filter="private"`) trên trang quản lý flashcard `vocabulary.html`.
+  + Thêm huy hiệu trạng thái (Công khai / Riêng tư / Cộng đồng) và nút chuyển đổi nhanh 1-click trên trang học `flashcard_view.html` và menu `vocabulary.html`.
+  + Cải tiến công tắc chọn chế độ Công khai / Riêng tư trực quan trên trang tạo & sửa học phần `flashcard_create.html`.
+  + Đã viết unit test đầy đủ trong `tests/test_flashcard_sets.py` (100% pass).
+- Trạng thái: ĐÃ HOÀN THÀNH (100% test passed)
 
 ----------------------------------------------------------------------------------------------------
 MODULE 6. GRAMMAR SYSTEM (HỆ THỐNG NGỮ PHÁP) — 1 TÍNH NĂNG CHƯA LÀM

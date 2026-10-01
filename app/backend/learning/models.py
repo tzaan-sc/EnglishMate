@@ -215,7 +215,7 @@ class FlashcardSet(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(200), nullable=False)
     description = db.Column(db.Text, nullable=True)
-    is_public = db.Column(db.Boolean, default=True, nullable=False)
+    is_public = db.Column(db.Boolean, default=False, nullable=False)
     share_code = db.Column(db.String(32), unique=True, index=True, nullable=True, default=lambda: secrets.token_urlsafe(8))
     user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False, index=True)
     created_at = db.Column(db.DateTime(timezone=True), default=now, nullable=False)

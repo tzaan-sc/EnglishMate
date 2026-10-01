@@ -409,6 +409,16 @@ MỤC LỤC TỔNG QUAN CÁC MODULE CHỨC NĂNG ĐÃ LÀM:
   [x] Tính năng 1-click "Sao chép bộ thẻ này vào tài khoản của tôi" (Clone Set) sao chép toàn bộ thuật ngữ sang bộ thẻ mới thuộc sở hữu cá nhân để học SRS.
   [x] Hộp thoại (Modal) chia sẻ 1-click sao chép đường link trực tiếp và chia sẻ nhanh qua các mạng xã hội (Facebook, X/Twitter, Telegram, WhatsApp, Zalo).
 
+[x] 4.11. Quản lý quyền riêng tư bộ Flashcard (Flashcard Set Privacy Controls)
+- Route: POST /flashcard-sets/<set_id>/toggle-privacy
+- Model: FlashcardSet (is_public: Boolean, default=False)
+- Chi tiết chức năng:
+  [x] Cho phép người dùng chuyển đổi linh hoạt giữa hai chế độ: "Công khai (Public - Hiển thị trên Thư viện cộng đồng)" và "Riêng tư (Private - Chỉ mình tôi)".
+  [x] API và route chuyển đổi nhanh 1-click không cần vào trang sửa (hỗ trợ cả JSON AJAX và Form Submit).
+  [x] Tab phân loại "Cộng đồng" (`data-filter="community"`) và "Riêng tư" (`data-filter="private"`) trên giao diện danh sách bộ thẻ.
+  [x] Huy hiệu trạng thái trực quan trên trang chi tiết học phần và menu quản lý bộ thẻ.
+  [x] Kiểm tra phân quyền bảo mật chặt chẽ: chỉ chủ sở hữu (`user_id == current_user.id`) mới có quyền thay đổi trạng thái riêng tư của bộ thẻ.
+
 ====================================================================================================
 [x] 5. MODULE NGỮ PHÁP 12 DANH MỤC, BÀI TẬP & SỔ TAY TRA CỨU (GRAMMAR SYSTEM)
 ====================================================================================================

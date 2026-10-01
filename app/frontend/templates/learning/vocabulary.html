@@ -376,8 +376,11 @@
       <button type="button" class="btn btn-sm btn-light border rounded-pill px-3 py-1.5 fw-semibold text-secondary filter-set-btn" data-filter="mine">
         Của tôi <span class="opacity-75 fw-normal">({{ my_sets_count }})</span>
       </button>
-      <button type="button" class="btn btn-sm btn-light border rounded-pill px-3 py-1.5 fw-semibold text-secondary filter-set-btn" data-filter="public">
-        Cộng đồng
+      <button type="button" class="btn btn-sm btn-light border rounded-pill px-3 py-1.5 fw-semibold text-secondary filter-set-btn" data-filter="community">
+        <i class="ph-bold ph-users me-1"></i> Cộng đồng <span class="opacity-75 fw-normal">({{ community_sets_count }})</span>
+      </button>
+      <button type="button" class="btn btn-sm btn-light border rounded-pill px-3 py-1.5 fw-semibold text-secondary filter-set-btn" data-filter="private">
+        <i class="ph-bold ph-lock me-1"></i> Riêng tư
       </button>
     </div>
     <div class="position-relative" style="min-width: 220px;">
@@ -395,7 +398,8 @@
     {% for fset in flashcard_sets %}
     {% set is_mine = (current_user.id == fset.user_id) %}
     <div class="col-md-6 col-lg-4 set-item-card"
-         data-owner="{{ 'mine' if is_mine else 'public' }}"
+         data-owner="{{ 'mine' if is_mine else 'community' }}"
+         data-privacy="{{ 'public' if fset.is_public else 'private' }}"
          data-title="{{ fset.title|lower }}">
       <div class="vocab-card vocab-card-hover h-100 p-3 d-flex flex-column"
            style="cursor: pointer;"
@@ -403,17 +407,28 @@
 
         <!-- Top row -->
         <div class="d-flex align-items-center justify-content-between mb-2">
-          <div class="d-flex align-items-center gap-1.5">
+          <div class="d-flex align-items-center gap-1.5 flex-wrap">
             <span class="badge bg-primary-subtle text-primary border rounded-pill fw-semibold"
                   style="font-size: 0.72rem; padding: 3px 8px;">
               {{ fset.items|length }} thẻ
             </span>
             {% if is_mine %}
-            <span class="badge bg-success-subtle text-success border rounded-pill fw-semibold"
-                  style="font-size: 0.7rem; padding: 3px 7px;">Của tôi</span>
+              {% if fset.is_public %}
+              <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill fw-semibold"
+                    style="font-size: 0.7rem; padding: 3px 7px;" title="Hiển thị trên Thư viện cộng đồng">
+                <i class="ph-bold ph-globe me-0.5"></i> Công khai
+              </span>
+              {% else %}
+              <span class="badge bg-secondary-subtle text-secondary border rounded-pill fw-semibold"
+                    style="font-size: 0.7rem; padding: 3px 7px;" title="Chỉ mình bạn và người có link mới xem được">
+                <i class="ph-bold ph-lock me-0.5"></i> Riêng tư
+              </span>
+              {% endif %}
             {% else %}
-            <span class="badge bg-light text-muted border rounded-pill fw-semibold"
-                  style="font-size: 0.7rem; padding: 3px 7px;">Công khai</span>
+            <span class="badge bg-info-subtle text-info border border-info-subtle rounded-pill fw-semibold"
+                  style="font-size: 0.7rem; padding: 3px 7px;">
+              <i class="ph-bold ph-users me-0.5"></i> Cộng đồng
+            </span>
             {% endif %}
           </div>
           <div class="dropdown" onclick="event.stopPropagation();">
@@ -429,6 +444,18 @@
                 </a>
               </li>
               {% if is_mine %}
+              <li>
+                <form action="{{ url_for('learning.flashcard_set_toggle_privacy', set_id=fset.id) }}" method="post" class="m-0">
+                  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                  <button type="submit" class="dropdown-item rounded-2 small fw-semibold py-1.5 {% if fset.is_public %}text-warning{% else %}text-success{% endif %}">
+                    {% if fset.is_public %}
+                    <i class="ph-bold ph-lock me-1.5"></i> Chuyển sang Riêng tư
+                    {% else %}
+                    <i class="ph-bold ph-globe me-1.5"></i> Chuyển sang Công khai
+                    {% endif %}
+                  </button>
+                </form>
+              </li>
               <li>
                 <a class="dropdown-item rounded-2 small fw-semibold py-1.5"
                    href="{{ url_for('learning.flashcard_set_edit', set_id=fset.id) }}">
@@ -547,7 +574,19 @@ document.addEventListener("DOMContentLoaded", function () {
     let visible = 0;
 
     setCards.forEach(card => {
-      const ok = (f === "all" || card.dataset.owner === f) && (!q || card.dataset.title.includes(q));
+      let matchFilter = false;
+      if (f === "all") {
+        matchFilter = true;
+      } else if (f === "mine") {
+        matchFilter = (card.dataset.owner === "mine");
+      } else if (f === "community" || f === "public") {
+        matchFilter = (card.dataset.owner === "community" || (card.dataset.privacy === "public" && card.dataset.owner !== "mine"));
+      } else if (f === "private") {
+        matchFilter = (card.dataset.privacy === "private");
+      }
+
+      const matchSearch = (!q || card.dataset.title.includes(q));
+      const ok = matchFilter && matchSearch;
       card.classList.toggle("d-none", !ok);
       if (ok) visible++;
     });
