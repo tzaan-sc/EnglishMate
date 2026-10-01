@@ -1,4 +1,5 @@
 import random
+import secrets
 from datetime import date, datetime, timedelta, timezone
 
 from flask import abort, flash, jsonify, redirect, render_template, request, session, url_for
@@ -2360,6 +2361,84 @@ def flashcard_set_delete(set_id):
     db.session.commit()
     flash(f"Học phần '{fset.title}' đã bị xóa.", "success")
     return redirect(url_for("learning.vocabulary", tab="flashcards"))
+
+
+@bp.get("/flashcards/share/<share_code>")
+@bp.get("/flashcard-sets/share/<share_code>")
+def flashcard_share(share_code):
+    from .models import FlashcardSet
+    fset = FlashcardSet.query.filter_by(share_code=share_code).first()
+    if not fset and share_code.isdigit():
+        fset = FlashcardSet.query.get(int(share_code))
+    if not fset:
+        abort(404)
+        
+    # Ensure share_code exists for link sharing
+    if not fset.share_code:
+        fset.get_share_code()
+        db.session.commit()
+        
+    return render_template("learning/flashcard_share.html", fset=fset)
+
+
+@bp.post("/flashcards/share/<share_code>/clone")
+@bp.post("/flashcard-sets/share/<share_code>/clone")
+@login_required
+def flashcard_share_clone(share_code):
+    return _clone_flashcard_set(share_code=share_code)
+
+
+@bp.post("/flashcard-sets/<int:set_id>/clone")
+@login_required
+def flashcard_set_clone_by_id(set_id):
+    return _clone_flashcard_set(set_id=set_id)
+
+
+def _clone_flashcard_set(share_code=None, set_id=None):
+    from .models import FlashcardSet, FlashcardItem
+    fset = None
+    if set_id is not None:
+        fset = FlashcardSet.query.get_or_404(set_id)
+    elif share_code:
+        fset = FlashcardSet.query.filter_by(share_code=share_code).first()
+        if not fset and share_code.isdigit():
+            fset = FlashcardSet.query.get(int(share_code))
+        if not fset:
+            abort(404)
+    else:
+        abort(400)
+
+    # Permissions: allow if public or owner or has the direct share link
+    if not fset.is_public and fset.user_id != current_user.id and fset.share_code != share_code:
+        abort(403)
+
+    cloned_title = fset.title
+    if fset.user_id == current_user.id:
+        cloned_title = f"{fset.title} (Bản sao)"
+
+    cloned_set = FlashcardSet(
+        title=cloned_title,
+        description=fset.description,
+        is_public=False,
+        share_code=secrets.token_urlsafe(8),
+        user_id=current_user.id
+    )
+    db.session.add(cloned_set)
+    db.session.flush()
+
+    for item in fset.items:
+        new_item = FlashcardItem(
+            set_id=cloned_set.id,
+            term=item.term,
+            definition=item.definition,
+            image_url=item.image_url,
+            order=item.order
+        )
+        db.session.add(new_item)
+
+    db.session.commit()
+    flash(f"Đã sao chép thành công bộ flashcard '{cloned_set.title}' vào tài khoản của bạn!", "success")
+    return redirect(url_for("learning.flashcard_set_view", set_id=cloned_set.id))
 
 
 # ==========================================

@@ -161,10 +161,10 @@ MODULE: 5. VOCABULARY & FLASHCARD SYSTEM (HỆ THỐNG TỪ VỰNG & FLASHCARD) 
 
 ### 5.10. Custom Flashcard Sets (Bộ flashcard tùy chỉnh) (2 tính năng):
 ----------------------------------------------------------------------------------------------------
-16. [ ] Flashcard Set Sharing - Chia sẻ bộ flashcard
+16. [x] Flashcard Set Sharing - Chia sẻ bộ flashcard
    - Mức độ ưu tiên: Trung bình
    - Mô tả yêu cầu: Cho phép người dùng chia sẻ bộ Flashcard tự tạo của mình cho cộng đồng người học khác thông qua đường link hoặc mã PIN.
-   - Đối chiếu hiện trạng: Đã có đầy đủ CRUD FlashcardSet và FlashcardItem cá nhân, nhưng bộ thẻ hiện chỉ thuộc quyền sở hữu của riêng user đó.
+   - Trạng thái: ĐÃ HOÀN THÀNH. Đã có mã chia sẻ `share_code`, route `/flashcards/share/<share_code>`, clone set về tài khoản cá nhân, modal chia sẻ 1-click và mạng xã hội.
 
 17. [ ] Flashcard Set Privacy - Riêng tư bộ flashcard
    - Mức độ ưu tiên: Thấp

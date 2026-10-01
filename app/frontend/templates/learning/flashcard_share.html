@@ -1,0 +1,339 @@
+{% extends "base.html" %}
+
+{% block title %}Chia sẻ bộ Flashcard: {{ fset.title }} · EnglishMate{% endblock %}
+
+{% block content %}
+<div class="container-fluid max-w-5xl py-4">
+
+    <!-- Breadcrumb -->
+    <nav class="app-breadcrumb mb-3" aria-label="breadcrumb">
+      <ol class="breadcrumb mb-0 align-items-center flex-wrap">
+        <li class="breadcrumb-item">
+          <a href="{{ url_for('main.dashboard') }}" class="d-inline-flex align-items-center gap-1">
+            <i class="ph ph-house"></i>
+            <span>Trang Chủ</span>
+          </a>
+        </li>
+        <li class="breadcrumb-item">
+          <a href="{{ url_for('learning.vocabulary', tab='flashcards') }}">Flashcards</a>
+        </li>
+        <li class="breadcrumb-item active text-truncate" aria-current="page" style="max-width: 280px;" title="{{ fset.title }}">
+          <span>{{ fset.title }}</span>
+        </li>
+      </ol>
+    </nav>
+
+    <!-- Header Card -->
+    <div class="card-modern border-0 shadow-sm p-4 p-md-5 mb-4 position-relative overflow-hidden" style="background: linear-gradient(135deg, rgba(99, 102, 241, 0.05) 0%, rgba(168, 85, 247, 0.08) 100%); border-radius: 1.25rem;">
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-4">
+            <div>
+                <div class="d-flex align-items-center gap-2 mb-2">
+                    <span class="badge rounded-pill bg-primary text-white px-3 py-1 fw-bold" style="font-size: 0.78rem;">
+                        <i class="ph-bold ph-share-network me-1"></i> Bộ thẻ chia sẻ
+                    </span>
+                    {% if fset.is_public %}
+                    <span class="badge rounded-pill bg-success-subtle text-success border border-success-subtle px-2.5 py-1 fw-semibold" style="font-size: 0.78rem;">
+                        <i class="ph-bold ph-globe me-1"></i> Công khai
+                    </span>
+                    {% else %}
+                    <span class="badge rounded-pill bg-secondary-subtle text-secondary border px-2.5 py-1 fw-semibold" style="font-size: 0.78rem;">
+                        <i class="ph-bold ph-link me-1"></i> Chia sẻ qua liên kết
+                    </span>
+                    {% endif %}
+                </div>
+                
+                <h1 class="fw-bold text-dark mb-2" style="font-size: 2rem; letter-spacing: -0.02em;">{{ fset.title }}</h1>
+                
+                {% if fset.description %}
+                <p class="text-secondary mb-3 fs-6" style="max-width: 680px;">{{ fset.description }}</p>
+                {% endif %}
+
+                <div class="d-flex align-items-center flex-wrap gap-3 text-muted small">
+                    <div class="d-flex align-items-center gap-1.5">
+                        <i class="ph-bold ph-user-circle text-primary fs-5"></i>
+                        <span>Tác giả: <strong class="text-dark">{{ fset.user.username }}</strong></span>
+                    </div>
+                    <span>&bull;</span>
+                    <div class="d-flex align-items-center gap-1.5">
+                        <i class="ph-bold ph-cards text-warning fs-5"></i>
+                        <span><strong class="text-dark">{{ fset.items|length }}</strong> thuật ngữ</span>
+                    </div>
+                    <span>&bull;</span>
+                    <div class="d-flex align-items-center gap-1.5">
+                        <i class="ph-bold ph-calendar text-secondary fs-5"></i>
+                        <span>{{ fset.created_at.strftime('%d/%m/%Y') }}</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Clone / Action Callout -->
+            <div class="d-flex flex-column gap-2 text-md-end">
+                {% if current_user.is_authenticated %}
+                    {% if fset.user_id == current_user.id %}
+                        <a href="{{ url_for('learning.flashcard_set_view', set_id=fset.id) }}" class="btn btn-primary rounded-pill px-4 py-2.5 fw-bold shadow-sm d-inline-flex align-items-center justify-content-center gap-2">
+                            <i class="ph-bold ph-play-circle fs-5"></i>
+                            <span>Vào học ngay bộ thẻ này</span>
+                        </a>
+                        <a href="{{ url_for('learning.flashcard_set_edit', set_id=fset.id) }}" class="btn btn-outline-secondary rounded-pill px-3 py-1.5 fw-semibold small d-inline-flex align-items-center justify-content-center gap-1">
+                            <i class="ph-bold ph-pencil"></i> Sửa bộ thẻ
+                        </a>
+                    {% else %}
+                        <form action="{{ url_for('learning.flashcard_share_clone', share_code=fset.get_share_code()) }}" method="post" class="m-0">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <button type="submit" class="btn btn-primary btn-lg rounded-pill px-4 py-3 fw-bold shadow-sm d-inline-flex align-items-center justify-content-center gap-2 transition-hover w-100">
+                                <i class="ph-bold ph-copy fs-4"></i>
+                                <span>Sao chép vào tài khoản của tôi</span>
+                            </button>
+                        </form>
+                        <div class="text-muted small mt-1">
+                            <i class="ph-bold ph-info text-primary"></i> Nhân bản để ôn tập SRS và chỉnh sửa theo ý bạn
+                        </div>
+                    {% endif %}
+                {% else %}
+                    <a href="{{ url_for('auth.login', next=request.url) }}" class="btn btn-primary btn-lg rounded-pill px-4 py-3 fw-bold shadow-sm d-inline-flex align-items-center justify-content-center gap-2 transition-hover">
+                        <i class="ph-bold ph-sign-in fs-4"></i>
+                        <span>Đăng nhập để sao chép bộ thẻ</span>
+                    </a>
+                    <div class="text-muted small mt-1">
+                        Miễn phí &bull; Lưu lại tiến trình học cá nhân
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Share Toolbar -->
+    <div class="card-modern p-3 mb-4 d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3">
+        <div class="d-flex align-items-center gap-2">
+            <span class="fw-bold text-dark small d-flex align-items-center gap-1.5">
+                <i class="ph-bold ph-share-network text-primary fs-5"></i> Link chia sẻ:
+            </span>
+            <div class="input-group input-group-sm" style="max-width: 380px;">
+                <input type="text" class="form-control bg-light text-truncate" id="shareUrlInput" value="{{ request.url }}" readonly>
+                <button class="btn btn-primary fw-bold px-3 d-inline-flex align-items-center gap-1" type="button" id="btnCopyShare" onclick="copyShareUrl()">
+                    <i class="ph-bold ph-copy"></i> Sao chép
+                </button>
+            </div>
+        </div>
+
+        <div class="d-flex align-items-center gap-2 flex-wrap">
+            <span class="text-muted small fw-semibold">Chia sẻ nhanh:</span>
+            <button type="button" class="btn btn-light border btn-sm rounded-circle p-0 d-inline-flex align-items-center justify-content-center text-primary" style="width: 34px; height: 34px;" onclick="shareSocial('facebook')" title="Facebook">
+                <i class="ph-fill ph-facebook-logo fs-5"></i>
+            </button>
+            <button type="button" class="btn btn-light border btn-sm rounded-circle p-0 d-inline-flex align-items-center justify-content-center text-info" style="width: 34px; height: 34px;" onclick="shareSocial('twitter')" title="X / Twitter">
+                <i class="ph-bold ph-x-logo fs-5"></i>
+            </button>
+            <button type="button" class="btn btn-light border btn-sm rounded-circle p-0 d-inline-flex align-items-center justify-content-center text-primary" style="width: 34px; height: 34px;" onclick="shareSocial('telegram')" title="Telegram">
+                <i class="ph-bold ph-telegram-logo fs-5"></i>
+            </button>
+            <button type="button" class="btn btn-light border btn-sm rounded-circle p-0 d-inline-flex align-items-center justify-content-center text-success" style="width: 34px; height: 34px;" onclick="shareSocial('whatsapp')" title="WhatsApp">
+                <i class="ph-bold ph-whatsapp-logo fs-5"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- Interactive Preview Card -->
+    {% if fset.items %}
+    <div class="mb-5">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h5 class="fw-bold text-dark mb-0 d-flex align-items-center gap-2">
+                <i class="ph-bold ph-eye text-primary"></i> Xem trước thẻ Flashcard
+            </h5>
+            <div class="text-muted small font-monospace">
+                Thẻ <span id="previewCurrentIdx" class="fw-bold text-primary">1</span> / {{ fset.items|length }}
+            </div>
+        </div>
+
+        <!-- 3D Preview Box -->
+        <div class="flashcard-preview-container mx-auto position-relative" style="max-width: 640px; height: 320px; perspective: 1000px; cursor: pointer;" onclick="flipPreviewCard()">
+            <div class="flashcard-preview-inner w-100 h-100 position-relative" id="previewCardInner" style="transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1); transform-style: preserve-3d;">
+                <!-- Front -->
+                <div class="card-front-preview position-absolute w-100 h-100 p-4 p-md-5 rounded-4 shadow-sm d-flex flex-column justify-content-center align-items-center text-center bg-white border" style="backface-visibility: hidden;">
+                    <span class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill position-absolute top-0 start-0 m-3 px-3 py-1 fw-bold small">Thuật ngữ</span>
+                    <button class="btn btn-light btn-sm rounded-circle position-absolute top-0 end-0 m-3 text-primary shadow-xs" onclick="event.stopPropagation(); speakText(currentPreviewItem.term)" title="Nghe phát âm" style="width: 36px; height: 36px;">
+                        <i class="ph-bold ph-speaker-high fs-5"></i>
+                    </button>
+                    <div class="display-6 fw-bold text-dark mb-2" id="previewTermText">Term</div>
+                    <div class="text-muted small mt-auto opacity-75">
+                        <i class="ph-bold ph-arrows-clockwise me-1"></i> Chạm để xem định nghĩa
+                    </div>
+                </div>
+
+                <!-- Back -->
+                <div class="card-back-preview position-absolute w-100 h-100 p-4 p-md-5 rounded-4 shadow-sm d-flex flex-column justify-content-center align-items-center text-center border" style="backface-visibility: hidden; transform: rotateX(180deg); background: linear-gradient(145deg, #ffffff 0%, #f0fdf4 100%); border-color: #a7f3d0 !important;">
+                    <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill position-absolute top-0 start-0 m-3 px-3 py-1 fw-bold small">Định nghĩa</span>
+                    <button class="btn btn-light btn-sm rounded-circle position-absolute top-0 end-0 m-3 text-success shadow-xs" onclick="event.stopPropagation(); speakText(currentPreviewItem.definition, 'vi-VN')" title="Đọc định nghĩa" style="width: 36px; height: 36px;">
+                        <i class="ph-bold ph-speaker-high fs-5"></i>
+                    </button>
+                    <div class="fs-3 fw-bold text-success mb-2" id="previewDefText">Definition</div>
+                    <div class="text-muted small mt-auto opacity-75">
+                        <i class="ph-bold ph-arrow-u-down-left me-1"></i> Chạm để quay lại thuật ngữ
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Controls -->
+        <div class="d-flex justify-content-center align-items-center gap-3 mt-3">
+            <button class="btn btn-light border rounded-circle p-0 d-flex align-items-center justify-content-center shadow-xs" style="width: 44px; height: 44px;" onclick="prevPreviewCard()" id="btnPrevPreview" title="Thẻ trước">
+                <i class="ph-bold ph-arrow-left fs-5"></i>
+            </button>
+            <button class="btn btn-light border rounded-circle p-0 d-flex align-items-center justify-content-center shadow-xs" style="width: 44px; height: 44px;" onclick="flipPreviewCard()" title="Lật thẻ">
+                <i class="ph-bold ph-arrows-clockwise fs-5 text-primary"></i>
+            </button>
+            <button class="btn btn-light border rounded-circle p-0 d-flex align-items-center justify-content-center shadow-xs" style="width: 44px; height: 44px;" onclick="nextPreviewCard()" id="btnNextPreview" title="Thẻ tiếp">
+                <i class="ph-bold ph-arrow-right fs-5"></i>
+            </button>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Full Terms List -->
+    <div class="card-modern border-0 shadow-sm p-4 mb-4">
+        <div class="d-flex justify-content-between align-items-center mb-4 pb-2 border-bottom">
+            <h5 class="fw-bold text-dark mb-0 d-flex align-items-center gap-2">
+                <i class="ph-bold ph-list-bullets text-primary"></i> Danh sách thuật ngữ ({{ fset.items|length }})
+            </h5>
+            {% if current_user.is_authenticated and fset.user_id != current_user.id %}
+            <form action="{{ url_for('learning.flashcard_share_clone', share_code=fset.get_share_code()) }}" method="post" class="m-0">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button type="submit" class="btn btn-outline-primary btn-sm rounded-pill px-3 fw-bold d-inline-flex align-items-center gap-1">
+                    <i class="ph-bold ph-copy"></i> Sao chép toàn bộ
+                </button>
+            </form>
+            {% endif %}
+        </div>
+
+        <div class="d-flex flex-column gap-3">
+            {% for item in fset.items %}
+            <div class="p-3.5 rounded-3 border bg-light d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 hover-shadow transition-all">
+                <div class="d-flex align-items-center gap-3">
+                    <span class="badge rounded-circle bg-primary-subtle text-primary fw-bold d-inline-flex align-items-center justify-content-center" style="width: 32px; height: 32px; font-size: 0.82rem;">
+                        {{ loop.index }}
+                    </span>
+                    <div>
+                        <div class="fw-bold text-dark fs-5 d-flex align-items-center gap-2">
+                            <span>{{ item.term }}</span>
+                            <button class="btn btn-link p-0 text-primary border-0" onclick="speakText('{{ item.term|replace("'", "\\'") }}')" title="Phát âm">
+                                <i class="ph-bold ph-speaker-high"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="text-secondary fs-6 text-md-end ps-md-4" style="max-width: 500px;">
+                    {{ item.definition }}
+                </div>
+            </div>
+            {% else %}
+            <div class="text-center py-4 text-muted">
+                Chưa có thuật ngữ nào trong bộ thẻ này.
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+</div>
+
+<!-- Data Script for Preview -->
+<script>
+    const previewItems = [
+        {% for item in fset.items %}
+        {
+            term: {{ item.term|tojson }},
+            definition: {{ item.definition|tojson }},
+            image_url: {{ (item.image_url or '')|tojson }}
+        }{% if not loop.last %},{% endif %}
+        {% endfor %}
+    ];
+
+    let currentPreviewIdx = 0;
+    let isPreviewFlipped = false;
+    let currentPreviewItem = previewItems.length > 0 ? previewItems[0] : null;
+
+    function renderPreviewCard() {
+        if (!previewItems.length) return;
+        currentPreviewItem = previewItems[currentPreviewIdx];
+        document.getElementById('previewCurrentIdx').innerText = currentPreviewIdx + 1;
+        document.getElementById('previewTermText').innerText = currentPreviewItem.term;
+        document.getElementById('previewDefText').innerText = currentPreviewItem.definition;
+        
+        // Reset flip state
+        isPreviewFlipped = false;
+        document.getElementById('previewCardInner').style.transform = 'rotateX(0deg)';
+
+        // Enable/Disable buttons
+        document.getElementById('btnPrevPreview').disabled = (currentPreviewIdx === 0);
+        document.getElementById('btnNextPreview').disabled = (currentPreviewIdx === previewItems.length - 1);
+    }
+
+    function flipPreviewCard() {
+        if (!previewItems.length) return;
+        isPreviewFlipped = !isPreviewFlipped;
+        document.getElementById('previewCardInner').style.transform = isPreviewFlipped ? 'rotateX(180deg)' : 'rotateX(0deg)';
+    }
+
+    function prevPreviewCard() {
+        if (currentPreviewIdx > 0) {
+            currentPreviewIdx--;
+            renderPreviewCard();
+        }
+    }
+
+    function nextPreviewCard() {
+        if (currentPreviewIdx < previewItems.length - 1) {
+            currentPreviewIdx++;
+            renderPreviewCard();
+        }
+    }
+
+    function speakText(text, lang = 'en-US') {
+        if (!('speechSynthesis' in window) || !text) return;
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.lang = lang;
+        utterance.rate = 0.9;
+        window.speechSynthesis.cancel();
+        window.speechSynthesis.speak(utterance);
+    }
+
+    function copyShareUrl() {
+        const input = document.getElementById('shareUrlInput');
+        navigator.clipboard.writeText(input.value).then(() => {
+            const btn = document.getElementById('btnCopyShare');
+            const originalHTML = btn.innerHTML;
+            btn.innerHTML = '<i class="ph-bold ph-check"></i> Đã chép!';
+            btn.classList.replace('btn-primary', 'btn-success');
+            setTimeout(() => {
+                btn.innerHTML = originalHTML;
+                btn.classList.replace('btn-success', 'btn-primary');
+            }, 2000);
+        });
+    }
+
+    function shareSocial(platform) {
+        const url = encodeURIComponent(window.location.href);
+        const title = encodeURIComponent("Cùng học bộ Flashcard {{ fset.title|replace('\"', '') }} trên EnglishMate!");
+        let shareUrl = "";
+        if (platform === 'facebook') {
+            shareUrl = `https://www.facebook.com/sharer/sharer.php?u=${url}`;
+        } else if (platform === 'twitter') {
+            shareUrl = `https://twitter.com/intent/tweet?url=${url}&text=${title}`;
+        } else if (platform === 'telegram') {
+            shareUrl = `https://t.me/share/url?url=${url}&text=${title}`;
+        } else if (platform === 'whatsapp') {
+            shareUrl = `https://api.whatsapp.com/send?text=${title}%20${url}`;
+        }
+        if (shareUrl) {
+            window.open(shareUrl, '_blank', 'width=600,height=450');
+        }
+    }
+
+    // Init
+    document.addEventListener('DOMContentLoaded', () => {
+        if (previewItems.length > 0) {
+            renderPreviewCard();
+        }
+    });
+</script>
+{% endblock %}

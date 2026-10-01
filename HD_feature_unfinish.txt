@@ -240,18 +240,20 @@ MODULE 4. LESSONS & 4 SKILLS (BÀI HỌC & 4 KỸ NĂNG) — 9 TÍNH NĂNG CHƯA
 - Trạng thái: ĐÃ HOÀN THÀNH (100% test passed)
 
 ----------------------------------------------------------------------------------------------------
-MODULE 5. VOCABULARY & FLASHCARD SYSTEM (HỆ THỐNG TỪ VỰNG & FLASHCARD) — 2 TÍNH NĂNG CHƯA LÀM
+MODULE 5. VOCABULARY & FLASHCARD SYSTEM (HỆ THỐNG TỪ VỰNG & FLASHCARD) — 1 TÍNH NĂNG CHƯA LÀM
 ----------------------------------------------------------------------------------------------------
 
-[ ] 5.1. Flashcard Set Sharing - Chia sẻ bộ flashcard (Mục 5.10)
+[x] 5.1. Flashcard Set Sharing - Chia sẻ bộ flashcard (Mục 5.10)
 - Hiện trạng trong EnglishMate_Features.txt:
   Người dùng đã có thể tự tạo bộ flashcard riêng (`FlashcardSet`), thêm sửa xóa thẻ (`FlashcardItem`), học lật thẻ 3D và ôn tập theo SRS.
-- Phần còn thiếu chưa làm:
-  Chưa có tính năng tạo link chia sẻ bộ flashcard cho bạn bè hoặc học viên khác xem và nhân bản (clone set) về tài khoản của họ.
-- Giải pháp kỹ thuật cần làm:
-  + Sinh mã định danh chia sẻ `share_code = secrets.token_urlsafe(8)` cho mỗi bộ flashcard.
-  + Thêm route GET `/flashcards/share/<share_code>` và nút "Sao chép bộ thẻ này vào tài khoản của tôi".
-- Mức độ ưu tiên: Trung bình (Medium)
+- Phần đã hoàn thiện:
+  + Thêm trường `share_code` cho `FlashcardSet` (`secrets.token_urlsafe(8)`).
+  + Tạo route xem trước và chia sẻ: `GET /flashcards/share/<share_code>` & `GET /flashcard-sets/share/<share_code>`.
+  + Tạo route nhân bản (clone set): `POST /flashcards/share/<share_code>/clone` & `POST /flashcard-sets/<id>/clone`.
+  + Giao diện chia sẻ đẹp mắt `flashcard_share.html` có preview 3D, danh sách từ, phát âm và nút "Sao chép bộ thẻ này vào tài khoản của tôi".
+  + Modal chia sẻ 1-click & mạng xã hội trong trang học `flashcard_view.html` và danh sách thẻ `vocabulary.html`.
+  + Đã viết unit test đầy đủ trong `tests/test_flashcard_sets.py` (100% pass).
+- Trạng thái: ĐÃ HOÀN THÀNH (100% test passed)
 
 [ ] 5.2. Flashcard Set Privacy - Cài đặt quyền riêng tư bộ flashcard (Mục 5.10)
 - Hiện trạng trong EnglishMate_Features.txt:

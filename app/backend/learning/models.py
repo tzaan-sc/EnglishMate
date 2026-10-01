@@ -1,3 +1,4 @@
+import secrets
 from datetime import date
 from app.extensions import db
 from app.backend.auth.models import now
@@ -215,11 +216,18 @@ class FlashcardSet(db.Model):
     title = db.Column(db.String(200), nullable=False)
     description = db.Column(db.Text, nullable=True)
     is_public = db.Column(db.Boolean, default=True, nullable=False)
+    share_code = db.Column(db.String(32), unique=True, index=True, nullable=True, default=lambda: secrets.token_urlsafe(8))
     user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False, index=True)
     created_at = db.Column(db.DateTime(timezone=True), default=now, nullable=False)
     updated_at = db.Column(db.DateTime(timezone=True), default=now, onupdate=now, nullable=False)
     
     user = db.relationship("User", backref=db.backref("flashcard_sets", cascade="all, delete-orphan"))
+
+    def get_share_code(self):
+        if not self.share_code:
+            self.share_code = secrets.token_urlsafe(8)
+            db.session.add(self)
+        return self.share_code
 
 
 class FlashcardItem(db.Model):

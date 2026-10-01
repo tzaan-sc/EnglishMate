@@ -1,4 +1,4 @@
-﻿import pytest
+import pytest
 from datetime import datetime, timedelta
 from app.extensions import db
 from app.backend.auth.models import User
@@ -112,3 +112,57 @@ def test_game_srs_due_filtering(client, app, flashcard_setup):
     })
     assert response.status_code == 200
     assert response.json["available_count"] == 2
+
+
+def test_flashcard_set_sharing_and_cloning(client, app, flashcard_setup):
+    set_id, item_ids = flashcard_setup
+    
+    with app.app_context():
+        fset = FlashcardSet.query.get(set_id)
+        share_code = fset.get_share_code()
+        assert share_code is not None
+        assert len(share_code) >= 8
+
+    # 1. Unauthenticated user can view shared flashcard page
+    response = client.get(f"/flashcards/share/{share_code}")
+    assert response.status_code == 200
+    content = response.get_data(as_text=True)
+    assert "Animals" in content
+    assert "Cat" in content
+    assert "Dog" in content
+    assert "Đăng nhập để sao chép bộ thẻ" in content
+
+    # Alternate route /flashcard-sets/share/<share_code> also works
+    response2 = client.get(f"/flashcard-sets/share/{share_code}")
+    assert response2.status_code == 200
+
+    # 2. Cloning requires login
+    clone_res = client.post(f"/flashcards/share/{share_code}/clone")
+    assert clone_res.status_code == 302 # redirect to login
+
+    # 3. Authenticated user clones the set
+    login(client)
+    clone_res2 = client.post(f"/flashcards/share/{share_code}/clone", follow_redirects=True)
+    assert clone_res2.status_code == 200
+    assert "Đã sao chép thành công bộ flashcard" in clone_res2.get_data(as_text=True)
+
+    with app.app_context():
+        # Verify cloned set in DB
+        user = User.query.filter_by(username="student").first()
+        cloned_sets = FlashcardSet.query.filter_by(user_id=user.id).all()
+        assert len(cloned_sets) >= 2 # Original + cloned
+        new_set = cloned_sets[-1]
+        assert new_set.id != set_id
+        assert len(new_set.items) == 4
+        assert new_set.share_code != share_code # New unique share code
+
+    # 4. Clone by set_id
+    clone_res3 = client.post(f"/flashcard-sets/{set_id}/clone", follow_redirects=True)
+    assert clone_res3.status_code == 200
+    assert "Đã sao chép thành công bộ flashcard" in clone_res3.get_data(as_text=True)
+
+
+def test_flashcard_share_404_on_invalid_code(client):
+    response = client.get("/flashcards/share/invalid_code_12345")
+    assert response.status_code == 404
+

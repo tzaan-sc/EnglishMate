@@ -59,6 +59,24 @@ def patch_database_all():
                     db.session.execute(text(f'ALTER TABLE "user" ADD COLUMN {col_name} {col_type}'))
             db.session.commit()
 
+        # Check and patch flashcard_set columns
+        if "flashcard_set" in inspector.get_table_names():
+            import secrets
+            from app.backend.learning.models import FlashcardSet
+            fset_cols = {col["name"] for col in inspector.get_columns("flashcard_set")}
+            if "share_code" not in fset_cols:
+                print("[*] Bổ sung cột 'share_code' vào bảng 'flashcard_set'...")
+                db.session.execute(text("ALTER TABLE flashcard_set ADD COLUMN share_code VARCHAR(32)"))
+                db.session.commit()
+            
+            # Populate any missing share_code
+            missing_sets = FlashcardSet.query.filter((FlashcardSet.share_code == None) | (FlashcardSet.share_code == "")).all()
+            if missing_sets:
+                print(f"[*] Cập nhật share_code cho {len(missing_sets)} bộ flashcard...")
+                for s in missing_sets:
+                    s.share_code = secrets.token_urlsafe(8)
+                db.session.commit()
+
         print("[OK] Đã đồng bộ toàn bộ cấu trúc bảng từ Models!")
 
 

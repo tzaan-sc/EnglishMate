@@ -416,13 +416,19 @@
                   style="font-size: 0.7rem; padding: 3px 7px;">Công khai</span>
             {% endif %}
           </div>
-          {% if is_mine %}
           <div class="dropdown" onclick="event.stopPropagation();">
             <button class="btn btn-sm btn-light border rounded-circle p-0 text-muted d-flex align-items-center justify-content-center"
                     type="button" data-bs-toggle="dropdown" style="width: 26px; height: 26px;">
               <i class="ph-bold ph-dots-three-vertical" style="font-size: 0.85rem;"></i>
             </button>
             <ul class="dropdown-menu dropdown-menu-end shadow-sm border rounded-3 p-1">
+              <li>
+                <a class="dropdown-item rounded-2 small fw-semibold py-1.5"
+                   href="{{ url_for('learning.flashcard_share', share_code=fset.get_share_code()) }}">
+                  <i class="ph-bold ph-share-network me-1.5 text-info"></i> Link chia sẻ
+                </a>
+              </li>
+              {% if is_mine %}
               <li>
                 <a class="dropdown-item rounded-2 small fw-semibold py-1.5"
                    href="{{ url_for('learning.flashcard_set_edit', set_id=fset.id) }}">
@@ -440,9 +446,18 @@
                   </button>
                 </form>
               </li>
+              {% else %}
+              <li>
+                <form action="{{ url_for('learning.flashcard_set_clone_by_id', set_id=fset.id) }}" method="post" class="m-0">
+                  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                  <button type="submit" class="dropdown-item rounded-2 small fw-semibold text-primary py-1.5">
+                    <i class="ph-bold ph-copy me-1.5"></i> Sao chép về tài khoản
+                  </button>
+                </form>
+              </li>
+              {% endif %}
             </ul>
           </div>
-          {% endif %}
         </div>
 
         <!-- Title + description -->
