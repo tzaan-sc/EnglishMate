@@ -49,9 +49,31 @@
       <h2 class="fw-bold text-dark mb-1">Tài Liệu Tham Khảo Ngữ Pháp</h2>
       <p class="text-secondary small mb-0">Tra cứu nhanh chóng các quy tắc chính tả, trật tự từ, động từ bất quy tắc và ngoại lệ.</p>
     </div>
-    <div>
-      <a href="{{ url_for('learning.grammar_overview') }}" class="btn btn-outline-primary rounded-pill px-4 fw-bold shadow-xs">
-        📚 Danh mục Học Ngữ Pháp
+    <div class="d-flex gap-2 flex-wrap align-items-center">
+      <div class="dropdown">
+        <button class="btn btn-outline-danger dropdown-toggle rounded-pill px-3 py-1.5 fw-semibold shadow-xs" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+          <i class="ph ph-download-simple me-1"></i> Tải Sổ Tay (PDF/Word)
+        </button>
+        <ul class="dropdown-menu dropdown-menu-end shadow-sm rounded-3 border-0 py-2">
+          <li>
+            <h6 class="dropdown-header text-uppercase fs-xs fw-bold text-muted">Xuất Định Dạng</h6>
+          </li>
+          <li>
+            <a class="dropdown-item d-flex align-items-center gap-2 py-2" href="{{ url_for('learning.grammar_handbook_export_pdf', category=category if category else '') }}">
+              <i class="ph ph-file-pdf text-danger fs-5"></i>
+              <span>Xuất sổ tay sang <strong>PDF</strong> {{ '(' ~ category ~ ')' if category else '(Tất cả)' }}</span>
+            </a>
+          </li>
+          <li>
+            <a class="dropdown-item d-flex align-items-center gap-2 py-2" href="{{ url_for('learning.grammar_handbook_export_docx', category=category if category else '') }}">
+              <i class="ph ph-file-doc text-primary fs-5"></i>
+              <span>Xuất sổ tay sang <strong>Word (.docx)</strong> {{ '(' ~ category ~ ')' if category else '(Tất cả)' }}</span>
+            </a>
+          </li>
+        </ul>
+      </div>
+      <a href="{{ url_for('learning.grammar_overview') }}" class="btn btn-outline-primary rounded-pill px-3 py-1.5 fw-bold shadow-xs">
+        📚 Danh mục Học
       </a>
     </div>
   </div>

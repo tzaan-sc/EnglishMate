@@ -25,8 +25,8 @@ MỤC LỤC 13 MODULE CHỨA CÁC TÍNH NĂNG CHƯA LÀM (MODULE 1 & 2 ĐÃ HOÀ
 - [x] 2. USER PROFILE & SETTINGS (HỒ SƠ & CÀI ĐẶT): ĐÃ HOÀN THÀNH 100% (0 tính năng chưa làm)
 - [ ] 3. DASHBOARD & ANALYTICS (BẢNG ĐIỀU KHIỂN & PHÂN TÍCH): 1 tính năng chưa làm
 - [ ] 4. LESSONS & 4 SKILLS (BÀI HỌC & 4 KỸ NĂNG): 9 tính năng chưa làm
-- [ ] 5. VOCABULARY & FLASHCARD SYSTEM (HỆ THỐNG TỪ VỰNG & FLASHCARD): 2 tính năng chưa làm
-- [ ] 6. GRAMMAR SYSTEM (HỆ THỐNG NGỮ PHÁP): 1 tính năng chưa làm
+- [x] 5. VOCABULARY & FLASHCARD SYSTEM (HỆ THỐNG TỪ VỰNG & FLASHCARD): ĐÃ HOÀN THÀNH 100% (0 tính năng chưa làm)
+- [x] 6. GRAMMAR SYSTEM (HỆ THỐNG NGỮ PHÁP): ĐÃ HOÀN THÀNH 100% (0 tính năng chưa làm)
 - [ ] 7. QUIZ SYSTEM (HỆ THỐNG KIỂM TRA): 1 tính năng chưa làm
 - [ ] 8. EXAM SYSTEM (HỆ THỐNG ĐỀ THI): 4 tính năng chưa làm
 - [ ] 9. GAMIFICATION SYSTEM (HỆ THỐNG TRÒ CHƠI HÓA): 3 tính năng chưa làm
@@ -156,32 +156,32 @@ MODULE: 4. LESSONS & 4 SKILLS (BÀI HỌC & 4 KỸ NĂNG) (9 tính năng chưa l
 
 
 ====================================================================================================
-MODULE: 5. VOCABULARY & FLASHCARD SYSTEM (HỆ THỐNG TỪ VỰNG & FLASHCARD) (2 tính năng chưa làm)
+MODULE: 5. VOCABULARY & FLASHCARD SYSTEM (HỆ THỐNG TỪ VỰNG & FLASHCARD) (ĐÃ HOÀN THÀNH 100% - 0 tính năng chưa làm)
 ====================================================================================================
 
-### 5.10. Custom Flashcard Sets (Bộ flashcard tùy chỉnh) (2 tính năng):
+### 5.10. Custom Flashcard Sets (Bộ flashcard tùy chỉnh) (2 tính năng đã hoàn thành):
 ----------------------------------------------------------------------------------------------------
-16. [x] Flashcard Set Sharing - Chia sẻ bộ flashcard
+16. [x] Flashcard Set Sharing - Chia sẻ bộ flashcard (ĐÃ HOÀN THÀNH)
    - Mức độ ưu tiên: Trung bình
    - Mô tả yêu cầu: Cho phép người dùng chia sẻ bộ Flashcard tự tạo của mình cho cộng đồng người học khác thông qua đường link hoặc mã PIN.
    - Trạng thái: ĐÃ HOÀN THÀNH. Đã có mã chia sẻ `share_code`, route `/flashcards/share/<share_code>`, clone set về tài khoản cá nhân, modal chia sẻ 1-click và mạng xã hội.
 
-17. [x] Flashcard Set Privacy - Riêng tư bộ flashcard
+17. [x] Flashcard Set Privacy - Riêng tư bộ flashcard (ĐÃ HOÀN THÀNH)
    - Mức độ ưu tiên: Thấp
    - Mô tả yêu cầu: Cài đặt chế độ hiển thị cho bộ Flashcard tự tạo: Công khai (Public), Riêng tư (Private), hoặc Chỉ chia sẻ qua link (Unlisted).
    - Trạng thái: ĐÃ HOÀN THÀNH. Đã có trường `is_public` (default=False), route toggle privacy, tab Thư viện cộng đồng & Riêng tư, huy hiệu trạng thái trực quan và chuyển đổi nhanh 1-click.
 
 
 ====================================================================================================
-MODULE: 6. GRAMMAR SYSTEM (HỆ THỐNG NGỮ PHÁP) (1 tính năng chưa làm)
+MODULE: 6. GRAMMAR SYSTEM (HỆ THỐNG NGỮ PHÁP) (ĐÃ HOÀN THÀNH 100% - 0 tính năng chưa làm)
 ====================================================================================================
 
-### 6.5. Grammar Reference (Tra cứu ngữ pháp) (1 tính năng):
+### 6.5. Grammar Reference (Tra cứu ngữ pháp) (1 tính năng đã hoàn thành):
 ----------------------------------------------------------------------------------------------------
-18. [ ] Grammar Export - Xuất ngữ pháp
+18. [x] Grammar Export - Xuất ngữ pháp (ĐÃ HOÀN THÀNH)
    - Mức độ ưu tiên: Thấp
    - Mô tả yêu cầu: Xuất toàn bộ sổ tay quy tắc ngữ pháp hoặc từng chuyên đề ngữ pháp ra file định dạng PDF hoặc Word (DOCX).
-   - Đối chiếu hiện trạng: Đã có chế độ in chuyên dụng tối ưu định dạng giấy (/grammar/reference/<id>/print), nhưng chưa có nút bấm kết xuất file PDF/DOCX tự động.
+   - Trạng thái: ĐÃ HOÀN THÀNH. Đã xây dựng đầy đủ route xuất PDF (`/grammar/reference/<id>/export-pdf`, `/grammar/reference/export-pdf`) và DOCX (`/grammar/reference/<id>/export-docx`, `/grammar/reference/export-docx`), hỗ trợ xuất theo từng quy tắc riêng biệt hoặc toàn bộ sổ tay kèm lọc danh mục, tích hợp các nút bấm và menu tải xuống trực quan.
 
 
 ====================================================================================================

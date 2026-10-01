@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <title>{{ rule.title }} - Sổ Tay Ngữ Pháp EnglishMate</title>
+  <style>
+    @page {
+      size: a4 portrait;
+      margin: 1.8cm 1.5cm 1.8cm 1.5cm;
+      @bottom-right {
+        content: "Trang " counter(page);
+        font-family: Helvetica, Arial, sans-serif;
+        font-size: 8pt;
+        color: #64748b;
+      }
+      @bottom-left {
+        content: "EnglishMate · Nền tảng học tiếng Anh trực tuyến";
+        font-family: Helvetica, Arial, sans-serif;
+        font-size: 8pt;
+        color: #64748b;
+      }
+    }
+
+    body {
+      font-family: Helvetica, Arial, sans-serif;
+      font-size: 10pt;
+      line-height: 1.5;
+      color: #1e293b;
+      background: #ffffff;
+    }
+
+    .header-table {
+      width: 100%;
+      border-bottom: 2px solid #4338ca;
+      padding-bottom: 10px;
+      margin-bottom: 15px;
+    }
+
+    .logo-text {
+      font-size: 16pt;
+      font-weight: bold;
+      color: #4338ca;
+    }
+
+    .meta-text {
+      font-size: 8pt;
+      color: #64748b;
+      text-align: right;
+    }
+
+    .rule-category {
+      display: inline-block;
+      background-color: #e0e7ff;
+      color: #4338ca;
+      font-size: 8pt;
+      font-weight: bold;
+      padding: 3px 8px;
+      border-radius: 4px;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+
+    .rule-title {
+      font-size: 16pt;
+      font-weight: bold;
+      color: #0f172a;
+      margin-top: 4px;
+      margin-bottom: 8px;
+    }
+
+    .summary-box {
+      background-color: #f8fafc;
+      border-left: 4px solid #6366f1;
+      padding: 10px 12px;
+      margin-bottom: 16px;
+      font-size: 9.5pt;
+      color: #334155;
+    }
+
+    .section-title {
+      font-size: 11pt;
+      font-weight: bold;
+      color: #1e293b;
+      border-bottom: 1px solid #cbd5e1;
+      padding-bottom: 4px;
+      margin-top: 14px;
+      margin-bottom: 8px;
+      text-transform: uppercase;
+    }
+
+    .content-box {
+      margin-bottom: 14px;
+      white-space: pre-line;
+      text-align: justify;
+    }
+
+    .examples-box {
+      background-color: #f0fdf4;
+      border-left: 4px solid #22c55e;
+      padding: 10px 12px;
+      margin-bottom: 14px;
+      white-space: pre-line;
+      color: #14532d;
+    }
+
+    .exceptions-box {
+      background-color: #fffbeb;
+      border-left: 4px solid #f59e0b;
+      padding: 10px 12px;
+      margin-bottom: 14px;
+      white-space: pre-line;
+      color: #78350f;
+    }
+
+    .errors-box {
+      background-color: #fef2f2;
+      border-left: 4px solid #ef4444;
+      padding: 10px 12px;
+      margin-bottom: 14px;
+      white-space: pre-line;
+      color: #7f1d1d;
+    }
+
+    .quick-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 14px;
+      font-size: 9pt;
+    }
+
+    .quick-table th, .quick-table td {
+      border: 1px solid #cbd5e1;
+      padding: 6px 8px;
+      text-align: left;
+    }
+
+    .quick-table th {
+      background-color: #f1f5f9;
+      font-weight: bold;
+      color: #334155;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Header Branding -->
+  <table class="header-table">
+    <tr>
+      <td>
+        <div class="logo-text">EnglishMate</div>
+        <div style="font-size: 8pt; color: #64748b;">Sổ Tay Tra Cứu Quy Tắc Ngữ Pháp Tiếng Anh</div>
+      </td>
+      <td class="meta-text">
+        <div><strong>Danh mục:</strong> {{ rule.category }}</div>
+        <div><strong>Ngày xuất:</strong> {{ now.strftime('%d/%m/%Y') if now else '' }}</div>
+      </td>
+    </tr>
+  </table>
+
+  <!-- Rule Header -->
+  <div class="rule-category">{{ rule.category }}</div>
+  <div class="rule-title">{{ rule.title }}</div>
+
+  <!-- Summary Box -->
+  <div class="summary-box">
+    <strong>Tóm tắt:</strong> {{ rule.summary }}
+  </div>
+
+  <!-- Section 1: Detailed Explanation -->
+  <div class="section-title">1. Giải Thích Quy Tắc Chi Tiết</div>
+  <div class="content-box">{{ rule.explanation }}</div>
+
+  <!-- Section 2: Examples -->
+  <div class="section-title">2. Các Ví Dụ Minh Họa</div>
+  <div class="examples-box">{{ rule.examples }}</div>
+
+  <!-- Section 3: Quick Table if exists -->
+  {% if rule.quick_table_html %}
+  <div class="section-title">3. Bảng Tham Khảo Nhanh</div>
+  <div style="margin-bottom: 14px;">
+    {{ rule.quick_table_html|safe }}
+  </div>
+  {% endif %}
+
+  <!-- Section 4: Exceptions -->
+  {% if rule.exceptions %}
+  <div class="section-title">4. Trường Hợp Ngoại Lệ</div>
+  <div class="exceptions-box">{{ rule.exceptions }}</div>
+  {% endif %}
+
+  <!-- Section 5: Common Errors -->
+  {% if rule.common_errors %}
+  <div class="section-title">5. Các Lỗi Thường Gặp & Cách Tránh</div>
+  <div class="errors-box">{{ rule.common_errors }}</div>
+  {% endif %}
+
+</body>
+</html>

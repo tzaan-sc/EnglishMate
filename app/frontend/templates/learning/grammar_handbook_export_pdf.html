@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <title>Sổ Tay Ngữ Pháp Toàn Tập - EnglishMate</title>
+  <style>
+    @page {
+      size: a4 portrait;
+      margin: 1.8cm 1.5cm 1.8cm 1.5cm;
+      @bottom-right {
+        content: "Trang " counter(page);
+        font-family: Helvetica, Arial, sans-serif;
+        font-size: 8pt;
+        color: #64748b;
+      }
+      @bottom-left {
+        content: "EnglishMate · Sổ Tay Ngữ Pháp Chuẩn";
+        font-family: Helvetica, Arial, sans-serif;
+        font-size: 8pt;
+        color: #64748b;
+      }
+    }
+
+    body {
+      font-family: Helvetica, Arial, sans-serif;
+      font-size: 10pt;
+      line-height: 1.5;
+      color: #1e293b;
+      background: #ffffff;
+    }
+
+    .cover-page {
+      text-align: center;
+      padding-top: 150px;
+      page-break-after: always;
+    }
+
+    .cover-title {
+      font-size: 26pt;
+      font-weight: bold;
+      color: #4338ca;
+      margin-bottom: 12px;
+    }
+
+    .cover-subtitle {
+      font-size: 14pt;
+      color: #475569;
+      margin-bottom: 25px;
+    }
+
+    .cover-meta {
+      font-size: 10pt;
+      color: #64748b;
+      margin-top: 100px;
+    }
+
+    .toc-page {
+      page-break-after: always;
+    }
+
+    .rule-container {
+      page-break-after: always;
+    }
+
+    .rule-container:last-child {
+      page-break-after: avoid;
+    }
+
+    .header-table {
+      width: 100%;
+      border-bottom: 2px solid #4338ca;
+      padding-bottom: 8px;
+      margin-bottom: 12px;
+    }
+
+    .logo-text {
+      font-size: 14pt;
+      font-weight: bold;
+      color: #4338ca;
+    }
+
+    .rule-category {
+      display: inline-block;
+      background-color: #e0e7ff;
+      color: #4338ca;
+      font-size: 8pt;
+      font-weight: bold;
+      padding: 3px 8px;
+      border-radius: 4px;
+      text-transform: uppercase;
+      margin-bottom: 6px;
+    }
+
+    .rule-title {
+      font-size: 15pt;
+      font-weight: bold;
+      color: #0f172a;
+      margin-bottom: 8px;
+    }
+
+    .summary-box {
+      background-color: #f8fafc;
+      border-left: 4px solid #6366f1;
+      padding: 8px 10px;
+      margin-bottom: 14px;
+      font-size: 9.5pt;
+      color: #334155;
+    }
+
+    .section-title {
+      font-size: 10.5pt;
+      font-weight: bold;
+      color: #1e293b;
+      border-bottom: 1px solid #cbd5e1;
+      padding-bottom: 3px;
+      margin-top: 12px;
+      margin-bottom: 6px;
+      text-transform: uppercase;
+    }
+
+    .content-box {
+      margin-bottom: 12px;
+      white-space: pre-line;
+      text-align: justify;
+    }
+
+    .examples-box {
+      background-color: #f0fdf4;
+      border-left: 4px solid #22c55e;
+      padding: 8px 10px;
+      margin-bottom: 12px;
+      white-space: pre-line;
+      color: #14532d;
+    }
+
+    .exceptions-box {
+      background-color: #fffbeb;
+      border-left: 4px solid #f59e0b;
+      padding: 8px 10px;
+      margin-bottom: 12px;
+      white-space: pre-line;
+      color: #78350f;
+    }
+
+    .errors-box {
+      background-color: #fef2f2;
+      border-left: 4px solid #ef4444;
+      padding: 8px 10px;
+      margin-bottom: 12px;
+      white-space: pre-line;
+      color: #7f1d1d;
+    }
+
+    .toc-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 15px;
+    }
+
+    .toc-table td {
+      padding: 6px 0;
+      border-bottom: 1px dotted #cbd5e1;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Cover Page -->
+  <div class="cover-page">
+    <div class="cover-title">SỔ TAY NGỮ PHÁP TIẾNG ANH</div>
+    <div class="cover-subtitle">Tổng hợp quy tắc tra cứu chuẩn quốc tế · EnglishMate Handbook</div>
+    <div style="width: 80px; height: 3px; background-color: #4338ca; margin: 20px auto;"></div>
+    <div style="font-size: 11pt; color: #334155; margin-top: 30px;">
+      {% if selected_category %}
+      Chuyên đề: <strong>{{ selected_category }}</strong>
+      {% else %}
+      Tuyển tập toàn bộ <strong>{{ rules|length }}</strong> quy tắc ngữ pháp cốt lõi
+      {% endif %}
+    </div>
+    <div class="cover-meta">
+      <div>EnglishMate Learning System &bull; Học tiếng Anh mỗi ngày</div>
+      <div>Ngày phát hành: {{ now.strftime('%d/%m/%Y') if now else '' }}</div>
+    </div>
+  </div>
+
+  <!-- Table of Contents -->
+  <div class="toc-page">
+    <h2 style="color: #4338ca; border-bottom: 2px solid #4338ca; padding-bottom: 8px;">MỤC LỤC TRA CỨU</h2>
+    <table class="toc-table">
+      {% for rule in rules %}
+      <tr>
+        <td style="width: 35px; color: #6366f1; font-weight: bold;">{{ loop.index }}.</td>
+        <td style="font-weight: bold; color: #0f172a;">{{ rule.title }}</td>
+        <td style="text-align: right; color: #64748b; font-size: 8.5pt;">{{ rule.category }}</td>
+      </tr>
+      {% endfor %}
+    </table>
+  </div>
+
+  <!-- Rules Content -->
+  {% for rule in rules %}
+  <div class="rule-container">
+    <table class="header-table">
+      <tr>
+        <td><span class="logo-text">EnglishMate</span> · Sổ Tay Quy Tắc</td>
+        <td style="text-align: right; font-size: 8.5pt; color: #64748b;">Mục {{ loop.index }}/{{ rules|length }}</td>
+      </tr>
+    </table>
+
+    <div class="rule-category">{{ rule.category }}</div>
+    <div class="rule-title">{{ rule.title }}</div>
+
+    <div class="summary-box">
+      <strong>Tóm tắt:</strong> {{ rule.summary }}
+    </div>
+
+    <div class="section-title">1. Giải Thích Quy Tắc</div>
+    <div class="content-box">{{ rule.explanation }}</div>
+
+    <div class="section-title">2. Ví Dụ Minh Họa</div>
+    <div class="examples-box">{{ rule.examples }}</div>
+
+    {% if rule.quick_table_html %}
+    <div class="section-title">3. Bảng Tra Cứu Nhanh</div>
+    <div style="margin-bottom: 12px;">{{ rule.quick_table_html|safe }}</div>
+    {% endif %}
+
+    {% if rule.exceptions %}
+    <div class="section-title">4. Ngoại Lệ</div>
+    <div class="exceptions-box">{{ rule.exceptions }}</div>
+    {% endif %}
+
+    {% if rule.common_errors %}
+    <div class="section-title">5. Lỗi Thường Gặp</div>
+    <div class="errors-box">{{ rule.common_errors }}</div>
+    {% endif %}
+  </div>
+  {% endfor %}
+
+</body>
+</html>

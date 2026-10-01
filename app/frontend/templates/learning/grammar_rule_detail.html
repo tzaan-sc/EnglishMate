@@ -33,7 +33,7 @@
     <a class="btn btn-light rounded-pill px-3 py-1.5 fw-semibold text-secondary shadow-xs" href="{{ url_for('learning.grammar_reference_index') }}">
       <i class="ph ph-arrow-left me-1"></i> Chỉ mục Tra cứu Ngữ pháp
     </a>
-    <div class="d-flex gap-2">
+    <div class="d-flex gap-2 flex-wrap align-items-center">
       <!-- Bookmark Button -->
       <form method="post" action="{{ url_for('learning.bookmark_grammar_rule', rule_id=rule.id) }}" class="d-inline">
         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
@@ -42,6 +42,14 @@
           {{ 'Đã Bookmark' if is_bookmarked else 'Bookmark Quy Tắc' }}
         </button>
       </form>
+      <!-- Export PDF Button -->
+      <a href="{{ url_for('learning.grammar_rule_export_pdf', rule_id=rule.id) }}" class="btn btn-outline-danger rounded-pill px-3 py-1.5 fw-semibold shadow-xs">
+        <i class="ph ph-file-pdf me-1"></i> Tải PDF
+      </a>
+      <!-- Export Word Button -->
+      <a href="{{ url_for('learning.grammar_rule_export_docx', rule_id=rule.id) }}" class="btn btn-outline-primary rounded-pill px-3 py-1.5 fw-semibold shadow-xs">
+        <i class="ph ph-file-doc me-1"></i> Tải Word (.docx)
+      </a>
       <!-- Print Button -->
       <a href="{{ url_for('learning.grammar_rule_print_view', rule_id=rule.id) }}" target="_blank" class="btn btn-outline-secondary rounded-pill px-3 py-1.5 fw-semibold shadow-xs">
         <i class="ph ph-printer me-1"></i> In ấn (Print-friendly)

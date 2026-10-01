@@ -268,16 +268,19 @@ MODULE 5. VOCABULARY & FLASHCARD SYSTEM (HỆ THỐNG TỪ VỰNG & FLASHCARD) �
 - Trạng thái: ĐÃ HOÀN THÀNH (100% test passed)
 
 ----------------------------------------------------------------------------------------------------
-MODULE 6. GRAMMAR SYSTEM (HỆ THỐNG NGỮ PHÁP) — 1 TÍNH NĂNG CHƯA LÀM
+MODULE 6. GRAMMAR SYSTEM (HỆ THỐNG NGỮ PHÁP) — 0 TÍNH NĂNG CHƯA LÀM (HOÀN THÀNH 100%)
 ----------------------------------------------------------------------------------------------------
 
-[ ] 6.1. Grammar Export - Xuất sổ tay ngữ pháp sang PDF/DOCX (Mục 6.5)
+[x] 6.1. Grammar Export - Xuất sổ tay ngữ pháp sang PDF/DOCX (Mục 6.5)
 - Hiện trạng trong EnglishMate_Features.txt:
   Đã có chế độ in chuyên biệt tối ưu CSS trang in (`/grammar/reference/<id>/print`), đánh dấu bookmark quy tắc, tra cứu bảng ngữ pháp.
-- Phần còn thiếu chưa làm:
-  Chưa có nút 1-click "Tải sổ tay ngữ pháp dạng PDF/Word" được render định dạng sẵn để học viên tải về học offline.
-- Giải pháp kỹ thuật cần làm:
-  + Tích hợp thư viện `weasyprint` hoặc `xhtml2pdf` tạo route `/grammar/reference/<id>/export-pdf`.
+- Đã hoàn thành:
+  Đã xây dựng đầy đủ tính năng xuất quy tắc đơn lẻ và toàn bộ sổ tay ngữ pháp (theo danh mục hoặc tất cả) sang định dạng PDF (sử dụng xhtml2pdf) và Word DOCX (sử dụng python-docx) tại các route:
+  + `/grammar/reference/<id>/export-pdf`
+  + `/grammar/reference/<id>/export-docx`
+  + `/grammar/reference/export-pdf`
+  + `/grammar/reference/export-docx`
+  Đã bổ sung nút "Tải PDF", "Tải Word (.docx)" trên trang chi tiết quy tắc và dropdown "Tải Sổ Tay (PDF/Word)" trên trang tra cứu ngữ pháp.
 - Mức độ ưu tiên: Thấp (Low)
 
 ----------------------------------------------------------------------------------------------------

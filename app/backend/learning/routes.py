@@ -2,7 +2,7 @@ import random
 import secrets
 from datetime import date, datetime, timedelta, timezone
 
-from flask import abort, flash, jsonify, redirect, render_template, request, session, url_for
+from flask import abort, flash, jsonify, redirect, render_template, request, send_file, session, url_for
 from flask_login import current_user, login_required
 from sqlalchemy import func, or_
 
@@ -4359,6 +4359,166 @@ def grammar_rule_print_view(rule_id):
         return redirect(url_for("learning.grammar_reference_index"))
 
     return render_template("learning/grammar_rule_print.html", rule=rule)
+
+
+@bp.route("/grammar/reference/<int:rule_id>/export-pdf")
+@login_required
+def grammar_rule_export_pdf(rule_id):
+    import io
+    from xhtml2pdf import pisa
+    rule = db.session.get(GrammarRule, rule_id)
+    if not rule:
+        flash("Không tìm thấy quy tắc ngữ pháp.", "danger")
+        return redirect(url_for("learning.grammar_reference_index"))
+
+    html = render_template("learning/grammar_rule_export_pdf.html", rule=rule, now=datetime.utcnow())
+    pdf_buffer = io.BytesIO()
+    pisa_status = pisa.CreatePDF(html, dest=pdf_buffer)
+    if pisa_status.err:
+        flash("Có lỗi khi tạo tệp PDF.", "danger")
+        return redirect(url_for("learning.grammar_rule_detail", rule_id=rule.id))
+
+    pdf_buffer.seek(0)
+    filename = f"Grammar_Rule_{rule.id}.pdf"
+    return send_file(
+        pdf_buffer,
+        mimetype="application/pdf",
+        as_attachment=True,
+        download_name=filename
+    )
+
+
+@bp.route("/grammar/reference/<int:rule_id>/export-docx")
+@login_required
+def grammar_rule_export_docx(rule_id):
+    import io
+    import docx
+    from docx.shared import Pt
+
+    rule = db.session.get(GrammarRule, rule_id)
+    if not rule:
+        flash("Không tìm thấy quy tắc ngữ pháp.", "danger")
+        return redirect(url_for("learning.grammar_reference_index"))
+
+    doc = docx.Document()
+    doc.add_heading(rule.title, level=0)
+
+    meta_p = doc.add_paragraph()
+    meta_p.add_run(f"Danh mục: {rule.category} | Nền tảng EnglishMate\n").italic = True
+    meta_p.add_run(f"Ngày xuất: {datetime.utcnow().strftime('%d/%m/%Y')}").font.size = Pt(9)
+
+    doc.add_heading("Tóm tắt quy tắc", level=1)
+    doc.add_paragraph(rule.summary or "Không có tóm tắt")
+
+    doc.add_heading("1. Giải thích chi tiết", level=1)
+    doc.add_paragraph(rule.explanation or "Không có nội dung")
+
+    if rule.examples:
+        doc.add_heading("2. Ví dụ minh họa", level=1)
+        doc.add_paragraph(rule.examples)
+
+    if rule.exceptions:
+        doc.add_heading("3. Trường hợp ngoại lệ", level=1)
+        doc.add_paragraph(rule.exceptions)
+
+    if rule.common_errors:
+        doc.add_heading("4. Các lỗi thường gặp", level=1)
+        doc.add_paragraph(rule.common_errors)
+
+    doc.add_paragraph("\n---\nTài liệu học tập được tạo tự động từ hệ thống EnglishMate")
+
+    docx_buffer = io.BytesIO()
+    doc.save(docx_buffer)
+    docx_buffer.seek(0)
+
+    filename = f"Grammar_Rule_{rule.id}.docx"
+    return send_file(
+        docx_buffer,
+        mimetype="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        as_attachment=True,
+        download_name=filename
+    )
+
+
+@bp.route("/grammar/reference/export-pdf")
+@login_required
+def grammar_handbook_export_pdf():
+    import io
+    from xhtml2pdf import pisa
+    category = request.args.get("category", "").strip()
+    query = GrammarRule.query
+    if category and category != "all":
+        query = query.filter_by(category=category)
+    rules = query.order_by(GrammarRule.category, GrammarRule.id).all()
+
+    html = render_template(
+        "learning/grammar_handbook_export_pdf.html",
+        rules=rules,
+        selected_category=category if category != "all" else None,
+        now=datetime.utcnow()
+    )
+    pdf_buffer = io.BytesIO()
+    pisa_status = pisa.CreatePDF(html, dest=pdf_buffer)
+    if pisa_status.err:
+        flash("Có lỗi khi tạo tệp PDF Sổ tay.", "danger")
+        return redirect(url_for("learning.grammar_reference_index"))
+
+    pdf_buffer.seek(0)
+    cat_slug = f"_{category}" if category and category != "all" else ""
+    filename = f"EnglishMate_So_Tay_Ngu_Phap{cat_slug}.pdf"
+    return send_file(
+        pdf_buffer,
+        mimetype="application/pdf",
+        as_attachment=True,
+        download_name=filename
+    )
+
+
+@bp.route("/grammar/reference/export-docx")
+@login_required
+def grammar_handbook_export_docx():
+    import io
+    import docx
+
+    category = request.args.get("category", "").strip()
+    query = GrammarRule.query
+    if category and category != "all":
+        query = query.filter_by(category=category)
+    rules = query.order_by(GrammarRule.category, GrammarRule.id).all()
+
+    doc = docx.Document()
+    doc.add_heading("SỔ TAY TRA CỨU NGỮ PHÁP TIẾNG ANH", level=0)
+    sub = doc.add_paragraph(f"Tổng hợp các quy tắc chuẩn · EnglishMate Handbook\nNgày phát hành: {datetime.utcnow().strftime('%d/%m/%Y')}")
+    sub.italic = True
+
+    for idx, rule in enumerate(rules, 1):
+        doc.add_heading(f"{idx}. {rule.title} ({rule.category})", level=1)
+        doc.add_paragraph(f"Tóm tắt: {rule.summary}")
+        doc.add_heading("Giải thích chi tiết:", level=2)
+        doc.add_paragraph(rule.explanation or "")
+        if rule.examples:
+            doc.add_heading("Ví dụ:", level=2)
+            doc.add_paragraph(rule.examples)
+        if rule.exceptions:
+            doc.add_heading("Ngoại lệ:", level=2)
+            doc.add_paragraph(rule.exceptions)
+        if rule.common_errors:
+            doc.add_heading("Lỗi thường gặp:", level=2)
+            doc.add_paragraph(rule.common_errors)
+        doc.add_paragraph("")
+
+    docx_buffer = io.BytesIO()
+    doc.save(docx_buffer)
+    docx_buffer.seek(0)
+
+    cat_slug = f"_{category}" if category and category != "all" else ""
+    filename = f"EnglishMate_So_Tay_Ngu_Phap{cat_slug}.docx"
+    return send_file(
+        docx_buffer,
+        mimetype="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        as_attachment=True,
+        download_name=filename
+    )
 
 
 # ==========================================

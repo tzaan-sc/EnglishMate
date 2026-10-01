@@ -478,6 +478,14 @@ MỤC LỤC TỔNG QUAN CÁC MODULE CHỨC NĂNG ĐÃ LÀM:
   [x] Nút Bookmark quy tắc quan trọng để tra cứu nhanh khi ôn thi.
   [x] Chế độ xem in ấn (Print-friendly View): Tối ưu hóa trang in chuyên nghiệp, ẩn thanh điều hướng, chuẩn định dạng để in ra giấy hoặc lưu thành tệp PDF tài liệu học tập.
 
+[x] 5.5. Xuất sổ tay ngữ pháp sang PDF & Word DOCX (Grammar Rule & Handbook Export)
+- Route: GET /grammar/reference/<rule_id>/export-pdf, GET /grammar/reference/<rule_id>/export-docx, GET /grammar/reference/export-pdf, GET /grammar/reference/export-docx
+- Model: GrammarRule
+- Chi tiết chức năng:
+  [x] Xuất quy tắc ngữ pháp đơn lẻ sang định dạng PDF và Word (.docx) kèm đầy đủ tiêu đề, giải thích, ví dụ, ngoại lệ, lỗi thường gặp.
+  [x] Xuất toàn bộ Sổ tay Ngữ pháp (hoặc theo từng danh mục lọc) sang PDF chuẩn in ấn và Word (.docx).
+  [x] Tích hợp các nút tải xuống "Tải PDF", "Tải Word (.docx)" trực quan trên trang chi tiết quy tắc và dropdown trên trang tra cứu.
+
 ====================================================================================================
 [x] 6. MODULE KIỂM TRA TRẮC NGHIỆM (QUIZZES SYSTEM)
 ====================================================================================================

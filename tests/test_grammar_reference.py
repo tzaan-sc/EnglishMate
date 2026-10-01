@@ -1,4 +1,4 @@
-﻿from app.extensions import db
+from app.extensions import db
 from app.backend.auth.models import User
 from app.backend.learning.models import GrammarRule, GrammarRuleBookmark
 from tests.conftest import login
@@ -90,3 +90,53 @@ def test_grammar_rule_print_view(client):
     assert res_p.status_code == 200
     assert "Chế độ Xem In Ấn".encode("utf-8") in res_p.data
     assert "GIẢI THÍCH QUY TẮC".encode("utf-8") in res_p.data
+
+
+def test_grammar_rule_export_pdf_and_docx(client):
+    login(client)
+
+    with client.application.app_context():
+        r = ensure_sample_grammar_rule()
+        rule_id = r.id
+
+    # Test PDF export
+    res_pdf = client.get(f"/grammar/reference/{rule_id}/export-pdf")
+    assert res_pdf.status_code == 200
+    assert res_pdf.mimetype == "application/pdf"
+    assert res_pdf.data.startswith(b"%PDF")
+    assert "attachment; filename=" in res_pdf.headers.get("Content-Disposition", "")
+
+    # Test DOCX export
+    res_docx = client.get(f"/grammar/reference/{rule_id}/export-docx")
+    assert res_docx.status_code == 200
+    assert res_docx.mimetype == "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+    assert len(res_docx.data) > 100
+    assert "attachment; filename=" in res_docx.headers.get("Content-Disposition", "")
+
+
+def test_grammar_handbook_export_pdf_and_docx(client):
+    login(client)
+
+    with client.application.app_context():
+        ensure_sample_grammar_rule()
+
+    # Test handbook PDF export
+    res_pdf = client.get("/grammar/reference/export-pdf")
+    assert res_pdf.status_code == 200
+    assert res_pdf.mimetype == "application/pdf"
+    assert res_pdf.data.startswith(b"%PDF")
+    assert "attachment; filename=EnglishMate_So_Tay_Ngu_Phap.pdf" in res_pdf.headers.get("Content-Disposition", "")
+
+    # Test handbook PDF export with category
+    res_pdf_cat = client.get("/grammar/reference/export-pdf?category=Verbs+%26+Nouns")
+    assert res_pdf_cat.status_code == 200
+    assert res_pdf_cat.mimetype == "application/pdf"
+    assert res_pdf_cat.data.startswith(b"%PDF")
+
+    # Test handbook DOCX export
+    res_docx = client.get("/grammar/reference/export-docx")
+    assert res_docx.status_code == 200
+    assert res_docx.mimetype == "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+    assert len(res_docx.data) > 100
+    assert "attachment; filename=EnglishMate_So_Tay_Ngu_Phap.docx" in res_docx.headers.get("Content-Disposition", "")
+
