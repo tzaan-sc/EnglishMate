@@ -281,14 +281,13 @@ MODULE 6. GRAMMAR SYSTEM (HỆ THỐNG NGỮ PHÁP) — 0 TÍNH NĂNG CHƯA LÀM
 MODULE 7. QUIZ SYSTEM (HỆ THỐNG KIỂM TRA) — 1 TÍNH NĂNG CHƯA LÀM
 ----------------------------------------------------------------------------------------------------
 
-[ ] 7.1. Result Sharing - Chia sẻ chứng nhận & kết quả quiz (Mục 7.4)
+[x] 7.1. Result Sharing - Chia sẻ chứng nhận & kết quả quiz (Mục 7.4)
 - Hiện trạng trong EnglishMate_Features.txt:
   Đã có tính năng xuất kết quả quiz ra file PDF chuẩn (`/quizzes/results/<id>/pdf`), xem lại đáp án, làm lại đề.
-- Phần còn thiếu chưa làm:
-  Chưa có tính năng tạo card ảnh đồ họa kết quả (Scorecard) để học viên bấm chia sẻ trực tiếp khoe thành tích lên Facebook/Zalo/Twitter.
-- Giải pháp kỹ thuật cần làm:
-  + Dùng thư viện JavaScript `html2canvas` để chụp Score Card thành ảnh PNG.
-  + Thêm nút chia sẻ qua URL hoặc tải ảnh kết quả về điện thoại/máy tính.
+- Phần đã hoàn thiện:
+  + Tích hợp thư viện `html2canvas` để chụp Score Card đồ họa chất lượng cao thành ảnh PNG.
+  + Thiết kế Card đồ họa thành tích (Scorecard) chuẩn nhận diện thương hiệu EnglishMate với đầy đủ thông tin: Tên học viên, Cấp độ, Tên bài test, Điểm số, Độ chính xác, Xếp loại, Số câu đúng, Thời gian làm bài, Mã chứng nhận.
+  + Thêm nút tải ảnh PNG về máy (`#btnDownloadScorecard`), sao chép ảnh trực tiếp vào Clipboard (`#btnCopyScorecardImage`), chia sẻ nhanh qua Facebook, Twitter/X, Zalo và Web Share API di động.
 - Mức độ ưu tiên: Thấp (Low)
 
 ----------------------------------------------------------------------------------------------------

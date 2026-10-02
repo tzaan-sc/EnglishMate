@@ -180,23 +180,186 @@
 </div>
 
 <!-- Share Results Modal -->
-<div class="modal fade" id="shareModal" tabindex="-1" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content border-0 shadow-lg rounded-4 p-4 text-center">
-      <div class="fs-1 mb-2">🎉</div>
-      <h4 class="fw-bold text-dark mb-2">Chia Sẻ Kết Quả Quiz</h4>
-      <p class="text-secondary small mb-4">Bạn vừa đạt <strong>{{ attempt.score }}/{{ total_questions }} điểm ({{ accuracy_rate }}%)</strong> trong bài test {{ attempt.topic }}!</p>
+<div class="modal fade" id="shareModal" tabindex="-1" aria-labelledby="shareModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
+      <!-- Modal Header -->
+      <div class="modal-header border-bottom-0 pb-0 pt-3 px-4">
+        <div class="d-flex align-items-center gap-2">
+          <div class="bg-warning-subtle text-warning-emphasis p-2 rounded-circle d-flex align-items-center justify-content-center" style="width: 38px; height: 38px;">
+            <i class="ph-fill ph-trophy fs-5"></i>
+          </div>
+          <div>
+            <h5 class="modal-title fw-bold text-dark mb-0" id="shareModalLabel">Chứng Nhận & Chia Sẻ Kết Quả Quiz</h5>
+            <small class="text-secondary">Khoe thành tích học tập với Scorecard đồ họa chất lượng cao hoặc chia sẻ liên kết</small>
+          </div>
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
 
-      <div class="input-group mb-3">
-        <input type="text" class="form-control" id="shareUrlInput" value="{{ request.url }}" readonly>
-        <button class="btn btn-primary fw-bold px-3" type="button" id="btnCopyShare">Sao chép Link</button>
+      <!-- Modal Body -->
+      <div class="modal-body p-4 text-center">
+        <!-- Live Alert / Toast inside Modal -->
+        <div id="shareAlertContainer" class="d-none alert alert-success alert-dismissible fade show text-start py-2 px-3 small rounded-3 mb-3" role="alert">
+          <span id="shareAlertText"></span>
+          <button type="button" class="btn-close py-2" onclick="document.getElementById('shareAlertContainer').classList.add('d-none')"></button>
+        </div>
+
+        <!-- Scorecard Graphic Container (Target for html2canvas) -->
+        <div class="scorecard-container mb-3 d-flex justify-content-center">
+          <div id="quizScorecard" class="quiz-scorecard p-4 text-white">
+            <!-- Top Brand & Verified Badge -->
+            <div class="d-flex justify-content-between align-items-center mb-3">
+              <div class="d-flex align-items-center gap-2">
+                <div class="scorecard-logo-badge">E</div>
+                <div class="text-start">
+                  <div class="scorecard-brand-title">English<span class="scorecard-brand-accent">Mate</span></div>
+                  <div class="scorecard-brand-subtitle">Học Tiếng Anh Thông Minh</div>
+                </div>
+              </div>
+              <div class="scorecard-cert-tag">
+                <i class="ph-fill ph-seal-check me-1 text-warning"></i> CHỨNG NHẬN KẾT QUẢ
+              </div>
+            </div>
+
+            <!-- Candidate Card Info -->
+            <div class="scorecard-user-box mb-3 d-flex align-items-center gap-3 p-3">
+              <div class="scorecard-avatar">
+                {{ (current_user.full_name or current_user.username)[0]|upper if (current_user.full_name or current_user.username) else 'U' }}
+              </div>
+              <div class="flex-grow-1 text-start">
+                <div class="scorecard-user-name">{{ current_user.full_name or current_user.username }}</div>
+                <div class="scorecard-user-sub">Học viên EnglishMate · Cấp độ Lv.{{ current_user.get_level() }}</div>
+              </div>
+              <div class="scorecard-level-badge">
+                Level {{ attempt.level }}
+              </div>
+            </div>
+
+            <!-- Quiz Topic Header -->
+            <div class="scorecard-topic-box text-start mb-3">
+              <div class="scorecard-topic-label">BÀI KIỂM TRA ĐÃ HOÀN THÀNH</div>
+              <div class="scorecard-topic-title">{{ attempt.topic }}</div>
+            </div>
+
+            <!-- Main Score & Accuracy Banner -->
+            <div class="scorecard-score-banner mb-3 p-3 d-flex align-items-center justify-content-around">
+              <div class="text-center">
+                <div class="scorecard-score-num">{{ attempt.score }}<span class="scorecard-score-denom">/{{ total_questions }}</span></div>
+                <div class="scorecard-score-label">Điểm số đạt được</div>
+              </div>
+              <div class="scorecard-divider"></div>
+              <div class="text-center">
+                <div class="scorecard-accuracy-num">{{ accuracy_rate }}%</div>
+                <div class="scorecard-score-label">Tỷ lệ chính xác</div>
+              </div>
+              <div class="scorecard-divider"></div>
+              <div class="text-center">
+                <div class="scorecard-grade-badge">{{ grade.text }}</div>
+                <div class="scorecard-score-label mt-1">Xếp loại đánh giá</div>
+              </div>
+            </div>
+
+            <!-- 4 Stats Grid -->
+            <div class="row g-2 mb-3 text-start">
+              <div class="col-3">
+                <div class="scorecard-stat-pill p-2">
+                  <div class="stat-label">Số câu đúng</div>
+                  <div class="stat-val text-success">✓ {{ correct_count }}/{{ total_questions }}</div>
+                </div>
+              </div>
+              <div class="col-3">
+                <div class="scorecard-stat-pill p-2">
+                  <div class="stat-label">Thời gian làm</div>
+                  <div class="stat-val">⏱️ {{ duration_sec }}s</div>
+                </div>
+              </div>
+              <div class="col-3">
+                <div class="scorecard-stat-pill p-2">
+                  <div class="stat-label">Tốc độ làm</div>
+                  <div class="stat-val">⚡ {{ avg_time_per_q }}s/câu</div>
+                </div>
+              </div>
+              <div class="col-3">
+                <div class="scorecard-stat-pill p-2">
+                  <div class="stat-label">Thưởng kinh nghiệm</div>
+                  <div class="stat-val text-warning">+{{ attempt.score * 10 }} XP</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Footer Verification & Watermark -->
+            <div class="d-flex justify-content-between align-items-center pt-2 border-top border-white border-opacity-25 small text-white text-opacity-75">
+              <div>
+                <span>Mã xác thực: <strong class="text-white">#EM-QUIZ-{{ attempt.id }}</strong></span>
+                <span class="mx-1">·</span>
+                <span>{{ attempt.created_at.strftime('%d/%m/%Y') }}</span>
+              </div>
+              <div class="d-flex align-items-center gap-1">
+                <i class="ph-bold ph-globe"></i>
+                <span>englishmate.edu.vn</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Action Buttons Section -->
+        <div class="d-flex flex-column gap-3">
+          <!-- Main Action Buttons (Download PNG & Copy Image) -->
+          <div class="d-flex flex-wrap justify-content-center gap-2">
+            <button type="button" class="btn btn-success rounded-pill px-3 py-2 fw-bold shadow-xs d-inline-flex align-items-center gap-1.5" id="btnDownloadScorecard">
+              <i class="ph-bold ph-download-simple fs-5"></i>
+              <span>Tải ảnh Scorecard (PNG)</span>
+            </button>
+            <button type="button" class="btn btn-outline-primary rounded-pill px-3 py-2 fw-bold shadow-xs d-inline-flex align-items-center gap-1.5" id="btnCopyScorecardImage">
+              <i class="ph-bold ph-copy fs-5"></i>
+              <span>Sao chép ảnh</span>
+            </button>
+            <button type="button" class="btn btn-outline-secondary rounded-pill px-3 py-2 fw-bold shadow-xs d-inline-flex align-items-center gap-1.5" id="btnWebShare">
+              <i class="ph-bold ph-share-network fs-5"></i>
+              <span>Chia sẻ nhanh</span>
+            </button>
+          </div>
+
+          <!-- Social Share Buttons Row -->
+          <div class="d-flex align-items-center justify-content-center gap-2 pt-1">
+            <span class="text-muted small fw-semibold me-1">Chia sẻ lên:</span>
+            <button type="button" class="btn btn-outline-primary btn-sm rounded-pill px-3 py-1.5 fw-semibold d-inline-flex align-items-center gap-1" id="btnShareFb">
+              <i class="bi bi-facebook"></i> Facebook
+            </button>
+            <button type="button" class="btn btn-outline-dark btn-sm rounded-pill px-3 py-1.5 fw-semibold d-inline-flex align-items-center gap-1" id="btnShareTwitter">
+              <i class="bi bi-twitter-x"></i> X (Twitter)
+            </button>
+            <button type="button" class="btn btn-outline-info btn-sm rounded-pill px-3 py-1.5 fw-semibold d-inline-flex align-items-center gap-1" id="btnShareZalo">
+              <i class="bi bi-chat-dots-fill"></i> Zalo
+            </button>
+          </div>
+
+          <!-- Direct Link Copy Input -->
+          <div class="bg-light p-2.5 rounded-3 border">
+            <div class="input-group">
+              <span class="input-group-text bg-white border-end-0 text-muted small"><i class="ph-bold ph-link"></i></span>
+              <input type="text" class="form-control border-start-0 small" id="shareUrlInput" value="{{ request.url }}" readonly>
+              <button class="btn btn-primary fw-bold px-3" type="button" id="btnCopyShare">Sao chép Link</button>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </div>
 </div>
 
+<!-- html2canvas Library -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
 <script>
 document.addEventListener("DOMContentLoaded", function() {
+  const attemptId = {{ attempt.id }};
+  const quizTopic = {{ attempt.topic|tojson }};
+  const score = {{ attempt.score }};
+  const totalQuestions = {{ total_questions }};
+  const accuracyRate = {{ accuracy_rate }};
+
   // Filter tabs for answers review
   document.querySelectorAll(".btn-tab").forEach(tab => {
     tab.addEventListener("click", function() {
@@ -214,14 +377,202 @@ document.addEventListener("DOMContentLoaded", function() {
     });
   });
 
+  // Function to show toast/alert message inside modal
+  function showShareAlert(message, type = "success") {
+    const alertBox = document.getElementById("shareAlertContainer");
+    const alertText = document.getElementById("shareAlertText");
+    if (alertBox && alertText) {
+      alertBox.className = `alert alert-${type} alert-dismissible fade show text-start py-2 px-3 small rounded-3 mb-3`;
+      alertText.textContent = message;
+      alertBox.classList.remove("d-none");
+      setTimeout(() => {
+        alertBox.classList.add("d-none");
+      }, 5000);
+    }
+  }
+
   // Copy share URL
   document.getElementById("btnCopyShare").addEventListener("click", function() {
     const shareInput = document.getElementById("shareUrlInput");
     shareInput.select();
-    navigator.clipboard.writeText(shareInput.value);
-    this.textContent = "Đã sao chép! ✓";
-    setTimeout(() => { this.textContent = "Sao chép Link"; }, 2000);
+    navigator.clipboard.writeText(shareInput.value).then(() => {
+      this.textContent = "Đã chép! ✓";
+      showShareAlert("Đã sao chép liên kết kết quả bài quiz vào bộ nhớ tạm!", "success");
+      setTimeout(() => { this.textContent = "Sao chép Link"; }, 2000);
+    }).catch(() => {
+      this.textContent = "Đã chép! ✓";
+      setTimeout(() => { this.textContent = "Sao chép Link"; }, 2000);
+    });
   });
+
+  // Helper function to render scorecard to canvas
+  async function renderScorecardCanvas() {
+    const scorecardEl = document.getElementById("quizScorecard");
+    return await html2canvas(scorecardEl, {
+      scale: 2,
+      useCORS: true,
+      backgroundColor: null,
+      logging: false,
+      allowTaint: true
+    });
+  }
+
+  // 1. Download Scorecard as PNG image
+  const btnDownload = document.getElementById("btnDownloadScorecard");
+  if (btnDownload) {
+    btnDownload.addEventListener("click", async function() {
+      const originalHtml = this.innerHTML;
+      this.disabled = true;
+      this.innerHTML = '<span class="spinner-border spinner-border-sm me-1" role="status"></span> Đang tạo ảnh...';
+
+      try {
+        const canvas = await renderScorecardCanvas();
+        const link = document.createElement("a");
+        link.download = `EnglishMate_Quiz_Scorecard_${attemptId}.png`;
+        link.href = canvas.toDataURL("image/png");
+        link.click();
+
+        this.innerHTML = '✓ Đã tải ảnh PNG!';
+        showShareAlert("Ảnh Scorecard thành tích đã được tải về máy thành công!", "success");
+        setTimeout(() => {
+          this.innerHTML = originalHtml;
+          this.disabled = false;
+        }, 2500);
+      } catch (err) {
+        console.error("Lỗi khi tải ảnh Scorecard:", err);
+        showShareAlert("Không thể tạo ảnh Scorecard. Vui lòng thử lại!", "danger");
+        this.innerHTML = originalHtml;
+        this.disabled = false;
+      }
+    });
+  }
+
+  // 2. Copy Scorecard image to Clipboard
+  const btnCopyImg = document.getElementById("btnCopyScorecardImage");
+  if (btnCopyImg) {
+    btnCopyImg.addEventListener("click", async function() {
+      const originalHtml = this.innerHTML;
+      this.disabled = true;
+      this.innerHTML = '<span class="spinner-border spinner-border-sm me-1" role="status"></span> Đang xử lý...';
+
+      try {
+        const canvas = await renderScorecardCanvas();
+        if (navigator.clipboard && window.ClipboardItem) {
+          canvas.toBlob(async function(blob) {
+            if (!blob) {
+              throw new Error("Không thể tạo dữ liệu ảnh.");
+            }
+            try {
+              await navigator.clipboard.write([
+                new ClipboardItem({ "image/png": blob })
+              ]);
+              btnCopyImg.innerHTML = '✓ Đã chép ảnh!';
+              showShareAlert("Đã sao chép ảnh Scorecard vào Clipboard! Bạn có thể dán (Ctrl+V) ngay vào Zalo, Facebook Messenger hoặc bài đăng.", "success");
+            } catch (clipErr) {
+              navigator.clipboard.writeText(window.location.href);
+              btnCopyImg.innerHTML = '✓ Đã chép link!';
+              showShareAlert("Đã sao chép liên kết bài quiz vào bộ nhớ tạm!", "info");
+            }
+            setTimeout(() => {
+              btnCopyImg.innerHTML = originalHtml;
+              btnCopyImg.disabled = false;
+            }, 2500);
+          }, "image/png");
+        } else {
+          navigator.clipboard.writeText(window.location.href);
+          this.innerHTML = '✓ Đã chép link!';
+          showShareAlert("Trình duyệt không hỗ trợ chép ảnh trực tiếp, đã sao chép link kết quả!", "info");
+          setTimeout(() => {
+            this.innerHTML = originalHtml;
+            this.disabled = false;
+          }, 2500);
+        }
+      } catch (err) {
+        console.error("Lỗi chép ảnh Scorecard:", err);
+        navigator.clipboard.writeText(window.location.href);
+        this.innerHTML = '✓ Đã chép link!';
+        showShareAlert("Đã sao chép liên kết bài quiz vào bộ nhớ tạm!", "info");
+        setTimeout(() => {
+          this.innerHTML = originalHtml;
+          this.disabled = false;
+        }, 2500);
+      }
+    });
+  }
+
+  // 3. Social Share Helpers
+  const shareUrl = window.location.href;
+  const shareCaption = `Mình vừa hoàn thành bài Quiz "${quizTopic}" trên EnglishMate với số điểm ${score}/${totalQuestions} (chính xác ${accuracyRate}%). Cùng học và luyện tập tiếng Anh mỗi ngày nhé!`;
+
+  // Facebook
+  const btnFb = document.getElementById("btnShareFb");
+  if (btnFb) {
+    btnFb.addEventListener("click", function(e) {
+      e.preventDefault();
+      const fbUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}&quote=${encodeURIComponent(shareCaption)}`;
+      window.open(fbUrl, "_blank", "width=600,height=500,menubar=no,toolbar=no");
+    });
+  }
+
+  // X / Twitter
+  const btnTwitter = document.getElementById("btnShareTwitter");
+  if (btnTwitter) {
+    btnTwitter.addEventListener("click", function(e) {
+      e.preventDefault();
+      const twUrl = `https://twitter.com/intent/tweet?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(shareCaption)}`;
+      window.open(twUrl, "_blank", "width=600,height=500,menubar=no,toolbar=no");
+    });
+  }
+
+  // Zalo
+  const btnZalo = document.getElementById("btnShareZalo");
+  if (btnZalo) {
+    btnZalo.addEventListener("click", function() {
+      navigator.clipboard.writeText(`${shareCaption}\n${shareUrl}`);
+      showShareAlert("Đã sao chép nội dung & link kết quả để gửi qua Zalo!", "success");
+      const zaloUrl = `https://sp.zalo.me/share_inline?link=${encodeURIComponent(shareUrl)}`;
+      window.open(zaloUrl, "_blank");
+    });
+  }
+
+  // 4. Web Share API (Native Share Sheet)
+  const btnWebShare = document.getElementById("btnWebShare");
+  if (btnWebShare) {
+    btnWebShare.addEventListener("click", async function() {
+      if (navigator.share) {
+        try {
+          const canvas = await renderScorecardCanvas();
+          canvas.toBlob(async function(blob) {
+            try {
+              if (blob && navigator.canShare && navigator.canShare({ files: [new File([blob], `EnglishMate_Quiz_${attemptId}.png`, { type: "image/png" })] })) {
+                const file = new File([blob], `EnglishMate_Quiz_${attemptId}.png`, { type: "image/png" });
+                await navigator.share({
+                  title: `Kết quả Quiz EnglishMate: ${quizTopic}`,
+                  text: shareCaption,
+                  files: [file]
+                });
+              } else {
+                await navigator.share({
+                  title: `Kết quả Quiz EnglishMate: ${quizTopic}`,
+                  text: shareCaption,
+                  url: shareUrl
+                });
+              }
+            } catch (shareErr) {
+              if (shareErr.name !== "AbortError") {
+                console.error("Lỗi chia sẻ:", shareErr);
+              }
+            }
+          }, "image/png");
+        } catch (err) {
+          console.error("Lỗi Web Share:", err);
+        }
+      } else {
+        navigator.clipboard.writeText(shareUrl);
+        showShareAlert("Đã sao chép liên kết bài quiz vào bộ nhớ tạm!", "info");
+      }
+    });
+  }
 });
 </script>
 {% endblock %}

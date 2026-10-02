@@ -1,4 +1,4 @@
-﻿from datetime import datetime
+from datetime import datetime
 from app.extensions import db
 from app.backend.auth.models import User
 from app.backend.learning.models import GrammarErrorLog, Question, QuizAttempt, QuizAttemptAnswer
@@ -84,3 +84,23 @@ def test_quiz_results_pdf_view(client):
     assert res_pdf.status_code == 200
     assert "Báo Cáo Kết Quả Bài Test PDF".encode("utf-8") in res_pdf.data
     assert "TỔNG ĐIỂM".encode("utf-8") in res_pdf.data
+
+
+def test_quiz_results_scorecard_sharing(client):
+    login(client)
+
+    with client.application.app_context():
+        att = ensure_sample_attempt()
+        att_id = att.id
+
+    res = client.get(f"/quizzes/results/{att_id}")
+    assert res.status_code == 200
+    assert b"quizScorecard" in res.data
+    assert b"btnDownloadScorecard" in res.data
+    assert b"btnCopyScorecardImage" in res.data
+    assert b"btnShareFb" in res.data
+    assert b"btnShareTwitter" in res.data
+    assert b"btnShareZalo" in res.data
+    assert b"html2canvas" in res.data
+    assert "CH\xe1\xbb\xa8NG NH\xe1\xba\xacN K\xe1\xba\xbeT QU\xe1\xba\xa2".encode("utf-8") in res.data or "CHỨNG NHẬN KẾT QUẢ".encode("utf-8") in res.data
+
