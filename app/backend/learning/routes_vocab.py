@@ -1016,7 +1016,7 @@ def flashcard_share(share_code):
     from .models import FlashcardSet
     fset = FlashcardSet.query.filter_by(share_code=share_code).first()
     if not fset and share_code.isdigit():
-        fset = FlashcardSet.query.get(int(share_code))
+        fset = db.session.get(FlashcardSet, int(share_code))
     if not fset:
         abort(404)
         
@@ -1049,7 +1049,7 @@ def _clone_flashcard_set(share_code=None, set_id=None):
     elif share_code:
         fset = FlashcardSet.query.filter_by(share_code=share_code).first()
         if not fset and share_code.isdigit():
-            fset = FlashcardSet.query.get(int(share_code))
+            fset = db.session.get(FlashcardSet, int(share_code))
         if not fset:
             abort(404)
     else:
@@ -1544,13 +1544,17 @@ def vocabulary_stats():
     mastered_progress.sort(key=lambda p: p.last_reviewed_at or datetime.min, reverse=True)
 
     mastered_timeline = []
-    for p in mastered_progress[:15]:
-        v = Vocabulary.query.get(p.vocabulary_id)
-        if v:
-            mastered_timeline.append({
-                "vocab": v,
-                "date": p.last_reviewed_at
-            })
+    top_mastered = mastered_progress[:15]
+    if top_mastered:
+        v_ids = [p.vocabulary_id for p in top_mastered]
+        vocab_map = {v.id: v for v in Vocabulary.query.filter(Vocabulary.id.in_(v_ids)).all()}
+        for p in top_mastered:
+            v = vocab_map.get(p.vocabulary_id)
+            if v:
+                mastered_timeline.append({
+                    "vocab": v,
+                    "date": p.last_reviewed_at
+                })
 
     today = date.today()
     daily_labels = []

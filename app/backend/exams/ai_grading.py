@@ -1,4 +1,4 @@
-﻿import time
+import time
 from threading import Thread
 from app.extensions import db
 from app.backend.exams.models import ExamSubmission, ExamAnswerDetail, ExamQuestion
@@ -13,19 +13,21 @@ def async_grade_submission(app, submission_id):
         print(f"[AI Queue] Đang bắt đầu chấm bài cho Submission ID: {submission_id}...")
         time.sleep(5)
         
-        submission = ExamSubmission.query.get(submission_id)
+        submission = db.session.get(ExamSubmission, submission_id)
         if not submission or submission.status == 'COMPLETED':
             return
             
         details = ExamAnswerDetail.query.filter_by(submission_id=submission.id).all()
         
         total_score = submission.total_score or 0
+        unscored_details = [ans for ans in details if ans.is_correct is None]
+        q_ids = [ans.question_id for ans in unscored_details]
+        q_map = {q.id: q for q in ExamQuestion.query.filter(ExamQuestion.id.in_(q_ids)).all()} if q_ids else {}
         
-        for ans in details:
+        for ans in unscored_details:
             # Chấm điểm những câu tự luận/ghi âm (is_correct đang là None)
-            if ans.is_correct is None:
-                q = ExamQuestion.query.get(ans.question_id)
-                if q and q.type in ['ESSAY', 'AUDIO_RECORD']:
+            q = q_map.get(ans.question_id)
+            if q and q.type in ['ESSAY', 'AUDIO_RECORD']:
                     user_text = ans.user_response.get('text', '')
                     
                     # --- MOCK AI GRADING LOGIC ---

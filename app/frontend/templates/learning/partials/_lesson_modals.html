@@ -1,0 +1,172 @@
+<!-- Modal 1: Share Lesson Modal -->
+<div class="modal fade" id="shareLessonModal" tabindex="-1" aria-labelledby="shareLessonModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
+      <!-- Header -->
+      <div class="modal-header border-bottom px-4 py-3 bg-light-subtle d-flex align-items-center justify-content-between">
+        <div class="d-flex align-items-center gap-2.5">
+          <div class="rounded-circle d-flex align-items-center justify-content-center shadow-xs" style="width: 38px; height: 38px; background-color: #e0f2fe; color: #0284c7;">
+            <i class="ph-bold ph-share-network fs-5"></i>
+          </div>
+          <div>
+            <h6 class="modal-title fw-bold text-dark mb-0" id="shareLessonModalLabel">Chia sẻ Bài học</h6>
+            <span class="text-muted small" style="font-size: 0.76rem;">Lan tỏa bài học bổ ích đến bạn bè cùng học tập</span>
+          </div>
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+
+      <div class="modal-body p-4">
+        <!-- Lesson Mini Preview Box -->
+        <div class="p-3 rounded-3 mb-3.5 border shadow-2xs" style="background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%); border-color: #e2e8f0 !important;">
+          <div class="d-flex align-items-center gap-2 mb-1.5 flex-wrap">
+            <span class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill px-2.5 py-0.5 fw-bold" style="font-size: 0.72rem;">
+              {{ lesson.level }}
+            </span>
+            <span class="badge bg-white text-secondary border rounded-pill px-2.5 py-0.5 fw-semibold" style="font-size: 0.72rem;">
+              {{ lesson.skill or 'Bài Học' }}
+            </span>
+            {% if lesson.average_rating and lesson.average_rating > 0 %}
+            <span class="badge bg-warning-subtle text-dark border border-warning-subtle rounded-pill px-2 py-0.5 fw-semibold d-inline-flex align-items-center gap-1" style="font-size: 0.72rem;">
+              <i class="ph-fill ph-star text-warning"></i>
+              <span>{{ lesson.average_rating }}</span>
+              <span class="text-muted fw-normal">({{ lesson.ratings_count }})</span>
+            </span>
+            {% endif %}
+          </div>
+          <h6 class="fw-bold text-dark mb-1 text-truncate" style="font-size: 0.95rem;">{{ lesson.title }}</h6>
+          <p class="text-secondary small mb-0 text-truncate" style="font-size: 0.8rem;">{{ lesson.short_description or 'Học tiếng Anh mỗi ngày theo cách nhẹ nhàng và hiệu quả tại EnglishMate!' }}</p>
+        </div>
+
+        <!-- Mobile / Native Web Share API Banner (Displayed on supported browsers/mobile) -->
+        <div class="mb-3.5 d-none" id="nativeWebShareBox">
+          <button type="button" class="btn btn-primary w-100 rounded-3 py-2.5 fw-bold d-flex align-items-center justify-content-center gap-2 shadow-sm" onclick="shareNativeApp()" id="btnNativeWebShare">
+            <i class="ph-bold ph-paper-plane-tilt fs-5"></i>
+            <span>Mở khay chia sẻ hệ thống (Zalo, Messenger, AirDrop...)</span>
+          </button>
+        </div>
+
+        <!-- Social Share Channels Grid -->
+        <label class="form-label fw-bold text-dark small mb-2 d-flex align-items-center gap-1.5">
+          <i class="ph-bold ph-globe text-primary"></i>
+          <span>Chia sẻ nhanh lên mạng xã hội:</span>
+        </label>
+        <div class="row g-2 mb-3.5" id="socialShareButtonsGrid">
+          <!-- Facebook -->
+          <div class="col-4">
+            <button type="button" class="btn btn-light border w-100 py-2.5 rounded-3 d-flex flex-column align-items-center justify-content-center gap-1 transition-hover share-social-btn" onclick="shareSocialChannel('facebook')" title="Chia sẻ lên Facebook" style="font-size: 0.78rem;">
+              <i class="bi bi-facebook fs-4" style="color: #1877F2;"></i>
+              <span class="fw-semibold text-secondary">Facebook</span>
+            </button>
+          </div>
+          <!-- Zalo -->
+          <div class="col-4">
+            <button type="button" class="btn btn-light border w-100 py-2.5 rounded-3 d-flex flex-column align-items-center justify-content-center gap-1 transition-hover share-social-btn" onclick="shareSocialChannel('zalo')" title="Chia sẻ qua Zalo" style="font-size: 0.78rem;">
+              <div class="rounded-circle d-flex align-items-center justify-content-center fw-bold shadow-2xs" style="width: 26px; height: 26px; background-color: #0068FF; color: white; font-size: 0.72rem; font-family: sans-serif;">Z</div>
+              <span class="fw-semibold text-secondary">Zalo</span>
+            </button>
+          </div>
+          <!-- X (Twitter) -->
+          <div class="col-4">
+            <button type="button" class="btn btn-light border w-100 py-2.5 rounded-3 d-flex flex-column align-items-center justify-content-center gap-1 transition-hover share-social-btn" onclick="shareSocialChannel('twitter')" title="Chia sẻ lên X (Twitter)" style="font-size: 0.78rem;">
+              <i class="bi bi-twitter-x fs-4 text-dark"></i>
+              <span class="fw-semibold text-secondary">X (Twitter)</span>
+            </button>
+          </div>
+          <!-- LinkedIn -->
+          <div class="col-4">
+            <button type="button" class="btn btn-light border w-100 py-2.5 rounded-3 d-flex flex-column align-items-center justify-content-center gap-1 transition-hover share-social-btn" onclick="shareSocialChannel('linkedin')" title="Chia sẻ lên LinkedIn" style="font-size: 0.78rem;">
+              <i class="bi bi-linkedin fs-4" style="color: #0A66C2;"></i>
+              <span class="fw-semibold text-secondary">LinkedIn</span>
+            </button>
+          </div>
+          <!-- Telegram -->
+          <div class="col-4">
+            <button type="button" class="btn btn-light border w-100 py-2.5 rounded-3 d-flex flex-column align-items-center justify-content-center gap-1 transition-hover share-social-btn" onclick="shareSocialChannel('telegram')" title="Chia sẻ qua Telegram" style="font-size: 0.78rem;">
+              <i class="bi bi-telegram fs-4" style="color: #24A1DE;"></i>
+              <span class="fw-semibold text-secondary">Telegram</span>
+            </button>
+          </div>
+          <!-- Email -->
+          <div class="col-4">
+            <button type="button" class="btn btn-light border w-100 py-2.5 rounded-3 d-flex flex-column align-items-center justify-content-center gap-1 transition-hover share-social-btn" onclick="shareSocialChannel('email')" title="Gửi qua Email" style="font-size: 0.78rem;">
+              <i class="ph-bold ph-envelope-simple fs-4 text-secondary"></i>
+              <span class="fw-semibold text-secondary">Email</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- 1-Click Copy Link Box -->
+        <label class="form-label fw-bold text-dark small mb-1.5 d-flex align-items-center gap-1.5">
+          <i class="ph-bold ph-link-simple text-primary"></i>
+          <span>Sao chép liên kết chia sẻ:</span>
+        </label>
+        <div class="input-group mb-2">
+          <input type="text" class="form-control rounded-start-3 shadow-none bg-light" id="shareUrlInput" value="{{ request.url }}" readonly style="border-color: var(--border-light); font-size: 0.85rem;">
+          <button class="btn btn-primary rounded-end-3 fw-bold px-3.5 d-inline-flex align-items-center gap-1.5" type="button" id="btnCopyShareLink" onclick="copyShareUrl()">
+            <i class="ph-bold ph-copy" id="copyBtnIcon"></i>
+            <span id="copyBtnText">Sao chép</span>
+          </button>
+        </div>
+        <div class="alert alert-success d-none mb-3 py-2 px-3 small rounded-3 d-flex align-items-center gap-2" id="copyAlert">
+          <i class="ph-fill ph-check-circle fs-5"></i>
+          <span>Đã sao chép liên kết bài học vào bộ nhớ tạm thành công!</span>
+        </div>
+
+        <!-- QR Code Accordion / Toggle -->
+        <div class="text-center pt-2.5 border-top">
+          <button type="button" class="btn btn-sm btn-light border rounded-pill px-3 py-1 text-secondary fw-semibold d-inline-flex align-items-center gap-1.5 shadow-2xs" data-bs-toggle="collapse" data-bs-target="#qrCodeCollapseBox" aria-expanded="false" id="btnToggleQRCode" style="font-size: 0.78rem;">
+            <i class="ph-bold ph-qr-code text-primary"></i>
+            <span>Mã QR quét bằng điện thoại</span>
+            <i class="ph-bold ph-caret-down text-muted"></i>
+          </button>
+          <div class="collapse mt-3" id="qrCodeCollapseBox">
+            <div class="p-3 bg-white rounded-3 border d-inline-block shadow-xs">
+              <img src="https://api.qrserver.com/v1/create-qr-code/?size=140x140&data={{ request.url|urlencode }}" alt="QR Code Lesson Link" class="img-fluid rounded" style="width: 130px; height: 130px;" loading="lazy">
+              <div class="text-muted small mt-2" style="font-size: 0.74rem;">Mở Camera quét để học bài này trên điện thoại</div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal 2: Report Lesson Modal -->
+<div class="modal fade" id="reportLessonModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
+      <form id="reportForm" action="{{ url_for('learning.report_lesson', lesson_id=lesson.id) }}" method="post">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <div class="modal-header border-bottom px-4 py-3 bg-light-subtle">
+          <h6 class="modal-title fw-bold text-dark d-flex align-items-center gap-2 mb-0">
+            <i class="ph-bold ph-warning-circle text-danger fs-5"></i>
+            <span>Báo cáo Nội dung Bài học</span>
+          </h6>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body p-4">
+          <div class="mb-3">
+            <label class="form-label fw-bold text-dark small">Lý do báo cáo:</label>
+            <select name="reason" class="form-select rounded-3 shadow-none" required style="border-color: var(--border-light); font-size: 0.88rem;">
+              <option value="Lỗi chính tả / Ngữ pháp">Lỗi chính tả / Ngữ pháp</option>
+              <option value="Nội dung khó hiểu">Nội dung khó hiểu</option>
+              <option value="Thiếu ví dụ minh họa">Thiếu ví dụ minh họa</option>
+              <option value="Khác">Khác</option>
+            </select>
+          </div>
+          <div class="mb-2">
+            <label class="form-label fw-bold text-dark small">Chi tiết góp ý:</label>
+            <textarea name="details" class="form-control rounded-3 shadow-none" rows="3" placeholder="Mô tả cụ thể vị trí hoặc vấn đề bạn phát hiện..." style="border-color: var(--border-light); font-size: 0.88rem;"></textarea>
+          </div>
+        </div>
+        <div class="modal-footer border-top px-4 py-3 bg-light-subtle d-flex justify-content-between">
+          <button type="button" class="btn btn-light border rounded-3 px-4 fw-semibold text-secondary" data-bs-dismiss="modal">Hủy</button>
+          <button type="submit" class="btn btn-danger rounded-3 px-4 py-2 fw-bold shadow-sm">Gửi Báo Cáo</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+

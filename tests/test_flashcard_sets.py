@@ -118,7 +118,7 @@ def test_flashcard_set_sharing_and_cloning(client, app, flashcard_setup):
     set_id, item_ids = flashcard_setup
     
     with app.app_context():
-        fset = FlashcardSet.query.get(set_id)
+        fset = db.session.get(FlashcardSet, set_id)
         share_code = fset.get_share_code()
         assert share_code is not None
         assert len(share_code) >= 8
@@ -178,7 +178,7 @@ def test_flashcard_set_privacy_toggle_and_filtering(client, app, flashcard_setup
     assert response.json["is_public"] is False # toggled from True to False
 
     with app.app_context():
-        fset = FlashcardSet.query.get(set_id)
+        fset = db.session.get(FlashcardSet, set_id)
         assert fset.is_public is False
 
     # 2. Toggle back to public
@@ -186,7 +186,7 @@ def test_flashcard_set_privacy_toggle_and_filtering(client, app, flashcard_setup
     assert response2.status_code == 200
 
     with app.app_context():
-        fset = FlashcardSet.query.get(set_id)
+        fset = db.session.get(FlashcardSet, set_id)
         assert fset.is_public is True
 
 
