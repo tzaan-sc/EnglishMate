@@ -1,10 +1,33 @@
 import sys
 from pathlib import Path
 
-from flask import Flask, render_template
+from flask import Flask, render_template, request, g
+from sqlalchemy import event
+from sqlalchemy.engine import Engine
+import sqlite3
 
 from .config import Config
 from .extensions import csrf, db, login_manager
+
+
+@event.listens_for(Engine, "connect")
+def _set_sqlite_pragmas(dbapi_connection, connection_record):
+    """Tối ưu hóa hiệu năng SQLite: WAL mode, memory temp_store, cache 64MB, fast synchronous."""
+    if isinstance(dbapi_connection, sqlite3.Connection):
+        cursor = dbapi_connection.cursor()
+        try:
+            cursor.execute("PRAGMA journal_mode=WAL")
+        except Exception:
+            pass
+        try:
+            cursor.execute("PRAGMA synchronous=NORMAL")
+            cursor.execute("PRAGMA cache_size=-64000")  # 64MB Cache
+            cursor.execute("PRAGMA temp_store=MEMORY")
+            cursor.execute("PRAGMA mmap_size=268435456")  # 256MB memory-mapped IO
+        except Exception:
+            pass
+        finally:
+            cursor.close()
 
 
 def create_app(config_object=Config):
@@ -115,37 +138,47 @@ def create_app(config_object=Config):
 
     @app.context_processor
     def inject_daily_goal_stat():
-        from flask import has_request_context
+        from flask import has_request_context, g
         from flask_login import current_user
         if not has_request_context() or not current_user.is_authenticated or getattr(current_user, "is_admin", False):
             return {"daily_goal_stat": None}
-        try:
-            return {"daily_goal_stat": current_user.get_daily_goal_info()}
-        except Exception:
-            return {"daily_goal_stat": None}
+        if not hasattr(g, "_cached_daily_goal_stat"):
+            try:
+                g._cached_daily_goal_stat = current_user.get_daily_goal_info()
+            except Exception:
+                g._cached_daily_goal_stat = None
+        return {"daily_goal_stat": g._cached_daily_goal_stat}
 
     @app.context_processor
     def inject_admin_notifications():
-        from flask import has_request_context
+        from flask import has_request_context, g
         from flask_login import current_user
         if not has_request_context() or not current_user.is_authenticated or not getattr(current_user, "is_admin", False):
             return {"admin_notif_data": None}
-        try:
-            from .backend.auth.models import User
-            from .backend.learning.models import QuizAttempt
-            from .backend.admin.models import AuditLog
-            locked_users = User.query.filter((User.failed_login_attempts >= 5) | (User.is_active == False)).count()
-            total_attempts = QuizAttempt.query.count()
-            latest_audit = AuditLog.query.order_by(AuditLog.id.desc()).first()
-            return {
-                "admin_notif_data": {
+        if not hasattr(g, "_cached_admin_notif_data"):
+            try:
+                from .backend.auth.models import User
+                from .backend.learning.models import QuizAttempt
+                from .backend.admin.models import AuditLog
+                locked_users = User.query.filter((User.failed_login_attempts >= 5) | (User.is_active == False)).count()
+                total_attempts = QuizAttempt.query.count()
+                latest_audit = AuditLog.query.order_by(AuditLog.id.desc()).first()
+                g._cached_admin_notif_data = {
                     "locked_users": locked_users,
                     "total_attempts": total_attempts,
                     "latest_audit": latest_audit,
                 }
-            }
-        except Exception:
-            return {"admin_notif_data": None}
+            except Exception:
+                g._cached_admin_notif_data = None
+        return {"admin_notif_data": g._cached_admin_notif_data}
+
+    @app.after_request
+    def set_performance_headers(response):
+        """Thiết lập Cache-Control cho file tĩnh để tăng tốc độ tải trang phía client."""
+        from flask import request
+        if request.path.startswith("/static/"):
+            response.headers.setdefault("Cache-Control", "public, max-age=86400")
+        return response
 
     @app.cli.command("goal-reminders-check")
     def run_goal_reminders_cli():

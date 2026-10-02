@@ -174,7 +174,10 @@ class VocabularyProgress(db.Model):
     custom_example = db.Column(db.Text, nullable=True)
     user = db.relationship("User", backref="vocabulary_progress")
     vocabulary = db.relationship("Vocabulary", backref="progress_records")
-    __table_args__ = (db.UniqueConstraint("user_id", "vocabulary_id"),)
+    __table_args__ = (
+        db.UniqueConstraint("user_id", "vocabulary_id"),
+        db.Index("idx_vocab_prog_srs", "user_id", "is_skipped", "next_review_at"),
+    )
 
 
 class WordReport(db.Model):
@@ -199,6 +202,9 @@ class QuizAttempt(db.Model):
     duration_seconds = db.Column(db.Integer, nullable=False, default=0)
     created_at = db.Column(db.DateTime(timezone=True), default=now, nullable=False)
     user = db.relationship("User", backref="quiz_attempts")
+    __table_args__ = (
+        db.Index("idx_quiz_attempt_user_created", "user_id", "created_at"),
+    )
 
 
 class QuizAttemptAnswer(db.Model):

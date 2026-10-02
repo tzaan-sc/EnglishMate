@@ -1,4 +1,4 @@
-﻿from app.extensions import db
+from app.extensions import db
 from app.backend.auth.models import now
 
 
@@ -45,6 +45,9 @@ class ToeicAttempt(db.Model):
     is_submitted = db.Column(db.Boolean, nullable=False, default=False)
     user = db.relationship("User", backref="toeic_attempts")
     test = db.relationship("ToeicTest", backref="attempts")
+    __table_args__ = (
+        db.Index("idx_toeic_attempt_user_created", "user_id", "created_at"),
+    )
 
 
 class ToeicAttemptAnswer(db.Model):
@@ -107,6 +110,9 @@ class ExamSubmission(db.Model):
     
     user = db.relationship("User", backref=db.backref("exam_submissions", lazy='dynamic'))
     exam = db.relationship('Exam', backref='submissions')
+    __table_args__ = (
+        db.Index("idx_exam_sub_user_created", "user_id", "created_at"),
+    )
 
 
 class ExamAnswerDetail(db.Model):
