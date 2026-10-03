@@ -76,6 +76,7 @@ def create_app(config_object=Config):
                     conn.execute(text('ALTER TABLE "user" ADD COLUMN IF NOT EXISTS vocab_reminder_enabled BOOLEAN DEFAULT TRUE;'))
                     conn.execute(text('ALTER TABLE "user" ADD COLUMN IF NOT EXISTS vocab_reminder_time VARCHAR(10) DEFAULT \'09:00\';'))
                     conn.execute(text('ALTER TABLE "user" ADD COLUMN IF NOT EXISTS vocab_push_subscription TEXT;'))
+                    conn.execute(text('ALTER TABLE "user" ADD COLUMN IF NOT EXISTS streak_freeze_count INTEGER DEFAULT 0;'))
                     conn.execute(text("ALTER TABLE lesson_progress ADD COLUMN IF NOT EXISTS duration_seconds INTEGER DEFAULT 0;"))
                     conn.commit()
                 elif "sqlite" in str(db.engine.url):
@@ -93,6 +94,9 @@ def create_app(config_object=Config):
                             conn.commit()
                     if "user" in tables:
                         cols = [c["name"] for c in insp.get_columns("user")]
+                        if "streak_freeze_count" not in cols:
+                            conn.execute(text('ALTER TABLE "user" ADD COLUMN streak_freeze_count INTEGER DEFAULT 0;'))
+                            conn.commit()
                         if "vocab_reminder_enabled" not in cols:
                             conn.execute(text('ALTER TABLE "user" ADD COLUMN vocab_reminder_enabled BOOLEAN DEFAULT 1;'))
                             conn.commit()

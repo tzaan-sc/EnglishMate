@@ -36,6 +36,7 @@ class User(UserMixin, db.Model):
     pending_email_expiry = db.Column(db.DateTime(timezone=True), nullable=True)
     current_streak = db.Column(db.Integer, nullable=False, default=0)
     longest_streak = db.Column(db.Integer, nullable=False, default=0)
+    streak_freeze_count = db.Column(db.Integer, nullable=False, default=0)
     last_activity_date = db.Column(db.Date, nullable=True)
     daily_vocab_goal = db.Column(db.Integer, nullable=False, default=20)
     vocab_review_priority = db.Column(db.String(20), nullable=False, default="due_date")
@@ -265,7 +266,10 @@ class User(UserMixin, db.Model):
         - Admin users: always 0 (streak does not apply)
         - If user learned today: returns current_streak
         - If user learned yesterday: returns current_streak (waiting for today's lesson)
-        - If user missed yesterday or earlier: streak is broken, resets to 0 and returns 0.
+        - If user missed yesterday or earlier:
+            + If streak_freeze_count >= gap_days: consumes freeze to protect streak,
+              updates last_activity_date to yesterday and keeps current_streak.
+            + Else: streak is broken, resets to 0 and returns 0.
         """
         if self.is_admin:
             return 0
@@ -274,14 +278,31 @@ class User(UserMixin, db.Model):
         today = date.today()
         yesterday = today - timedelta(days=1)
         if self.last_activity_date < yesterday:
-            if self.current_streak != 0:
-                self.current_streak = 0
+            gap_days = (today - self.last_activity_date).days - 1
+            if gap_days > 0 and (self.streak_freeze_count or 0) >= gap_days and (self.current_streak or 0) > 0:
+                self.streak_freeze_count = (self.streak_freeze_count or 0) - gap_days
+                self.last_activity_date = yesterday
                 try:
                     db.session.commit()
                 except Exception:
                     pass
-            return 0
+                return self.current_streak or 0
+            else:
+                if self.current_streak != 0:
+                    self.current_streak = 0
+                    try:
+                        db.session.commit()
+                    except Exception:
+                        pass
+                return 0
         return self.current_streak or 0
+
+    def check_streak_status(self):
+        """
+        Evaluates streak status and automatically applies streak freeze if yesterday was missed.
+        Returns the detailed streak status dict.
+        """
+        return self.get_streak_status()
 
     def get_streak_status(self):
         """
@@ -290,6 +311,8 @@ class User(UserMixin, db.Model):
         - current_streak: int
         - previous_streak: int
         - longest_streak: int
+        - streak_freeze_count: int
+        - streak_freeze_applied: bool
         - is_learned_today: bool
         - status_badge: str
         - status_title: str
@@ -302,6 +325,8 @@ class User(UserMixin, db.Model):
                 "current_streak": 0,
                 "previous_streak": 0,
                 "longest_streak": 0,
+                "streak_freeze_count": 0,
+                "streak_freeze_applied": False,
                 "is_learned_today": False,
                 "status_badge": "Quản trị viên",
                 "status_title": "Quản trị viên",
@@ -310,6 +335,8 @@ class User(UserMixin, db.Model):
             }
         today = date.today()
         yesterday = today - timedelta(days=1)
+        freeze_applied = False
+        consumed_freezes = 0
 
         if not self.last_activity_date:
             return {
@@ -317,12 +344,27 @@ class User(UserMixin, db.Model):
                 "current_streak": 0,
                 "previous_streak": 0,
                 "longest_streak": self.longest_streak or 0,
+                "streak_freeze_count": self.streak_freeze_count or 0,
+                "streak_freeze_applied": False,
                 "is_learned_today": False,
                 "status_badge": "Chưa có chuỗi",
                 "status_title": "0 ngày streak",
                 "status_message": "Hãy hoàn thành một bài học ngay hôm nay để thắp sáng ngọn lửa chuỗi học!",
                 "btn_text": "Bắt đầu học ngay",
             }
+
+        # Kiểm tra tự động bảo vệ chuỗi nếu bỏ lỡ hôm qua nhưng có Streak Freeze
+        if self.last_activity_date < yesterday and (self.current_streak or 0) > 0:
+            gap_days = (today - self.last_activity_date).days - 1
+            if gap_days > 0 and (self.streak_freeze_count or 0) >= gap_days:
+                self.streak_freeze_count = (self.streak_freeze_count or 0) - gap_days
+                self.last_activity_date = yesterday
+                freeze_applied = True
+                consumed_freezes = gap_days
+                try:
+                    db.session.commit()
+                except Exception:
+                    pass
 
         # Trạng thái 2: Đã học hôm nay
         if self.last_activity_date == today:
@@ -331,6 +373,8 @@ class User(UserMixin, db.Model):
                 "current_streak": self.current_streak or 1,
                 "previous_streak": 0,
                 "longest_streak": max(self.longest_streak or 0, self.current_streak or 1),
+                "streak_freeze_count": self.streak_freeze_count or 0,
+                "streak_freeze_applied": False,
                 "is_learned_today": True,
                 "status_badge": "Đã duy trì hôm nay ✓",
                 "status_title": f"{self.current_streak or 1} ngày liên tiếp",
@@ -338,21 +382,29 @@ class User(UserMixin, db.Model):
                 "btn_text": "Tiếp tục học thêm",
             }
 
-        # Trạng thái 3: Chưa học hôm nay (ngày học gần nhất là hôm qua - chuỗi vẫn còn hiệu lực)
+        # Trạng thái 3: Chưa học hôm nay (hoặc vừa được Streak Freeze bảo vệ)
         elif self.last_activity_date == yesterday:
+            status_badge = "Được Streak Freeze bảo vệ 🧊" if freeze_applied else "Chưa học hôm nay ⚠️"
+            status_msg = (
+                f"Đã kích hoạt {consumed_freezes} Đóng Băng Chuỗi để bảo toàn chuỗi {self.current_streak} ngày! Hãy học hôm nay để tiếp tục chuỗi."
+                if freeze_applied
+                else "Hôm nay bạn chưa học. Hãy hoàn thành một bài học để duy trì chuỗi!"
+            )
             return {
                 "state": "pending_today",
                 "current_streak": self.current_streak or 0,
                 "previous_streak": 0,
                 "longest_streak": self.longest_streak or 0,
+                "streak_freeze_count": self.streak_freeze_count or 0,
+                "streak_freeze_applied": freeze_applied,
                 "is_learned_today": False,
-                "status_badge": "Chưa học hôm nay ⚠️",
+                "status_badge": status_badge,
                 "status_title": f"{self.current_streak or 0} ngày liên tiếp",
-                "status_message": "Hôm nay bạn chưa học. Hãy hoàn thành một bài học để duy trì chuỗi!",
+                "status_message": status_msg,
                 "btn_text": "Học ngay để giữ chuỗi",
             }
 
-        # Trạng thái 4: Streak đã bị phá (lần học gần nhất trước hôm qua)
+        # Trạng thái 4: Streak đã bị phá (lần học gần nhất trước hôm qua và không đủ freeze)
         else:
             prev = self.current_streak or 0
             if self.current_streak != 0:
@@ -366,6 +418,8 @@ class User(UserMixin, db.Model):
                 "current_streak": 0,
                 "previous_streak": prev or (self.longest_streak or 0),
                 "longest_streak": self.longest_streak or 0,
+                "streak_freeze_count": self.streak_freeze_count or 0,
+                "streak_freeze_applied": False,
                 "is_learned_today": False,
                 "status_badge": "Chuỗi đã kết thúc",
                 "status_title": "0 ngày streak",
@@ -446,6 +500,13 @@ def record_daily_activity(user, lessons_count=1):
         # Quy tắc 2: Đã ghi nhận hôm nay -> Không tăng Streak
         pass
     else:
+        # Nếu bỏ lỡ ngày nhưng có Streak Freeze -> tiêu hao freeze để nối chuỗi
+        if user.last_activity_date and user.last_activity_date < yesterday and (user.current_streak or 0) > 0:
+            gap_days = (today - user.last_activity_date).days - 1
+            if gap_days > 0 and (user.streak_freeze_count or 0) >= gap_days:
+                user.streak_freeze_count = (user.streak_freeze_count or 0) - gap_days
+                user.last_activity_date = yesterday
+
         is_streak_activated = True
         # Quy tắc 3: Nếu ngày hiện tại ngay sau ngày học trước -> current_streak + 1
         if user.last_activity_date == yesterday:

@@ -91,9 +91,16 @@
           {% set streak_stat = current_user.get_streak_status() %}
           <div class="d-flex justify-content-between align-items-center mb-3">
             <span class="text-muted small fw-bold text-uppercase" style="letter-spacing: 0.05em;">Chuỗi học tập</span>
-            <span class="badge bg-light text-muted border rounded-pill px-2.5 py-1" style="font-size: 0.72rem; font-weight: 700;">
-              Kỷ lục: {{ streak_stat.longest_streak }} ngày
-            </span>
+            <div class="d-flex align-items-center gap-1.5">
+              {% if (current_user.streak_freeze_count or 0) > 0 %}
+              <a href="{{ url_for('learning.gamification_hub', tab='challenges') }}" class="badge bg-info-subtle text-info border border-info-subtle rounded-pill px-2 py-1 text-decoration-none" style="font-size: 0.72rem; font-weight: 700;" title="Số lượt Đóng Băng Chuỗi đang có">
+                🧊 {{ current_user.streak_freeze_count }} Freeze
+              </a>
+              {% endif %}
+              <span class="badge bg-light text-muted border rounded-pill px-2.5 py-1" style="font-size: 0.72rem; font-weight: 700;">
+                Kỷ lục: {{ streak_stat.longest_streak }} ngày
+              </span>
+            </div>
           </div>
 
           <!-- Streak Main Box: Gray when not completed today, Orange when completed today -->
@@ -139,7 +146,11 @@
                   <span class="text-muted fw-bold small">ngày streak</span>
                 </div>
                 <div class="d-flex align-items-center gap-1 mt-1">
-                  {% if streak_stat.state == 'broken' %}
+                  {% if streak_stat.streak_freeze_applied %}
+                  <span class="badge bg-info-subtle text-info border border-info-subtle rounded-pill px-2 py-0.5" style="font-size: 0.72rem; font-weight: 700;">
+                    🧊 Đã bảo vệ bằng Streak Freeze
+                  </span>
+                  {% elif streak_stat.state == 'broken' %}
                   <span class="badge bg-secondary-subtle text-secondary rounded-pill px-2 py-0.5" style="font-size: 0.72rem; font-weight: 700;">
                     Chuỗi trước: {{ streak_stat.previous_streak }} ngày
                   </span>

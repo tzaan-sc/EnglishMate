@@ -343,15 +343,14 @@ MODULE 8. EXAM SYSTEM (HỆ THỐNG ĐỀ THI) — 4 TÍNH NĂNG CHƯA LÀM
 MODULE 9. GAMIFICATION SYSTEM (HỆ THỐNG TRÒ CHƠI HÓA) — 3 TÍNH NĂNG CHƯA LÀM
 ----------------------------------------------------------------------------------------------------
 
-[ ] 9.1. Streak Protection - Đóng băng chuỗi học tập (Streak Freeze) (Mục 9.1)
+[x] 9.1. Streak Protection - Đóng băng chuỗi học tập (Streak Freeze) (Mục 9.1)
 - Hiện trạng trong EnglishMate_Features.txt:
   Đã có hệ thống tính streak liên tục, phát hiện mất chuỗi khi qua ngày, lưu kỷ lục chuỗi dài nhất (`longest_streak`), modal chúc mừng streak.
-- Phần còn thiếu chưa làm:
-  Chưa có vật phẩm "Đóng băng chuỗi (Streak Freeze)" cho phép học viên dùng điểm kinh nghiệm XP để trang bị; nếu quên học 1 ngày thì vật phẩm tự tiêu hao để giữ nguyên chuỗi ngày liên tục.
-- Giải pháp kỹ thuật cần làm:
-  + Thêm trường `streak_freeze_count` (Integer, default=0) trong model `User`.
-  + Trong hàm kiểm tra streak `check_streak_status()`, nếu người dùng không học ngày hôm qua nhưng `streak_freeze_count > 0`, trừ 1 freeze và giữ nguyên streak.
-  + Thêm nút mua "Streak Freeze" (giá 100 XP) trên Gamification Hub.
+- Phần đã hoàn thành:
+  + Đã thêm trường `streak_freeze_count` (Integer, default=0) trong model `User`.
+  + Tự động bảo vệ chuỗi trong `get_streak_status()`, `check_streak_status()`, `get_current_streak()` và `record_daily_activity()`: tự động tiêu hao 1 lượt freeze khi bỏ lỡ ngày học hôm qua để bảo toàn streak.
+  + Thêm Cửa hàng vật phẩm & nút mua "Streak Freeze" (giá 100 XP) trên Gamification Hub hỗ trợ cả Form và AJAX realtime.
+  + Hiển thị huy hiệu Freeze trên Dashboard Widget và Gamification Hub.
 - Mức độ ưu tiên: Cao (High - Tăng mạnh retention của người dùng)
 
 [ ] 9.2. Badge Sharing - Chia sẻ huy hiệu lên mạng xã hội (Mục 9.4)
@@ -623,7 +622,7 @@ GIAI ĐOẠN 1: CẢI THIỆN TRẢI NGHIỆM HỌC TẬP CỐT LÕI (CORE LEARN
 4. [ ] Dark Mode & Theme Switcher: Thiết kế giao diện Chế độ tối bảo vệ mắt học ban đêm.
 5. [ ] Reading Highlight & Annotation: Bôi màu và ghi chú trực tiếp trên văn bản đọc hiểu.
 6. [ ] Writing Correction: Sửa lỗi ngữ pháp và chính tả bài viết thời gian thực.
-7. [ ] Streak Protection: Vật phẩm đóng băng chuỗi ngày học "Streak Freeze" mua bằng điểm XP.
+7. [x] Streak Protection: Vật phẩm đóng băng chuỗi ngày học "Streak Freeze" mua bằng điểm XP.
 8. [ ] Keyboard Shortcuts: Bổ sung phím tắt Space, phím số 1-4, phím mũi tên khi luyện tập.
 
 ----------------------------------------------------------------------------------------------------

@@ -44,6 +44,7 @@ if db_path.exists():
         ("xp", "INTEGER NOT NULL DEFAULT 0"),
         ("level", "INTEGER NOT NULL DEFAULT 1"),
         ("level_start_date", "DATE"),
+        ("streak_freeze_count", "INTEGER NOT NULL DEFAULT 0"),
         ("daily_goal_xp", "INTEGER NOT NULL DEFAULT 50"),
         ("daily_reward_claimed_date", "DATE"),
     ]

@@ -1,4 +1,4 @@
-﻿import pytest
+import pytest
 from datetime import date
 from app.extensions import db
 from app.backend.auth.models import User, DailyActivity, record_daily_activity
@@ -129,3 +129,85 @@ def test_claim_daily_goal_reward(client, app):
         user = User.query.filter_by(username="student").first()
         assert user.xp == initial_xp + 50
         assert user.daily_reward_claimed_date == date.today()
+
+
+def test_buy_streak_freeze_success(client, app):
+    from datetime import timedelta
+    login(client)
+    with app.app_context():
+        user = User.query.filter_by(username="student").first()
+        user.xp = 250
+        user.streak_freeze_count = 0
+        db.session.commit()
+
+    # Buy via JSON API
+    response = client.post("/gamification/buy-streak-freeze", json={})
+    assert response.status_code == 200
+    data = response.get_json()
+    assert data["success"] is True
+    assert data["streak_freeze_count"] == 1
+    assert data["current_xp"] == 150
+
+    with app.app_context():
+        user = User.query.filter_by(username="student").first()
+        assert user.streak_freeze_count == 1
+        assert user.xp == 150
+
+    # Buy via Form POST
+    response = client.post("/gamification/buy-streak-freeze", follow_redirects=True)
+    assert response.status_code == 200
+    assert "Trang bị Đóng Băng Chuỗi" in response.get_data(as_text=True)
+
+    with app.app_context():
+        user = User.query.filter_by(username="student").first()
+        assert user.streak_freeze_count == 2
+        assert user.xp == 50
+
+
+def test_buy_streak_freeze_insufficient_xp(client, app):
+    login(client)
+    with app.app_context():
+        user = User.query.filter_by(username="student").first()
+        user.xp = 30
+        user.streak_freeze_count = 0
+        db.session.commit()
+
+    response = client.post("/gamification/buy-streak-freeze", json={})
+    assert response.status_code == 400
+    data = response.get_json()
+    assert data["success"] is False
+    assert "không đủ" in data["message"]
+
+    with app.app_context():
+        user = User.query.filter_by(username="student").first()
+        assert user.streak_freeze_count == 0
+
+
+def test_streak_freeze_auto_protection(app):
+    from datetime import timedelta
+    with app.app_context():
+        user = User(username="freezetest", email="freezetest@test.com")
+        user.set_password("pass123")
+        user.xp = 500
+        user.current_streak = 5
+        user.longest_streak = 10
+        user.streak_freeze_count = 1
+        # Missed yesterday: last active 2 days ago
+        today = date.today()
+        user.last_activity_date = today - timedelta(days=2)
+        db.session.add(user)
+        db.session.commit()
+
+        # Check streak status - freeze should automatically protect the streak
+        status = user.check_streak_status()
+        assert status["state"] == "pending_today"
+        assert status["current_streak"] == 5
+        assert status["streak_freeze_applied"] is True
+        assert user.streak_freeze_count == 0  # 1 freeze consumed
+        assert user.last_activity_date == today - timedelta(days=1)
+
+        # Now student completes a lesson today -> streak increments to 6!
+        record_daily_activity(user, lessons_count=1)
+        assert user.current_streak == 6
+        assert user.last_activity_date == today
+

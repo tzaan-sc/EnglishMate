@@ -516,6 +516,89 @@
         </div>
       </div>
 
+      <!-- STREAK PROTECTION & POWER-UPS SHOP CARD -->
+      <div class="card card-modern p-4 mb-4" style="background: linear-gradient(135deg, #f0fdf4 0%, #ecfeff 50%, #eff6ff 100%); border: 1.5px solid #a7f3d0 !important;">
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3 pb-2 border-bottom" style="border-color: #d1fae5 !important;">
+          <div class="d-flex align-items-center gap-2.5">
+            <div class="rounded-circle d-flex align-items-center justify-content-center shadow-xs" style="width: 42px; height: 42px; background: #dcfce7; color: #059669; font-size: 1.3rem;">
+              🧊
+            </div>
+            <div>
+              <div class="d-inline-flex align-items-center gap-1.5 px-2 py-0.5 rounded-pill bg-emerald-100 text-emerald-800 fw-bold small mb-0.5" style="font-size: 0.72rem; background: #d1fae5; color: #065f46;">
+                <i class="ph-bold ph-shield-check"></i>
+                <span>BẢO HỘ CHUỖI HỌC TẬP</span>
+              </div>
+              <h5 class="fw-bold text-dark mb-0">Cửa Hàng Vật Phẩm & Bổ Trợ</h5>
+            </div>
+          </div>
+          <div class="d-flex align-items-center gap-2">
+            <span class="badge bg-white text-dark border rounded-pill px-3 py-1.5 fw-bold shadow-2xs small d-inline-flex align-items-center gap-1.5">
+              <i class="ph-bold ph-snowflake text-info"></i>
+              <span>Đang sở hữu:</span>
+              <strong id="streakFreezeBadgeCount" class="text-primary fs-6">{{ current_user.streak_freeze_count or 0 }}</strong>
+              <span class="text-muted">lượt</span>
+            </span>
+          </div>
+        </div>
+
+        <!-- Item Card Grid -->
+        <div class="row g-3 align-items-center">
+          <div class="col-lg-8">
+            <div class="p-3.5 bg-white rounded-4 border d-flex flex-column flex-sm-row align-items-sm-center justify-content-between gap-3 shadow-2xs">
+              <div class="d-flex align-items-center gap-3">
+                <div class="rounded-3 d-flex align-items-center justify-content-center flex-shrink-0 shadow-xs"
+                     style="width: 52px; height: 52px; background: linear-gradient(135deg, #e0f2fe 0%, #bae6fd 100%); border: 1.5px solid #7dd3fc; font-size: 1.7rem;">
+                  🧊
+                </div>
+                <div>
+                  <div class="d-flex align-items-center gap-2">
+                    <h6 class="fw-bold text-dark mb-0" style="font-size: 0.98rem;">Đóng Băng Chuỗi (Streak Freeze)</h6>
+                    <span class="badge rounded-pill bg-primary-subtle text-primary border border-primary-subtle fw-bold" style="font-size: 0.68rem;">Phổ Biến</span>
+                  </div>
+                  <p class="text-muted small mb-0 mt-0.5" style="font-size: 0.79rem; line-height: 1.4;">
+                    Tự động tiêu hao khi bạn lỡ quên học 1 ngày, giữ nguyên chuỗi Streak không bị ngắt quãng.
+                  </p>
+                </div>
+              </div>
+              <div class="d-flex align-items-center justify-content-between justify-content-sm-end gap-3 flex-shrink-0 pt-2 pt-sm-0 border-top border-sm-0">
+                <div class="text-sm-end">
+                  <span class="text-muted d-block small" style="font-size: 0.72rem;">Giá niêm yết</span>
+                  <strong class="text-warning-emphasis fw-bold fs-6">100 XP</strong>
+                </div>
+                <div>
+                  {% if current_user.is_admin %}
+                  <button class="btn btn-sm btn-light border text-muted rounded-pill px-3 py-1.5 fw-semibold small" disabled>
+                    Admin
+                  </button>
+                  {% else %}
+                  <form id="formBuyStreakFreeze" method="post" action="{{ url_for('learning.buy_streak_freeze') }}" class="m-0">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <button type="submit" id="btnBuyStreakFreeze" class="btn btn-sm btn-primary rounded-pill px-3.5 py-1.5 fw-bold shadow-xs d-inline-flex align-items-center gap-1.5"
+                            {% if (current_user.xp or 0) < 100 %}disabled title="Bạn cần có ít nhất 100 XP"{% endif %}>
+                      <i class="ph-bold ph-lightning"></i>
+                      <span>Mua (100 XP)</span>
+                    </button>
+                  </form>
+                  {% endif %}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-lg-4">
+            <div class="p-3 rounded-4 border bg-white-50 h-100 d-flex flex-column justify-content-center" style="background: rgba(255, 255, 255, 0.7);">
+              <div class="d-flex align-items-center gap-2 mb-1">
+                <i class="ph-bold ph-lightbulb text-warning fs-5"></i>
+                <span class="fw-bold text-dark small">Mẹo giữ chuỗi học:</span>
+              </div>
+              <p class="text-muted mb-0" style="font-size: 0.75rem; line-height: 1.45;">
+                Bạn có thể tích trữ nhiều Đóng Băng Chuỗi. Hệ thống sẽ tự động kích hoạt 1 lượt cho mỗi ngày vắng mặt để bảo vệ kỷ lục của bạn!
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <!-- DAILY GOAL REMINDER SETTINGS & PREFERENCES CARD -->
       <div class="card card-modern p-4 mb-4" style="background: linear-gradient(180deg, #ffffff 0%, #fff7ed 100%); border: 1.5px solid #fed7aa !important;">
         <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3 pb-2 border-bottom" style="border-color: #ffedd5 !important;">
@@ -860,6 +943,66 @@ document.addEventListener("DOMContentLoaded", () => {
       } finally {
         btnTestGoalReminder.disabled = false;
         btnTestGoalReminder.innerHTML = '<i class="ph-bold ph-paper-plane-tilt"></i><span>Gửi thử email & Popup mẫu</span>';
+      }
+    });
+  }
+
+  // Streak Freeze Purchase AJAX Handler
+  const formBuyStreakFreeze = document.getElementById('formBuyStreakFreeze');
+  const btnBuyStreakFreeze = document.getElementById('btnBuyStreakFreeze');
+  if (formBuyStreakFreeze && btnBuyStreakFreeze) {
+    formBuyStreakFreeze.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      btnBuyStreakFreeze.disabled = true;
+      btnBuyStreakFreeze.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Đang mua...';
+
+      try {
+        const csrfToken = formBuyStreakFreeze.querySelector('input[name="csrf_token"]')?.value || '';
+        const res = await fetch(formBuyStreakFreeze.action, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': csrfToken
+          },
+          body: JSON.stringify({})
+        });
+        const data = await res.json();
+        if (data.success) {
+          // Update count badge
+          const badgeCount = document.getElementById('streakFreezeBadgeCount');
+          if (badgeCount) {
+            badgeCount.textContent = data.streak_freeze_count;
+            badgeCount.classList.add('animate-bounce');
+            setTimeout(() => badgeCount.classList.remove('animate-bounce'), 1000);
+          }
+
+          if (window.showCustomFlashToast) {
+            window.showCustomFlashToast(data.message, 'success', 'Mua Thành Công 🧊');
+          } else {
+            alert(data.message);
+          }
+
+          // Disable button if not enough XP now
+          if (data.current_xp < 100) {
+            btnBuyStreakFreeze.disabled = true;
+            btnBuyStreakFreeze.title = 'Bạn cần có ít nhất 100 XP';
+          }
+        } else {
+          if (window.showCustomFlashToast) {
+            window.showCustomFlashToast(data.message, 'warning', 'Chưa Đủ Điều Kiện');
+          } else {
+            alert(data.message);
+          }
+        }
+      } catch (err) {
+        if (window.showCustomFlashToast) {
+          window.showCustomFlashToast('Có lỗi xảy ra khi thực hiện mua.', 'danger', 'Lỗi');
+        } else {
+          formBuyStreakFreeze.submit(); // Fallback to form submission
+        }
+      } finally {
+        btnBuyStreakFreeze.disabled = false;
+        btnBuyStreakFreeze.innerHTML = '<i class="ph-bold ph-lightning"></i><span>Mua (100 XP)</span>';
       }
     });
   }

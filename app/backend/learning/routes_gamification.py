@@ -240,3 +240,42 @@ def claim_daily_goal_reward():
     flash(f"Tuyệt vời! Bạn đã nhận được rương thưởng ngày +{reward_xp} XP!", "success")
     return redirect(url_for("learning.gamification_hub", tab="challenges"))
 
+
+@bp.post("/gamification/buy-streak-freeze")
+@login_required
+def buy_streak_freeze():
+    """
+    Purchases a Streak Freeze item using 100 XP.
+    Supports both standard form submission and JSON AJAX request.
+    """
+    STREAK_FREEZE_PRICE = 100
+    if current_user.is_admin:
+        if request.is_json:
+            return jsonify({"success": False, "message": "Quản trị viên không thể mua vật phẩm này."}), 400
+        flash("Quản trị viên không thể mua vật phẩm này.", "warning")
+        return redirect(url_for("learning.gamification_hub", tab=request.args.get("tab", "challenges")))
+
+    if (current_user.xp or 0) < STREAK_FREEZE_PRICE:
+        msg = f"Bạn không đủ điểm kinh nghiệm ({current_user.xp or 0}/{STREAK_FREEZE_PRICE} XP) để mua Đóng Băng Chuỗi!"
+        if request.is_json:
+            return jsonify({"success": False, "message": msg}), 400
+        flash(msg, "warning")
+        return redirect(url_for("learning.gamification_hub", tab=request.args.get("tab", "challenges")))
+
+    current_user.xp = (current_user.xp or 0) - STREAK_FREEZE_PRICE
+    current_user.streak_freeze_count = (current_user.streak_freeze_count or 0) + 1
+    current_user.get_level()
+    db.session.commit()
+
+    msg = f"Trang bị Đóng Băng Chuỗi (Streak Freeze) thành công! Bạn hiện có {current_user.streak_freeze_count} lượt bảo vệ."
+    if request.is_json:
+        return jsonify({
+            "success": True,
+            "message": msg,
+            "streak_freeze_count": current_user.streak_freeze_count,
+            "current_xp": current_user.xp
+        })
+    flash(msg, "success")
+    return redirect(url_for("learning.gamification_hub", tab=request.args.get("tab", "challenges")))
+
+
