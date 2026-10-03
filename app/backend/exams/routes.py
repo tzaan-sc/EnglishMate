@@ -255,7 +255,7 @@ def exam_list():
     # Distinct categories sorted by priority
     db_categories = [r[0] for r in db.session.query(Exam.category).filter(Exam.is_active == True).distinct().all()]
     all_categories = []
-    priority_order = ["TOEIC", "IELTS", "TOEFL", "Placement", "Progress", "Timed", "Mock", "Custom"]
+    priority_order = ["THPT", "TOEIC", "IELTS", "TOEFL", "Placement", "Progress", "Timed", "Mock", "Custom"]
     for p in priority_order:
         if p in db_categories:
             all_categories.append(p)
@@ -281,6 +281,8 @@ def exam_list():
 
 
 @bp.route("/<int:exam_id>/start", methods=["GET", "POST"])
+@bp.route("/exam/<int:exam_id>/start", methods=["GET", "POST"])
+@bp.route("/exams/<int:exam_id>/start", methods=["GET", "POST"])
 @login_required
 def start_exam(exam_id):
     exam = db.get_or_404(Exam, exam_id)
@@ -304,7 +306,9 @@ def start_exam(exam_id):
     return redirect(url_for("exams.attempt_exam", submission_id=submission.id, mode=mode))
 
 
-@bp.get("/attempt/<int:submission_id>")
+@bp.route("/attempt/<int:submission_id>", methods=["GET"])
+@bp.route("/exam/attempt/<int:submission_id>", methods=["GET"])
+@bp.route("/exams/attempt/<int:submission_id>", methods=["GET"])
 @login_required
 def attempt_exam(submission_id):
     submission = ExamSubmission.query.filter_by(id=submission_id, user_id=current_user.id).first_or_404()
@@ -327,7 +331,9 @@ def attempt_exam(submission_id):
     )
 
 
-@bp.post("/attempt/<int:submission_id>/submit")
+@bp.route("/attempt/<int:submission_id>/submit", methods=["POST"])
+@bp.route("/exam/attempt/<int:submission_id>/submit", methods=["POST"])
+@bp.route("/exams/attempt/<int:submission_id>/submit", methods=["POST"])
 @login_required
 def submit_exam(submission_id):
     submission = ExamSubmission.query.filter_by(id=submission_id, user_id=current_user.id).first_or_404()
@@ -402,7 +408,9 @@ def submit_exam(submission_id):
     return redirect(url_for("exams.exam_result", submission_id=submission.id))
 
 
-@bp.get("/result/<int:submission_id>")
+@bp.route("/result/<int:submission_id>", methods=["GET"])
+@bp.route("/exam/result/<int:submission_id>", methods=["GET"])
+@bp.route("/exams/result/<int:submission_id>", methods=["GET"])
 @login_required
 def exam_result(submission_id):
     submission = ExamSubmission.query.filter_by(id=submission_id, user_id=current_user.id).first_or_404()
@@ -432,6 +440,13 @@ def exam_result(submission_id):
 # ==========================================
 
 def ensure_specialized_exams_seeded():
+    # Always ensure THPT exam with full 50 questions is seeded
+    try:
+        from app.seeds.thpt_seeds import seed_thpt_exams
+        seed_thpt_exams()
+    except Exception:
+        pass
+
     if Exam.query.filter(Exam.category.in_(["Placement", "Progress", "TOEFL", "Mock", "Custom"])).count() > 0:
         return
 
@@ -543,6 +558,7 @@ def specialized_exams_hub():
     exams_list_data = query.order_by(Exam.id.desc()).all()
 
     specialized_categories = [
+        {"id": "THPT", "name": "Đề Thi THPT Quốc Gia", "icon": "🇻🇳", "desc": "Đề thi mô phỏng chuẩn cấu trúc 50 câu tốt nghiệp THPT Quốc Gia môn Tiếng Anh.", "count": Exam.query.filter_by(category="THPT").count()},
         {"id": "TOEIC", "name": "Mô phỏng thi TOEIC", "icon": "🎧", "desc": "Đề thi TOEIC Listening & Reading chuẩn định dạng mới 200 câu.", "count": Exam.query.filter_by(category="TOEIC").count()},
         {"id": "IELTS", "name": "Luyện thi IELTS", "icon": "📖", "desc": "Luyện thi IELTS Academic 4 kỹ năng tích hợp chấm điểm AI.", "count": Exam.query.filter_by(category="IELTS").count()},
         {"id": "TOEFL", "name": "Chuẩn bị TOEFL", "icon": "🎓", "desc": "Đề luyện thi chuẩn bị TOEFL iBT dạng bài tổng hợp.", "count": Exam.query.filter_by(category="TOEFL").count()},
@@ -563,6 +579,17 @@ def specialized_exams_hub():
     )
 
 
+@bp.route("/specialized/thpt")
+@bp.route("/exams/specialized/thpt")
+@login_required
+def specialized_thpt_start():
+    ensure_specialized_exams_seeded()
+    exam = Exam.query.filter_by(category="THPT", is_active=True).first()
+    if not exam:
+        exam = Exam.query.first()
+    return redirect(url_for("exams.start_exam", exam_id=exam.id))
+
+
 @bp.route("/specialized/placement")
 @bp.route("/exams/specialized/placement")
 @login_required
@@ -572,6 +599,7 @@ def specialized_placement_start():
     if not exam:
         exam = Exam.query.first()
     return redirect(url_for("exams.start_exam", exam_id=exam.id))
+
 
 
 @bp.route("/specialized/progress")

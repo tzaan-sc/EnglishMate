@@ -74,8 +74,18 @@
             </div>
             {% endif %}
             
+            {% if q.transcript and not (q.media_info and q.media_info.audio_url) %}
+            <div class="mb-3 p-3.5 bg-light border rounded-3 text-dark small lh-base shadow-2xs" style="background-color: #f8fafc; border-color: #e2e8f0;">
+              <div class="fw-bold text-secondary mb-2 d-flex align-items-center gap-1">
+                <i class="ph-bold ph-article fs-5 text-primary"></i>
+                <span>Đoạn văn đọc hiểu / Điền từ:</span>
+              </div>
+              <div style="white-space: pre-line; line-height: 1.6;">{{ q.transcript }}</div>
+            </div>
+            {% endif %}
+            
             {% if q.question_text %}
-            <p class="fs-5 mb-4">{{ q.question_text }}</p>
+            <p class="fs-5 mb-4" style="white-space: pre-line;">{{ q.question_text }}</p>
             {% endif %}
             
             {% if q.type == 'SINGLE_CHOICE' %}
@@ -83,7 +93,7 @@
                 {% for opt_val, opt_text in [('A', q.option_a), ('B', q.option_b), ('C', q.option_c), ('D', q.option_d)] %}
                   {% if opt_text %}
                   <label class="btn btn-outline-secondary text-start p-3 rounded-3 option-label">
-                    <input type="radio" name="question_{{ q.id }}" value="{{ opt_val }}" class="me-2" required>
+                    <input type="radio" name="question_{{ q.id }}" value="{{ opt_val }}" class="me-2">
                     <strong>{{ opt_val }}.</strong> {{ opt_text }}
                   </label>
                   {% endif %}

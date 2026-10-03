@@ -316,15 +316,16 @@ MODULE 8. EXAM SYSTEM (HỆ THỐNG ĐỀ THI) — 4 TÍNH NĂNG CHƯA LÀM
   + Đã tích hợp vào Lịch sử kiểm tra (Test History) và viết trọn bộ 5 unit test trong `tests/test_ielts_speaking.py` (100% pass).
 - Mức độ ưu tiên: RẤT CAO (Phục vụ đầy đủ chuẩn IELTS 4 kỹ năng)
 
-[ ] 8.2. THPT Exam - Ngân hàng đề thi chuẩn cấu trúc THPT Quốc Gia (Mục 8.4)
+[x] 8.2. THPT Exam - Ngân hàng đề thi chuẩn cấu trúc THPT Quốc Gia (Mục 8.4)
 - Hiện trạng trong EnglishMate_Features.txt:
   Đã có đề thi xếp lớp (Placement Test), đánh giá tiến độ (Progress Assessment), đề luyện thi nhanh (Timed Practice) và TOEIC Full Test.
-- Phần còn thiếu chưa làm:
-  Chưa có danh mục đề thi mô phỏng chuẩn cấu trúc 50 câu trắc nghiệm thi Tốt nghiệp THPT Quốc Gia môn Tiếng Anh (Ngữ âm, Trọng âm, Tìm lỗi sai, Đồng nghĩa/Trái nghĩa, Điền từ, Đọc hiểu).
-- Giải pháp kỹ thuật cần làm:
-  + Bổ sung type `THPT` trong `Exam` model.
-  + Seed bộ câu hỏi mẫu 50 câu chuẩn format Bộ GD&ĐT vào hệ thống.
+- Phần đã thực hiện hoàn thành:
+  + Bổ sung category `THPT` trong `Exam` model và hệ thống phân loại đề thi chuyên biệt (`specialized_hub.html`, `list.html`).
+  + Xây dựng module seed `app/seeds/thpt_seeds.py` với trọn vẹn 50 câu hỏi trắc nghiệm chuẩn cấu trúc ma trận đề thi Tốt nghiệp THPT Quốc Gia của Bộ GD&ĐT (Ngữ âm, Trọng âm, Ngữ pháp & Từ vựng, Giao tiếp xã hội, Đồng nghĩa/Trái nghĩa, Điền từ đoạn văn, 2 bài Đọc hiểu, Tìm lỗi sai, Biến đổi câu và Kết hợp câu).
+  + Tích hợp đầy đủ giải thích chi tiết đáp án từng câu, hiển thị bài đọc hiểu/điền từ, đồng hồ 60 phút, chấm điểm tự động trên thang điểm 50 và lưu lịch sử làm bài.
+  + Viết bộ kiểm thử tự động `tests/test_thpt_exam.py` đạt 100% pass (3/3 passed, 256/256 full suite pass).
 - Mức độ ưu tiên: Trung bình (Medium)
+- Trạng thái: ĐÃ HOÀN THÀNH (100% test passed)
 
 [ ] 8.3. Audio Grading - AI Chấm điểm bài nói qua file âm thanh (Mục 8.6)
 - Hiện trạng trong EnglishMate_Features.txt:

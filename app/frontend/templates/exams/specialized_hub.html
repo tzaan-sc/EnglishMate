@@ -64,6 +64,10 @@
 
       <!-- Action Buttons Hub -->
       <div class="d-flex gap-2 align-items-center flex-wrap">
+        <a href="{{ url_for('exams.specialized_thpt_start') }}" class="btn btn-danger rounded-pill px-3.5 py-1.5 fw-bold text-white shadow-xs d-inline-flex align-items-center gap-1.5" style="font-size: 0.84rem;">
+          <i class="ph-bold ph-graduation-cap fs-6"></i>
+          <span>Thi THPT Quốc Gia</span>
+        </a>
         <a href="{{ url_for('exams.speaking_test_list') }}" class="btn btn-warning rounded-pill px-3.5 py-1.5 fw-bold text-dark shadow-xs d-inline-flex align-items-center gap-1.5" style="font-size: 0.84rem;">
           <i class="ph-bold ph-microphone-stage fs-6"></i>
           <span>Phòng thi IELTS Speaking</span>
@@ -128,7 +132,7 @@
     </div>
   </div>
 
-  <!-- 8 Specialized Exam Categories Grid -->
+  <!-- Specialized Exam Categories Grid -->
   <div class="row g-3 g-lg-4 mb-5">
     {% for cat in categories %}
     <div class="col-lg-3 col-md-4 col-sm-6">
@@ -144,7 +148,9 @@
         </div>
 
         <div>
-          {% if cat.id == 'Placement' %}
+          {% if cat.id == 'THPT' %}
+          <a href="{{ url_for('exams.specialized_thpt_start') }}" class="btn btn-danger text-white btn-sm rounded-pill w-100 fw-bold py-2 shadow-xs">Thi Ngay 🇻🇳</a>
+          {% elif cat.id == 'Placement' %}
           <a href="{{ url_for('exams.specialized_placement_start') }}" class="btn btn-primary btn-sm rounded-pill w-100 fw-bold py-2 shadow-xs">Thi Ngay 🎯</a>
           {% elif cat.id == 'Progress' %}
           <a href="{{ url_for('exams.specialized_progress_start') }}" class="btn btn-info text-white btn-sm rounded-pill w-100 fw-bold py-2 shadow-xs">Đánh Giá 📈</a>
@@ -176,6 +182,7 @@
         <label class="form-label small fw-bold text-muted mb-1">Danh mục chuyên biệt</label>
         <select name="category" class="form-select border shadow-none" style="border-color: var(--border-light); font-size: 0.9rem;" onchange="this.form.submit()">
           <option value="">-- Tất cả danh mục chuyên biệt --</option>
+          <option value="THPT" {{ 'selected' if active_cat=='THPT' }}>🇻🇳 THPT Quốc Gia (50 câu)</option>
           <option value="TOEIC" {{ 'selected' if active_cat=='TOEIC' }}>TOEIC Simulation</option>
           <option value="IELTS" {{ 'selected' if active_cat=='IELTS' }}>IELTS Practice</option>
           <option value="TOEFL" {{ 'selected' if active_cat=='TOEFL' }}>TOEFL Preparation</option>

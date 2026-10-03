@@ -7,5 +7,6 @@ Provides seed utilities for:
 
 from app.seeds.base import seed as seed_base
 from app.seeds.toeic import seed_toeic
+from app.seeds.thpt_seeds import seed_thpt_exams
 
-__all__ = ["seed_base", "seed_toeic"]
+__all__ = ["seed_base", "seed_toeic", "seed_thpt_exams"]

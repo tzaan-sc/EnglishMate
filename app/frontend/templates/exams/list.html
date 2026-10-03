@@ -189,7 +189,8 @@
         {% for cat in categories %}
         <a href="{{ url_for('exams.exam_list', category=cat, skill=skill, q=search) }}" 
            class="btn btn-sm rounded-pill px-3 py-1 fw-semibold transition-all {% if category == cat %}btn-primary text-white shadow-xs{% else %}btn-light border text-secondary{% endif %}" style="font-size: 0.78rem;">
-          {% if cat == 'TOEIC' %}🎓 TOEIC
+          {% if cat == 'THPT' %}🇻🇳 THPT Quốc Gia
+          {% elif cat == 'TOEIC' %}🎓 TOEIC
           {% elif cat == 'IELTS' %}🇬🇧 IELTS
           {% elif cat == 'TOEFL' %}🇺🇸 TOEFL
           {% elif cat == 'Placement' %}🎯 Xếp lớp
@@ -214,7 +215,9 @@
           <!-- Top Badges Row -->
           <div class="d-flex gap-1.5 flex-wrap mb-2.5 align-items-center justify-content-between">
             <div class="d-flex gap-1.5 flex-wrap">
-              {% if exam.category == 'TOEIC' %}
+              {% if exam.category == 'THPT' %}
+                <span class="badge bg-danger-subtle text-danger border border-danger-subtle rounded-pill px-2.5 py-1 fw-bold" style="font-size: 0.72rem;">🇻🇳 THPT Quốc Gia</span>
+              {% elif exam.category == 'TOEIC' %}
                 <span class="badge bg-danger-subtle text-danger border border-danger-subtle rounded-pill px-2.5 py-1 fw-bold" style="font-size: 0.72rem;">TOEIC Reading</span>
               {% elif exam.category == 'IELTS' %}
                 <span class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill px-2.5 py-1 fw-bold" style="font-size: 0.72rem;">IELTS Academic</span>
