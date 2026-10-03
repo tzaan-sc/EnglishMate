@@ -1,0 +1,218 @@
+{% extends "base.html" %}
+
+{% block title %}Phòng Thi IELTS Speaking Mô Phỏng - EnglishMate{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4 px-lg-4">
+  <!-- Hero Section -->
+  <div class="hero-brand-card p-4 p-lg-4 mb-4 shadow-sm position-relative overflow-hidden" style="background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #311042 100%);">
+    <div class="position-absolute top-0 end-0 opacity-20 pe-none" style="transform: translate(20%, -20%);">
+      <div style="width: 320px; height: 320px; background: radial-gradient(circle, #8b5cf6 0%, transparent 70%);"></div>
+    </div>
+
+    <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3 mb-3 position-relative" style="z-index: 2;">
+      <div>
+        <div class="d-inline-flex align-items-center gap-1.5 px-2.5 py-0.5 rounded-pill mb-2" style="background: rgba(255, 255, 255, 0.15); backdrop-filter: blur(8px); font-size: 0.74rem; font-weight: 700; color: #c4b5fd;">
+          <i class="ph-bold ph-microphone-stage"></i>
+          <span>IELTS SPEAKING VIRTUAL SIMULATOR</span>
+        </div>
+        <h3 class="fw-bold text-white mb-1 d-flex align-items-center gap-2">
+          Phòng Thi IELTS Speaking Mô Phỏng Chuẩn 3 Part
+        </h3>
+        <p class="text-white-50 mb-0 small" style="max-width: 720px;">
+          Luyện thi với Giám khảo AI ảo chuẩn quốc tế: Part 1 (Phỏng vấn 4-5 câu), Part 2 (Cue Card 1 phút chuẩn bị, 2 phút nói), và Part 3 (Thảo luận chuyên sâu) cùng hệ thống chấm điểm 4 tiêu chí rubric.
+        </p>
+      </div>
+
+      <div class="d-flex gap-2 align-items-center flex-wrap">
+        <a href="{{ url_for('exams.exam_list') }}" class="btn btn-outline-light rounded-pill px-3 py-1.5 fw-semibold d-inline-flex align-items-center gap-1.5" style="font-size: 0.84rem; background: rgba(255,255,255,0.06); border-color: rgba(255,255,255,0.25);">
+          <i class="ph ph-arrow-left"></i>
+          <span>Thư viện đề thi</span>
+        </a>
+        <a href="{{ url_for('exams.test_history') }}?type=IELTS" class="btn btn-light rounded-pill px-3.5 py-1.5 fw-bold text-dark shadow-xs d-inline-flex align-items-center gap-1.5" style="font-size: 0.84rem;">
+          <i class="ph-bold ph-clock-counter-clockwise fs-6 text-primary"></i>
+          <span>Lịch sử thi Speaking</span>
+        </a>
+      </div>
+    </div>
+
+    <!-- 3 Part Standard Structure Highlights -->
+    <div class="row g-2 g-md-3 pt-3 mt-2 border-top border-white-10 position-relative" style="z-index: 2;">
+      <div class="col-12 col-md-4">
+        <div class="d-flex align-items-center gap-2.5 p-2.5 rounded-3" style="background: rgba(255, 255, 255, 0.08); border: 1px solid rgba(255, 255, 255, 0.1);">
+          <div class="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0" style="width: 34px; height: 34px; background: rgba(139, 92, 246, 0.3); color: #c4b5fd; font-weight: 700; font-size: 0.82rem;">P1</div>
+          <div>
+            <strong class="text-white d-block" style="font-size: 0.82rem;">Part 1: Giới thiệu & Phỏng vấn</strong>
+            <span class="text-white-50" style="font-size: 0.72rem;">4-5 câu hỏi quen thuộc (30s/câu)</span>
+          </div>
+        </div>
+      </div>
+      <div class="col-12 col-md-4">
+        <div class="d-flex align-items-center gap-2.5 p-2.5 rounded-3" style="background: rgba(255, 255, 255, 0.08); border: 1px solid rgba(255, 255, 255, 0.1);">
+          <div class="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0" style="width: 34px; height: 34px; background: rgba(236, 72, 153, 0.3); color: #f472b6; font-weight: 700; font-size: 0.82rem;">P2</div>
+          <div>
+            <strong class="text-white d-block" style="font-size: 0.82rem;">Part 2: Thẻ gợi ý (Cue Card)</strong>
+            <span class="text-white-50" style="font-size: 0.72rem;">60s chuẩn bị nháp + 120s nói liên tục</span>
+          </div>
+        </div>
+      </div>
+      <div class="col-12 col-md-4">
+        <div class="d-flex align-items-center gap-2.5 p-2.5 rounded-3" style="background: rgba(255, 255, 255, 0.08); border: 1px solid rgba(255, 255, 255, 0.1);">
+          <div class="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0" style="width: 34px; height: 34px; background: rgba(16, 185, 129, 0.3); color: #6ee7b7; font-weight: 700; font-size: 0.82rem;">P3</div>
+          <div>
+            <strong class="text-white d-block" style="font-size: 0.82rem;">Part 3: Thảo luận chuyên sâu</strong>
+            <span class="text-white-50" style="font-size: 0.72rem;">3-4 câu phân tích đa chiều (60s/câu)</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  {% if in_progress %}
+  <!-- In-Progress Banner Alert -->
+  <div class="alert alert-warning border-0 rounded-4 shadow-sm p-3 mb-4 d-flex align-items-center justify-content-between flex-wrap gap-3" style="background: #fffbeb; border-left: 5px solid #f59e0b !important;">
+    <div class="d-flex align-items-center gap-3">
+      <div class="rounded-circle bg-warning text-white d-flex align-items-center justify-content-center flex-shrink-0" style="width: 42px; height: 42px;">
+        <i class="ph-bold ph-play fs-5"></i>
+      </div>
+      <div>
+        <span class="badge bg-warning text-dark fw-bold rounded-pill px-2.5 py-0.5 mb-1" style="font-size: 0.7rem;">ĐANG LÀM DỞ</span>
+        <h6 class="fw-bold text-dark mb-0">{{ in_progress.test.title }}</h6>
+        <p class="text-secondary small mb-0">Bạn có một bài thi Speaking chưa hoàn thành. Hãy tiếp tục để nhận đánh giá AI.</p>
+      </div>
+    </div>
+    <a href="{{ url_for('exams.speaking_simulation_room', submission_id=in_progress.id) }}" class="btn btn-warning fw-bold rounded-pill px-3.5 py-1.5 shadow-sm text-dark d-inline-flex align-items-center gap-1.5" style="font-size: 0.84rem;">
+      <i class="ph-bold ph-arrow-right"></i>
+      <span>Tiếp tục thi ngay</span>
+    </a>
+  </div>
+  {% endif %}
+
+  <!-- Filter & Search Bar -->
+  <div class="card border-0 rounded-4 shadow-sm p-3 mb-4 bg-white">
+    <form method="GET" action="{{ url_for('exams.speaking_test_list') }}" class="row g-2 align-items-center">
+      <div class="col-12 col-md-5">
+        <div class="input-group">
+          <span class="input-group-text bg-light border-end-0 rounded-start-pill text-muted ps-3">
+            <i class="ph ph-magnifying-glass"></i>
+          </span>
+          <input type="text" name="q" value="{{ search }}" class="form-control bg-light border-start-0 rounded-end-pill ps-1" placeholder="Tìm kiếm đề Speaking theo chủ đề (Công nghệ, Môi trường...)" style="font-size: 0.86rem;">
+        </div>
+      </div>
+      <div class="col-6 col-md-3">
+        <select name="difficulty" class="form-select rounded-pill bg-light border-0" style="font-size: 0.86rem;" onchange="this.form.submit()">
+          <option value="" {% if not difficulty %}selected{% endif %}>Mọi độ khó</option>
+          <option value="Medium" {% if difficulty == 'Medium' %}selected{% endif %}>Độ khó: Vừa phải (Band 6.0 - 7.5)</option>
+          <option value="Hard" {% if difficulty == 'Hard' %}selected{% endif %}>Độ khó: Nâng cao (Band 7.5 - 8.5+)</option>
+        </select>
+      </div>
+      <div class="col-6 col-md-2">
+        <button type="submit" class="btn btn-primary w-100 rounded-pill fw-semibold py-1.5" style="font-size: 0.86rem;">
+          Lọc đề
+        </button>
+      </div>
+      <div class="col-12 col-md-2 text-md-end">
+        <span class="text-secondary small fw-medium">Tổng số: <strong>{{ tests|length }}</strong> bộ đề</span>
+      </div>
+    </form>
+  </div>
+
+  <!-- Test Cards Grid -->
+  <div class="row g-4">
+    {% for t in tests %}
+    <div class="col-12 col-lg-6">
+      <div class="card border-0 rounded-4 shadow-sm h-100 p-4 test-card-hover bg-white d-flex flex-column justify-content-between position-relative">
+        <div>
+          <!-- Header info -->
+          <div class="d-flex justify-content-between align-items-start gap-2 mb-2">
+            <div class="d-flex align-items-center gap-2 flex-wrap">
+              <span class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill px-2.5 py-1 fw-bold" style="font-size: 0.72rem;">
+                <i class="ph-bold ph-seal-check me-1"></i>IELTS SPEAKING
+              </span>
+              <span class="badge bg-purple-subtle text-purple border border-purple-subtle rounded-pill px-2.5 py-1 fw-bold" style="font-size: 0.72rem; background: #f3e8ff; color: #7e22ce;">
+                🎯 Target: {{ t.target_band }}
+              </span>
+              <span class="badge {% if t.difficulty == 'Hard' %}bg-danger-subtle text-danger border-danger-subtle{% else %}bg-info-subtle text-info border-info-subtle{% endif %} border rounded-pill px-2.5 py-1 fw-semibold" style="font-size: 0.72rem;">
+                {{ t.difficulty }}
+              </span>
+            </div>
+
+            {% if t.id in best_bands %}
+            <div class="text-end">
+              <span class="badge bg-success text-white rounded-pill px-2.5 py-1 fw-bold shadow-xs" style="font-size: 0.74rem;">
+                🏆 Điểm cao nhất: Band {{ best_bands[t.id] }}
+              </span>
+            </div>
+            {% endif %}
+          </div>
+
+          <!-- Title & Description -->
+          <h5 class="fw-bold text-dark mb-2 mt-2" style="font-size: 1.05rem; line-height: 1.4;">
+            {{ t.title }}
+          </h5>
+          <p class="text-secondary small mb-3" style="line-height: 1.5;">
+            {{ t.description }}
+          </p>
+
+          <!-- Topic & Structure Breakdown -->
+          <div class="p-3 rounded-3 mb-3" style="background: #f8fafc; border: 1px solid #e2e8f0;">
+            <div class="row g-2 text-secondary" style="font-size: 0.78rem;">
+              {% for topic in t.topics %}
+              <div class="col-12 d-flex align-items-start gap-2">
+                <span class="badge bg-dark text-white rounded-pill px-2 py-0.5 flex-shrink-0" style="font-size: 0.68rem;">Part {{ topic.part }}</span>
+                <span class="text-dark fw-medium text-truncate" title="{{ topic.topic_title }}">{{ topic.topic_title }}</span>
+                <span class="ms-auto text-muted flex-shrink-0">
+                  {% if topic.part == 2 %}60s prep + 120s{% else %}{{ topic.response_time_seconds }}s/câu{% endif %}
+                </span>
+              </div>
+              {% endfor %}
+            </div>
+          </div>
+        </div>
+
+        <!-- Footer actions -->
+        <div class="d-flex align-items-center justify-content-between pt-3 border-top border-light gap-2 mt-auto">
+          <div class="d-flex align-items-center gap-2 text-muted small">
+            <i class="ph ph-timer"></i>
+            <span>Thời lượng: ~{{ t.duration_minutes }} phút</span>
+          </div>
+
+          <div class="d-flex align-items-center gap-2">
+            <form method="POST" action="{{ url_for('exams.speaking_test_start', test_id=t.id) }}">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+              <button type="submit" class="btn btn-primary rounded-pill px-3.5 py-1.5 fw-bold shadow-sm d-inline-flex align-items-center gap-1.5" style="font-size: 0.84rem;">
+                <i class="ph-bold ph-microphone"></i>
+                <span>Vào phòng thi ngay</span>
+              </button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+
+  {% if not tests %}
+  <div class="text-center py-5">
+    <div class="rounded-circle bg-light d-inline-flex align-items-center justify-content-center p-4 mb-3 text-muted">
+      <i class="ph ph-microphone-slash fs-1"></i>
+    </div>
+    <h5 class="fw-bold text-dark mb-1">Không tìm thấy đề thi Speaking phù hợp</h5>
+    <p class="text-secondary small mb-3">Vui lòng thử lại với từ khóa tìm kiếm hoặc độ khó khác.</p>
+    <a href="{{ url_for('exams.speaking_test_list') }}" class="btn btn-light border rounded-pill px-3.5 py-1.5 small fw-semibold">
+      Xóa bộ lọc
+    </a>
+  </div>
+  {% endif %}
+</div>
+
+<style>
+.test-card-hover {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.test-card-hover:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.08), 0 8px 10px -6px rgba(0, 0, 0, 0.04) !important;
+}
+</style>
+{% endblock %}

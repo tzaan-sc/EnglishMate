@@ -1,4 +1,4 @@
-﻿from flask import abort, flash, redirect, render_template, request, url_for
+from flask import abort, flash, redirect, render_template, request, url_for
 from flask_login import current_user, login_required
 from sqlalchemy import func
 
@@ -705,6 +705,25 @@ def test_history():
                 "review_url": url_for("exams.exam_result", submission_id=s.id)
             })
 
+    # 3.5. Fetch IeltsSpeakingSubmission records
+    if not test_type or test_type in ["IELTS", "Speaking", "All"]:
+        from app.backend.exams.models import IeltsSpeakingSubmission
+        spk_submissions = IeltsSpeakingSubmission.query.filter_by(user_id=current_user.id, status="COMPLETED").all()
+        for spk in spk_submissions:
+            test_obj = spk.test
+            band_pct = int((spk.overall_band / 9.0) * 100) if spk.overall_band > 0 else 0
+            records.append({
+                "id": spk.id,
+                "source": "speaking",
+                "type": "IELTS Speaking",
+                "title": test_obj.title if test_obj else "Phòng Thi IELTS Speaking",
+                "score_display": f"Band {spk.overall_band}/9.0",
+                "accuracy_pct": band_pct,
+                "duration_sec": spk.time_spent or 900,
+                "created_at": spk.completed_at or spk.created_at,
+                "review_url": url_for("exams.speaking_test_result", submission_id=spk.id)
+            })
+
     # 4. Fetch GrammarExerciseAttempt records
     if not test_type or test_type in ["Grammar", "All"]:
         grammar_attempts = GrammarExerciseAttempt.query.filter_by(user_id=current_user.id).all()
@@ -797,6 +816,8 @@ def test_review_detail(source, record_id):
         return redirect(url_for("exams.exam_result", submission_id=record_id))
     elif source == "grammar":
         return redirect(url_for("learning.grammar_exercise_summary", attempt_id=record_id))
+    elif source == "speaking":
+        return redirect(url_for("exams.speaking_test_result", submission_id=record_id))
 
     flash("Không tìm thấy bản ghi kiểm tra.", "danger")
     return redirect(url_for("exams.test_history"))
@@ -847,6 +868,21 @@ def test_compare():
                     "accuracy_pct": acc,
                     "duration_sec": (ex.duration_minutes * 60) if ex else 0,
                     "date": s.completed_at.strftime('%d/%m/%Y %H:%M') if s.completed_at else ""
+                })
+        elif src == "speaking":
+            from app.backend.exams.models import IeltsSpeakingSubmission
+            spk = db.session.get(IeltsSpeakingSubmission, rec_id)
+            if spk and spk.user_id == current_user.id:
+                test_title = spk.test.title if spk.test else "IELTS Speaking Test"
+                acc = int((spk.overall_band / 9.0) * 100) if spk.overall_band > 0 else 0
+                all_records.append({
+                    "id": item,
+                    "title": test_title,
+                    "type": "IELTS Speaking",
+                    "score_display": f"Band {spk.overall_band}/9.0",
+                    "accuracy_pct": acc,
+                    "duration_sec": spk.time_spent or 900,
+                    "date": spk.completed_at.strftime('%d/%m/%Y %H:%M') if spk.completed_at else ""
                 })
 
     if not all_records:
@@ -920,6 +956,13 @@ def test_delete_record(source, record_id):
             db.session.delete(rec)
             db.session.commit()
             flash("Đã xóa bản ghi bài tập ngữ pháp thành công.", "success")
+    elif source == "speaking":
+        from app.backend.exams.models import IeltsSpeakingSubmission
+        rec = db.session.get(IeltsSpeakingSubmission, record_id)
+        if rec and rec.user_id == current_user.id:
+            db.session.delete(rec)
+            db.session.commit()
+            flash("Đã xóa bản ghi bài thi IELTS Speaking thành công.", "success")
 
     return redirect(url_for("exams.test_history"))
 
@@ -942,3 +985,16 @@ def exam_settings():
             return redirect(redirect_to)
         return redirect(request.referrer or url_for("exams.exam_list"))
     return render_template("exams/settings.html")
+
+
+# Re-export IELTS Speaking routes facade
+from app.backend.exams.routes_ielts_speaking import (
+    speaking_test_list,
+    speaking_test_start,
+    speaking_simulation_room,
+    speaking_save_answer,
+    speaking_simulation_submit,
+    speaking_test_result,
+    speaking_submission_delete,
+)
+

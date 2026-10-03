@@ -1,0 +1,333 @@
+{% extends "base.html" %}
+
+{% block title %}Kết Quả & Báo Cáo IELTS Speaking - Band {{ submission.overall_band }} - EnglishMate{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4 px-lg-4">
+  <!-- Top Action Bar -->
+  <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
+    <div class="d-flex align-items-center gap-3">
+      <a href="{{ url_for('exams.speaking_test_list') }}" class="btn btn-light btn-sm rounded-circle d-flex align-items-center justify-content-center shadow-xs" style="width: 38px; height: 38px;" title="Danh sách đề">
+        <i class="ph-bold ph-arrow-left fs-6"></i>
+      </a>
+      <div>
+        <div class="d-flex align-items-center gap-2">
+          <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-2.5 py-0.5 fw-bold" style="font-size: 0.72rem;">
+            <i class="ph-bold ph-check-circle me-1"></i> HOÀN THÀNH BÀI THI
+          </span>
+          <span class="text-muted small">Mã kết quả: #SPK-{{ submission.id }}</span>
+        </div>
+        <h4 class="fw-bold text-dark mb-0 mt-1">{{ test.title }}</h4>
+      </div>
+    </div>
+
+    <div class="d-flex align-items-center gap-2 flex-wrap">
+      <button type="button" class="btn btn-light rounded-pill px-3.5 py-1.5 fw-semibold border shadow-xs d-inline-flex align-items-center gap-1.5" onclick="window.print();" style="font-size: 0.84rem;">
+        <i class="ph-bold ph-printer"></i>
+        <span>In kết quả / Lưu PDF</span>
+      </button>
+      <form method="POST" action="{{ url_for('exams.speaking_test_start', test_id=test.id) }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <button type="submit" class="btn btn-primary rounded-pill px-3.5 py-1.5 fw-bold shadow-sm d-inline-flex align-items-center gap-1.5" style="font-size: 0.84rem;">
+          <i class="ph-bold ph-arrows-clockwise"></i>
+          <span>Luyện thi lại đề này</span>
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Scorecard Banner -->
+  <div class="card border-0 rounded-4 shadow-sm p-4 mb-4 text-white position-relative overflow-hidden" style="background: linear-gradient(135deg, #1e1b4b 0%, #312e81 45%, #4c1d95 100%);">
+    <div class="row g-4 align-items-center position-relative" style="z-index: 2;">
+      <!-- Overall Band Score Display -->
+      <div class="col-12 col-md-5 col-xl-4 text-center text-md-start border-end border-white-10 pe-lg-4">
+        <span class="badge bg-white-20 rounded-pill px-3 py-1 fw-bold mb-2 text-white" style="font-size: 0.74rem;">
+          IELTS SPEAKING OFFICIAL BAND SCORE
+        </span>
+        <div class="d-flex align-items-center justify-content-center justify-content-md-start gap-3 my-2">
+          <div class="rounded-4 d-flex flex-column align-items-center justify-content-center shadow" style="width: 100px; height: 100px; background: rgba(255, 255, 255, 0.15); border: 2px solid rgba(255, 255, 255, 0.3); backdrop-filter: blur(10px);">
+            <span class="text-white-50" style="font-size: 0.72rem; font-weight: 600;">BAND</span>
+            <span class="fw-bold text-white fs-1" style="line-height: 1;">{{ submission.overall_band }}</span>
+            <span class="text-white-50" style="font-size: 0.65rem;">/ 9.0</span>
+          </div>
+          <div>
+            <h4 class="fw-bold mb-1 text-white">
+              {% if submission.overall_band >= 8.0 %}Very Good User (Band 8+)
+              {% elif submission.overall_band >= 7.0 %}Good User (Band 7 - 7.5)
+              {% elif submission.overall_band >= 6.0 %}Competent User (Band 6 - 6.5)
+              {% elif submission.overall_band >= 5.0 %}Modest User (Band 5 - 5.5)
+              {% else %}Limited User (Band < 5.0)
+              {% endif %}
+            </h4>
+            <p class="text-white-50 small mb-0">
+              Thời gian làm bài: <strong>{{ (submission.time_spent / 60)|int if submission.time_spent else 15 }} phút</strong> • Nộp lúc {{ submission.completed_at.strftime('%H:%M ngày %d/%m/%Y') if submission.completed_at else 'Hôm nay' }}
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- 4 Criteria Rubric Breakdown -->
+      <div class="col-12 col-md-7 col-xl-8 ps-lg-4">
+        <div class="row g-3">
+          <!-- Fluency & Coherence -->
+          <div class="col-6 col-md-3">
+            <div class="p-3 rounded-3" style="background: rgba(255, 255, 255, 0.08); border: 1px solid rgba(255, 255, 255, 0.12);">
+              <span class="text-white-50 d-block small mb-1" style="font-size: 0.72rem;">Fluency & Coherence</span>
+              <strong class="fs-4 text-white d-block mb-1">{{ submission.fluency_score }}</strong>
+              <div class="progress" style="height: 5px; background: rgba(255, 255, 255, 0.2);">
+                <div class="progress-bar bg-warning" style="width: {{ (submission.fluency_score / 9.0 * 100)|int }}%;"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Lexical Resource -->
+          <div class="col-6 col-md-3">
+            <div class="p-3 rounded-3" style="background: rgba(255, 255, 255, 0.08); border: 1px solid rgba(255, 255, 255, 0.12);">
+              <span class="text-white-50 d-block small mb-1" style="font-size: 0.72rem;">Lexical Resource</span>
+              <strong class="fs-4 text-white d-block mb-1">{{ submission.lexical_score }}</strong>
+              <div class="progress" style="height: 5px; background: rgba(255, 255, 255, 0.2);">
+                <div class="progress-bar bg-info" style="width: {{ (submission.lexical_score / 9.0 * 100)|int }}%;"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Grammatical Range -->
+          <div class="col-6 col-md-3">
+            <div class="p-3 rounded-3" style="background: rgba(255, 255, 255, 0.08); border: 1px solid rgba(255, 255, 255, 0.12);">
+              <span class="text-white-50 d-block small mb-1" style="font-size: 0.72rem;">Grammar Range</span>
+              <strong class="fs-4 text-white d-block mb-1">{{ submission.grammar_score }}</strong>
+              <div class="progress" style="height: 5px; background: rgba(255, 255, 255, 0.2);">
+                <div class="progress-bar bg-success" style="width: {{ (submission.grammar_score / 9.0 * 100)|int }}%;"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Pronunciation -->
+          <div class="col-6 col-md-3">
+            <div class="p-3 rounded-3" style="background: rgba(255, 255, 255, 0.08); border: 1px solid rgba(255, 255, 255, 0.12);">
+              <span class="text-white-50 d-block small mb-1" style="font-size: 0.72rem;">Pronunciation</span>
+              <strong class="fs-4 text-white d-block mb-1">{{ submission.pronunciation_score }}</strong>
+              <div class="progress" style="height: 5px; background: rgba(255, 255, 255, 0.2);">
+                <div class="progress-bar bg-danger" style="width: {{ (submission.pronunciation_score / 9.0 * 100)|int }}%;"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Detailed AI Feedback & Rubric Insights -->
+  <div class="row g-4 mb-4">
+    <!-- Left Column: Examiner Qualitative Evaluation -->
+    <div class="col-12 col-lg-6">
+      <div class="card border-0 rounded-4 shadow-sm p-4 bg-white h-100">
+        <h5 class="fw-bold text-dark mb-3 d-flex align-items-center gap-2">
+          <i class="ph-bold ph-chats text-primary"></i>
+          <span>Nhận Xét & Đánh Giá Chi Tiết Của Giám Khảo AI</span>
+        </h5>
+
+        <div class="p-3.5 rounded-4 mb-3" style="background: #f8fafc; border-left: 4px solid #4f46e5;">
+          <p class="text-dark mb-0 small" style="line-height: 1.6;">
+            {{ submission.examiner_feedback }}
+          </p>
+        </div>
+
+        {% set analysis = submission.detailed_analysis or {} %}
+        <!-- Strengths -->
+        <div class="mb-3">
+          <h6 class="fw-bold text-success small mb-2 d-flex align-items-center gap-1.5">
+            <i class="ph-bold ph-check-circle"></i>
+            <span>Điểm mạnh nổi bật (Strengths)</span>
+          </h6>
+          <ul class="list-unstyled mb-0">
+            {% for s in analysis.get('strengths', ['Hoàn thành bài thi.']) %}
+            <li class="d-flex align-items-start gap-2 small text-secondary mb-1.5">
+              <i class="ph-bold ph-check text-success flex-shrink-0 mt-0.5"></i>
+              <span>{{ s }}</span>
+            </li>
+            {% endfor %}
+          </ul>
+        </div>
+
+        <!-- Areas for Improvement -->
+        <div class="mb-3">
+          <h6 class="fw-bold text-danger small mb-2 d-flex align-items-center gap-1.5">
+            <i class="ph-bold ph-warning-circle"></i>
+            <span>Điểm cần cải thiện (Areas for Improvement)</span>
+          </h6>
+          <ul class="list-unstyled mb-0">
+            {% for w in analysis.get('weaknesses', ['Cần mở rộng độ dài câu trả lời.']) %}
+            <li class="d-flex align-items-start gap-2 small text-secondary mb-1.5">
+              <i class="ph-bold ph-arrow-circle-right text-danger flex-shrink-0 mt-0.5"></i>
+              <span>{{ w }}</span>
+            </li>
+            {% endfor %}
+          </ul>
+        </div>
+
+        <!-- Actionable Tips -->
+        <div>
+          <h6 class="fw-bold text-primary small mb-2 d-flex align-items-center gap-1.5">
+            <i class="ph-bold ph-lightbulb"></i>
+            <span>Mẹo Nâng Band Điểm (Actionable Tips)</span>
+          </h6>
+          <ul class="list-unstyled mb-0">
+            {% for tip in analysis.get('tips', []) %}
+            <li class="d-flex align-items-start gap-2 small text-secondary mb-1.5">
+              <i class="ph-bold ph-sparkle text-primary flex-shrink-0 mt-0.5"></i>
+              <span>{{ tip }}</span>
+            </li>
+            {% endfor %}
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right Column: Upgraded Vocabulary & Collocations -->
+    <div class="col-12 col-lg-6">
+      <div class="card border-0 rounded-4 shadow-sm p-4 bg-white h-100">
+        <h5 class="fw-bold text-dark mb-3 d-flex align-items-center gap-2">
+          <i class="ph-bold ph-books text-purple" style="color: #7c3aed;"></i>
+          <span>Từ Vựng & Collocations Nâng Cấp Band 8.0+</span>
+        </h5>
+        <p class="text-secondary small mb-3">
+          Thay thế các cách diễn đạt phổ thông bằng những collocations học thuật để gia tăng điểm số Lexical Resource:
+        </p>
+
+        <div class="table-responsive">
+          <table class="table table-hover align-middle mb-0" style="font-size: 0.82rem;">
+            <thead class="table-light">
+              <tr>
+                <th style="width: 25%;">Từ vựng cơ bản</th>
+                <th style="width: 35%;">Nâng cấp Band 8+</th>
+                <th style="width: 40%;">Ví dụ ứng dụng</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for v in analysis.get('upgraded_vocab', []) %}
+              <tr>
+                <td><span class="badge bg-light text-muted border">{{ v.original }}</span></td>
+                <td><strong class="text-primary">{{ v.upgraded }}</strong></td>
+                <td><span class="text-secondary small fst-italic">{{ v.example }}</span></td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Part-by-Part Answers & Model Response Review -->
+  <div class="card border-0 rounded-4 shadow-sm p-4 bg-white">
+    <h5 class="fw-bold text-dark mb-3 d-flex align-items-center gap-2">
+      <i class="ph-bold ph-list-numbers text-primary"></i>
+      <span>Xem Lại Câu Trả Lời & Đáp Án Mẫu Band 8.5+</span>
+    </h5>
+
+    <!-- Part Tabs -->
+    <ul class="nav nav-pills mb-3 gap-2" id="reviewPartTabs" role="tablist">
+      {% for topic in topics %}
+      <li class="nav-item" role="presentation">
+        <button class="nav-link rounded-pill fw-bold px-3.5 py-1.5 {% if loop.first %}active{% endif %}" id="tab-btn-part-{{ topic.part }}" data-bs-toggle="pill" data-bs-target="#tab-pane-part-{{ topic.part }}" type="button" role="tab" style="font-size: 0.84rem;">
+          Part {{ topic.part }}: {{ topic.topic_title }}
+        </button>
+      </li>
+      {% endfor %}
+    </ul>
+
+    <div class="tab-content" id="reviewPartTabsContent">
+      {% for topic in topics %}
+      <div class="tab-pane fade {% if loop.first %}show active{% endif %}" id="tab-pane-part-{{ topic.part }}" role="tabpanel">
+        {% if topic.cue_card_prompt %}
+        <!-- Part 2 Booklet Preview -->
+        <div class="p-3.5 rounded-4 mb-3" style="background: #fffdf5; border: 1.5px solid #fef08a;">
+          <div class="d-flex justify-content-between align-items-center mb-2">
+            <strong class="text-dark"><i class="ph-bold ph-cards text-warning me-1"></i> Part 2 Cue Card Prompt</strong>
+            <span class="badge bg-warning text-dark rounded-pill px-2.5 py-0.5">1 phút chuẩn bị • 2 phút nói</span>
+          </div>
+          <div class="text-dark small" style="white-space: pre-line; line-height: 1.6;">
+            {{ topic.cue_card_prompt }}
+          </div>
+        </div>
+        {% endif %}
+
+        <!-- Questions in this topic -->
+        <div class="d-flex flex-column gap-3">
+          {% for q in topic.questions %}
+          {% set ans_key = topic.part ~ '_' ~ loop.index0 %}
+          {% set ans = answers_map.get(ans_key) %}
+          <div class="card border rounded-3 p-3.5 bg-light">
+            <div class="d-flex justify-content-between align-items-start gap-2 mb-2">
+              <h6 class="fw-bold text-dark mb-0" style="font-size: 0.95rem;">
+                <span class="badge bg-dark text-white rounded-pill px-2 py-0.5 me-1.5" style="font-size: 0.72rem;">Câu {{ loop.index }}</span>
+                {{ q.question }}
+              </h6>
+            </div>
+
+            <!-- Candidate Spoken Response -->
+            <div class="p-3 bg-white rounded-3 border mb-2.5">
+              <div class="d-flex justify-content-between align-items-center mb-1">
+                <span class="fw-bold text-primary small"><i class="ph-bold ph-microphone me-1"></i> Bài nói của bạn:</span>
+                {% if ans and ans.audio_data_url %}
+                <audio controls class="h-25" style="max-height: 30px;">
+                  <source src="{{ ans.audio_data_url }}" type="audio/webm">
+                </audio>
+                {% endif %}
+              </div>
+              <p class="text-dark small mb-0" style="line-height: 1.6;">
+                {% if ans and ans.candidate_transcript %}
+                  "{{ ans.candidate_transcript }}"
+                {% else %}
+                  <span class="text-muted fst-italic">Không có bản ghi âm hoặc văn bản nhận diện cho câu này.</span>
+                {% endif %}
+              </p>
+
+              {% if ans and ans.candidate_notes %}
+              <div class="mt-2 pt-2 border-top border-light">
+                <span class="text-muted text-xs d-block mb-1">📝 Ghi chú nháp Part 2 của bạn:</span>
+                <span class="badge bg-light text-dark border fw-normal text-wrap text-start p-2 w-100" style="font-size: 0.76rem;">{{ ans.candidate_notes }}</span>
+              </div>
+              {% endif %}
+            </div>
+
+            <!-- Model Band 8.5+ Answer -->
+            <div class="p-3 rounded-3" style="background: #f0fdf4; border: 1px solid #bbf7d0;">
+              <div class="d-flex justify-content-between align-items-center mb-1">
+                <span class="fw-bold text-success small"><i class="ph-bold ph-sparkle me-1"></i> Câu trả lời mẫu Band 8.5+:</span>
+                <button type="button" class="btn btn-outline-success btn-sm rounded-pill py-0 px-2 btn-read-model" data-text="{{ q.model_answer }}" style="font-size: 0.72rem;">
+                  <i class="ph-bold ph-speaker-high me-1"></i> Nghe đọc mẫu
+                </button>
+              </div>
+              <p class="text-dark small mb-0" style="line-height: 1.6;">
+                "{{ q.model_answer }}"
+              </p>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+  const readModelBtns = document.querySelectorAll(".btn-read-model");
+  readModelBtns.forEach(btn => {
+    btn.addEventListener("click", function() {
+      const text = this.getAttribute("data-text");
+      if ('speechSynthesis' in window && text) {
+        window.speechSynthesis.cancel();
+        const utter = new SpeechSynthesisUtterance(text);
+        utter.lang = 'en-US';
+        utter.rate = 1.0;
+        window.speechSynthesis.speak(utter);
+      }
+    });
+  });
+});
+</script>
+{% endblock %}

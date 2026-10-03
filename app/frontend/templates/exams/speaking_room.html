@@ -1,0 +1,865 @@
+{% extends "base.html" %}
+
+{% block title %}Phòng Thi IELTS Speaking Mô Phỏng - {{ test.title }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-3 px-lg-4">
+  <!-- Top Navigation & Status Bar -->
+  <div class="card border-0 rounded-4 shadow-sm p-3 mb-3 bg-white">
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
+      <div class="d-flex align-items-center gap-3">
+        <a href="{{ url_for('exams.speaking_test_list') }}" class="btn btn-light btn-sm rounded-circle d-flex align-items-center justify-content-center shadow-xs" style="width: 38px; height: 38px;" title="Rời phòng thi" onclick="return confirm('Bạn có chắc chắn muốn thoát khỏi phòng thi? Tiến độ các câu đã hoàn thành sẽ được lưu lại.');">
+          <i class="ph-bold ph-arrow-left fs-6"></i>
+        </a>
+        <div>
+          <div class="d-flex align-items-center gap-2">
+            <span class="badge bg-primary text-white rounded-pill px-2.5 py-0.5 fw-bold" style="font-size: 0.72rem;">IELTS SPEAKING SIMULATOR</span>
+            <span class="badge bg-purple-subtle text-purple border rounded-pill px-2 py-0.5" style="font-size: 0.7rem; background: #f3e8ff; color: #7e22ce;">{{ test.target_band }}</span>
+          </div>
+          <h5 class="fw-bold text-dark mb-0 mt-1" style="font-size: 1.05rem;">{{ test.title }}</h5>
+        </div>
+      </div>
+
+      <!-- Parts Stepper & Timer -->
+      <div class="d-flex align-items-center gap-3 flex-wrap">
+        <!-- Part Stepper Pills -->
+        <div class="d-flex bg-light p-1 rounded-pill border gap-1" id="partPillsContainer">
+          <button type="button" class="btn btn-sm rounded-pill px-3 fw-bold part-nav-btn active" data-part="1" id="partBtn1">
+            Part 1
+          </button>
+          <button type="button" class="btn btn-sm rounded-pill px-3 fw-bold part-nav-btn text-secondary" data-part="2" id="partBtn2">
+            Part 2 (Cue Card)
+          </button>
+          <button type="button" class="btn btn-sm rounded-pill px-3 fw-bold part-nav-btn text-secondary" data-part="3" id="partBtn3">
+            Part 3
+          </button>
+        </div>
+
+        <!-- Overall Timer -->
+        <div class="d-flex align-items-center gap-2 bg-light px-3 py-1.5 rounded-pill border">
+          <i class="ph-bold ph-timer text-primary fs-5"></i>
+          <span class="fw-bold text-dark font-monospace" id="totalTimerDisplay" style="font-size: 0.95rem;">00:00</span>
+        </div>
+
+        <!-- Submit Button -->
+        <button type="button" class="btn btn-danger rounded-pill px-3.5 py-1.5 fw-bold shadow-sm d-inline-flex align-items-center gap-1.5" id="btnOpenSubmitModal" style="font-size: 0.84rem;">
+          <i class="ph-bold ph-check-circle"></i>
+          <span>Nộp bài & Chấm điểm</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Simulation Stage Grid -->
+  <div class="row g-4">
+    <!-- Left Column: Virtual AI Examiner Stage -->
+    <div class="col-12 col-lg-5 col-xl-4">
+      <div class="card border-0 rounded-4 shadow-sm p-4 bg-white h-100 d-flex flex-column justify-content-between">
+        <div>
+          <!-- Examiner Profile Header -->
+          <div class="text-center pb-3 border-bottom border-light mb-3">
+            <div class="position-relative d-inline-block mb-2">
+              <div class="rounded-circle d-flex align-items-center justify-content-center shadow-sm" id="examinerAvatarRing" style="width: 88px; height: 88px; background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%); color: white; border: 4px solid #ede9fe;">
+                <i class="ph-bold ph-user-circle fs-1"></i>
+              </div>
+              <span class="position-absolute bottom-0 end-0 p-1 bg-success border border-white rounded-circle" style="width: 16px; height: 16px;" title="Online"></span>
+            </div>
+            <h6 class="fw-bold text-dark mb-0">Dr. Sarah Jenkins</h6>
+            <span class="text-muted small" style="font-size: 0.76rem;">British Council Certified Senior Examiner</span>
+            <div class="mt-2">
+              <span class="badge bg-light text-secondary border rounded-pill px-2.5 py-1" id="examinerStatusBadge" style="font-size: 0.72rem;">
+                <i class="ph-fill ph-circle text-primary me-1" style="font-size: 0.6rem;"></i> Sẵn sàng phỏng vấn
+              </span>
+            </div>
+          </div>
+
+          <!-- Question Prompt Section -->
+          <div class="mb-3">
+            <div class="d-flex justify-content-between align-items-center mb-1">
+              <span class="text-uppercase fw-bold text-muted" style="font-size: 0.72rem; letter-spacing: 0.05em;" id="stagePartTitle">
+                PART 1 • QUESTION 1/4
+              </span>
+              <span class="badge bg-primary-subtle text-primary rounded-pill px-2" id="questionTimeGuide">30s</span>
+            </div>
+
+            <div class="p-3 rounded-4 mb-3" style="background: #f8fafc; border: 1.5px solid #e2e8f0; min-height: 110px;">
+              <p class="fw-bold text-dark mb-0 fs-6" id="examinerQuestionText" style="line-height: 1.5;">
+                Đang tải câu hỏi...
+              </p>
+            </div>
+          </div>
+
+          <!-- Audio Question Playback Controls -->
+          <div class="p-3 rounded-3 mb-3 bg-light border">
+            <div class="d-flex align-items-center justify-content-between mb-2">
+              <span class="fw-bold text-dark small">Giọng đọc Giám khảo (TTS)</span>
+              <div class="btn-group btn-group-sm" role="group">
+                <button type="button" class="btn btn-outline-secondary btn-speed active py-0 px-2" data-speed="1.0" style="font-size: 0.72rem;">1.0x</button>
+                <button type="button" class="btn btn-outline-secondary btn-speed py-0 px-2" data-speed="0.8" style="font-size: 0.72rem;">0.8x</button>
+                <button type="button" class="btn btn-outline-secondary btn-speed py-0 px-2" data-speed="1.2" style="font-size: 0.72rem;">1.2x</button>
+              </div>
+            </div>
+
+            <div class="d-flex gap-2">
+              <button type="button" class="btn btn-primary btn-sm rounded-pill w-100 fw-semibold d-flex align-items-center justify-content-center gap-1.5 shadow-xs" id="btnPlayExaminerAudio">
+                <i class="ph-bold ph-speaker-high" id="examinerAudioIcon"></i>
+                <span id="examinerAudioText">Nghe giám khảo hỏi</span>
+              </button>
+              <button type="button" class="btn btn-light btn-sm border rounded-circle flex-shrink-0 d-flex align-items-center justify-content-center" style="width: 32px; height: 32px;" id="btnReplayExaminerAudio" title="Nghe lại">
+                <i class="ph ph-arrow-counter-clockwise"></i>
+              </button>
+            </div>
+          </div>
+
+          <!-- Vocabulary hints accordion -->
+          <div class="accordion accordion-flush" id="hintsAccordion">
+            <div class="accordion-item border rounded-3 overflow-hidden">
+              <h2 class="accordion-header">
+                <button class="accordion-button collapsed py-2 px-3 bg-light small fw-bold text-secondary" type="button" data-bs-toggle="collapse" data-bs-target="#collapseHints" style="font-size: 0.78rem;">
+                  <i class="ph-bold ph-lightbulb me-1.5 text-warning"></i> Gợi ý từ vựng & Collocations Band 7.5+
+                </button>
+              </h2>
+              <div id="collapseHints" class="accordion-collapse collapse" data-bs-parent="#hintsAccordion">
+                <div class="accordion-body p-3 small" id="vocabHintsContent">
+                  Đang tải gợi ý...
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Question Pagination / Navigator -->
+        <div class="d-flex justify-content-between align-items-center pt-3 border-top border-light mt-3">
+          <button type="button" class="btn btn-light border btn-sm rounded-pill px-3 fw-semibold" id="btnPrevQuestion">
+            <i class="ph ph-caret-left me-1"></i> Câu trước
+          </button>
+          <span class="text-muted small fw-medium" id="questionCounterText">1 / 4</span>
+          <button type="button" class="btn btn-primary btn-sm rounded-pill px-3 fw-semibold shadow-xs" id="btnNextQuestion">
+            Câu tiếp <i class="ph ph-caret-right ms-1"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right Column: Candidate Interaction Station -->
+    <div class="col-12 col-lg-7 col-xl-8">
+      <!-- PART 2 CUE CARD SPECIFIC VIEW (Shown when Part == 2) -->
+      <div id="part2CueCardSection" class="card border-0 rounded-4 shadow-sm p-4 bg-white mb-4 d-none" style="border-left: 6px solid #ec4899 !important;">
+        <div class="d-flex justify-content-between align-items-start gap-2 mb-3">
+          <div>
+            <span class="badge bg-danger-subtle text-danger border border-danger-subtle rounded-pill px-2.5 py-1 fw-bold" style="font-size: 0.72rem;">
+              IELTS SPEAKING PART 2 • INDIVIDUAL LONG TURN
+            </span>
+            <h5 class="fw-bold text-dark mb-1 mt-2" id="cueCardTopicTitle">Describe a piece of technology...</h5>
+          </div>
+          <!-- 60s Prep Timer Badge -->
+          <div class="text-end">
+            <div class="d-flex align-items-center gap-2 bg-danger-subtle px-3 py-1.5 rounded-pill border border-danger-subtle">
+              <i class="ph-bold ph-hourglass-high text-danger"></i>
+              <span class="fw-bold text-danger font-monospace fs-6" id="prepTimerDisplay">60s</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Cue Card Booklet -->
+        <div class="p-3.5 rounded-4 mb-3" style="background: #fffdf5; border: 1.5px solid #fef08a; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.02);">
+          <div class="fw-bold text-dark mb-2" style="font-size: 0.95rem;">You should say:</div>
+          <div class="text-dark small" id="cueCardPromptList" style="line-height: 1.7; white-space: pre-line;">
+            <!-- Dynamic Prompt -->
+          </div>
+        </div>
+
+        <!-- 60s Prep Button & Notepad -->
+        <div class="row g-3">
+          <div class="col-12 col-md-4">
+            <div class="p-3 rounded-3 bg-light border text-center h-100 d-flex flex-column justify-content-center">
+              <span class="text-muted small d-block mb-2">Thời gian chuẩn bị</span>
+              <button type="button" class="btn btn-warning fw-bold rounded-pill px-3 py-2 shadow-xs text-dark w-100" id="btnStart60sPrep">
+                <i class="ph-bold ph-play me-1"></i> Bắt đầu 60s nháp
+              </button>
+              <span class="text-muted text-xs mt-2" style="font-size: 0.7rem;">Hết 60s sẽ tự động mở micro 2 phút nói</span>
+            </div>
+          </div>
+          <div class="col-12 col-md-8">
+            <div class="form-group">
+              <label class="form-label fw-bold text-secondary small d-flex justify-content-between">
+                <span><i class="ph-bold ph-note-pencil text-primary me-1"></i> Sổ tay ghi chú nháp (Draft Notepad)</span>
+                <span class="text-muted" style="font-size: 0.72rem;" id="notepadAutosaveStatus">Tự động lưu</span>
+              </label>
+              <textarea class="form-control rounded-3 bg-light border" id="part2NotepadInput" rows="3" placeholder="Ghi nhanh các ý chính, từ vựng Band 8+, liên từ nối trong 1 phút chuẩn bị..."></textarea>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Candidate Recording & Audio Console -->
+      <div class="card border-0 rounded-4 shadow-sm p-4 bg-white">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <div class="d-flex align-items-center gap-2">
+            <div class="rounded-circle d-flex align-items-center justify-content-center" style="width: 36px; height: 36px; background: #e0e7ff; color: #4338ca;">
+              <i class="ph-bold ph-waveform fs-5"></i>
+            </div>
+            <div>
+              <h6 class="fw-bold text-dark mb-0">Bàn Thu Âm & Trả Lời Của Thí Sinh</h6>
+              <span class="text-muted small" style="font-size: 0.74rem;">Thu âm trực tiếp qua microphone trình duyệt và phân tích giọng nói</span>
+            </div>
+          </div>
+
+          <!-- Response Timer for this Question -->
+          <div class="d-flex align-items-center gap-2 bg-light px-3 py-1 rounded-pill border">
+            <span class="text-muted small" style="font-size: 0.72rem;">Thời gian nói:</span>
+            <span class="fw-bold text-dark font-monospace" id="questionTimerDisplay">00:00</span>
+          </div>
+        </div>
+
+        <!-- Live Waveform Visualizer Canvas -->
+        <div class="position-relative rounded-4 overflow-hidden mb-3" style="height: 90px; background: #0f172a; border: 1px solid #334155;">
+          <canvas id="speakingWaveformCanvas" class="w-100 h-100"></canvas>
+          <div id="recordingPulseIndicator" class="position-absolute top-0 end-0 p-2.5 d-none">
+            <span class="badge bg-danger text-white rounded-pill px-2.5 py-1 fw-bold pulse-recording" style="font-size: 0.72rem;">
+              <i class="ph-fill ph-circle text-white me-1" style="font-size: 0.55rem;"></i> ĐANG GHI ÂM
+            </span>
+          </div>
+          <div id="waveformIdleText" class="position-absolute top-50 start-50 translate-middle text-secondary small user-select-none">
+            Nhấn "Bắt đầu thu âm" để kích hoạt micro
+          </div>
+        </div>
+
+        <!-- Main Recording Action Buttons -->
+        <div class="row g-2 mb-3">
+          <div class="col-12 col-md-6">
+            <button type="button" class="btn btn-primary w-100 rounded-pill py-2.5 fw-bold shadow-sm d-flex align-items-center justify-content-center gap-2" id="btnToggleRecording">
+              <i class="ph-bold ph-microphone fs-5" id="recordBtnIcon"></i>
+              <span id="recordBtnText">Bắt đầu thu âm</span>
+            </button>
+          </div>
+          <div class="col-12 col-md-6">
+            <button type="button" class="btn btn-light border w-100 rounded-pill py-2.5 fw-semibold d-flex align-items-center justify-content-center gap-2" id="btnPlayRecordedAudio" disabled>
+              <i class="ph-bold ph-play fs-5" id="playAudioIcon"></i>
+              <span id="playAudioText">Nghe lại bản thu</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Hidden Audio Element for playback -->
+        <audio id="recordedAudioPlayer" class="d-none"></audio>
+
+        <!-- Real-time Speech-to-Text Transcript / Manual Editor -->
+        <div class="form-group mb-3">
+          <div class="d-flex justify-content-between align-items-center mb-1">
+            <label class="form-label fw-bold text-secondary small mb-0 d-flex align-items-center gap-1.5">
+              <i class="ph-bold ph-text-align-left text-primary"></i>
+              <span>Văn bản nhận diện giọng nói (Speech-to-Text Transcript)</span>
+            </label>
+            <span class="badge bg-success-subtle text-success rounded-pill px-2" id="sttStatusBadge" style="font-size: 0.7rem;">
+              Tự động nhận diện STT
+            </span>
+          </div>
+          <textarea class="form-control rounded-3 bg-light border" id="candidateTranscriptInput" rows="4" placeholder="Văn bản nhận diện từ microphone sẽ tự động hiển thị ở đây. Bạn cũng có thể chỉnh sửa trực tiếp..."></textarea>
+          <div class="form-text text-muted d-flex justify-content-between" style="font-size: 0.72rem;">
+            <span><i class="ph ph-info me-1"></i>Hệ thống AI sẽ dựa vào bản thu âm & văn bản này để chấm điểm 4 tiêu chí rubric.</span>
+            <span id="transcriptWordCount">0 từ</span>
+          </div>
+        </div>
+
+        <!-- Save Answer Action Bar -->
+        <div class="d-flex justify-content-between align-items-center pt-3 border-top border-light">
+          <span class="text-muted small" id="saveAnswerStatusText">
+            <i class="ph ph-check text-success me-1"></i> Đã sẵn sàng
+          </span>
+          <button type="button" class="btn btn-dark btn-sm rounded-pill px-4 py-1.5 fw-bold shadow-xs d-inline-flex align-items-center gap-1.5" id="btnSaveAndProceed">
+            <span>Lưu câu trả lời & Tiếp tục</span>
+            <i class="ph-bold ph-arrow-right"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SUBMISSION CONFIRMATION MODAL -->
+<div class="modal fade" id="submitExamModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content border-0 rounded-4 shadow">
+      <div class="modal-header border-0 pb-0">
+        <h5 class="modal-title fw-bold text-dark">Nộp Bài Thi IELTS Speaking</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body py-4 text-center">
+        <div class="rounded-circle bg-primary-subtle text-primary d-inline-flex align-items-center justify-content-center p-3 mb-3" style="width: 64px; height: 64px;">
+          <i class="ph-bold ph-certificate fs-2"></i>
+        </div>
+        <h6 class="fw-bold text-dark mb-2">Bạn có chắc chắn muốn nộp bài thi?</h6>
+        <p class="text-secondary small mb-3">
+          Hệ thống AI Chấm Điểm sẽ phân tích toàn bộ câu trả lời 3 Part theo rubric chuẩn quốc tế (Fluency, Lexical Resource, Grammar, Pronunciation) và cung cấp báo cáo kết quả chi tiết.
+        </p>
+        <div class="p-3 bg-light rounded-3 text-start small mb-0">
+          <div class="d-flex justify-content-between mb-1">
+            <span class="text-muted">Đề thi:</span>
+            <strong class="text-dark">{{ test.title }}</strong>
+          </div>
+          <div class="d-flex justify-content-between">
+            <span class="text-muted">Tổng thời gian thi:</span>
+            <strong class="text-dark" id="modalTimeSpentText">00:00</strong>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer border-0 pt-0 d-flex gap-2">
+        <button type="button" class="btn btn-light rounded-pill px-3.5 py-2 fw-semibold" data-bs-dismiss="modal">
+          Làm tiếp
+        </button>
+        <form method="POST" action="{{ url_for('exams.speaking_simulation_submit', submission_id=submission.id) }}" id="submitExamForm">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <input type="hidden" name="time_spent" id="inputFinalTimeSpent" value="0">
+          <button type="submit" class="btn btn-primary rounded-pill px-4 py-2 fw-bold shadow-sm" id="btnConfirmFinalSubmit">
+            Xác nhận nộp bài
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SUBMITTING LOADING MODAL -->
+<div class="modal fade" id="loadingModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-sm">
+    <div class="modal-content border-0 rounded-4 shadow p-4 text-center">
+      <div class="spinner-border text-primary mx-auto mb-3" role="status" style="width: 3rem; height: 3rem;">
+        <span class="visually-hidden">Loading...</span>
+      </div>
+      <h6 class="fw-bold text-dark mb-1">AI Đang Chấm Điểm...</h6>
+      <p class="text-secondary small mb-0">Phân tích 4 tiêu chí Fluency, Lexical, Grammar, Pronunciation...</p>
+    </div>
+  </div>
+</div>
+
+<style>
+.pulse-recording {
+  animation: pulseRecording 1.5s infinite;
+}
+@keyframes pulseRecording {
+  0% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.05); opacity: 0.8; }
+  100% { transform: scale(1); opacity: 1; }
+}
+.part-nav-btn.active {
+  background: #4f46e5 !important;
+  color: white !important;
+}
+</style>
+
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+  // Test Data from Backend
+  const topicsData = {{ topics_data|tojson|safe }} || [];
+  const savedAnswersMap = {{ saved_answers_map|tojson|safe }} || {};
+  const submissionId = {{ submission.id }};
+
+  // Build flattened question list
+  const flatQuestions = [];
+  topicsData.forEach(topic => {
+    const questions = topic.questions || [];
+    questions.forEach((q, qIdx) => {
+      flatQuestions.push({
+        topicId: topic.id,
+        part: topic.part,
+        partTitle: topic.topic_title,
+        cueCardPrompt: topic.cue_card_prompt,
+        prepTimeSeconds: topic.prep_time_seconds || 0,
+        responseTimeSeconds: topic.response_time_seconds || 30,
+        questionIndex: qIdx,
+        id: q.id,
+        question: q.question,
+        audioPrompt: q.audio_prompt || q.question,
+        modelAnswer: q.model_answer,
+        vocabHints: q.vocab_hints || []
+      });
+    });
+  });
+
+  let currentQIdx = 0;
+  let currentPart = 1;
+  let speakingSpeed = 1.0;
+  let totalTimeSeconds = 0;
+  let questionTimeSeconds = 0;
+  let totalTimerInterval = null;
+  let questionTimerInterval = null;
+
+  // Prep Timer state (Part 2)
+  let prepTimerInterval = null;
+  let prepSecondsRemaining = 60;
+
+  // MediaRecorder & Web Audio API
+  let mediaStream = null;
+  let mediaRecorder = null;
+  let recordedChunks = [];
+  let recordedAudioBase64 = "";
+  let isRecording = false;
+
+  let audioContext = null;
+  let analyserNode = null;
+  let animFrameId = null;
+
+  // Speech Recognition (STT)
+  let recognition = null;
+
+  // DOM Elements
+  const stagePartTitle = document.getElementById("stagePartTitle");
+  const questionTimeGuide = document.getElementById("questionTimeGuide");
+  const examinerQuestionText = document.getElementById("examinerQuestionText");
+  const examinerAudioText = document.getElementById("examinerAudioText");
+  const btnPlayExaminerAudio = document.getElementById("btnPlayExaminerAudio");
+  const btnReplayExaminerAudio = document.getElementById("btnReplayExaminerAudio");
+  const vocabHintsContent = document.getElementById("vocabHintsContent");
+  const questionCounterText = document.getElementById("questionCounterText");
+  const btnPrevQuestion = document.getElementById("btnPrevQuestion");
+  const btnNextQuestion = document.getElementById("btnNextQuestion");
+
+  const part2CueCardSection = document.getElementById("part2CueCardSection");
+  const cueCardTopicTitle = document.getElementById("cueCardTopicTitle");
+  const cueCardPromptList = document.getElementById("cueCardPromptList");
+  const btnStart60sPrep = document.getElementById("btnStart60sPrep");
+  const prepTimerDisplay = document.getElementById("prepTimerDisplay");
+  const part2NotepadInput = document.getElementById("part2NotepadInput");
+
+  const totalTimerDisplay = document.getElementById("totalTimerDisplay");
+  const questionTimerDisplay = document.getElementById("questionTimerDisplay");
+  const btnToggleRecording = document.getElementById("btnToggleRecording");
+  const recordBtnIcon = document.getElementById("recordBtnIcon");
+  const recordBtnText = document.getElementById("recordBtnText");
+  const btnPlayRecordedAudio = document.getElementById("btnPlayRecordedAudio");
+  const playAudioIcon = document.getElementById("playAudioIcon");
+  const playAudioText = document.getElementById("playAudioText");
+  const recordedAudioPlayer = document.getElementById("recordedAudioPlayer");
+  const candidateTranscriptInput = document.getElementById("candidateTranscriptInput");
+  const transcriptWordCount = document.getElementById("transcriptWordCount");
+  const btnSaveAndProceed = document.getElementById("btnSaveAndProceed");
+  const saveAnswerStatusText = document.getElementById("saveAnswerStatusText");
+
+  const partPills = document.querySelectorAll(".part-nav-btn");
+  const speedBtns = document.querySelectorAll(".btn-speed");
+
+  // Initialize Speech Recognition if supported
+  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (SpeechRecognition) {
+    recognition = new SpeechRecognition();
+    recognition.continuous = true;
+    recognition.interimResults = true;
+    recognition.lang = 'en-US';
+
+    recognition.onresult = function(event) {
+      let finalTranscript = '';
+      for (let i = 0; i < event.results.length; ++i) {
+        finalTranscript += event.results[i][0].transcript + ' ';
+      }
+      if (finalTranscript.trim()) {
+        candidateTranscriptInput.value = finalTranscript.trim();
+        updateWordCount();
+      }
+    };
+  }
+
+  // Speed selection
+  speedBtns.forEach(b => {
+    b.addEventListener("click", function() {
+      speedBtns.forEach(btn => btn.classList.remove("active"));
+      this.classList.add("active");
+      speakingSpeed = parseFloat(this.getAttribute("data-speed")) || 1.0;
+    });
+  });
+
+  // Total Timer
+  totalTimerInterval = setInterval(() => {
+    totalTimeSeconds++;
+    const m = String(Math.floor(totalTimeSeconds / 60)).padStart(2, '0');
+    const s = String(totalTimeSeconds % 60).padStart(2, '0');
+    if (totalTimerDisplay) totalTimerDisplay.innerText = `${m}:${s}`;
+  }, 1000);
+
+  // Question Timer
+  function resetQuestionTimer() {
+    clearInterval(questionTimerInterval);
+    questionTimeSeconds = 0;
+    if (questionTimerDisplay) questionTimerDisplay.innerText = "00:00";
+    questionTimerInterval = setInterval(() => {
+      questionTimeSeconds++;
+      const m = String(Math.floor(questionTimeSeconds / 60)).padStart(2, '0');
+      const s = String(questionTimeSeconds % 60).padStart(2, '0');
+      if (questionTimerDisplay) questionTimerDisplay.innerText = `${m}:${s}`;
+    }, 1000);
+  }
+
+  // Load Question View
+  function renderQuestion(idx) {
+    if (idx < 0 || idx >= flatQuestions.length) return;
+    currentQIdx = idx;
+    const q = flatQuestions[currentQIdx];
+    currentPart = q.part;
+
+    // Update Part Navigation Pills
+    partPills.forEach(btn => {
+      const p = parseInt(btn.getAttribute("data-part"));
+      if (p === currentPart) {
+        btn.classList.add("active");
+        btn.classList.remove("text-secondary");
+      } else {
+        btn.classList.remove("active");
+        btn.classList.add("text-secondary");
+      }
+    });
+
+    // Update Left Stage Info
+    stagePartTitle.innerText = `PART ${q.part} • QUESTION ${q.questionIndex + 1}/${flatQuestions.filter(x => x.part === q.part).length}`;
+    questionTimeGuide.innerText = `${q.responseTimeSeconds}s`;
+    examinerQuestionText.innerText = q.question;
+    questionCounterText.innerText = `${currentQIdx + 1} / ${flatQuestions.length}`;
+
+    // Vocabulary hints
+    if (q.vocabHints && q.vocabHints.length > 0) {
+      vocabHintsContent.innerHTML = q.vocabHints.map(h => `<span class="badge bg-purple-subtle text-purple border me-1.5 mb-1 px-2.5 py-1 rounded-pill" style="font-size: 0.76rem; background: #f3e8ff; color: #7e22ce;">${h}</span>`).join(" ");
+    } else {
+      vocabHintsContent.innerHTML = `<span class="text-muted">Không có gợi ý từ vựng cho câu này.</span>`;
+    }
+
+    // Part 2 Cue Card section toggle
+    if (q.part === 2) {
+      part2CueCardSection.classList.remove("d-none");
+      cueCardTopicTitle.innerText = q.partTitle;
+      cueCardPromptList.innerText = q.cueCardPrompt || q.question;
+    } else {
+      part2CueCardSection.classList.add("d-none");
+    }
+
+    // Load saved answer if any
+    const saveKey = `${q.part}_${q.questionIndex}`;
+    const saved = savedAnswersMap[saveKey];
+    if (saved) {
+      candidateTranscriptInput.value = saved.transcript || "";
+      if (q.part === 2 && saved.notes) {
+        part2NotepadInput.value = saved.notes;
+      }
+    } else {
+      candidateTranscriptInput.value = "";
+    }
+    updateWordCount();
+
+    // Reset recording & audio player state
+    stopRecording(false);
+    btnPlayRecordedAudio.disabled = true;
+    recordedAudioPlayer.src = "";
+    saveAnswerStatusText.innerHTML = `<i class="ph ph-check text-success me-1"></i> Sẵn sàng`;
+
+    resetQuestionTimer();
+
+    // Play examiner TTS automatically
+    playExaminerTTS(q.audioPrompt);
+  }
+
+  // Word count helper
+  function updateWordCount() {
+    const text = candidateTranscriptInput.value.trim();
+    const count = text ? text.split(/\s+/).length : 0;
+    transcriptWordCount.innerText = `${count} từ`;
+  }
+  candidateTranscriptInput.addEventListener("input", updateWordCount);
+
+  // Examiner TTS Playback
+  function playExaminerTTS(text) {
+    if ('speechSynthesis' in window) {
+      window.speechSynthesis.cancel();
+      const utter = new SpeechSynthesisUtterance(text);
+      utter.lang = 'en-US';
+      utter.rate = speakingSpeed;
+      utter.pitch = 1.0;
+
+      examinerAudioText.innerText = "Đang phát câu hỏi...";
+      utter.onend = function() {
+        examinerAudioText.innerText = "Nghe giám khảo hỏi";
+      };
+      utter.onerror = function() {
+        examinerAudioText.innerText = "Nghe giám khảo hỏi";
+      };
+      window.speechSynthesis.speak(utter);
+    }
+  }
+
+  btnPlayExaminerAudio.addEventListener("click", function() {
+    const q = flatQuestions[currentQIdx];
+    playExaminerTTS(q.audioPrompt);
+  });
+
+  btnReplayExaminerAudio.addEventListener("click", function() {
+    const q = flatQuestions[currentQIdx];
+    playExaminerTTS(q.audioPrompt);
+  });
+
+  // 60s Preparation Timer for Part 2
+  btnStart60sPrep.addEventListener("click", function() {
+    clearInterval(prepTimerInterval);
+    prepSecondsRemaining = 60;
+    btnStart60sPrep.disabled = true;
+    btnStart60sPrep.innerHTML = `<span class="spinner-border spinner-border-sm me-1"></span> Đang đếm ngược 60s...`;
+
+    prepTimerInterval = setInterval(() => {
+      prepSecondsRemaining--;
+      prepTimerDisplay.innerText = `${prepSecondsRemaining}s`;
+
+      if (prepSecondsRemaining <= 0) {
+        clearInterval(prepTimerInterval);
+        prepTimerDisplay.innerText = "HẾT GIỜ NHÁP";
+        btnStart60sPrep.disabled = false;
+        btnStart60sPrep.innerHTML = `<i class="ph-bold ph-check me-1"></i> Bắt đầu nói (120s)`;
+        
+        // Auto trigger recording for Part 2 long turn
+        if (!isRecording) {
+          startRecording();
+        }
+      }
+    }, 1000);
+  });
+
+  // Audio Recording Logic
+  async function startRecording() {
+    try {
+      mediaStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      audioContext = new (window.AudioContext || window.webkitAudioContext)();
+      const sourceNode = audioContext.createMediaStreamSource(mediaStream);
+      analyserNode = audioContext.createAnalyser();
+      analyserNode.fftSize = 256;
+      sourceNode.connect(analyserNode);
+
+      drawWaveform();
+
+      recordedChunks = [];
+      mediaRecorder = new MediaRecorder(mediaStream);
+      mediaRecorder.ondataavailable = e => {
+        if (e.data.size > 0) recordedChunks.push(e.data);
+      };
+
+      mediaRecorder.onstop = () => {
+        const audioBlob = new Blob(recordedChunks, { type: 'audio/webm' });
+        const audioUrl = URL.createObjectURL(audioBlob);
+        recordedAudioPlayer.src = audioUrl;
+        btnPlayRecordedAudio.disabled = false;
+
+        // Convert blob to Base64 for storing
+        const reader = new FileReader();
+        reader.readAsDataURL(audioBlob);
+        reader.onloadend = () => {
+          recordedAudioBase64 = reader.result;
+        };
+      };
+
+      mediaRecorder.start();
+      isRecording = true;
+
+      // STT start
+      if (recognition) {
+        try { recognition.start(); } catch(e){}
+      }
+
+      btnToggleRecording.classList.remove("btn-primary");
+      btnToggleRecording.classList.add("btn-danger");
+      recordBtnIcon.className = "ph-bold ph-stop-circle fs-5";
+      recordBtnText.innerText = "Dừng thu âm";
+      document.getElementById("recordingPulseIndicator").classList.remove("d-none");
+      document.getElementById("waveformIdleText").classList.add("d-none");
+
+    } catch (err) {
+      alert("Không thể truy cập microphone. Vui lòng cho phép quyền truy cập micro trong trình duyệt.");
+      console.error(err);
+    }
+  }
+
+  function stopRecording(saveBlob = true) {
+    if (mediaRecorder && mediaRecorder.state !== "inactive") {
+      mediaRecorder.stop();
+    }
+    if (mediaStream) {
+      mediaStream.getTracks().forEach(t => t.stop());
+    }
+    if (recognition) {
+      try { recognition.stop(); } catch(e){}
+    }
+    if (animFrameId) {
+      cancelAnimationFrame(animFrameId);
+    }
+    isRecording = false;
+
+    btnToggleRecording.classList.remove("btn-danger");
+    btnToggleRecording.classList.add("btn-primary");
+    recordBtnIcon.className = "ph-bold ph-microphone fs-5";
+    recordBtnText.innerText = "Bắt đầu thu âm";
+    document.getElementById("recordingPulseIndicator").classList.add("d-none");
+    document.getElementById("waveformIdleText").classList.remove("d-none");
+  }
+
+  btnToggleRecording.addEventListener("click", function() {
+    if (!isRecording) {
+      startRecording();
+    } else {
+      stopRecording(true);
+    }
+  });
+
+  // Play candidate recorded audio
+  btnPlayRecordedAudio.addEventListener("click", function() {
+    if (!recordedAudioPlayer.src) return;
+    if (recordedAudioPlayer.paused) {
+      recordedAudioPlayer.play();
+      playAudioIcon.className = "ph-bold ph-pause fs-5";
+      playAudioText.innerText = "Tạm dừng";
+      recordedAudioPlayer.onended = () => {
+        playAudioIcon.className = "ph-bold ph-play fs-5";
+        playAudioText.innerText = "Nghe lại bản thu";
+      };
+    } else {
+      recordedAudioPlayer.pause();
+      playAudioIcon.className = "ph-bold ph-play fs-5";
+      playAudioText.innerText = "Nghe lại bản thu";
+    }
+  });
+
+  // Draw Audio Waveform
+  function drawWaveform() {
+    const canvas = document.getElementById("speakingWaveformCanvas");
+    if (!canvas || !analyserNode) return;
+    const ctx = canvas.getContext("2d");
+    const bufferLength = analyserNode.frequencyBinCount;
+    const dataArray = new Uint8Array(bufferLength);
+
+    function renderFrame() {
+      animFrameId = requestAnimationFrame(renderFrame);
+      analyserNode.getByteTimeDomainData(dataArray);
+
+      ctx.fillStyle = '#0f172a';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      ctx.lineWidth = 2.5;
+      ctx.strokeStyle = '#6366f1';
+      ctx.beginPath();
+
+      const sliceWidth = canvas.width * 1.0 / bufferLength;
+      let x = 0;
+
+      for (let i = 0; i < bufferLength; i++) {
+        const v = dataArray[i] / 128.0;
+        const y = v * canvas.height / 2;
+
+        if (i === 0) {
+          ctx.moveTo(x, y);
+        } else {
+          ctx.lineTo(x, y);
+        }
+        x += sliceWidth;
+      }
+
+      ctx.lineTo(canvas.width, canvas.height / 2);
+      ctx.stroke();
+    }
+    renderFrame();
+  }
+
+  // Save current question answer asynchronously
+  async function saveCurrentAnswer() {
+    const q = flatQuestions[currentQIdx];
+    saveAnswerStatusText.innerHTML = `<span class="spinner-border spinner-border-sm text-primary me-1"></span> Đang lưu...`;
+
+    const payload = {
+      part: q.part,
+      topic_id: q.topicId,
+      question_index: q.questionIndex,
+      question_text: q.question,
+      candidate_transcript: candidateTranscriptInput.value.trim(),
+      candidate_notes: q.part === 2 ? part2NotepadInput.value.trim() : "",
+      audio_data_url: recordedAudioBase64 || ""
+    };
+
+    try {
+      const res = await fetch(`/exams/speaking/room/${submissionId}/save-answer`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-CSRFToken": "{{ csrf_token() }}"
+        },
+        body: JSON.stringify(payload)
+      });
+      const data = await res.json();
+      if (data.status === "success") {
+        saveAnswerStatusText.innerHTML = `<i class="ph-bold ph-check text-success me-1"></i> Đã lưu lúc ${new Date().toLocaleTimeString()}`;
+        savedAnswersMap[`${q.part}_${q.questionIndex}`] = {
+          transcript: payload.candidate_transcript,
+          notes: payload.candidate_notes,
+          has_audio: Boolean(payload.audio_data_url)
+        };
+      }
+    } catch (err) {
+      saveAnswerStatusText.innerHTML = `<i class="ph ph-warning text-danger me-1"></i> Lỗi lưu câu`;
+    }
+  }
+
+  btnSaveAndProceed.addEventListener("click", async function() {
+    await saveCurrentAnswer();
+    if (currentQIdx < flatQuestions.length - 1) {
+      renderQuestion(currentQIdx + 1);
+    } else {
+      // Last question reached
+      const submitModal = new bootstrap.Modal(document.getElementById("submitExamModal"));
+      const m = String(Math.floor(totalTimeSeconds / 60)).padStart(2, '0');
+      const s = String(totalTimeSeconds % 60).padStart(2, '0');
+      document.getElementById("modalTimeSpentText").innerText = `${m}:${s}`;
+      document.getElementById("inputFinalTimeSpent").value = totalTimeSeconds;
+      submitModal.show();
+    }
+  });
+
+  btnPrevQuestion.addEventListener("click", async function() {
+    if (currentQIdx > 0) {
+      await saveCurrentAnswer();
+      renderQuestion(currentQIdx - 1);
+    }
+  });
+
+  btnNextQuestion.addEventListener("click", async function() {
+    if (currentQIdx < flatQuestions.length - 1) {
+      await saveCurrentAnswer();
+      renderQuestion(currentQIdx + 1);
+    }
+  });
+
+  // Part Pill switching
+  partPills.forEach(pill => {
+    pill.addEventListener("click", async function() {
+      const targetPart = parseInt(this.getAttribute("data-part"));
+      const targetIdx = flatQuestions.findIndex(x => x.part === targetPart);
+      if (targetIdx !== -1) {
+        await saveCurrentAnswer();
+        renderQuestion(targetIdx);
+      }
+    });
+  });
+
+  // Open Submit Modal button
+  document.getElementById("btnOpenSubmitModal").addEventListener("click", async function() {
+    await saveCurrentAnswer();
+    const submitModal = new bootstrap.Modal(document.getElementById("submitExamModal"));
+    const m = String(Math.floor(totalTimeSeconds / 60)).padStart(2, '0');
+    const s = String(totalTimeSeconds % 60).padStart(2, '0');
+    document.getElementById("modalTimeSpentText").innerText = `${m}:${s}`;
+    document.getElementById("inputFinalTimeSpent").value = totalTimeSeconds;
+    submitModal.show();
+  });
+
+  // Final submit handler with loading screen
+  document.getElementById("submitExamForm").addEventListener("submit", function() {
+    const loadingModal = new bootstrap.Modal(document.getElementById("loadingModal"));
+    loadingModal.show();
+  });
+
+  // Initial question load
+  if (flatQuestions.length > 0) {
+    renderQuestion(0);
+  }
+});
+</script>
+{% endblock %}

@@ -125,3 +125,89 @@ class ExamAnswerDetail(db.Model):
     
     submission = db.relationship('ExamSubmission', backref=db.backref('details', cascade='all, delete-orphan'))
     question = db.relationship('ExamQuestion')
+
+
+# ==========================================
+# IELTS SPEAKING SIMULATION SCHEMA (Feature 8.1)
+# ==========================================
+
+class IeltsSpeakingTest(db.Model):
+    __tablename__ = "ielts_speaking_test"
+
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(255), nullable=False)
+    description = db.Column(db.Text, nullable=True)
+    target_band = db.Column(db.String(20), nullable=False, default="6.5 - 7.5")
+    difficulty = db.Column(db.String(20), nullable=False, default="Medium")
+    duration_minutes = db.Column(db.Integer, nullable=False, default=15)
+    is_published = db.Column(db.Boolean, nullable=False, default=True)
+    is_active = db.Column(db.Boolean, nullable=False, default=True)
+    created_at = db.Column(db.DateTime(timezone=True), default=now, nullable=False)
+    updated_at = db.Column(db.DateTime(timezone=True), default=now, onupdate=now, nullable=False)
+
+    topics = db.relationship(
+        "IeltsSpeakingTopic",
+        backref="test",
+        cascade="all, delete-orphan",
+        order_by="IeltsSpeakingTopic.part, IeltsSpeakingTopic.order"
+    )
+    submissions = db.relationship("IeltsSpeakingSubmission", backref="test", cascade="all, delete-orphan")
+
+
+class IeltsSpeakingTopic(db.Model):
+    __tablename__ = "ielts_speaking_topic"
+
+    id = db.Column(db.Integer, primary_key=True)
+    test_id = db.Column(db.Integer, db.ForeignKey("ielts_speaking_test.id"), nullable=False, index=True)
+    part = db.Column(db.Integer, nullable=False, index=True)  # 1, 2, or 3
+    topic_title = db.Column(db.String(255), nullable=False)
+    cue_card_prompt = db.Column(db.Text, nullable=True)  # Part 2 prompt with bullet points
+    questions = db.Column(db.JSON, nullable=True)  # [{"id": 1, "question": "...", "model_answer": "...", "vocab_hints": [...]}]
+    prep_time_seconds = db.Column(db.Integer, nullable=False, default=0)  # 60s for Part 2
+    response_time_seconds = db.Column(db.Integer, nullable=False, default=30)  # 30s Part 1, 120s Part 2, 60s Part 3
+    order = db.Column(db.Integer, nullable=False, default=1)
+
+
+class IeltsSpeakingSubmission(db.Model):
+    __tablename__ = "ielts_speaking_submission"
+
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False, index=True)
+    test_id = db.Column(db.Integer, db.ForeignKey("ielts_speaking_test.id"), nullable=False, index=True)
+    overall_band = db.Column(db.Float, nullable=False, default=0.0)
+    fluency_score = db.Column(db.Float, nullable=False, default=0.0)
+    lexical_score = db.Column(db.Float, nullable=False, default=0.0)
+    grammar_score = db.Column(db.Float, nullable=False, default=0.0)
+    pronunciation_score = db.Column(db.Float, nullable=False, default=0.0)
+    examiner_feedback = db.Column(db.Text, nullable=True)
+    detailed_analysis = db.Column(db.JSON, nullable=True)  # strengths, weaknesses, tips, upgraded_vocab
+    status = db.Column(db.String(50), nullable=False, default="IN_PROGRESS")  # IN_PROGRESS, COMPLETED, PENDING
+    time_spent = db.Column(db.Integer, nullable=False, default=0)  # in seconds
+    created_at = db.Column(db.DateTime(timezone=True), default=now, nullable=False)
+    completed_at = db.Column(db.DateTime(timezone=True), nullable=True)
+
+    user = db.relationship("User", backref=db.backref("ielts_speaking_submissions", lazy="dynamic"))
+    answers = db.relationship("IeltsSpeakingAnswer", backref="submission", cascade="all, delete-orphan")
+
+    __table_args__ = (
+        db.Index("idx_ielts_speaking_sub_user_created", "user_id", "created_at"),
+    )
+
+
+class IeltsSpeakingAnswer(db.Model):
+    __tablename__ = "ielts_speaking_answer"
+
+    id = db.Column(db.Integer, primary_key=True)
+    submission_id = db.Column(db.Integer, db.ForeignKey("ielts_speaking_submission.id"), nullable=False, index=True)
+    topic_id = db.Column(db.Integer, db.ForeignKey("ielts_speaking_topic.id"), nullable=True, index=True)
+    part = db.Column(db.Integer, nullable=False)  # 1, 2, or 3
+    question_index = db.Column(db.Integer, nullable=False, default=0)
+    question_text = db.Column(db.Text, nullable=True)
+    candidate_transcript = db.Column(db.Text, nullable=True)
+    audio_data_url = db.Column(db.Text, nullable=True)  # Audio recording data or audio base64
+    candidate_notes = db.Column(db.Text, nullable=True)  # Notes taken during 60s prep
+    ai_feedback = db.Column(db.Text, nullable=True)
+    score = db.Column(db.Float, nullable=False, default=0.0)
+
+    topic = db.relationship("IeltsSpeakingTopic")
+

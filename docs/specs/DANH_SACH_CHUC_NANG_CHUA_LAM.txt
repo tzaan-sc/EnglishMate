@@ -294,15 +294,21 @@ MODULE 7. QUIZ SYSTEM (HỆ THỐNG KIỂM TRA) — 1 TÍNH NĂNG CHƯA LÀM
 MODULE 8. EXAM SYSTEM (HỆ THỐNG ĐỀ THI) — 4 TÍNH NĂNG CHƯA LÀM
 ----------------------------------------------------------------------------------------------------
 
-[ ] 8.1. IELTS Speaking - Phòng thi IELTS Speaking mô phỏng (Mục 8.3)
+[x] 8.1. IELTS Speaking - Phòng thi IELTS Speaking mô phỏng (Mục 8.3)
 - Hiện trạng trong EnglishMate_Features.txt:
   Hệ thống đã có đề thi IELTS Listening (có audio), IELTS Reading (chia đôi màn hình đọc), IELTS Writing Task 2 (chấm luận AI).
-- Phần còn thiếu chưa làm:
-  Chưa có phòng thi IELTS Speaking theo chuẩn 3 Part (Part 1: Giới thiệu & phỏng vấn 4-5 câu; Part 2: Cue Card 1 phút chuẩn bị, 2 phút nói; Part 3: Câu hỏi thảo luận chuyên sâu).
-- Giải pháp kỹ thuật cần làm:
-  + Tạo bảng `IeltsSpeakingTest` và `IeltsSpeakingTopic`.
-  + Xây dựng giao diện phòng thi có video/audio giám khảo hỏi mẫu, đồng hồ đếm ngược chuẩn bị 60s, và tự động kích hoạt micro ghi âm bài nói của thí sinh.
-- Mức độ ưu tiên: RẤT CAO (Phục vụ đầy đủ chuẩn IELTS 4 kỹ năng)
+- Phần đã hoàn thiện:
+  + Tạo các bảng cơ sở dữ liệu `IeltsSpeakingTest`, `IeltsSpeakingTopic`, `IeltsSpeakingSubmission`, `IeltsSpeakingAnswer`.
+  + Xây dựng giao diện phòng thi Speaking mô phỏng chuẩn 3 Part quốc tế (`speaking_room.html`):
+    * Giám khảo AI ảo (Dr. Sarah Jenkins) với tính năng phát âm thanh câu hỏi TTS (SpeechSynthesis), tùy chỉnh tốc độ 0.8x/1.0x/1.2x và nút nghe lại.
+    * Part 1: Giới thiệu & phỏng vấn các câu hỏi quen thuộc kèm gợi ý từ vựng Band 7.5+.
+    * Part 2: Cue Card Booklet có đồng hồ đếm ngược 60s chuẩn bị nháp (tự động chuông báo & lưu sổ tay nháp) kết hợp 120s nói liên tục.
+    * Part 3: Thảo luận chuyên sâu với các câu hỏi phân tích đa chiều.
+    * Bàn thu âm thí sinh với Web Audio API Waveform Canvas trực quan hóa sóng âm, micro ghi âm `MediaRecorder`, nhận diện giọng nói Speech-to-Text realtime và nghe lại bản thu.
+  + Module chấm điểm AI chuẩn Rubric 4 tiêu chí (`speaking_evaluator.py`): Fluency & Coherence, Lexical Resource, Grammatical Range & Accuracy, Pronunciation, quy đổi Overall Band Score (0 - 9.0) và bảng từ vựng / collocations nâng cấp Band 8+.
+  + Trang kết quả & Scorecard chi tiết (`speaking_result.html`) và thư viện đề thi Speaking (`speaking_list.html`).
+  + Đã tích hợp vào Lịch sử kiểm tra (Test History) và viết trọn bộ 5 unit test trong `tests/test_ielts_speaking.py` (100% pass).
+- Trạng thái: ĐÃ HOÀN THÀNH (100% test passed)
 
 [ ] 8.2. THPT Exam - Ngân hàng đề thi chuẩn cấu trúc THPT Quốc Gia (Mục 8.4)
 - Hiện trạng trong EnglishMate_Features.txt:
