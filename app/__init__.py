@@ -130,8 +130,75 @@ def create_app(config_object=Config):
                         from app.backend.learning.models import LessonRating
                         LessonRating.__table__.create(conn)
                         conn.commit()
+                    if "system_setting" not in tables:
+                        from app.backend.admin.models import SystemSetting
+                        SystemSetting.__table__.create(conn)
+                        conn.commit()
         except Exception:
             pass
+
+    @app.before_request
+    def check_maintenance_mode():
+        """
+        Intercepts incoming requests during System Maintenance Mode.
+        - Allows Admin users (current_user.is_admin) to bypass and access the entire system.
+        - Excludes static files, auth login/logout, health checks, and dev live reload.
+        - Returns 503 Maintenance Page (or JSON error) for all other users.
+        """
+        from flask import request, render_template, g, jsonify
+        from flask_login import current_user
+
+        path = request.path
+        if (
+            path.startswith("/static/")
+            or path.startswith("/auth/login")
+            or path.startswith("/auth/logout")
+            or path.startswith("/_dev_live_reload_check")
+            or path == "/favicon.ico"
+        ):
+            return None
+
+        is_admin = current_user.is_authenticated and (getattr(current_user, "is_admin", False) or getattr(current_user, "role", "") == "ADMIN")
+        if is_admin:
+            return None
+
+        try:
+            from .backend.admin.models import SystemSetting
+            if not hasattr(g, "_is_maintenance_mode"):
+                g._is_maintenance_mode = SystemSetting.get_bool_setting("MAINTENANCE_MODE", default=False)
+                g._maintenance_message = SystemSetting.get_setting(
+                    "MAINTENANCE_MESSAGE",
+                    default="Hệ thống EnglishMate đang được bảo trì định kỳ để nâng cấp hiệu năng và cơ sở dữ liệu."
+                )
+                g._maintenance_estimated_end = SystemSetting.get_setting("MAINTENANCE_ESTIMATED_END", default="")
+
+            if g._is_maintenance_mode:
+                if request.is_json or path.startswith("/api/"):
+                    return jsonify({
+                        "error": "maintenance_mode",
+                        "message": g._maintenance_message,
+                        "estimated_end": g._maintenance_estimated_end
+                    }), 503
+                return render_template(
+                    "errors/maintenance.html",
+                    message=g._maintenance_message,
+                    estimated_end=g._maintenance_estimated_end
+                ), 503
+        except Exception:
+            pass
+
+    @app.context_processor
+    def inject_maintenance_mode():
+        from flask import has_request_context, g
+        if not has_request_context():
+            return {"is_system_in_maintenance": False}
+        if not hasattr(g, "_is_maintenance_mode"):
+            try:
+                from .backend.admin.models import SystemSetting
+                g._is_maintenance_mode = SystemSetting.get_bool_setting("MAINTENANCE_MODE", default=False)
+            except Exception:
+                g._is_maintenance_mode = False
+        return {"is_system_in_maintenance": g._is_maintenance_mode}
 
     @app.context_processor
     def inject_streak_event():
@@ -198,6 +265,13 @@ def create_app(config_object=Config):
     @app.errorhandler(404)
     def not_found(_error):
         return render_template("errors/404.html"), 404
+
+    @app.errorhandler(503)
+    def maintenance_error(_error):
+        from .backend.admin.models import SystemSetting
+        msg = SystemSetting.get_setting("MAINTENANCE_MESSAGE", "Hệ thống EnglishMate đang được bảo trì định kỳ.")
+        est = SystemSetting.get_setting("MAINTENANCE_ESTIMATED_END", "")
+        return render_template("errors/maintenance.html", message=msg, estimated_end=est), 503
 
     @app.route("/_dev_live_reload_check")
     def dev_live_reload_check():

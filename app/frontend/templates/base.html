@@ -19,6 +19,17 @@
   <link rel="stylesheet" href="{{ url_for('static', filename='css/app.css') }}?v=2.2">
 </head>
 <body class="{% block body_class %}{% endblock %}">
+  {% if current_user.is_authenticated and current_user.is_admin and is_system_in_maintenance %}
+  <!-- Admin Maintenance Mode Warning Banner -->
+  <div class="py-1.5 px-3 text-center fw-bold small d-flex align-items-center justify-content-center gap-2 border-bottom shadow-2xs" style="background: linear-gradient(90deg, #fef08a 0%, #fde047 100%); color: #713f12; z-index: 1050; position: relative;">
+    <i class="ph-bold ph-warning-octagon text-danger fs-6"></i>
+    <span>CHẾ ĐỘ BẢO TRÌ ĐANG BẬT: Toàn bộ học viên truy cập sẽ nhận trang 503 Maintenance.</span>
+    <a href="{{ url_for('admin.dashboard') }}" class="btn btn-dark rounded-pill px-2.5 py-0.5 ms-1 fw-bold text-white text-decoration-none" style="font-size: 0.72rem;">
+      Quản lý bảo trì
+    </a>
+  </div>
+  {% endif %}
+
   {% if current_user.is_authenticated %}
     <!-- Layout for authenticated users: Full-width Top header + Content area with sidebar below -->
     <div class="d-flex flex-column min-vh-100">

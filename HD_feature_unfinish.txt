@@ -432,7 +432,7 @@ MODULE 10. ADMIN SYSTEM (HỆ THỐNG QUẢN TRỊ) — 7 TÍNH NĂNG CHƯA LÀM
   + Tạo route `/admin/system/backup` cho phép tải file sao lưu về máy.
 - Mức độ ưu tiên: Cao (High)
 
-[ ] 10.7. Maintenance Mode - Chế độ bảo trì hệ thống (Mục 10.7)
+[x] 10.7. Maintenance Mode - Chế độ bảo trì hệ thống (Mục 10.7)
 - Hiện trạng trong EnglishMate_Features.txt:
   Chưa có cơ chế chuyển hệ thống sang trạng thái bảo trì.
 - Phần còn thiếu chưa làm:
@@ -630,7 +630,7 @@ GIAI ĐOẠN 2: TỐI ƯU QUẢN TRỊ ADMIN & CHĂM SÓC HỌC VIÊN (ADMIN CMS
 (Thời gian đề xuất: 2 tuần | Mục tiêu: Tự động hóa vận hành và giữ chân người học)
 ----------------------------------------------------------------------------------------------------
 1. [ ] Feature Flags: Giao diện Web Admin bật/tắt nhanh các tính năng linh hoạt.
-2. [ ] Maintenance Mode: Chế độ bảo trì hệ thống trả về mã 503 cho người dùng thường.
+2. [x] Maintenance Mode: Chế độ bảo trì hệ thống trả về mã 503 cho người dùng thường.
 3. [ ] Vocabulary Push Notification: Thông báo trên trình duyệt nhắc học từ vựng đến hạn SRS.
 4. [ ] Daily Goal Email Reminder: Email tự động nhắc nhở hoàn thành mục tiêu ngày lúc 20:00.
 5. [ ] Backup & Restore Settings: Giao diện quản lý sao lưu CSDL một chạm trong Admin.

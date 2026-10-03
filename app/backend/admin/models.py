@@ -62,3 +62,44 @@ class AuditLog(db.Model):
         if not self.created_at:
             return None
         return self.created_at + timedelta(hours=7)
+
+
+class SystemSetting(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    key = db.Column(db.String(100), unique=True, nullable=False, index=True)
+    value = db.Column(db.Text, nullable=True)
+    description = db.Column(db.String(255), nullable=True)
+    updated_at = db.Column(db.DateTime(timezone=True), default=now, onupdate=now, nullable=False)
+
+    @classmethod
+    def get_setting(cls, key, default=None):
+        try:
+            item = cls.query.filter_by(key=key).first()
+            return item.value if item and item.value is not None else default
+        except Exception:
+            return default
+
+    @classmethod
+    def get_bool_setting(cls, key, default=False):
+        val = cls.get_setting(key, None)
+        if val is None:
+            return default
+        return str(val).strip().lower() in ("true", "1", "yes", "on")
+
+    @classmethod
+    def set_setting(cls, key, value, description=None):
+        item = cls.query.filter_by(key=key).first()
+        if not item:
+            item = cls(key=key, value=str(value) if value is not None else None, description=description)
+            db.session.add(item)
+        else:
+            item.value = str(value) if value is not None else None
+            if description:
+                item.description = description
+        try:
+            db.session.commit()
+        except Exception:
+            db.session.rollback()
+            raise
+        return item
+

@@ -1,4 +1,4 @@
-﻿from tests.conftest import login
+from tests.conftest import login
 
 
 def test_user_cannot_access_admin(client):
@@ -308,5 +308,89 @@ def test_admin_vocabulary_and_lesson_upload_pages(client, app):
         assert les is not None
         assert les.skill == "Speaking"
         assert les.level == "B2"
+
+
+def test_maintenance_mode_admin_toggling_and_api(client, app):
+    from app.backend.admin.models import SystemSetting, AuditLog
+    login(client, "admin@test.com", "admin123")
+
+    # 1. GET maintenance status
+    res = client.get("/admin/system/maintenance")
+    assert res.status_code == 200
+    data = res.get_json()
+    assert "is_enabled" in data
+
+    # 2. POST to enable maintenance mode via JSON
+    res = client.post("/admin/system/maintenance", json={
+        "maintenance_mode": True,
+        "maintenance_message": "Hệ thống đang bảo trì nâng cấp máy chủ.",
+        "maintenance_estimated_end": "23:00"
+    })
+    assert res.status_code == 200
+    data = res.get_json()
+    assert data["success"] is True
+    assert data["is_enabled"] is True
+
+    with app.app_context():
+        assert SystemSetting.get_bool_setting("MAINTENANCE_MODE") is True
+        assert SystemSetting.get_setting("MAINTENANCE_MESSAGE") == "Hệ thống đang bảo trì nâng cấp máy chủ."
+        assert SystemSetting.get_setting("MAINTENANCE_ESTIMATED_END") == "23:00"
+        audit = AuditLog.query.filter_by(action="UPDATE_MAINTENANCE_MODE").order_by(AuditLog.id.desc()).first()
+        assert audit is not None
+        assert "Bật" in audit.details
+
+    # 3. Disable maintenance mode
+    res = client.post("/admin/system/maintenance", data={
+        "maintenance_mode": "0",
+        "maintenance_message": "Bình thường"
+    }, follow_redirects=True)
+    assert res.status_code == 200
+
+    with app.app_context():
+        assert SystemSetting.get_bool_setting("MAINTENANCE_MODE") is False
+
+
+def test_maintenance_mode_blocks_learners_and_allows_admin(client, app):
+    from app.backend.admin.models import SystemSetting
+    
+    # 1. Set maintenance mode ON in DB
+    with app.app_context():
+        SystemSetting.set_setting("MAINTENANCE_MODE", "true")
+        SystemSetting.set_setting("MAINTENANCE_MESSAGE", "Bảo trì định kỳ máy chủ")
+        SystemSetting.set_setting("MAINTENANCE_ESTIMATED_END", "30 phút nữa")
+
+    # 2. Unauthenticated visitor accessing / receives 503 Maintenance page
+    client.get("/auth/logout")  # ensure logged out
+    res = client.get("/")
+    assert res.status_code == 503
+    html = res.get_data(as_text=True)
+    assert "Hệ Thống Đang Bảo Trì" in html or "503" in html
+    assert "Bảo trì định kỳ máy chủ" in html
+
+    # 3. Logged-in regular student accessing /lessons receives 503
+    login(client, "student@test.com", "student123")
+    res = client.get("/lessons")
+    assert res.status_code == 503
+
+    # 4. Login page /auth/login remains accessible so admin can log in
+    res_login = client.get("/auth/login")
+    assert res_login.status_code == 200
+
+    # 5. Logged-in admin can access all pages normally (200 OK)
+    login(client, "admin@test.com", "admin123")
+    res_admin_dash = client.get("/admin")
+    assert res_admin_dash.status_code == 200
+    res_lessons = client.get("/lessons")
+    assert res_lessons.status_code == 200
+    assert "CHẾ ĐỘ BẢO TRÌ ĐANG BẬT" in res_admin_dash.get_data(as_text=True)
+
+    # 6. Turn OFF maintenance mode and verify student can access again
+    with app.app_context():
+        SystemSetting.set_setting("MAINTENANCE_MODE", "false")
+
+    login(client, "student@test.com", "student123")
+    res_student_ok = client.get("/lessons")
+    assert res_student_ok.status_code == 200
+
 
 

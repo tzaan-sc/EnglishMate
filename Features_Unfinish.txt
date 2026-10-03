@@ -303,10 +303,10 @@ MODULE: 10. ADMIN SYSTEM (HỆ THỐNG QUẢN TRỊ) (7 tính năng chưa làm)
    - Mô tả yêu cầu: Giao diện quản lý sao lưu dữ liệu tự động định kỳ (chọn giờ sao lưu, lưu vào thư mục dự phòng hoặc đám mây).
    - Đối chiếu hiện trạng: Hiện sao lưu đang phải thực hiện thủ công ở mức tệp tin cơ sở dữ liệu.
 
-33. [ ] Maintenance Mode - Chế độ bảo trì
+33. [x] Maintenance Mode - Chế độ bảo trì
    - Mức độ ưu tiên: Trung bình
    - Mô tả yêu cầu: Nút chuyển đổi hệ thống sang Chế độ bảo trì (Maintenance Mode - HTTP 503) kèm thông báo cho người dùng khi admin nâng cấp.
-   - Đối chiếu hiện trạng: Chưa có middleware bảo trì toàn trang.
+   - Đối chiếu hiện trạng: Đã có middleware bảo trì toàn trang, SystemSetting model, trang 503 glassmorphism, và Admin control toggle.
 
 
 ====================================================================================================

@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+{% block title %}Hệ Thống Đang Bảo Trì · EnglishMate (503){% endblock %}
+
+{% block content %}
+<div class="container-fluid min-vh-75 d-flex align-items-center justify-content-center py-5">
+  <div class="card card-modern p-4 p-md-5 text-center shadow-lg border-0 position-relative overflow-hidden" 
+       style="max-width: 680px; width: 100%; border-radius: 28px; background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(248, 250, 252, 0.9) 100%); backdrop-filter: blur(16px); border: 1.5px solid rgba(249, 115, 22, 0.2) !important;">
+
+    <!-- Background glowing ambient halo -->
+    <div class="position-absolute top-0 start-50 translate-middle rounded-circle pointer-events-none" 
+         style="width: 320px; height: 320px; background: radial-gradient(circle, rgba(249, 115, 22, 0.15) 0%, rgba(255, 255, 255, 0) 70%); z-index: 0;"></div>
+
+    <div class="position-relative" style="z-index: 1;">
+      <!-- Maintenance Animated Icon -->
+      <div class="d-inline-flex align-items-center justify-content-center mb-4 position-relative">
+        <div class="rounded-circle d-flex align-items-center justify-content-center shadow-sm"
+             style="width: 100px; height: 100px; background: linear-gradient(135deg, #fff7ed 0%, #ffedd5 100%); border: 2.5px solid #fed7aa;">
+          <i class="ph-duotone ph-wrench" style="font-size: 3.2rem; color: #ea580c;"></i>
+        </div>
+        <span class="position-absolute bottom-0 end-0 badge rounded-pill bg-warning text-dark border border-2 border-white fw-bold px-2.5 py-1 shadow-sm" style="font-size: 0.76rem;">
+          503
+        </span>
+      </div>
+
+      <!-- Badge Status -->
+      <div class="mb-3">
+        <span class="badge rounded-pill px-3 py-1.5 fw-bold d-inline-flex align-items-center gap-1.5 shadow-2xs" 
+              style="background: #ffedd5; color: #c2410c; border: 1px solid #fed7aa; font-size: 0.82rem;">
+          <span class="spinner-grow spinner-grow-sm text-warning" role="status" style="width: 8px; height: 8px;"></span>
+          <span>HỆ THỐNG ĐANG BẢO TRÌ NÂNG CẤP</span>
+        </span>
+      </div>
+
+      <!-- Main Headline -->
+      <h2 class="fw-800 text-dark mb-2" style="letter-spacing: -0.02em; font-size: 2rem;">
+        Chúng tôi sẽ trở lại ngay!
+      </h2>
+
+      <!-- Description Message -->
+      <p class="text-secondary fs-6 mb-4 mx-auto" style="max-width: 520px; line-height: 1.6;">
+        {{ message or 'Hệ thống EnglishMate đang được bảo trì định kỳ để nâng cấp hiệu năng máy chủ và cơ sở dữ liệu. Vui lòng quay lại sau ít phút.' }}
+      </p>
+
+      {% if estimated_end %}
+      <!-- Estimated Time Pill -->
+      <div class="d-inline-flex align-items-center gap-2 px-3.5 py-2 rounded-4 mb-4" style="background: rgba(241, 245, 249, 0.8); border: 1px dashed #cbd5e1;">
+        <i class="ph-bold ph-clock-countdown text-primary fs-5"></i>
+        <span class="small text-dark fw-semibold">Thời gian dự kiến hoàn tất: <strong class="text-primary">{{ estimated_end }}</strong></span>
+      </div>
+      {% endif %}
+
+      <!-- Action Buttons -->
+      <div class="d-flex flex-column flex-sm-row justify-content-center align-items-center gap-2.5 pt-2">
+        <button type="button" onclick="window.location.reload();" class="btn btn-primary rounded-pill px-4 py-2.5 fw-bold shadow-sm d-inline-flex align-items-center gap-2" style="background: linear-gradient(135deg, #f97316 0%, #ea580c 100%); border: none;">
+          <i class="ph-bold ph-arrows-clockwise fs-6"></i>
+          <span>Kiểm tra lại / Tải lại trang</span>
+        </button>
+        <a href="{{ url_for('auth.login') }}" class="btn btn-outline-secondary rounded-pill px-4 py-2.5 fw-bold d-inline-flex align-items-center gap-2">
+          <i class="ph-bold ph-shield-check fs-6"></i>
+          <span>Đăng nhập Quản trị viên</span>
+        </a>
+      </div>
+
+      <!-- Helpful Notice -->
+      <div class="mt-4 pt-3 border-top text-muted small" style="border-color: rgba(226, 232, 240, 0.8) !important; font-size: 0.78rem;">
+        <i class="ph-bold ph-info me-1"></i>
+        <span>Nếu bạn là Quản trị viên, vui lòng đăng nhập tài khoản Admin để tiếp tục truy cập và quản lý hệ thống.</span>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

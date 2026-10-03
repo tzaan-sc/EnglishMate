@@ -13,7 +13,7 @@ from ..learning.models import Lesson, Question, QuizAttempt, Vocabulary, Grammar
 from . import bp
 from .forms import ConfirmForm, LessonForm, VocabularyForm
 from .importer import parse_and_validate_excel, parse_and_validate_file, commit_import_records, CONTENT_SCHEMAS
-from .models import AuditLog, Permission, Role, RolePermission, UserRole
+from .models import AuditLog, Permission, Role, RolePermission, UserRole, SystemSetting
 from .utils import log_audit_action, permission_required, has_permission
 
 
@@ -31,9 +31,20 @@ def admin_required(view):
 @bp.get("/")
 @admin_required
 def dashboard():
-    stats = {"users": User.query.count(), "lessons": Lesson.query.filter_by(is_active=True).count(),
-             "words": Vocabulary.query.count(), "questions": Question.query.count(), "attempts": QuizAttempt.query.count()}
-    return render_template("admin/dashboard.html", stats=stats)
+    stats = {
+        "users": User.query.count(),
+        "lessons": Lesson.query.filter_by(is_active=True).count(),
+        "words": Vocabulary.query.count(),
+        "questions": Question.query.count(),
+        "attempts": QuizAttempt.query.count()
+    }
+    maintenance_info = {
+        "is_enabled": SystemSetting.get_bool_setting("MAINTENANCE_MODE", default=False),
+        "message": SystemSetting.get_setting("MAINTENANCE_MESSAGE", default="Hệ thống EnglishMate đang được bảo trì định kỳ để nâng cấp hiệu năng và cơ sở dữ liệu."),
+        "estimated_end": SystemSetting.get_setting("MAINTENANCE_ESTIMATED_END", default="")
+    }
+    return render_template("admin/dashboard.html", stats=stats, maintenance=maintenance_info)
+
 
 
 @bp.get("/lessons")
@@ -1373,4 +1384,65 @@ def commit_import():
     except Exception as e:
         db.session.rollback()
         return jsonify({"success": False, "error": f"Lỗi khi lưu vào Database: {str(e)}"}), 500
+
+
+@bp.get("/system/maintenance")
+@admin_required
+def get_maintenance_mode():
+    """Returns current maintenance mode settings."""
+    return jsonify({
+        "is_enabled": SystemSetting.get_bool_setting("MAINTENANCE_MODE", default=False),
+        "message": SystemSetting.get_setting("MAINTENANCE_MESSAGE", default="Hệ thống EnglishMate đang được bảo trì định kỳ để nâng cấp hiệu năng và cơ sở dữ liệu."),
+        "estimated_end": SystemSetting.get_setting("MAINTENANCE_ESTIMATED_END", default="")
+    })
+
+
+@bp.post("/system/maintenance")
+@admin_required
+def update_maintenance_mode():
+    """
+    Toggles or updates maintenance mode status, custom message, and estimated end time.
+    Supports both JSON AJAX and form submissions.
+    """
+    data = request.get_json(silent=True) or request.form
+
+    if request.is_json:
+        raw_val = data.get("maintenance_mode") if "maintenance_mode" in data else data.get("is_enabled")
+        if isinstance(raw_val, bool):
+            is_enabled = raw_val
+        else:
+            is_enabled = str(raw_val).strip().lower() in ("1", "true", "on", "yes")
+    else:
+        raw_val = data.get("maintenance_mode")
+        is_enabled = str(raw_val).strip().lower() in ("1", "true", "on", "yes")
+
+    message = data.get("maintenance_message") or "Hệ thống EnglishMate đang được bảo trì định kỳ để nâng cấp hiệu năng và cơ sở dữ liệu."
+    estimated_end = data.get("maintenance_estimated_end") or ""
+
+    SystemSetting.set_setting("MAINTENANCE_MODE", "true" if is_enabled else "false", description="Bật/Tắt chế độ bảo trì hệ thống")
+    SystemSetting.set_setting("MAINTENANCE_MESSAGE", message.strip(), description="Thông báo chế độ bảo trì")
+    SystemSetting.set_setting("MAINTENANCE_ESTIMATED_END", estimated_end.strip(), description="Thời gian dự kiến hoàn thành")
+
+    action_text = "Bật" if is_enabled else "Tắt"
+    log_audit_action(
+        current_user.id,
+        "UPDATE_MAINTENANCE_MODE",
+        "SYSTEM",
+        None,
+        f"{action_text} Chế độ bảo trì hệ thống (Thời gian dự kiến: '{estimated_end}', Thông điệp: '{message[:50]}...')"
+    )
+
+    msg = f"Đã {action_text.lower()} Chế độ bảo trì hệ thống thành công!"
+    if request.is_json:
+        return jsonify({
+            "success": True,
+            "message": msg,
+            "is_enabled": is_enabled,
+            "maintenance_message": message,
+            "maintenance_estimated_end": estimated_end
+        })
+
+    flash(msg, "warning" if is_enabled else "success")
+    return redirect(url_for("admin.dashboard"))
+
 

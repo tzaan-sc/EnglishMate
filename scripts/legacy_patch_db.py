@@ -100,6 +100,16 @@ if db_path.exists():
     """)
 
     cursor.execute("""
+    CREATE TABLE IF NOT EXISTS system_setting (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        key VARCHAR(100) UNIQUE NOT NULL,
+        value TEXT,
+        description VARCHAR(255),
+        updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+    )
+    """)
+
+    cursor.execute("""
     CREATE TABLE IF NOT EXISTS permission (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         name VARCHAR(64) UNIQUE NOT NULL,
