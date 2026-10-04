@@ -95,13 +95,42 @@
           {% else %}
             <div class="bg-light p-3 rounded text-muted">
               <strong>Phần trả lời của bạn:</strong><br>
-              {{ ans.user_response.get('text', 'Không có nội dung') if ans and ans.user_response else 'Bỏ trống' }}
+              {% if ans and ans.user_response and ans.user_response.get('audio_url') %}
+                <audio controls class="w-100 my-2" src="{{ ans.user_response.get('audio_url') }}"></audio>
+                {% if ans.user_response.get('transcript') %}
+                  <p class="mb-1 text-dark"><strong>Transcript (Nhận diện giọng nói):</strong> {{ ans.user_response.get('transcript') }}</p>
+                {% endif %}
+              {% elif ans and ans.user_response and ans.user_response.get('audio_data_url') %}
+                <audio controls class="w-100 my-2" src="{{ ans.user_response.get('audio_data_url') }}"></audio>
+                {% if ans.user_response.get('transcript') %}
+                  <p class="mb-1 text-dark"><strong>Transcript (Nhận diện giọng nói):</strong> {{ ans.user_response.get('transcript') }}</p>
+                {% endif %}
+              {% else %}
+                {{ ans.user_response.get('text', 'Không có nội dung') if ans and ans.user_response else 'Bỏ trống' }}
+              {% endif %}
             </div>
             
             {% if ans and ans.user_response and ans.user_response.get('ai_feedback') %}
             <div class="alert alert-info mt-3 mb-0">
               <h6 class="alert-heading fw-bold d-flex align-items-center gap-1.5"><i class="ph-bold ph-robot fs-5 text-primary"></i> AI Feedback:</h6>
-              {{ ans.user_response.get('ai_feedback') }}
+              <p class="mb-2">{{ ans.user_response.get('ai_feedback') }}</p>
+              {% if ans.user_response.get('overall_band') %}
+              <div class="d-flex flex-wrap gap-2 mt-2 pt-2 border-top border-info-subtle">
+                <span class="badge bg-primary fs-6 px-3 py-1">Overall Band: {{ ans.user_response.get('overall_band') }}</span>
+                {% if ans.user_response.get('pronunciation_score') %}
+                  <span class="badge bg-danger text-white px-2.5 py-1">Pronunciation: {{ ans.user_response.get('pronunciation_score') }}</span>
+                {% endif %}
+                {% if ans.user_response.get('fluency_score') %}
+                  <span class="badge bg-warning text-dark px-2.5 py-1">Fluency: {{ ans.user_response.get('fluency_score') }}</span>
+                {% endif %}
+                {% if ans.user_response.get('lexical_score') %}
+                  <span class="badge bg-success text-white px-2.5 py-1">Lexical: {{ ans.user_response.get('lexical_score') }}</span>
+                {% endif %}
+                {% if ans.user_response.get('grammar_score') %}
+                  <span class="badge bg-info text-dark px-2.5 py-1">Grammar: {{ ans.user_response.get('grammar_score') }}</span>
+                {% endif %}
+              </div>
+              {% endif %}
             </div>
             {% endif %}
             

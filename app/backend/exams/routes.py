@@ -367,11 +367,21 @@ def submit_exam(submission_id):
             )
             db.session.add(ans)
         else:
-            # For ESSAY or AUDIO_RECORD, we just save the response and set is_correct=None
+            # For ESSAY or AUDIO_RECORD, save text/audio response and set is_correct=None
+            audio_val = request.form.get(f"question_{q.id}_audio") or request.form.get(f"audio_{q.id}")
+            resp_data = {}
+            if selected:
+                if selected.startswith("data:audio") or selected.endswith((".wav", ".mp3", ".webm", ".m4a")):
+                    resp_data["audio_data_url"] = selected
+                else:
+                    resp_data["text"] = selected
+            if audio_val:
+                resp_data["audio_data_url"] = audio_val
+
             ans = ExamAnswerDetail(
                 submission_id=submission.id,
                 question_id=q.id,
-                user_response={"text": selected} if selected else {},
+                user_response=resp_data,
                 is_correct=None,
                 score=0
             )

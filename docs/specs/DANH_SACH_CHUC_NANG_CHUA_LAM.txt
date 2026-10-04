@@ -321,15 +321,18 @@ MODULE 8. EXAM SYSTEM (HỆ THỐNG ĐỀ THI) — 4 TÍNH NĂNG CHƯA LÀM
 - Mức độ ưu tiên: Trung bình (Medium)
 - Trạng thái: ĐÃ HOÀN THÀNH (100% test passed)
 
-[ ] 8.3. Audio Grading - AI Chấm điểm bài nói qua file âm thanh (Mục 8.6)
+[x] 8.3. Audio Grading - AI Chấm điểm bài nói qua file âm thanh (Mục 8.6)
 - Hiện trạng trong EnglishMate_Features.txt:
   File `app/backend/exams/ai_grading.py` đã chấm điểm tự động bài viết luận Essay theo 4 tiêu chí chuẩn quốc tế (Task Response, Coherence, Lexical Resource, Grammatical Accuracy).
 - Phần còn thiếu chưa làm:
   Chưa có pipeline tự động chấm bài thi nói Speaking từ file audio (chấm điểm Phát âm Pronunciation, Độ trôi chảy Fluency, Ngữ pháp và Từ vựng).
-- Giải pháp kỹ thuật cần làm:
-  + Bổ sung hàm `grade_speaking_audio()` trong `ai_grading.py`.
-  + Sử dụng mô hình AI nhận diện giọng nói (Speech-to-Text) kết hợp mô hình ngôn ngữ lớn LLM để chấm điểm theo rubric IELTS Speaking.
+- Giải pháp kỹ thuật đã làm:
+  + Bổ sung module nhận diện giọng nói `transcribe_audio_stt()` và hàm `grade_speaking_audio()` trong `app/backend/exams/ai_grading.py` theo 4 tiêu chí chuẩn IELTS Speaking (Pronunciation, Fluency, Lexical Resource, Grammatical Range & Accuracy).
+  + Xây dựng grading queue ngầm với `async_grade_submission()` và `trigger_ai_grading()` tự động chấm các câu hỏi `AUDIO_RECORD` và `ESSAY`.
+  + Nâng cấp giao diện hiển thị kết quả bài thi `app/frontend/templates/exams/result.html` trực quan với audio player, transcript nhận diện giọng nói và bảng điểm chi tiết 4 tiêu chí.
+  + Viết bộ kiểm thử toàn diện `tests/test_ai_audio_grading.py` (9/9 passed, 265/265 full test suite pass).
 - Mức độ ưu tiên: Cao (High)
+- Trạng thái: ĐÃ HOÀN THÀNH (100% test passed)
 
 [ ] 8.4. Sound Setting - Cài đặt âm thanh cho bài thi (Mục 8.9)
 - Hiện trạng trong EnglishMate_Features.txt:

@@ -586,7 +586,7 @@ NỀN TẢNG HỌC TIẾNG ANH TRỰC TUYẾN THÔNG MINH
 
 8.6. AI Grading (Chấm điểm AI)
 [x] - Essay Grading - Chấm bài luận
-[ ] - Audio Grading - Chấm bài nói
+[x] - Audio Grading - Chấm bài nói
 [x] - Grammar Grading - Chấm ngữ pháp
 [x] - Vocabulary Grading - Chấm từ vựng
 [x] - Coherence Grading - Chấm tính mạch lạc

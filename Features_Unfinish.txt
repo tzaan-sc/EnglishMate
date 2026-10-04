@@ -218,10 +218,10 @@ MODULE: 8. EXAM SYSTEM (HỆ THỐNG ĐỀ THI) (4 tính năng chưa làm)
 
 ### 8.6. AI Grading (Chấm điểm AI) (1 tính năng):
 ----------------------------------------------------------------------------------------------------
-22. [ ] Audio Grading - Chấm bài nói
+22. [x] Audio Grading - Chấm bài nói
    - Mức độ ưu tiên: Cao
    - Mô tả yêu cầu: Mô hình AI tự động nghe file audio bài nói của học viên để chấm điểm phát âm, từ vựng và độ trôi chảy.
-   - Đối chiếu hiện trạng: File ai_grading.py đã tích hợp AI chấm bài luận viết (Task Achievement, Coherence, Lexical, Grammar), chưa có AI chấm âm thanh.
+   - Đối chiếu hiện trạng: Đã hoàn thành hệ thống chấm điểm bài nói qua file âm thanh/transcript theo rubric chuẩn IELTS Speaking 4 tiêu chí (Pronunciation, Fluency, Lexical Resource, Grammar). Đã viết bộ test tự động tests/test_ai_audio_grading.py đạt 100% pass.
 
 
 ### 8.9. Exam Settings (Cài đặt đề thi) (1 tính năng):
