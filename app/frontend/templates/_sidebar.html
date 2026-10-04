@@ -44,10 +44,16 @@
                     <span>Người dùng & Phân quyền</span>
                 </a>
             </li>
-            <li class="nav-item mb-2">
+            <li class="nav-item">
                 <a class="nav-link-modern {% if request.path == url_for('admin.audit_logs') %}active{% endif %}" href="{{ url_for('admin.audit_logs') }}" title="Nhật ký Audit">
                     <i class="ph ph-clock-counter-clockwise"></i>
                     <span>Nhật ký Audit</span>
+                </a>
+            </li>
+            <li class="nav-item mb-2">
+                <a class="nav-link-modern {% if request.path.startswith('/admin/system/feature-flags') or request.path.startswith('/admin/feature-flags') %}active{% endif %}" href="{{ url_for('admin.feature_flags') }}" title="Quản lý Tính năng">
+                    <i class="ph ph-sliders text-warning"></i>
+                    <span>Quản lý Tính năng</span>
                 </a>
             </li>
 

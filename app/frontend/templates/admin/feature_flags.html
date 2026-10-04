@@ -1,0 +1,297 @@
+{% extends "base.html" %}
+{% block title %}Quản lý Tính năng (Feature Flags) · EnglishMate Admin{% endblock %}
+
+{% block content %}
+<div class="container-fluid max-w-7xl py-4">
+
+  <!-- Breadcrumb Navigation -->
+  <nav class="app-breadcrumb mb-3" aria-label="breadcrumb">
+    <ol class="breadcrumb mb-0 align-items-center flex-wrap">
+      <li class="breadcrumb-item">
+        <a href="{{ url_for('admin.dashboard') }}" class="d-inline-flex align-items-center gap-1">
+          <i class="ph-bold ph-shield-check"></i>
+          <span>Quản trị Hệ thống</span>
+        </a>
+      </li>
+      <li class="breadcrumb-item active" aria-current="page">
+        <span>Quản lý Tính năng (Feature Flags)</span>
+      </li>
+    </ol>
+  </nav>
+
+  <!-- Page Header -->
+  <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
+    <div class="d-flex align-items-center gap-3">
+      <div class="rounded-3 bg-warning-subtle text-warning border border-warning-subtle d-inline-flex align-items-center justify-content-center flex-shrink-0" style="width: 48px; height: 48px; font-size: 1.45rem;">
+        <i class="ph-bold ph-sliders"></i>
+      </div>
+      <div>
+        <h3 class="fw-bold text-dark mb-0.5" style="letter-spacing: -0.01em;">Quản lý Tính năng Hệ thống (Feature Flags)</h3>
+        <p class="text-secondary small mb-0">Bật hoặc tạm tắt tức thì các phân hệ tính năng thời gian thực mà không cần khởi động lại máy chủ</p>
+      </div>
+    </div>
+    <div class="d-flex align-items-center gap-2">
+      <button type="button" class="btn btn-outline-secondary fw-semibold px-3 py-2 rounded-3 shadow-2xs d-inline-flex align-items-center gap-1.5" onclick="location.reload()" title="Tải lại dữ liệu">
+        <i class="ph-bold ph-arrows-clockwise fs-5"></i>
+        <span>Làm mới</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Metric Overview Cards -->
+  <div class="row g-3 mb-4">
+    <div class="col-12 col-sm-4">
+      <div class="card-modern p-3.5 h-100 d-flex align-items-center gap-3 border shadow-2xs">
+        <div class="rounded-circle bg-primary-subtle text-primary d-inline-flex align-items-center justify-content-center flex-shrink-0" style="width: 46px; height: 46px;">
+          <i class="ph-bold ph-squares-four fs-4"></i>
+        </div>
+        <div>
+          <span class="text-secondary small fw-semibold d-block">Tổng số tính năng</span>
+          <h4 class="fw-bold text-dark mb-0">{{ total_flags }}</h4>
+        </div>
+      </div>
+    </div>
+    <div class="col-12 col-sm-4">
+      <div class="card-modern p-3.5 h-100 d-flex align-items-center gap-3 border shadow-2xs">
+        <div class="rounded-circle bg-success-subtle text-success d-inline-flex align-items-center justify-content-center flex-shrink-0" style="width: 46px; height: 46px;">
+          <i class="ph-bold ph-check-circle fs-4"></i>
+        </div>
+        <div>
+          <span class="text-secondary small fw-semibold d-block">Đang hoạt động (Enabled)</span>
+          <h4 class="fw-bold text-success mb-0" id="activeCount">{{ active_flags }}</h4>
+        </div>
+      </div>
+    </div>
+    <div class="col-12 col-sm-4">
+      <div class="card-modern p-3.5 h-100 d-flex align-items-center gap-3 border shadow-2xs">
+        <div class="rounded-circle bg-danger-subtle text-danger d-inline-flex align-items-center justify-content-center flex-shrink-0" style="width: 46px; height: 46px;">
+          <i class="ph-bold ph-pause-circle fs-4"></i>
+        </div>
+        <div>
+          <span class="text-secondary small fw-semibold d-block">Đang tạm đóng (Disabled)</span>
+          <h4 class="fw-bold text-danger mb-0" id="disabledCount">{{ total_flags - active_flags }}</h4>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- In-page Live Alert Banner -->
+  <div id="statusAlert" class="alert alert-dismissible fade show border-0 rounded-3 mb-4 d-none align-items-center gap-2 shadow-sm" role="alert">
+    <i class="ph-bold ph-info fs-5 flex-shrink-0" id="statusAlertIcon"></i>
+    <div class="flex-grow-1 small fw-medium" id="statusAlertMsg"></div>
+    <button type="button" class="btn-close shadow-none" onclick="document.getElementById('statusAlert').classList.add('d-none')"></button>
+  </div>
+
+  <!-- Filter & Search Toolbar -->
+  <div class="card-modern p-3 mb-4 border shadow-2xs">
+    <div class="row g-2 align-items-center">
+      <div class="col-12 col-md-5">
+        <div class="input-group input-group-sm">
+          <span class="input-group-text bg-white border-end-0 text-muted ps-2.5">
+            <i class="ph-bold ph-magnifying-glass"></i>
+          </span>
+          <input type="text" id="flagSearchInput" class="form-control border-start-0 ps-1" placeholder="Tìm kiếm theo tên tính năng hoặc mã flag..." oninput="filterFlags()">
+        </div>
+      </div>
+      <div class="col-12 col-md-7">
+        <div class="d-flex flex-wrap gap-1.5 justify-content-md-end">
+          <button type="button" class="btn btn-sm btn-dark filter-pill active rounded-pill px-3" data-category="ALL" onclick="setCategoryFilter('ALL', this)">Tất cả</button>
+          <button type="button" class="btn btn-sm btn-light border filter-pill rounded-pill px-3" data-category="LEARNING_GAMES" onclick="setCategoryFilter('LEARNING_GAMES', this)">Học tập & Games</button>
+          <button type="button" class="btn btn-sm btn-light border filter-pill rounded-pill px-3" data-category="AI_SYSTEM" onclick="setCategoryFilter('AI_SYSTEM', this)">Trí tuệ AI</button>
+          <button type="button" class="btn btn-sm btn-light border filter-pill rounded-pill px-3" data-category="USER_SECURITY" onclick="setCategoryFilter('USER_SECURITY', this)">Người dùng</button>
+          <button type="button" class="btn btn-sm btn-light border filter-pill rounded-pill px-3" data-category="COMMUNITY_ENGAGEMENT" onclick="setCategoryFilter('COMMUNITY_ENGAGEMENT', this)">Tương tác</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FEATURE CARDS BY CATEGORY -->
+  {% for cat_key, cat_data in grouped_flags.items() %}
+  <div class="category-section mb-4" data-category-group="{{ cat_key }}">
+    <div class="d-flex align-items-center gap-2 mb-3">
+      <h5 class="fw-bold text-dark mb-0">{{ cat_data.title }}</h5>
+      <span class="badge {{ cat_data.badge_class }} border rounded-pill">{{ cat_data.flags|length }} tính năng</span>
+    </div>
+
+    <div class="row g-3">
+      {% for flag in cat_data.flags %}
+      <div class="col-12 col-md-6 col-xl-4 flag-card-col" data-key="{{ flag.key }}" data-category="{{ flag.category }}" data-name="{{ flag.name|lower }}">
+        <div class="card-modern h-100 p-4 border rounded-4 d-flex flex-column justify-content-between transition-all hover-shadow-md flag-card {% if flag.is_active %}border-success-subtle bg-white{% else %}border-secondary-subtle bg-light-subtle opacity-90{% endif %}" id="card-{{ flag.key }}">
+          <div>
+            <!-- Header: Icon, Badge & Toggle Switch -->
+            <div class="d-flex align-items-start justify-content-between gap-2 mb-3">
+              <div class="d-flex align-items-center gap-2.5">
+                <div class="rounded-3 {% if flag.is_active %}bg-success-subtle text-success{% else %}bg-secondary-subtle text-secondary{% endif %} d-inline-flex align-items-center justify-content-center flex-shrink-0 flag-icon-box" style="width: 40px; height: 40px; font-size: 1.25rem;">
+                  <i class="ph-bold {{ flag.icon }}"></i>
+                </div>
+                <div>
+                  <span class="badge {{ flag.category_badge }} border rounded-pill small" style="font-size: 0.72rem;">{{ flag.category_title }}</span>
+                </div>
+              </div>
+
+              <!-- Switch Toggle -->
+              <div class="form-check form-switch form-switch-lg mb-0">
+                <input class="form-check-input cursor-pointer toggle-flag-switch" 
+                       type="checkbox" 
+                       role="switch" 
+                       id="switch-{{ flag.key }}" 
+                       {% if flag.is_active %}checked{% endif %}
+                       onchange="toggleFlag('{{ flag.key }}', this.checked)">
+              </div>
+            </div>
+
+            <!-- Title & Description -->
+            <h6 class="fw-bold text-dark mb-1.5" style="letter-spacing: -0.01em;">{{ flag.name }}</h6>
+            <p class="text-secondary small mb-3" style="line-height: 1.5; min-height: 48px;">{{ flag.description }}</p>
+          </div>
+
+          <!-- Footer Info -->
+          <div class="pt-3 border-top d-flex align-items-center justify-content-between text-muted small">
+            <div>
+              <code class="text-dark-subtle fw-semibold" style="font-size: 0.78rem;">{{ flag.key }}</code>
+            </div>
+            <div class="d-flex align-items-center gap-1.5" id="status-badge-{{ flag.key }}">
+              {% if flag.is_active %}
+              <span class="badge bg-success text-white rounded-pill px-2 py-1 small d-inline-flex align-items-center gap-1">
+                <span class="spinner-grow spinner-grow-sm" style="width: 6px; height: 6px;" role="status"></span>
+                <span>Bật (Active)</span>
+              </span>
+              {% else %}
+              <span class="badge bg-secondary text-white rounded-pill px-2 py-1 small">
+                <span>Tắt (Off)</span>
+              </span>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+  {% endfor %}
+
+</div>
+
+<script>
+let currentCategory = 'ALL';
+
+function filterFlags() {
+  const query = document.getElementById('flagSearchInput').value.toLowerCase().trim();
+  const cards = document.querySelectorAll('.flag-card-col');
+  const sections = document.querySelectorAll('.category-section');
+
+  cards.forEach(card => {
+    const key = card.getAttribute('data-key').toLowerCase();
+    const name = card.getAttribute('data-name');
+    const category = card.getAttribute('data-category');
+
+    const matchesQuery = !query || key.includes(query) || name.includes(query);
+    const matchesCat = currentCategory === 'ALL' || category === currentCategory;
+
+    if (matchesQuery && matchesCat) {
+      card.style.display = '';
+    } else {
+      card.style.display = 'none';
+    }
+  });
+
+  // Hide empty sections
+  sections.forEach(sec => {
+    const visibleCards = sec.querySelectorAll('.flag-card-col:not([style*="display: none"])');
+    if (visibleCards.length === 0) {
+      sec.style.display = 'none';
+    } else {
+      sec.style.display = '';
+    }
+  });
+}
+
+function setCategoryFilter(cat, btn) {
+  currentCategory = cat;
+  document.querySelectorAll('.filter-pill').forEach(b => {
+    b.classList.remove('btn-dark', 'active');
+    b.classList.add('btn-light');
+  });
+  btn.classList.remove('btn-light');
+  btn.classList.add('btn-dark', 'active');
+  filterFlags();
+}
+
+async function toggleFlag(key, isActive) {
+  const card = document.getElementById('card-' + key);
+  const statusBadge = document.getElementById('status-badge-' + key);
+  const switchEl = document.getElementById('switch-' + key);
+
+  try {
+    const res = await fetch('{{ url_for("admin.toggle_feature_flag", feature_key="KEY_PLACEHOLDER") }}'.replace('KEY_PLACEHOLDER', key), {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRFToken': '{{ csrf_token() if csrf_token else "" }}'
+      },
+      body: JSON.stringify({ is_active: isActive })
+    });
+
+    const data = await res.json();
+    if (data.success) {
+      showAlert(data.message, 'success');
+
+      // Update card UI
+      if (isActive) {
+        card.classList.remove('border-secondary-subtle', 'bg-light-subtle', 'opacity-90');
+        card.classList.add('border-success-subtle', 'bg-white');
+        statusBadge.innerHTML = `
+          <span class="badge bg-success text-white rounded-pill px-2 py-1 small d-inline-flex align-items-center gap-1">
+            <span class="spinner-grow spinner-grow-sm" style="width: 6px; height: 6px;" role="status"></span>
+            <span>Bật (Active)</span>
+          </span>
+        `;
+      } else {
+        card.classList.remove('border-success-subtle', 'bg-white');
+        card.classList.add('border-secondary-subtle', 'bg-light-subtle', 'opacity-90');
+        statusBadge.innerHTML = `
+          <span class="badge bg-secondary text-white rounded-pill px-2 py-1 small">
+            <span>Tắt (Off)</span>
+          </span>
+        `;
+      }
+
+      // Update metric numbers
+      recalcMetrics();
+    } else {
+      showAlert(data.error || 'Không thể cập nhật tính năng', 'danger');
+      switchEl.checked = !isActive; // Revert switch
+    }
+  } catch (err) {
+    showAlert('Lỗi kết nối máy chủ: ' + err.message, 'danger');
+    switchEl.checked = !isActive; // Revert switch
+  }
+}
+
+function recalcMetrics() {
+  const allSwitches = document.querySelectorAll('.toggle-flag-switch');
+  let active = 0;
+  allSwitches.forEach(s => {
+    if (s.checked) active++;
+  });
+  const disabled = allSwitches.length - active;
+  document.getElementById('activeCount').textContent = active;
+  document.getElementById('disabledCount').textContent = disabled;
+}
+
+function showAlert(msg, type) {
+  const alertBox = document.getElementById('statusAlert');
+  const alertMsg = document.getElementById('statusAlertMsg');
+  const alertIcon = document.getElementById('statusAlertIcon');
+
+  alertBox.className = `alert alert-${type} alert-dismissible fade show border-0 rounded-3 mb-4 d-flex align-items-center gap-2 shadow-sm`;
+  alertMsg.textContent = msg;
+  alertIcon.className = type === 'success' ? 'ph-bold ph-check-circle fs-5 flex-shrink-0' : 'ph-bold ph-warning-circle fs-5 flex-shrink-0';
+  alertBox.classList.remove('d-none');
+
+  setTimeout(() => {
+    alertBox.classList.add('d-none');
+  }, 4000);
+}
+</script>
+{% endblock %}

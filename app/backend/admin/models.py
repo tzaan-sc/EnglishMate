@@ -132,3 +132,59 @@ class ImportHistory(db.Model):
             return None
         return self.created_at + timedelta(hours=7)
 
+
+class SystemConfig(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    key = db.Column(db.String(100), unique=True, nullable=False, index=True)
+    value = db.Column(db.Text, nullable=True)
+    description = db.Column(db.String(255), nullable=True)
+    is_active = db.Column(db.Boolean, default=True, nullable=False)
+    category = db.Column(db.String(50), default="GENERAL", nullable=False)
+    updated_at = db.Column(db.DateTime(timezone=True), default=now, onupdate=now, nullable=False)
+
+    @classmethod
+    def get_config(cls, key: str, default: str = None) -> str:
+        try:
+            item = cls.query.filter_by(key=key).first()
+            return item.value if item and item.value is not None else default
+        except Exception:
+            return default
+
+    @classmethod
+    def is_feature_enabled(cls, key: str, default: bool = True) -> bool:
+        try:
+            item = cls.query.filter_by(key=key).first()
+            if item is not None:
+                return bool(item.is_active)
+            setting_val = SystemSetting.get_setting(key, None)
+            if setting_val is not None:
+                return str(setting_val).strip().lower() in ("true", "1", "yes", "on")
+            return default
+        except Exception:
+            return default
+
+    @classmethod
+    def set_feature_status(cls, key: str, is_active: bool, description: str = None, category: str = None) -> "SystemConfig":
+        item = cls.query.filter_by(key=key).first()
+        if not item:
+            item = cls(
+                key=key,
+                is_active=bool(is_active),
+                description=description,
+                category=category or "GENERAL"
+            )
+            db.session.add(item)
+        else:
+            item.is_active = bool(is_active)
+            if description:
+                item.description = description
+            if category:
+                item.category = category
+        try:
+            db.session.commit()
+        except Exception:
+            db.session.rollback()
+            raise
+        return item
+
+

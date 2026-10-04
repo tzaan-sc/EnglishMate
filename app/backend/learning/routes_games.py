@@ -50,9 +50,13 @@ from .routes_gamification import (
 )
 
 
+from app.backend.admin.feature_flags import feature_flag_required
+
+
 @bp.get("/games")
 @bp.get("/games/lobby")
 @login_required
+@feature_flag_required("ARCADE_GAMES", redirect_endpoint="learning.lessons", error_message="Sảnh trò chơi Arcade học tập hiện đang tạm đóng bởi Quản trị viên.")
 def game_lobby():
     from .models import FlashcardSet, GameSession, FlashcardProgress
     sets = FlashcardSet.query.filter_by(user_id=current_user.id).order_by(FlashcardSet.created_at.desc()).all()

@@ -14,17 +14,8 @@ from . import bp
 from .forms import ConfirmForm, LessonForm, VocabularyForm
 from .importer import parse_and_validate_excel, parse_and_validate_file, commit_import_records, CONTENT_SCHEMAS
 from .models import AuditLog, Permission, Role, RolePermission, UserRole, SystemSetting, ImportHistory
-from .utils import log_audit_action, permission_required, has_permission
+from .utils import log_audit_action, permission_required, has_permission, admin_required
 
-
-def admin_required(view):
-    @wraps(view)
-    @login_required
-    def wrapped(*args, **kwargs):
-        if not current_user.is_admin:
-            abort(403)
-        return view(*args, **kwargs)
-    return wrapped
 
 
 @bp.get("")
@@ -1539,5 +1530,10 @@ def update_maintenance_mode():
 
     flash(msg, "warning" if is_enabled else "success")
     return redirect(url_for("admin.dashboard"))
+
+
+# Re-export routes from routes_system for backward compatibility
+from .routes_system import feature_flags, toggle_feature_flag, bulk_update_feature_flags
+
 
 

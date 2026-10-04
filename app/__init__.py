@@ -135,6 +135,10 @@ def create_app(config_object=Config):
                         from app.backend.admin.models import SystemSetting
                         SystemSetting.__table__.create(conn)
                         conn.commit()
+                    if "system_config" not in tables:
+                        from app.backend.admin.models import SystemConfig
+                        SystemConfig.__table__.create(conn)
+                        conn.commit()
         except Exception:
             pass
 
@@ -200,6 +204,11 @@ def create_app(config_object=Config):
             except Exception:
                 g._is_maintenance_mode = False
         return {"is_system_in_maintenance": g._is_maintenance_mode}
+
+    @app.context_processor
+    def inject_feature_flags():
+        from .backend.admin.feature_flags import is_feature_enabled
+        return {"is_feature_enabled": is_feature_enabled}
 
     @app.context_processor
     def inject_streak_event():

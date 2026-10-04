@@ -61,6 +61,19 @@ def permission_required(permission_name):
     return decorator
 
 
+def admin_required(view):
+    @wraps(view)
+    def wrapped(*args, **kwargs):
+        if not current_user.is_authenticated:
+            flash("Vui lòng đăng nhập với tư cách Quản trị viên.", "warning")
+            return redirect(url_for("auth.login"))
+        if not current_user.is_admin:
+            from flask import abort
+            abort(403)
+        return view(*args, **kwargs)
+    return wrapped
+
+
 def log_audit_action(user_id, action, target_type=None, target_id=None, details=None, ip_address=None):
     try:
         if not ip_address and request:

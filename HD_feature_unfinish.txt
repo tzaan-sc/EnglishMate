@@ -411,15 +411,16 @@ MODULE 10. ADMIN SYSTEM (HỆ THỐNG QUẢN TRỊ) — 7 TÍNH NĂNG CHƯA LÀM
   + Xây dựng modal quản lý lưu trữ & dọn dẹp trực quan trên giao diện `/admin/audit-logs` với tính năng kiểm tra số lượng trước khi purge.
 - Mức độ ưu tiên: Trung bình (Medium)
 
-[ ] 10.3. Feature Flags - Quản lý bật/tắt tính năng thời gian thực (Mục 10.7)
+[x] 10.3. Feature Flags - Quản lý bật/tắt tính năng thời gian thực (Mục 10.7)
 - Hiện trạng trong EnglishMate_Features.txt:
   Các tính năng hiện tại được cấu hình cứng qua file `.env` hoặc file `config.py`.
 - Phần còn thiếu chưa làm:
   Chưa có giao diện Web Admin cho phép Quản trị viên bật/tắt nhanh các tính năng (ví dụ: Tạm khóa đăng ký người dùng mới, Bật/tắt Sảnh game arcade, Bật/tắt Chấm bài AI) mà không cần can thiệp code hay khởi động lại server.
-- Giải pháp kỹ thuật cần làm:
-  + Tạo model `SystemConfig` (key, value, description, is_active).
-  + Xây dựng trang Admin `/admin/system/feature-flags` với các nút gạt Toggle Switch On/Off.
-  + Viết decorator `@feature_flag_required('arcade_games')`.
+- Giải pháp kỹ thuật đã hoàn thành:
+  + Tạo model `SystemConfig` (key, value, description, is_active, category, updated_at) tự động khởi tạo khi app boot.
+  + Xây dựng trang Admin `/admin/system/feature-flags` với các nút gạt Toggle Switch On/Off thời gian thực, bộ lọc danh mục (Học tập & Game, AI, Bảo mật, Gamification), tìm kiếm cờ và thống kê metrics.
+  + Viết decorator `@feature_flag_required('ARCADE_GAMES', redirect_endpoint=...)` và hàm kiểm tra `is_feature_enabled()` hỗ trợ cả Web và API JSON (403).
+  + Tích hợp cờ vào các luồng nghiệp vụ quan trọng (Khóa đăng ký `USER_REGISTRATION`, Sảnh game `ARCADE_GAMES`, Chấm bài AI `AI_GRADING`, Chia sẻ huy hiệu `BADGE_SHARING`, v.v.).
 - Mức độ ưu tiên: Cao (High)
 
 [ ] 10.4. System Limits - Giao diện cấu hình giới hạn hệ thống (Mục 10.7)

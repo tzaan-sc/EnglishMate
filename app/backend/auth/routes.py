@@ -99,7 +99,11 @@ def log_dev_otp_code(email, code):
     send_email(email, "Mã xác minh OTP tài khoản EnglishMate", html_content)
 
 
+from app.backend.admin.feature_flags import feature_flag_required
+
+
 @bp.route("/register", methods=["GET", "POST"])
+@feature_flag_required("USER_REGISTRATION", redirect_endpoint="auth.login", error_message="Hệ thống đang tạm ngừng tiếp nhận đăng ký tài khoản mới theo chính sách quản trị.")
 def register():
     if current_user.is_authenticated:
         return redirect(url_for("main.dashboard"))
