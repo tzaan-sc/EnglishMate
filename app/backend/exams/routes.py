@@ -651,6 +651,11 @@ def specialized_timed_practice():
 
         submission = ExamSubmission(user_id=current_user.id, exam_id=timed_exam.id, status='IN_PROGRESS', total_score=0)
         db.session.add(submission)
+
+        # Update sound alerts setting if provided (Feature 8.4)
+        if "exam_sound_effects" in request.form:
+            current_user.exam_sound_effects = request.form.get("exam_sound_effects") in ["on", "true", "1"]
+
         db.session.commit()
 
         return redirect(url_for("exams.attempt_exam", submission_id=submission.id, mode="timed_practice"))

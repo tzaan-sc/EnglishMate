@@ -623,7 +623,7 @@ NỀN TẢNG HỌC TIẾNG ANH TRỰC TUYẾN THÔNG MINH
 [x] - Pause Setting - Cài đặt tạm dừng
 [x] - Score Display Setting - Cài đặt hiển thị điểm
 [x] - Auto Submit Setting - Cài đặt tự nộp
-[ ] - Sound Setting - Cài đặt âm thanh
+[x] - Sound Setting - Cài đặt âm thanh
 [x] - Difficulty Setting - Cài đặt độ khó
 
 ================================================================================

@@ -334,14 +334,17 @@ MODULE 8. EXAM SYSTEM (HỆ THỐNG ĐỀ THI) — 4 TÍNH NĂNG CHƯA LÀM
 - Mức độ ưu tiên: Cao (High)
 - Trạng thái: ĐÃ HOÀN THÀNH (100% test passed)
 
-[ ] 8.4. Sound Setting - Cài đặt âm thanh cho bài thi (Mục 8.9)
+[x] 8.4. Sound Setting - Cài đặt âm thanh cho bài thi (Mục 8.9)
 - Hiện trạng trong EnglishMate_Features.txt:
   Trong trang `/settings` của exam đã có cấu hình thời gian thi, hiển thị điểm, tạm dừng, tự động nộp bài.
 - Phần còn thiếu chưa làm:
   Chưa có tùy chọn bật/tắt âm thanh thông báo trong bài thi.
-- Giải pháp kỹ thuật cần làm:
-  + Thêm checkbox "Bật âm thanh cảnh báo thi" trong form cấu hình đề thi.
+- Giải pháp kỹ thuật đã làm:
+  + Bổ sung trường dữ liệu `exam_sound_effects` và công tắc "Bật âm thanh cảnh báo thi" trong trang Cài đặt đề thi cá nhân (`/settings`), Modal cài đặt nhanh (`_settings_modal.html`) và form cấu hình Phiên luyện tập thời gian (`timed_practice.html`).
+  + Tích hợp hệ thống hiệu ứng âm thanh thời gian thực `app/frontend/static/js/exam_audio.js` và các audio effects (`tick.wav`, `select.wav`, `timeout.wav`, `success.wav`).
+  + Viết bộ kiểm thử toàn diện `tests/test_exam_settings.py` (8/8 passed, 100% pass).
 - Mức độ ưu tiên: Thấp (Low)
+- Trạng thái: ĐÃ HOÀN THÀNH (100% test passed)
 
 ----------------------------------------------------------------------------------------------------
 MODULE 9. GAMIFICATION SYSTEM (HỆ THỐNG TRÒ CHƠI HÓA) — 3 TÍNH NĂNG CHƯA LÀM

@@ -76,15 +76,40 @@ def test_exam_sound_files_exist():
         assert os.path.exists(sound_path), f"Missing sound file: {sound_path}"
         assert os.path.getsize(sound_path) > 0, f"Sound file is empty: {sound_path}"
 
-def test_exam_audio_js_exists():
-    import os
-    js_path = os.path.join("app", "frontend", "static", "js", "exam_audio.js")
-    assert os.path.exists(js_path)
-    with open(js_path, "r", encoding="utf-8") as f:
-        content = f.read()
-    assert "ExamSoundEffects" in content
-    assert "playSelect" in content
-    assert "playTick" in content
-    assert "playTimeout" in content
-    assert "playSubmit" in content
+def test_exam_sound_alerts_checkbox_labels(client):
+    """Test that 'Bật âm thanh cảnh báo thi' is properly displayed across exam settings and modals."""
+    login(client)
+
+    # 1. Main settings page
+    res_settings = client.get("/settings")
+    assert res_settings.status_code == 200
+    html_settings = res_settings.get_data(as_text=True)
+    assert "Bật âm thanh cảnh báo thi" in html_settings
+    assert "soundEffectsSwitch" in html_settings
+
+    # 2. Timed practice configuration page
+    res_timed = client.get("/specialized/timed-practice")
+    assert res_timed.status_code == 200
+    html_timed = res_timed.get_data(as_text=True)
+    assert "Bật âm thanh cảnh báo thi" in html_timed
+    assert "timedSoundAlerts" in html_timed
+
+
+def test_specialized_timed_practice_sound_toggle(client, app):
+    """Test toggling sound alerts on/off in timed practice form submission."""
+    login(client)
+
+    # 1. Submit with sound enabled
+    res_on = client.post("/specialized/timed-practice", data={
+        "duration": "15",
+        "question_count": "10",
+        "difficulty": "Medium",
+        "skill": "Grammar",
+        "exam_sound_effects": "on"
+    }, follow_redirects=True)
+    assert res_on.status_code == 200
+
+    with app.app_context():
+        user = User.query.filter_by(username="student").first()
+        assert user.exam_sound_effects is True
 

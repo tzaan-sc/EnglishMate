@@ -141,11 +141,11 @@
             <input class="form-check-input fs-4 ms-2 mt-0 cursor-pointer" type="checkbox" id="realtimeScoreSwitch" name="exam_show_realtime_score" {% if current_user.exam_show_realtime_score %}checked{% endif %}>
           </div>
 
-          <!-- 7. Sound effects toggle -->
+          <!-- 7. Sound effects toggle (Feature 8.4) -->
           <div class="form-check form-switch bg-light border rounded-4 p-3 d-flex align-items-center justify-content-between mb-3">
             <div>
-              <label class="form-check-label fw-bold text-dark cursor-pointer d-block" for="soundEffectsSwitch">🔊 Âm thanh phản hồi hiệu ứng</label>
-              <span class="text-secondary small">Phát âm thanh tích tắc 10 giây cuối, click chọn đáp án, hết giờ và nộp bài.</span>
+              <label class="form-check-label fw-bold text-dark cursor-pointer d-block" for="soundEffectsSwitch">🔔 Bật âm thanh cảnh báo thi</label>
+              <span class="text-secondary small">Phát âm thanh thông báo khi bắt đầu thi, tích tắc 10 giây cuối, hết giờ và nộp bài.</span>
             </div>
             <input class="form-check-input fs-4 ms-2 mt-0 cursor-pointer" type="checkbox" id="soundEffectsSwitch" name="exam_sound_effects" {% if current_user.exam_sound_effects %}checked{% endif %}>
           </div>

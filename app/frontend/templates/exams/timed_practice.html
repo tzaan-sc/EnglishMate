@@ -70,6 +70,15 @@
         </div>
       </div>
 
+      <!-- 5. Sound alerts toggle (Feature 8.4) -->
+      <div class="form-check form-switch bg-light border rounded-4 p-3 mb-4 d-flex align-items-center justify-content-between">
+        <div>
+          <label class="form-check-label fw-bold text-dark cursor-pointer d-block" for="timedSoundAlerts">🔔 Bật âm thanh cảnh báo thi</label>
+          <span class="text-secondary small">Phát âm thanh thông báo khi bắt đầu thi, tích tắc 10 giây cuối, hết giờ và nộp bài.</span>
+        </div>
+        <input class="form-check-input fs-4 ms-2 mt-0 cursor-pointer" type="checkbox" id="timedSoundAlerts" name="exam_sound_effects" {% if current_user.exam_sound_effects %}checked{% endif %}>
+      </div>
+
       <button type="submit" class="btn btn-primary rounded-pill btn-lg w-100 fw-bold shadow-xs py-3">
         🚀 Bắt Đầu Phiên Luyện Tập Thời Gian Ngay
       </button>

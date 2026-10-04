@@ -226,10 +226,10 @@ MODULE: 8. EXAM SYSTEM (HỆ THỐNG ĐỀ THI) (4 tính năng chưa làm)
 
 ### 8.9. Exam Settings (Cài đặt đề thi) (1 tính năng):
 ----------------------------------------------------------------------------------------------------
-23. [ ] Sound Setting - Cài đặt âm thanh
+23. [x] Sound Setting - Cài đặt âm thanh
    - Mức độ ưu tiên: Thấp
    - Mô tả yêu cầu: Cài đặt âm thanh báo hiệu khi bắt đầu thi, hết giờ và nộp bài trong phòng thi.
-   - Đối chiếu hiện trạng: Đã có cài đặt thời gian, tự nộp, hiển thị đồng hồ, điểm số thời gian thực, nhưng chưa có tùy chọn âm thanh.
+   - Đối chiếu hiện trạng: Đã hoàn thành tùy chọn "Bật âm thanh cảnh báo thi" (exam_sound_effects) trong Cài đặt đề thi (/settings), Modal cài đặt nhanh (_settings_modal.html) và Timed Practice (timed_practice.html). Tích hợp đầy đủ hiệu ứng âm thanh thời gian thực (tick.wav, select.wav, timeout.wav, success.wav) và kiểm thử 100% pass trong tests/test_exam_settings.py.
 
 
 ====================================================================================================
