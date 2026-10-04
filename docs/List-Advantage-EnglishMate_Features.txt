@@ -676,7 +676,7 @@ NỀN TẢNG HỌC TIẾNG ANH TRỰC TUYẾN THÔNG MINH
 [x] - Badge Progress - Tiến độ huy hiệu
 [x] - Badge Rewards - Thưởng huy hiệu
 [x] - Badge Notification - Thông báo huy hiệu
-[ ] - Badge Sharing - Chia sẻ huy hiệu
+[x] - Badge Sharing - Chia sẻ huy hiệu
 
 9.5. Challenges System (Hệ thống thử thách)
 [x] - Daily Challenges - Thử thách ngày
@@ -707,7 +707,7 @@ NỀN TẢNG HỌC TIẾNG ANH TRỰC TUYẾN THÔNG MINH
 [x] - Combo System - Hệ thống combo
 [x] - Time Limits - Giới hạn thời gian
 [x] - Lives System - Hệ thống mạng
-[ ] - Power-ups - Power-ups
+[x] - Power-ups - Power-ups
 [x] - Difficulty Scaling - Tăng độ khó
 [x] - Achievement Unlocks - Mở khóa thành tích
 [x] - Progress Saving - Lưu tiến độ

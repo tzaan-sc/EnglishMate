@@ -25,12 +25,59 @@
     </div>
     
     <!-- Top Progress Bar -->
-    <div class="progress mb-4 bg-light-subtle border" style="height: 8px; border-radius: 4px;">
+    <div class="progress mb-3 bg-light-subtle border" style="height: 8px; border-radius: 4px;">
         <div id="progressBar" class="progress-bar bg-primary progress-bar-striped progress-bar-animated" role="progressbar" style="width: 0%; transition: width 0.3s ease;"></div>
     </div>
 
+    <!-- Power-ups Toolbar -->
+    <div class="card card-modern border shadow-xs rounded-4 px-3 py-2 mb-3 bg-white" id="powerupsBar">
+        <div class="d-flex flex-wrap justify-content-between align-items-center gap-2">
+            <div class="d-flex align-items-center gap-2">
+                <span class="badge bg-primary-subtle text-primary rounded-pill px-2.5 py-1 fw-bold d-inline-flex align-items-center gap-1" style="font-size: 0.75rem;">
+                    <i class="ph-bold ph-lightning"></i> VẬT PHẨM TRỢ GIÚP
+                </span>
+                <span class="small text-muted d-none d-md-inline" style="font-size: 0.8rem;">(Nhấn phím 1, 2, 3 để kích hoạt nhanh)</span>
+            </div>
+            
+            <div class="d-flex align-items-center gap-2">
+                <!-- Power-up 1: Time Freeze (10s) -->
+                <button type="button" class="btn btn-sm btn-outline-info rounded-pill px-3 py-1 fw-bold d-inline-flex align-items-center gap-1.5 powerup-btn position-relative"
+                        id="btnPowerupFreeze" onclick="activateTimeFreeze()" title="Đóng băng thời gian 10 giây (Phím 1)">
+                    <i class="ph-fill ph-snowflake text-info"></i>
+                    <span>Đóng Băng</span>
+                    <span class="badge bg-info text-white rounded-pill px-1.5" id="cntPowerupFreeze">x2</span>
+                    <span class="badge bg-dark text-white rounded px-1 ms-1 d-none d-sm-inline" style="font-size: 0.65rem;">1</span>
+                </button>
+
+                <!-- Power-up 2: 50:50 Eliminator -->
+                <button type="button" class="btn btn-sm btn-outline-danger rounded-pill px-3 py-1 fw-bold d-inline-flex align-items-center gap-1.5 powerup-btn position-relative"
+                        id="btnPowerup5050" onclick="activate5050()" title="Loại bỏ 2 đáp án sai (Phím 2)">
+                    <i class="ph-bold ph-crosshair text-danger"></i>
+                    <span>50:50</span>
+                    <span class="badge bg-danger text-white rounded-pill px-1.5" id="cntPowerup5050">x1</span>
+                    <span class="badge bg-dark text-white rounded px-1 ms-1 d-none d-sm-inline" style="font-size: 0.65rem;">2</span>
+                </button>
+
+                <!-- Power-up 3: 2x Multiplier -->
+                <button type="button" class="btn btn-sm btn-outline-warning rounded-pill px-3 py-1 fw-bold d-inline-flex align-items-center gap-1.5 powerup-btn position-relative"
+                        id="btnPowerupX2" onclick="activateX2Multiplier()" title="Nhân đôi điểm số trong 20 giây (Phím 3)">
+                    <i class="ph-fill ph-lightning text-warning"></i>
+                    <span>x2 Điểm</span>
+                    <span class="badge bg-warning text-dark rounded-pill px-1.5" id="cntPowerupX2">x2</span>
+                    <span class="badge bg-dark text-white rounded px-1 ms-1 d-none d-sm-inline" style="font-size: 0.65rem;">3</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- Main Game Board Container -->
-    <div id="gameBoard" class="flex-grow-1 position-relative d-flex flex-column align-items-center justify-content-center shadow-sm bg-white border" style="border-radius: 1.5rem; padding: 2rem; min-height: 480px;">
+    <div id="gameBoard" class="flex-grow-1 position-relative d-flex flex-column align-items-center justify-content-center shadow-sm bg-white border" style="border-radius: 1.5rem; padding: 2rem; min-height: 480px; transition: box-shadow 0.3s ease, border-color 0.3s ease;">
+        
+        <!-- Power-up Floating Toast Banner -->
+        <div id="powerupActiveBanner" class="position-absolute top-0 start-50 translate-middle-x mt-3 px-4 py-1.5 rounded-pill fw-bold shadow-lg d-none z-3 text-white"
+             style="font-size: 0.85rem; backdrop-filter: blur(8px); transition: all 0.3s ease;">
+            <span id="powerupBannerText">Vật phẩm đang kích hoạt!</span>
+        </div>
         
         <!-- View 0: LOADING -->
         <div id="viewLoading" class="text-center w-100 py-5">
@@ -367,6 +414,35 @@
     .quiz-opt-btn:hover { background: #f8fafc; border-color: #94a3b8; }
     .quiz-opt-btn.correct { background: #dcfce7 !important; border-color: #22c55e !important; color: #15803d !important; }
     .quiz-opt-btn.incorrect { background: #fee2e2 !important; border-color: #ef4444 !important; color: #b91c1c !important; }
+
+    /* Power-ups Styles */
+    .powerup-btn {
+        transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+        user-select: none;
+    }
+    .powerup-btn:hover:not(:disabled) {
+        transform: translateY(-2px) scale(1.03);
+    }
+    .powerup-btn:disabled {
+        opacity: 0.45;
+        cursor: not-allowed;
+    }
+    .time-frozen-board {
+        box-shadow: 0 0 32px rgba(56, 189, 248, 0.6), inset 0 0 16px rgba(56, 189, 248, 0.2) !important;
+        border-color: #38bdf8 !important;
+        background: linear-gradient(180deg, #f0f9ff 0%, #ffffff 100%) !important;
+    }
+    .multiplier-active-board {
+        box-shadow: 0 0 32px rgba(245, 158, 11, 0.6), inset 0 0 16px rgba(251, 191, 36, 0.2) !important;
+        border-color: #fbbf24 !important;
+    }
+    .powerup-eliminated {
+        opacity: 0.22 !important;
+        pointer-events: none !important;
+        text-decoration: line-through;
+        filter: grayscale(100%);
+        transform: scale(0.96);
+    }
 </style>
 
 <script>
@@ -384,6 +460,18 @@
         correctCount: 0,
         isProcessing: false,
         combo: 1,
+        // Power-ups
+        powerups: {
+            freeze: 2,
+            fiftyFifty: 1,
+            x2: 2
+        },
+        isTimeFrozen: false,
+        freezeRemaining: 0,
+        freezeInterval: null,
+        multiplierActive: false,
+        multiplierRemaining: 0,
+        multiplierInterval: null,
         // Speed quiz timer
         speedTimer: null,
         speedSecondsLeft: 10,
@@ -454,7 +542,190 @@
         document.getElementById('btnQuit').addEventListener('click', (e) => {
             if (!confirm("Bạn có chắc chắn muốn thoát game?")) e.preventDefault();
         });
+
+        // Keyboard Shortcuts for Power-ups (1, 2, 3)
+        window.addEventListener('keydown', (e) => {
+            const activeTag = document.activeElement ? document.activeElement.tagName.toLowerCase() : '';
+            if (['input', 'textarea'].includes(activeTag)) return;
+
+            if (e.key === '1') {
+                e.preventDefault();
+                activateTimeFreeze();
+            } else if (e.key === '2') {
+                e.preventDefault();
+                activate5050();
+            } else if (e.key === '3') {
+                e.preventDefault();
+                activateX2Multiplier();
+            }
+        });
     });
+
+    // =========================================================================
+    // POWER-UPS SYSTEM (VẬT PHẨM TRỢ GIÚP)
+    // =========================================================================
+    function showPowerupBanner(text, bgGradient = 'linear-gradient(135deg, #0284c7 0%, #0369a1 100%)') {
+        const banner = document.getElementById('powerupActiveBanner');
+        const txt = document.getElementById('powerupBannerText');
+        if (!banner || !txt) return;
+        txt.textContent = text;
+        banner.style.background = bgGradient;
+        banner.classList.remove('d-none');
+        banner.classList.add('d-block');
+    }
+
+    function hidePowerupBanner() {
+        const banner = document.getElementById('powerupActiveBanner');
+        if (banner) {
+            banner.classList.add('d-none');
+            banner.classList.remove('d-block');
+        }
+    }
+
+    function activateTimeFreeze() {
+        if (gameState.powerups.freeze <= 0 || gameState.isTimeFrozen) return;
+        gameState.powerups.freeze--;
+        document.getElementById('cntPowerupFreeze').textContent = `x${gameState.powerups.freeze}`;
+        if (gameState.powerups.freeze === 0) {
+            document.getElementById('btnPowerupFreeze').disabled = true;
+        }
+
+        gameState.isTimeFrozen = true;
+        gameState.freezeRemaining = 10;
+        const board = document.getElementById('gameBoard');
+        board.classList.add('time-frozen-board');
+
+        showPowerupBanner(`❄️ ĐÓNG BĂNG THỜI GIAN: ${gameState.freezeRemaining}s còn lại`, 'linear-gradient(135deg, #0284c7 0%, #0891b2 100%)');
+
+        clearInterval(gameState.freezeInterval);
+        gameState.freezeInterval = setInterval(() => {
+            gameState.freezeRemaining--;
+            if (gameState.freezeRemaining > 0) {
+                showPowerupBanner(`❄️ ĐÓNG BĂNG THỜI GIAN: ${gameState.freezeRemaining}s còn lại`, 'linear-gradient(135deg, #0284c7 0%, #0891b2 100%)');
+            } else {
+                clearInterval(gameState.freezeInterval);
+                gameState.isTimeFrozen = false;
+                board.classList.remove('time-frozen-board');
+                if (!gameState.multiplierActive) {
+                    hidePowerupBanner();
+                } else {
+                    showPowerupBanner(`⚡ NHÂN ĐÔI ĐIỂM: ${gameState.multiplierRemaining}s`, 'linear-gradient(135deg, #d97706 0%, #b45309 100%)');
+                }
+            }
+        }, 1000);
+    }
+
+    function activate5050() {
+        if (gameState.powerups.fiftyFifty <= 0) return;
+        
+        let eliminatedCount = 0;
+        const curItem = gameState.items[gameState.currentIndex];
+
+        // 1. In Speed Quiz view
+        if (base_game_type === "SPEED_QUIZ" || base_game_type === "QUIZ") {
+            const optBtns = Array.from(document.querySelectorAll('#speedOptions .quiz-opt-btn:not(.powerup-eliminated)'));
+            if (curItem && optBtns.length > 2) {
+                const incorrectBtns = optBtns.filter(b => b.textContent.trim() !== curItem.definition);
+                incorrectBtns.sort(() => Math.random() - 0.5);
+                incorrectBtns.slice(0, 2).forEach(b => {
+                    b.classList.add('powerup-eliminated');
+                    b.disabled = true;
+                    eliminatedCount++;
+                });
+            }
+        } 
+        // 2. In Grammar Race view
+        else if (base_game_type === "GRAMMAR_RACE") {
+            const qList = gameState.grammarItems.length ? gameState.grammarItems : gameState.items;
+            const q = qList[gameState.currentIndex];
+            const optBtns = Array.from(document.querySelectorAll('#raceOptions .quiz-opt-btn:not(.powerup-eliminated)'));
+            if (q && optBtns.length > 2) {
+                const correctText = q.correct || q.definition;
+                const incorrectBtns = optBtns.filter(b => b.textContent.trim() !== correctText);
+                incorrectBtns.sort(() => Math.random() - 0.5);
+                incorrectBtns.slice(0, 2).forEach(b => {
+                    b.classList.add('powerup-eliminated');
+                    b.disabled = true;
+                    eliminatedCount++;
+                });
+            }
+        }
+        // 3. In Scramble view (auto fill 1st or next missing letter)
+        else if (base_game_type === "SCRAMBLE" && curItem) {
+            const targetChar = curItem.term[gameState.scrambleSelected.length]?.toUpperCase();
+            if (targetChar) {
+                const availChip = Array.from(document.querySelectorAll('#scrambleLetterPool .letter-chip:not(.disabled)'))
+                    .find(c => c.textContent.trim() === targetChar);
+                if (availChip) {
+                    selectScrambleLetter(availChip, targetChar);
+                    eliminatedCount++;
+                }
+            }
+        }
+        // 4. In Hangman view (reveal a hidden correct letter)
+        else if (base_game_type === "HANGMAN" && gameState.hmWord) {
+            const unrevealedLetters = gameState.hmWord.split('').filter(l => !gameState.hmGuessed.has(l));
+            if (unrevealedLetters.length > 0) {
+                const randomLtr = unrevealedLetters[Math.floor(Math.random() * unrevealedLetters.length)];
+                guessHangman(randomLtr);
+                eliminatedCount++;
+            }
+        }
+        // 5. In Spelling Bee (fill first letter or hint)
+        else if (base_game_type === "SPELLING_BEE" && curItem) {
+            const input = document.getElementById('spellingInput');
+            if (input && curItem.term) {
+                input.value = curItem.term.slice(0, Math.min(3, curItem.term.length));
+                eliminatedCount++;
+            }
+        }
+
+        gameState.powerups.fiftyFifty--;
+        document.getElementById('cntPowerup5050').textContent = `x${gameState.powerups.fiftyFifty}`;
+        if (gameState.powerups.fiftyFifty === 0) {
+            document.getElementById('btnPowerup5050').disabled = true;
+        }
+
+        showPowerupBanner('🎯 50:50: Đã loại bỏ 2 phương án sai / trợ giúp gợi ý!', 'linear-gradient(135deg, #dc2626 0%, #b91c1c 100%)');
+        setTimeout(() => {
+            if (!gameState.isTimeFrozen && !gameState.multiplierActive) {
+                hidePowerupBanner();
+            }
+        }, 3000);
+    }
+
+    function activateX2Multiplier() {
+        if (gameState.powerups.x2 <= 0 || gameState.multiplierActive) return;
+        gameState.powerups.x2--;
+        document.getElementById('cntPowerupX2').textContent = `x${gameState.powerups.x2}`;
+        if (gameState.powerups.x2 === 0) {
+            document.getElementById('btnPowerupX2').disabled = true;
+        }
+
+        gameState.multiplierActive = true;
+        gameState.multiplierRemaining = 20;
+        const board = document.getElementById('gameBoard');
+        board.classList.add('multiplier-active-board');
+
+        showPowerupBanner(`⚡ NHÂN ĐÔI ĐIỂM SỐ: x2 Điểm trong ${gameState.multiplierRemaining}s`, 'linear-gradient(135deg, #d97706 0%, #b45309 100%)');
+
+        clearInterval(gameState.multiplierInterval);
+        gameState.multiplierInterval = setInterval(() => {
+            gameState.multiplierRemaining--;
+            if (gameState.multiplierRemaining > 0) {
+                showPowerupBanner(`⚡ NHÂN ĐÔI ĐIỂM SỐ: x2 Điểm trong ${gameState.multiplierRemaining}s`, 'linear-gradient(135deg, #d97706 0%, #b45309 100%)');
+            } else {
+                clearInterval(gameState.multiplierInterval);
+                gameState.multiplierActive = false;
+                board.classList.remove('multiplier-active-board');
+                if (!gameState.isTimeFrozen) {
+                    hidePowerupBanner();
+                } else {
+                    showPowerupBanner(`❄️ ĐÓNG BĂNG THỜI GIAN: ${gameState.freezeRemaining}s`, 'linear-gradient(135deg, #0284c7 0%, #0891b2 100%)');
+                }
+            }
+        }, 1000);
+    }
 
     function playCurrentAudio(rate = 1.0) {
         if (!gameState.items[gameState.currentIndex]) return;
@@ -466,8 +737,13 @@
     }
 
     function addScore(pts) {
-        gameState.score += pts;
-        document.getElementById('gameScore').textContent = gameState.score;
+        const multiplier = gameState.multiplierActive ? 2 : 1;
+        gameState.score += (pts * multiplier);
+        const scoreEl = document.getElementById('gameScore');
+        scoreEl.textContent = gameState.score;
+        if (multiplier > 1) {
+            scoreEl.classList.add('text-warning');
+        }
     }
 
     function updateProgress() {
@@ -592,6 +868,7 @@
         document.getElementById('speedTimerText').textContent = '10s';
         
         gameState.speedTimer = setInterval(() => {
+            if (gameState.isTimeFrozen) return;
             gameState.speedSecondsLeft -= 0.1;
             const pct = Math.max(0, (gameState.speedSecondsLeft / 10) * 100);
             bar.style.width = `${pct}%`;
@@ -996,6 +1273,7 @@
         // Slow bot pace
         clearInterval(gameState.raceBotInterval);
         gameState.raceBotInterval = setInterval(() => {
+            if (gameState.isTimeFrozen) return;
             gameState.raceBotPos = Math.min(90, gameState.raceBotPos + 1.2);
             document.getElementById('raceCarBot').style.left = `${gameState.raceBotPos}%`;
         }, 1000);
@@ -1093,6 +1371,9 @@
         clearInterval(gameState.timerInterval);
         clearInterval(gameState.speedTimer);
         clearInterval(gameState.raceBotInterval);
+        clearInterval(gameState.freezeInterval);
+        clearInterval(gameState.multiplierInterval);
+        hidePowerupBanner();
         
         hideAllViews();
         const v = document.getElementById('viewResult');

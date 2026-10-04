@@ -360,30 +360,30 @@ MODULE 9. GAMIFICATION SYSTEM (HỆ THỐNG TRÒ CHƠI HÓA) — 3 TÍNH NĂNG C
   + Hiển thị huy hiệu Freeze trên Dashboard Widget và Gamification Hub.
 - Mức độ ưu tiên: Cao (High - Tăng mạnh retention của người dùng)
 
-[ ] 9.2. Badge Sharing - Chia sẻ huy hiệu lên mạng xã hội (Mục 9.4)
+[x] 9.2. Badge Sharing - Chia sẻ huy hiệu lên mạng xã hội (Mục 9.4)
 - Hiện trạng trong EnglishMate_Features.txt:
   Đã có bộ sưu tập huy hiệu đa cấp độ, tự động mở khóa theo mốc thành tích và cộng điểm thưởng XP.
-- Phần còn thiếu chưa làm:
-  Chưa có popup chia sẻ huy hiệu mới đạt được lên Facebook hoặc tải ảnh huy hiệu về máy.
-- Giải pháp kỹ thuật cần làm:
-  + Thêm nút Share trong modal chúc mừng mở khóa huy hiệu (`badge_unlock_modal.html`).
+- Phần đã hoàn thành:
+  + Tạo modal `_badge_share_modal.html` và `badge_unlock_modal.html` tích hợp toàn hệ thống.
+  + Hỗ trợ tạo ảnh chứng nhận huy hiệu độ phân giải cao vẽ qua HTML5 Canvas và tải ảnh PNG về máy.
+  + Hỗ trợ chia sẻ mạng xã hội (Facebook, Twitter/X, Native Web Share, Sao chép link thành tích với hiệu ứng toast).
+  + Thêm nút "Chia sẻ & Tải ảnh" trên từng huy hiệu đã mở khóa trong Gamification Hub và tự động bật popup chúc mừng kèm hiệu ứng pháo hoa Confetti khi có huy hiệu mới mở khóa.
 - Mức độ ưu tiên: Thấp (Low)
 
-[ ] 9.3. Power-ups - Vật phẩm trợ giúp trong Game Arcade (Mục 9.7)
+[x] 9.3. Power-ups - Vật phẩm trợ giúp trong Game Arcade (Mục 9.7)
 - Hiện trạng trong EnglishMate_Features.txt:
-  Sảnh game có 4 trò chơi hấp dẫn (Matching, Typing, Listening Rush, Speed Quiz), hệ thống 3 mạng sống (lives) và combo điểm.
-- Phần còn thiếu chưa làm:
-  Chưa có các vật phẩm bổ trợ (Power-ups) trong game như: Đóng băng thời gian 10 giây (Time Freeze), Loại bỏ 2 đáp án sai (50:50), Nhân đôi điểm số (x2 Multiplier).
-- Giải pháp kỹ thuật cần làm:
-  + Thêm thanh bar vật phẩm Power-ups trên giao diện chơi game arcade.
-  + Viết logic JavaScript kích hoạt hiệu ứng khi người chơi nhấn phím hoặc click icon vật phẩm.
+  Sảnh game có các trò chơi hấp dẫn (Matching, Typing, Speed Quiz, Scramble, Hangman, Grammar Race...), hệ thống combo điểm và thưởng XP.
+- Phần đã hoàn thành:
+  + Thêm thanh bar vật phẩm Power-ups trên giao diện chơi game arcade (`game_play.html`).
+  + Hỗ trợ 3 loại vật phẩm bổ trợ: Đóng băng thời gian 10 giây (Time Freeze ❄️), Loại bỏ 2 đáp án sai / trợ giúp gợi ý (50:50 🎯), Nhân đôi điểm số trong 20 giây (x2 Multiplier ⚡).
+  + Hỗ trợ phím tắt 1, 2, 3 kích hoạt nhanh, hiệu ứng banner nổi, đóng băng bộ đếm và viền phát sáng động (Frost / Golden energy).
 - Mức độ ưu tiên: Trung bình (Medium)
 
 ----------------------------------------------------------------------------------------------------
 MODULE 10. ADMIN SYSTEM (HỆ THỐNG QUẢN TRỊ) — 7 TÍNH NĂNG CHƯA LÀM
 ----------------------------------------------------------------------------------------------------
 
-[ ] 10.1. Import History - Bảng lưu lịch sử các lần nhập liệu (Mục 10.5)
+[x] 10.1. Import History - Bảng lưu lịch sử các lần nhập liệu (Mục 10.5)
 - Hiện trạng trong EnglishMate_Features.txt:
   Đã có tính năng Bulk Importer nhập hàng loạt Excel/CSV/JSON 2 bước (Preview validation -> Commit) cho Từ vựng, Bài học, Đề thi.
 - Phần còn thiếu chưa làm:
@@ -391,6 +391,7 @@ MODULE 10. ADMIN SYSTEM (HỆ THỐNG QUẢN TRỊ) — 7 TÍNH NĂNG CHƯA LÀM
 - Giải pháp kỹ thuật cần làm:
   + Tạo model `ImportHistory` (id, admin_id, filename, file_type, success_count, error_count, error_log, created_at).
   + Thêm tab "Lịch sử nhập liệu" trong trang `/admin/import`.
+  + Tích hợp tự động ghi nhận lịch sử vào `commit_import_records()` và cung cấp modal xem chi tiết lỗi import.
 - Mức độ ưu tiên: Trung bình (Medium)
 
 [ ] 10.2. Log Retention - Tự động dọn dẹp nhật ký kiểm tra (Mục 10.6)

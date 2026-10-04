@@ -1,4 +1,4 @@
-﻿import pytest
+import pytest
 from app.extensions import db
 from app.backend.auth.models import User
 from app.backend.learning.models import FlashcardSet, FlashcardItem, GameSession
@@ -105,3 +105,32 @@ def test_submit_game_results_and_xp(client, app, games_setup):
         assert gs is not None
         assert gs.game_type == "SPEED_QUIZ"
         assert gs.accuracy_rate == 100
+
+def test_game_powerups_bar_and_shortcuts(client, games_setup):
+    """Test that arcade games display the Power-ups bar with Time Freeze, 50:50, and 2x Multiplier."""
+    login(client)
+    start_resp = client.post("/games/start", data={
+        "game_type": "SPEED_QUIZ",
+        "set_id": "all",
+        "status": "all",
+        "sort_by": "random",
+        "quantity": "10"
+    }, follow_redirects=True)
+    
+    assert start_resp.status_code == 200
+    html = start_resp.get_data(as_text=True)
+    
+    # Verify Power-ups toolbar
+    assert 'id="powerupsBar"' in html
+    assert 'id="btnPowerupFreeze"' in html
+    assert 'id="btnPowerup5050"' in html
+    assert 'id="btnPowerupX2"' in html
+    
+    # Verify count badges and banners
+    assert 'id="cntPowerupFreeze"' in html
+    assert 'id="cntPowerup5050"' in html
+    assert 'id="cntPowerupX2"' in html
+    assert 'id="powerupActiveBanner"' in html
+    assert "Đóng Băng" in html
+    assert "50:50" in html
+    assert "x2 Điểm" in html

@@ -39,6 +39,29 @@
     <button type="button" class="btn-close shadow-none" onclick="hideInPageAlert()"></button>
   </div>
 
+  <!-- TAB NAVIGATION: IMPORT WORKFLOW VS IMPORT HISTORY -->
+  <ul class="nav nav-tabs nav-tabs-modern mb-4" id="importHubTabs" role="tablist">
+    <li class="nav-item" role="presentation">
+      <button class="nav-link {% if active_tab != 'history' %}active{% endif %} d-inline-flex align-items-center gap-2 fw-bold" id="tab-import-btn" data-bs-toggle="tab" data-bs-target="#tab-import-pane" type="button" role="tab" aria-controls="tab-import-pane" aria-selected="{{ 'true' if active_tab != 'history' else 'false' }}">
+        <i class="ph-bold ph-upload-simple fs-5"></i>
+        <span>Nạp Dữ Liệu Hàng Loạt</span>
+      </button>
+    </li>
+    <li class="nav-item" role="presentation">
+      <button class="nav-link {% if active_tab == 'history' %}active{% endif %} d-inline-flex align-items-center gap-2 fw-bold" id="tab-history-btn" data-bs-toggle="tab" data-bs-target="#tab-history-pane" type="button" role="tab" aria-controls="tab-history-pane" aria-selected="{{ 'true' if active_tab == 'history' else 'false' }}">
+        <i class="ph-bold ph-clock-counter-clockwise fs-5"></i>
+        <span>Lịch Sử Nhập Liệu</span>
+        {% if history_pagination and history_pagination.total > 0 %}
+        <span class="badge rounded-pill bg-primary-subtle text-primary ms-1" style="font-size: 0.75rem;">{{ history_pagination.total }}</span>
+        {% endif %}
+      </button>
+    </li>
+  </ul>
+
+  <div class="tab-content" id="importHubTabContent">
+    <!-- TAB 1: NẠP DỮ LIỆU HÀNG LOẠT -->
+    <div class="tab-pane fade {% if active_tab != 'history' %}show active{% endif %}" id="tab-import-pane" role="tabpanel" aria-labelledby="tab-import-btn">
+
   <!-- CURRENT DATABASE METRICS BAR (CLEAN & COMPACT) -->
   <div class="card-modern p-3 mb-4.5">
     <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 text-center text-md-start">
@@ -409,6 +432,199 @@
         Xem trên giao diện học
       </a>
     </div>
+    </div>
+    <!-- END TAB 1 -->
+
+    <!-- TAB 2: LỊCH SỬ NHẬP LIỆU -->
+    <div class="tab-pane fade {% if active_tab == 'history' %}show active{% endif %}" id="tab-history-pane" role="tabpanel" aria-labelledby="tab-history-btn">
+      <div class="card-modern p-4 mb-4.5">
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-3.5">
+          <div>
+            <h5 class="fw-bold text-dark mb-1 d-flex align-items-center gap-2" style="font-size: 1.15rem;">
+              <i class="ph-bold ph-clock-counter-clockwise text-primary"></i>
+              <span>Nhật Ký Các Lần Nhập Liệu (Import History)</span>
+            </h5>
+            <p class="text-secondary small mb-0" style="font-size: 0.88rem;">
+              Theo dõi chi tiết ai import, tên file, thời gian, số lượng bản ghi thành công và bản ghi lỗi.
+            </p>
+          </div>
+          <a href="{{ url_for('admin.import_hub', tab='history') }}" class="btn btn-sm btn-light border fw-semibold text-secondary d-inline-flex align-items-center gap-1.5" title="Làm mới">
+            <i class="ph-bold ph-arrows-clockwise"></i>
+            <span>Làm mới</span>
+          </a>
+        </div>
+
+        {% if history_pagination and history_pagination.items %}
+        <div class="table-responsive border rounded-3 overflow-hidden">
+          <table class="table table-hover align-middle mb-0" style="font-size: 0.88rem;">
+            <thead class="table-light">
+              <tr>
+                <th style="width: 60px;">#ID</th>
+                <th style="min-width: 150px;">Thời Gian</th>
+                <th style="min-width: 140px;">Quản Trị Viên</th>
+                <th style="min-width: 200px;">Tên File</th>
+                <th style="min-width: 130px;">Danh Mục</th>
+                <th class="text-center" style="min-width: 110px;">Thành Công</th>
+                <th class="text-center" style="min-width: 100px;">Lỗi</th>
+                <th class="text-end" style="min-width: 100px;">Chi Tiết</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for h in history_pagination.items %}
+              <tr>
+                <td class="fw-bold text-muted font-monospace">#{{ h.id }}</td>
+                <td class="text-nowrap">
+                  <div class="d-flex align-items-center gap-1.5">
+                    <i class="ph-bold ph-calendar text-muted"></i>
+                    <span>{{ h.created_at_vn.strftime('%d/%m/%Y %H:%M:%S') if h.created_at_vn else '--' }}</span>
+                  </div>
+                </td>
+                <td>
+                  <div class="d-flex align-items-center gap-1.5">
+                    <div class="rounded-circle bg-light d-flex align-items-center justify-content-center border" style="width: 26px; height: 26px; font-size: 0.75rem;">
+                      <i class="ph-bold ph-user text-secondary"></i>
+                    </div>
+                    <span class="fw-semibold text-dark">{{ h.admin.username if h.admin else 'Hệ thống' }}</span>
+                  </div>
+                </td>
+                <td>
+                  <div class="d-flex align-items-center gap-1.5">
+                    <i class="ph-bold ph-file-text text-primary"></i>
+                    <span class="font-monospace text-dark text-truncate" style="max-width: 220px;" title="{{ h.filename }}">{{ h.filename }}</span>
+                  </div>
+                </td>
+                <td>
+                  <span class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill px-2.5 py-1 fw-bold">
+                    {{ h.file_type }}
+                  </span>
+                </td>
+                <td class="text-center">
+                  <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-2.5 py-1 fw-bold">
+                    +{{ h.success_count }}
+                  </span>
+                </td>
+                <td class="text-center">
+                  {% if h.error_count > 0 %}
+                  <span class="badge bg-danger-subtle text-danger border border-danger-subtle rounded-pill px-2.5 py-1 fw-bold">
+                    {{ h.error_count }} lỗi
+                  </span>
+                  {% else %}
+                  <span class="badge bg-light text-muted border rounded-pill px-2.5 py-1">
+                    0
+                  </span>
+                  {% endif %}
+                </td>
+                <td class="text-end">
+                  {% if h.error_log %}
+                  <button type="button" class="btn btn-sm btn-outline-danger rounded-pill px-2.5 py-1 fw-semibold btn-view-import-log"
+                          data-history-id="{{ h.id }}"
+                          data-filename="{{ h.filename }}"
+                          data-admin="{{ h.admin.username if h.admin else 'Hệ thống' }}"
+                          data-created="{{ h.created_at_vn.strftime('%d/%m/%Y %H:%M:%S') if h.created_at_vn else '' }}"
+                          data-success="{{ h.success_count }}"
+                          data-errors="{{ h.error_count }}"
+                          data-log="{{ h.error_log | e }}">
+                    <i class="ph-bold ph-eye me-1"></i>Xem Log
+                  </button>
+                  {% else %}
+                  <button type="button" class="btn btn-sm btn-light border text-muted rounded-pill px-2.5 py-1" disabled>
+                    <i class="ph-bold ph-check text-success me-1"></i>Hợp lệ
+                  </button>
+                  {% endif %}
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Pagination -->
+        {% if history_pagination.pages > 1 %}
+        <div class="d-flex justify-content-between align-items-center mt-3.5 pt-2">
+          <small class="text-muted">
+            Trang {{ history_pagination.page }} / {{ history_pagination.pages }} (Tổng {{ history_pagination.total }} đợt import)
+          </small>
+          <ul class="pagination pagination-sm mb-0">
+            {% if history_pagination.has_prev %}
+            <li class="page-item">
+              <a class="page-link" href="{{ url_for('admin.import_hub', tab='history', page=history_pagination.prev_num) }}">Trước</a>
+            </li>
+            {% endif %}
+            {% for p in history_pagination.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2) %}
+              {% if p %}
+                <li class="page-item {% if p == history_pagination.page %}active{% endif %}">
+                  <a class="page-link" href="{{ url_for('admin.import_hub', tab='history', page=p) }}">{{ p }}</a>
+                </li>
+              {% else %}
+                <li class="page-item disabled"><span class="page-link">…</span></li>
+              {% endif %}
+            {% endfor %}
+            {% if history_pagination.has_next %}
+            <li class="page-item">
+              <a class="page-link" href="{{ url_for('admin.import_hub', tab='history', page=history_pagination.next_num) }}">Sau</a>
+            </li>
+            {% endif %}
+          </ul>
+        </div>
+        {% endif %}
+
+        {% else %}
+        <div class="text-center py-5">
+          <div class="rounded-circle bg-light d-inline-flex align-items-center justify-content-center mb-3" style="width: 64px; height: 64px;">
+            <i class="ph-bold ph-file-dashed fs-2 text-muted"></i>
+          </div>
+          <h6 class="fw-bold text-dark">Chưa có lịch sử nhập liệu nào</h6>
+          <p class="text-secondary small mb-3">Các đợt nạp dữ liệu từ file Excel, CSV, JSON sẽ được tự động ghi lại tại đây.</p>
+          <button type="button" class="btn btn-sm btn-primary rounded-pill px-3 py-1.5 fw-bold" onclick="document.getElementById('tab-import-btn').click();">
+            <i class="ph-bold ph-upload-simple me-1"></i>Nạp dữ liệu ngay
+          </button>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+    <!-- END TAB 2 -->
+  </div>
+  <!-- END TAB CONTENT -->
+
+  <!-- IMPORT LOG DETAILS MODAL -->
+  <div class="modal fade" id="modalImportLog" tabindex="-1" aria-labelledby="modalImportLogLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+      <div class="modal-content border-0 rounded-4 shadow-lg overflow-hidden">
+        <div class="modal-header border-bottom py-3 px-4 bg-light">
+          <h5 class="modal-title fw-bold text-dark d-flex align-items-center gap-2" id="modalImportLogLabel" style="font-size: 1.05rem;">
+            <i class="ph-bold ph-warning-circle text-danger"></i>
+            <span>Chi Tiết Nhật Ký Lỗi Nhập Liệu</span>
+          </h5>
+          <button type="button" class="btn-close shadow-none" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body p-4">
+          <div class="card bg-light border-0 rounded-3 p-3 mb-3 small">
+            <div class="row g-2">
+              <div class="col-sm-6">
+                <span class="text-muted">Tên file:</span> <strong id="modalLogFilename" class="text-dark font-monospace">--</strong>
+              </div>
+              <div class="col-sm-6">
+                <span class="text-muted">Thời gian:</span> <strong id="modalLogTime" class="text-dark">--</strong>
+              </div>
+              <div class="col-sm-6">
+                <span class="text-muted">Người import:</span> <strong id="modalLogAdmin" class="text-dark">--</strong>
+              </div>
+              <div class="col-sm-6">
+                <span class="text-muted">Số dòng lỗi:</span> <strong id="modalLogErrorCount" class="text-danger">0</strong>
+              </div>
+            </div>
+          </div>
+
+          <h6 class="fw-bold text-dark small mb-2">Chi tiết các bản ghi bị lỗi:</h6>
+          <div class="bg-dark text-light p-3 rounded-3 font-monospace small overflow-auto" style="max-height: 320px; font-size: 0.8rem; line-height: 1.5;" id="modalLogContent">
+            <!-- Log text -->
+          </div>
+        </div>
+        <div class="modal-footer border-top py-2.5 px-4 bg-light">
+          <button type="button" class="btn btn-secondary rounded-pill px-4 fw-bold btn-sm" data-bs-dismiss="modal">Đóng</button>
+        </div>
+      </div>
+    </div>
   </div>
 
 </div>
@@ -543,6 +759,10 @@ document.getElementById("btnCommitImport").addEventListener("click", async funct
   btnCommit.innerHTML = `<span class="spinner-border spinner-border-sm me-1.5"></span> Đang nạp vào Database...`;
 
   try {
+    const filename = currentValidationData.filename || document.getElementById("excelFileInput")?.files[0]?.name || "import_data.xlsx";
+    const errorCount = currentValidationData.error_count || 0;
+    const errorRecords = currentValidationData.error_records || [];
+
     const res = await fetch("{{ url_for('admin.commit_import') }}", {
       method: "POST",
       headers: {
@@ -552,6 +772,9 @@ document.getElementById("btnCommitImport").addEventListener("click", async funct
       body: JSON.stringify({
         content_type: currentValidationData.content_type,
         valid_records: currentValidationData.valid_records,
+        filename: filename,
+        error_count: errorCount,
+        error_records: errorRecords,
         mode: mode
       })
     });
@@ -609,6 +832,39 @@ document.addEventListener("DOMContentLoaded", function() {
       }, 150);
     }
   }
+
+  // Import Log Detail Modal Trigger
+  document.querySelectorAll('.btn-view-import-log').forEach(btn => {
+    btn.addEventListener('click', function() {
+      const filename = this.dataset.filename || '--';
+      const created = this.dataset.created || '--';
+      const admin = this.dataset.admin || '--';
+      const errors = this.dataset.errors || '0';
+      const logRaw = this.dataset.log || '';
+
+      document.getElementById('modalLogFilename').textContent = filename;
+      document.getElementById('modalLogTime').textContent = created;
+      document.getElementById('modalLogAdmin').textContent = admin;
+      document.getElementById('modalLogErrorCount').textContent = `${errors} dòng lỗi`;
+
+      const contentEl = document.getElementById('modalLogContent');
+      if (logRaw) {
+        try {
+          const parsed = JSON.parse(logRaw);
+          contentEl.textContent = JSON.stringify(parsed, null, 2);
+        } catch (e) {
+          contentEl.textContent = logRaw;
+        }
+      } else {
+        contentEl.textContent = 'Không có thông tin lỗi chi tiết.';
+      }
+
+      if (window.bootstrap) {
+        const modalObj = bootstrap.Modal.getOrCreateInstance(document.getElementById('modalImportLog'));
+        modalObj.show();
+      }
+    });
+  });
 });
 </script>
 {% endblock %}

@@ -277,10 +277,14 @@ def _validate_record(row_data, schema):
 def parse_and_validate_file(file_stream, filename, content_type):
     fn = filename.lower()
     if fn.endswith(".json"):
-        return parse_and_validate_json(file_stream, content_type)
+        res = parse_and_validate_json(file_stream, content_type)
     elif fn.endswith(".csv"):
-        return parse_and_validate_csv(file_stream, content_type)
-    return parse_and_validate_excel(file_stream, content_type)
+        res = parse_and_validate_csv(file_stream, content_type)
+    else:
+        res = parse_and_validate_excel(file_stream, content_type)
+    if isinstance(res, dict):
+        res["filename"] = filename
+    return res
 
 
 def parse_and_validate_csv(file_stream, content_type):
@@ -538,9 +542,9 @@ def parse_and_validate_excel(file_stream, content_type):
     }
 
 
-def commit_import_records(content_type, valid_records, user_id=None, mode="insert_or_update"):
+def commit_import_records(content_type, valid_records, user_id=None, mode="insert_or_update", filename=None, error_count=0, error_log=None):
     """
-    Persist validated records into PostgreSQL/SQLite database.
+    Persist validated records into PostgreSQL/SQLite database and track in ImportHistory.
     """
     inserted_count = 0
     updated_count = 0
@@ -829,6 +833,24 @@ def commit_import_records(content_type, valid_records, user_id=None, mode="inser
             details=f"Imported {inserted_count} new and updated {updated_count} records via Excel."
         )
         db.session.add(log)
+
+    # Record in ImportHistory
+    try:
+        from .models import ImportHistory
+        err_log_str = None
+        if error_log:
+            err_log_str = json.dumps(error_log, ensure_ascii=False) if isinstance(error_log, (list, dict)) else str(error_log)
+        hist = ImportHistory(
+            admin_id=user_id,
+            filename=filename or f"import_{content_type}.xlsx",
+            file_type=content_type.upper(),
+            success_count=inserted_count + updated_count,
+            error_count=error_count or 0,
+            error_log=err_log_str
+        )
+        db.session.add(hist)
+    except Exception:
+        pass
 
     db.session.commit()
 

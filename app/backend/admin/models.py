@@ -103,3 +103,22 @@ class SystemSetting(db.Model):
             raise
         return item
 
+
+class ImportHistory(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    admin_id = db.Column(db.Integer, db.ForeignKey("user.id", ondelete="SET NULL"), nullable=True, index=True)
+    filename = db.Column(db.String(255), nullable=False)
+    file_type = db.Column(db.String(50), nullable=False, index=True)  # VOCABULARY, GRAMMAR, LESSONS, QUESTIONS, EXAMS
+    success_count = db.Column(db.Integer, default=0, nullable=False)
+    error_count = db.Column(db.Integer, default=0, nullable=False)
+    error_log = db.Column(db.Text, nullable=True)
+    created_at = db.Column(db.DateTime(timezone=True), default=now, nullable=False, index=True)
+
+    admin = db.relationship("User", backref=db.backref("import_histories", lazy="dynamic"))
+
+    @property
+    def created_at_vn(self):
+        if not self.created_at:
+            return None
+        return self.created_at + timedelta(hours=7)
+

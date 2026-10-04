@@ -13,7 +13,7 @@ from ..learning.models import Lesson, Question, QuizAttempt, Vocabulary, Grammar
 from . import bp
 from .forms import ConfirmForm, LessonForm, VocabularyForm
 from .importer import parse_and_validate_excel, parse_and_validate_file, commit_import_records, CONTENT_SCHEMAS
-from .models import AuditLog, Permission, Role, RolePermission, UserRole, SystemSetting
+from .models import AuditLog, Permission, Role, RolePermission, UserRole, SystemSetting, ImportHistory
 from .utils import log_audit_action, permission_required, has_permission
 
 
@@ -1276,6 +1276,7 @@ def exam_stats_analytics(exam_id):
 @admin_required
 def import_hub():
     selected_type = request.args.get("type", "").strip().lower()
+    active_tab = request.args.get("tab", "import").strip().lower()
     stats = {
         "vocabulary_count": Vocabulary.query.count(),
         "grammar_count": GrammarTopic.query.count(),
@@ -1283,7 +1284,17 @@ def import_hub():
         "questions_count": Question.query.count(),
         "exams_count": Exam.query.count()
     }
-    return render_template("admin/import_hub.html", schemas=CONTENT_SCHEMAS, stats=stats, selected_type=selected_type)
+    page = request.args.get("page", 1, type=int)
+    history_pagination = ImportHistory.query.order_by(ImportHistory.created_at.desc()).paginate(page=page, per_page=15, error_out=False)
+
+    return render_template(
+        "admin/import_hub.html",
+        schemas=CONTENT_SCHEMAS,
+        stats=stats,
+        selected_type=selected_type,
+        active_tab=active_tab,
+        history_pagination=history_pagination
+    )
 
 
 @bp.get("/import/template/<content_type>")
@@ -1359,6 +1370,9 @@ def commit_import():
     content_type = data.get("content_type")
     valid_records = data.get("valid_records", [])
     mode = data.get("mode", "insert_or_update")
+    filename = data.get("filename")
+    error_count = data.get("error_count", 0)
+    error_log = data.get("error_records") or data.get("error_log") or data.get("errors")
 
     if not content_type or not valid_records:
         return jsonify({"success": False, "error": "Không có dữ liệu hợp lệ để import."}), 400
@@ -1368,7 +1382,10 @@ def commit_import():
             content_type=content_type,
             valid_records=valid_records,
             user_id=current_user.id,
-            mode=mode
+            mode=mode,
+            filename=filename,
+            error_count=error_count,
+            error_log=error_log
         )
         if res.get("success"):
             created_cnt = res.get("created_count", 0)
@@ -1384,6 +1401,28 @@ def commit_import():
     except Exception as e:
         db.session.rollback()
         return jsonify({"success": False, "error": f"Lỗi khi lưu vào Database: {str(e)}"}), 500
+
+
+@bp.get("/import/history/<int:history_id>")
+@admin_required
+def get_import_history_detail(history_id):
+    item = db.session.get(ImportHistory, history_id)
+    if not item:
+        return jsonify({"success": False, "error": "Không tìm thấy bản ghi lịch sử nhập."}), 404
+
+    return jsonify({
+        "success": True,
+        "history": {
+            "id": item.id,
+            "filename": item.filename,
+            "file_type": item.file_type,
+            "admin_name": item.admin.username if item.admin else "System",
+            "success_count": item.success_count,
+            "error_count": item.error_count,
+            "error_log": item.error_log,
+            "created_at": item.created_at_vn.strftime("%d/%m/%Y %H:%M:%S") if item.created_at_vn else ""
+        }
+    })
 
 
 @bp.get("/system/maintenance")

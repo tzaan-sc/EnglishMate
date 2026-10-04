@@ -1,9 +1,10 @@
-﻿import io
+import io
 import pytest
 from openpyxl import Workbook
 from app.extensions import db
 from app.backend.learning.models import Vocabulary, GrammarTopic, Lesson, Question
 from app.backend.exams.models import Exam, ExamQuestion
+from app.backend.admin.models import ImportHistory
 from tests.conftest import login
 
 
@@ -608,6 +609,73 @@ def test_commit_exams_with_media_url_and_transcript(client):
         assert q.media_info.get("audio_url") == "https://domain.com/audio/p1_01.mp3"
         assert q.transcript is not None
         assert "He is carrying luggage" in q.transcript
+
+
+def test_import_history_creation_and_view(client):
+    login(client, email="admin@test.com", password="admin123")
+    valid_records = [
+        {
+            "row_number": 2,
+            "data": {
+                "word": "serendipity",
+                "pronunciation": "/ˌser.ənˈdɪp.ə.ti/",
+                "part_of_speech": "noun",
+                "meaning_vi": "sự may mắn tình cờ",
+                "example_en": "Finding this book was sheer serendipity.",
+                "example_vi": "Tìm thấy cuốn sách này là sự may mắn hoàn toàn tình cờ.",
+                "topic": "Literature",
+                "level": "C2"
+            }
+        }
+    ]
+
+    # Commit with filename and error count
+    res = client.post(
+        "/admin/import/commit",
+        json={
+            "content_type": "vocabulary",
+            "filename": "serendipity_vocab.xlsx",
+            "valid_records": valid_records,
+            "error_count": 2,
+            "error_records": [
+                {"row_number": 3, "errors": ["Cột word không được để trống"]},
+                {"row_number": 4, "errors": ["Level Z9 không hợp lệ"]}
+            ],
+            "mode": "insert_or_update"
+        }
+    )
+    assert res.status_code == 200
+    json_res = res.get_json()
+    assert json_res["success"] is True
+
+    # Verify ImportHistory record exists in DB
+    history_id = None
+    with client.application.app_context():
+        history = ImportHistory.query.filter_by(filename="serendipity_vocab.xlsx").first()
+        assert history is not None
+        assert history.file_type == "VOCABULARY"
+        assert history.success_count == 1
+        assert history.error_count == 2
+        assert "Level Z9 không hợp lệ" in (history.error_log or "")
+        assert history.admin is not None
+        history_id = history.id
+
+    # Test GET history tab
+    tab_res = client.get("/admin/import?tab=history")
+    assert tab_res.status_code == 200
+    assert "serendipity_vocab.xlsx".encode("utf-8") in tab_res.data
+    assert "Lịch Sử Nhập Liệu".encode("utf-8") in tab_res.data
+
+    # Test GET history detail API endpoint
+    detail_res = client.get(f"/admin/import/history/{history_id}")
+    assert detail_res.status_code == 200
+    detail_json = detail_res.get_json()
+    assert detail_json["success"] is True
+    assert detail_json["history"]["filename"] == "serendipity_vocab.xlsx"
+    assert detail_json["history"]["success_count"] == 1
+    assert detail_json["history"]["error_count"] == 2
+    assert "Level Z9 không hợp lệ" in detail_json["history"]["error_log"]
+
 
 
 
