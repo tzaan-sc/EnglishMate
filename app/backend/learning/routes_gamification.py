@@ -132,7 +132,7 @@ def gamification_hub():
     from .models import Badge, UserBadge, Challenge, UserChallenge
     from ..auth.models import User, DailyActivity
     
-    check_user_badges(current_user)
+    newly_unlocked = check_user_badges(current_user)
     user_challenges = get_or_create_user_challenges(current_user)
     
     level_info = current_user.get_level_info()
@@ -187,6 +187,7 @@ def gamification_hub():
         "learning/gamification.html",
         level_info=level_info,
         badges_data=badges_data,
+        newly_unlocked_badges=newly_unlocked,
         unlocked_count=len(user_badge_map),
         total_badges_count=len(all_badges),
         all_time_leaders=all_time_leaders,

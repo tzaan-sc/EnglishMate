@@ -462,8 +462,18 @@
                 <span>Đã mở khóa</span>
               </div>
               {% if item.unlocked_at %}
-              <small class="text-muted" style="font-size: 0.72rem;">Ngày đạt: {{ item.unlocked_at.strftime('%d/%m/%Y') }}</small>
+              <small class="text-muted d-block" style="font-size: 0.72rem;">Ngày đạt: {{ item.unlocked_at.strftime('%d/%m/%Y') }}</small>
               {% endif %}
+              <button type="button" class="btn btn-outline-primary rounded-pill btn-sm w-100 mt-2 d-inline-flex align-items-center justify-content-center gap-1 btn-share-badge-card"
+                      style="font-size: 0.75rem; padding: 3px 8px; font-weight: 600;"
+                      data-badge-name="{{ b.name }}"
+                      data-badge-desc="{{ b.description }}"
+                      data-badge-icon="{{ b.icon }}"
+                      data-badge-xp="{{ b.xp_reward }}"
+                      data-badge-date="{% if item.unlocked_at %}{{ item.unlocked_at.strftime('%d/%m/%Y') }}{% else %}Hôm nay{% endif %}">
+                <i class="ph-bold ph-share-network"></i>
+                <span>Chia sẻ & Tải ảnh</span>
+              </button>
               {% else %}
               <div class="text-muted small fw-semibold d-flex align-items-center justify-content-center gap-1">
                 <i class="ph-bold ph-lock"></i>
@@ -1006,6 +1016,42 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     });
   }
+
+  // Badge Share & Download Handlers
+  document.querySelectorAll('.btn-share-badge-card').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      if (window.showBadgeShareModal) {
+        window.showBadgeShareModal({
+          name: btn.dataset.badgeName,
+          description: btn.dataset.badgeDesc,
+          icon: btn.dataset.badgeIcon,
+          xp_reward: parseInt(btn.dataset.badgeXp) || 50,
+          unlocked_at: btn.dataset.badgeDate,
+          username: {{ (current_user.username if current_user.is_authenticated else 'Học Viên') | tojson }},
+          is_new: false
+        });
+      }
+    });
+  });
+
+  {% if newly_unlocked_badges and newly_unlocked_badges|length > 0 %}
+  // Auto-celebrate newly unlocked badge
+  setTimeout(() => {
+    {% set nb = newly_unlocked_badges[0] %}
+    if (window.showBadgeShareModal) {
+      window.showBadgeShareModal({
+        name: {{ nb.name | tojson }},
+        description: {{ nb.description | tojson }},
+        icon: {{ nb.icon | tojson }},
+        xp_reward: {{ nb.xp_reward | tojson }},
+        unlocked_at: 'Hôm nay',
+        username: {{ (current_user.username if current_user.is_authenticated else 'Học Viên') | tojson }},
+        is_new: true
+      });
+    }
+  }, 450);
+  {% endif %}
 });
 </script>
 {% endblock %}

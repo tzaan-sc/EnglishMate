@@ -1,0 +1,474 @@
+<!-- BADGE SHARE & UNLOCK CELEBRATION MODAL -->
+<div class="modal fade" id="badgeUnlockModal" tabindex="-1" aria-labelledby="badgeUnlockModalLabel" aria-hidden="true" data-bs-backdrop="true">
+  <div class="modal-dialog modal-dialog-centered" style="max-width: 480px;">
+    <div class="modal-content border-0 rounded-4 shadow-2xl overflow-hidden position-relative" style="background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);">
+      
+      <!-- Confetti Canvas Overlay for newly unlocked badges -->
+      <canvas id="badgeConfettiCanvas" class="position-absolute top-0 start-0 w-100 h-100 pointer-events-none" style="z-index: 15; pointer-events: none;"></canvas>
+
+      <!-- Close Button -->
+      <button type="button" class="btn-close position-absolute top-0 end-0 m-3 z-3" data-bs-dismiss="modal" aria-label="Close" id="btnCloseBadgeModal"></button>
+
+      <!-- Modal Body -->
+      <div class="modal-body p-4 p-md-4 text-center position-relative z-2">
+        
+        <!-- Header / Celebration Title -->
+        <div id="badgeModalHeaderWrapper" class="mb-3">
+          <div class="d-inline-flex align-items-center gap-1.5 px-3 py-1 rounded-pill mb-1" style="background-color: #e0e7ff; border: 1px solid #c7d2fe;">
+            <span id="badgeModalHeaderTag" style="font-size: 0.78rem; font-weight: 800; color: #4338ca; letter-spacing: 0.03em;">
+              🎉 HUY HIỆU THÀNH TÍCH
+            </span>
+          </div>
+          <h5 id="badgeModalMainHeading" class="fw-bold text-dark mb-0 mt-1" style="font-size: 1.15rem;">
+            Chia Sẻ Thành Tích Học Tập
+          </h5>
+        </div>
+
+        <!-- Visual Badge Achievement Card Preview -->
+        <div id="badgeCardPreview" class="badge-preview-card p-3.5 rounded-4 mb-3 text-center position-relative overflow-hidden shadow-sm"
+             style="background: linear-gradient(135deg, #4338ca 0%, #3730a3 50%, #1e1b4b 100%); color: #ffffff; border: 2px solid rgba(255, 255, 255, 0.15);">
+          
+          <!-- Decorative Background Elements -->
+          <div class="position-absolute" style="top: -20px; right: -20px; width: 100px; height: 100px; background: radial-gradient(circle, rgba(255,255,255,0.12) 0%, transparent 70%); border-radius: 50%;"></div>
+          <div class="position-absolute" style="bottom: -20px; left: -20px; width: 90px; height: 90px; background: radial-gradient(circle, rgba(245,158,11,0.2) 0%, transparent 70%); border-radius: 50%;"></div>
+
+          <!-- EnglishMate Brand Header -->
+          <div class="d-flex align-items-center justify-content-between mb-2 px-1">
+            <span class="d-inline-flex align-items-center gap-1" style="font-size: 0.74rem; letter-spacing: 0.05em; font-weight: 800; color: #cbd5e1; text-transform: uppercase;">
+              <i class="ph-fill ph-sparkle text-warning"></i> EnglishMate
+            </span>
+            <span id="badgeCardXpBadge" class="badge rounded-pill bg-warning text-dark fw-bold px-2.5 py-1" style="font-size: 0.72rem;">
+              +50 XP
+            </span>
+          </div>
+
+          <!-- Badge Icon Glowing Circle -->
+          <div class="badge-icon-outer-wrapper my-2 mx-auto position-relative d-flex align-items-center justify-content-center">
+            <div class="badge-icon-halo position-absolute top-50 start-50 translate-middle rounded-circle"></div>
+            <div class="badge-icon-inner rounded-circle d-flex align-items-center justify-content-center shadow-lg position-relative"
+                 style="width: 80px; height: 80px; background: linear-gradient(135deg, #ffffff 0%, #f1f5f9 100%); border: 3px solid #fbbf24; font-size: 2.7rem;">
+              <span id="badgeModalIcon">🏆</span>
+            </div>
+          </div>
+
+          <!-- Badge Name & Description -->
+          <h4 id="badgeModalName" class="fw-bold mb-1 text-white" style="font-size: 1.25rem; letter-spacing: -0.01em;">
+            Huy Hiệu Mới
+          </h4>
+          <p id="badgeModalDesc" class="small mb-2 px-2" style="font-size: 0.84rem; color: #cbd5e1; line-height: 1.4;">
+            Mô tả điều kiện đạt được huy hiệu.
+          </p>
+
+          <!-- User Info & Unlock Date Footer -->
+          <div class="pt-2 border-top border-white border-opacity-10 d-flex justify-content-between align-items-center small" style="font-size: 0.76rem; color: #94a3b8;">
+            <div class="d-flex align-items-center gap-1.5 text-truncate me-2">
+              <i class="ph-bold ph-user-circle text-light"></i>
+              <span id="badgeModalUsername" class="text-white fw-bold text-truncate">{{ current_user.username if current_user.is_authenticated else 'Học Viên' }}</span>
+            </div>
+            <div class="d-flex align-items-center gap-1 text-nowrap">
+              <i class="ph-bold ph-calendar-blank"></i>
+              <span id="badgeModalDate">--/--/----</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Share & Action Buttons -->
+        <div class="d-flex flex-column gap-2">
+          
+          <!-- Download Image Button -->
+          <button type="button" class="btn btn-primary rounded-pill py-2.5 fw-bold shadow-sm d-flex align-items-center justify-content-center gap-2"
+                  id="btnDownloadBadgeCard"
+                  style="background: linear-gradient(135deg, #4f46e5 0%, #4338ca 100%); border: none; font-size: 0.92rem;">
+            <i class="ph-bold ph-download-simple" style="font-size: 1.1rem;"></i>
+            <span>Tải ảnh huy hiệu về máy (PNG)</span>
+          </button>
+
+          <!-- Social Share Grid Buttons -->
+          <div class="d-flex gap-2 justify-content-center mt-1">
+            
+            <!-- Facebook Share -->
+            <button type="button" class="btn btn-light border rounded-pill flex-fill py-2 fw-semibold d-flex align-items-center justify-content-center gap-1.5"
+                    id="btnShareBadgeFb"
+                    style="color: #1877f2; border-color: #e2e8f0; font-size: 0.85rem;"
+                    title="Chia sẻ lên Facebook">
+              <i class="ph-bold ph-facebook-logo" style="font-size: 1.15rem;"></i>
+              <span>Facebook</span>
+            </button>
+
+            <!-- X / Twitter Share -->
+            <button type="button" class="btn btn-light border rounded-pill flex-fill py-2 fw-semibold d-flex align-items-center justify-content-center gap-1.5"
+                    id="btnShareBadgeTw"
+                    style="color: #0f172a; border-color: #e2e8f0; font-size: 0.85rem;"
+                    title="Chia sẻ lên X (Twitter)">
+              <i class="ph-bold ph-x-logo" style="font-size: 1.1rem;"></i>
+              <span>Twitter</span>
+            </button>
+
+            <!-- Copy Link -->
+            <button type="button" class="btn btn-light border rounded-pill flex-fill py-2 fw-semibold d-flex align-items-center justify-content-center gap-1.5"
+                    id="btnCopyBadgeLink"
+                    style="color: #475569; border-color: #e2e8f0; font-size: 0.85rem;"
+                    title="Sao chép liên kết">
+              <i class="ph-bold ph-link" style="font-size: 1.1rem;"></i>
+              <span id="txtCopyBadgeBtn">Sao chép</span>
+            </button>
+
+            <!-- Native Web Share (if supported) -->
+            <button type="button" class="btn btn-light border rounded-circle p-2 fw-semibold d-none align-items-center justify-content-center"
+                    id="btnNativeWebShare"
+                    style="width: 38px; height: 38px; color: #4338ca; border-color: #e2e8f0;"
+                    title="Chia sẻ qua ứng dụng khác">
+              <i class="ph-bold ph-share-network" style="font-size: 1.1rem;"></i>
+            </button>
+
+          </div>
+
+          <!-- Secondary Link -->
+          <div class="mt-2">
+            <button type="button" class="btn btn-link text-muted text-decoration-none small py-1" data-bs-dismiss="modal" style="font-size: 0.82rem;">
+              Đóng lại
+            </button>
+          </div>
+
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+  .badge-icon-outer-wrapper {
+    width: 80px;
+    height: 80px;
+  }
+  .badge-icon-halo {
+    width: 105px;
+    height: 105px;
+    background: radial-gradient(circle, rgba(251, 191, 36, 0.4) 0%, rgba(251, 191, 36, 0) 70%);
+    animation: badge-halo-pulse 2s ease-in-out infinite;
+  }
+  @keyframes badge-halo-pulse {
+    0%, 100% {
+      transform: translate(-50%, -50%) scale(0.9);
+      opacity: 0.7;
+    }
+    50% {
+      transform: translate(-50%, -50%) scale(1.2);
+      opacity: 1;
+    }
+  }
+</style>
+
+<script>
+(function() {
+  // Store active badge data
+  let currentActiveBadge = {
+    name: 'Học Giả Chăm Chỉ',
+    description: 'Hoàn thành 10 bài học đầu tiên.',
+    icon: '🏆',
+    xp_reward: 50,
+    unlocked_at: new Date().toLocaleDateString('vi-VN'),
+    username: 'Học Viên'
+  };
+
+  // Launch confetti animation
+  function launchBadgeConfetti() {
+    const canvas = document.getElementById('badgeConfettiCanvas');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    const width = canvas.width = canvas.offsetWidth || 440;
+    const height = canvas.height = canvas.offsetHeight || 500;
+    
+    const colors = ['#6366f1', '#4f46e5', '#fbbf24', '#f59e0b', '#10b981', '#ec4899', '#3b82f6'];
+    const particles = [];
+    const particleCount = 70;
+
+    for (let i = 0; i < particleCount; i++) {
+      particles.push({
+        x: width / 2,
+        y: height / 2 - 20,
+        w: Math.random() * 8 + 4,
+        h: Math.random() * 6 + 3,
+        color: colors[Math.floor(Math.random() * colors.length)],
+        vx: (Math.random() - 0.5) * 14,
+        vy: (Math.random() - 0.7) * 16,
+        rotation: Math.random() * 360,
+        rotationSpeed: (Math.random() - 0.5) * 12,
+        gravity: 0.35,
+        drag: 0.96,
+        opacity: 1
+      });
+    }
+
+    let animationFrame;
+    function render() {
+      ctx.clearRect(0, 0, width, height);
+      let active = false;
+
+      particles.forEach(p => {
+        p.x += p.vx;
+        p.y += p.vy;
+        p.vy += p.gravity;
+        p.vx *= p.drag;
+        p.vy *= p.drag;
+        p.rotation += p.rotationSpeed;
+        p.opacity -= 0.012;
+
+        if (p.opacity > 0) {
+          active = true;
+          ctx.save();
+          ctx.translate(p.x, p.y);
+          ctx.rotate((p.rotation * Math.PI) / 180);
+          ctx.fillStyle = p.color;
+          ctx.globalAlpha = Math.max(0, p.opacity);
+          ctx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h);
+          ctx.restore();
+        }
+      });
+
+      if (active) {
+        animationFrame = requestAnimationFrame(render);
+      }
+    }
+    render();
+  }
+
+  // Draw high-resolution badge card image onto hidden canvas and trigger download
+  function downloadBadgeImage() {
+    const canvas = document.createElement('canvas');
+    canvas.width = 800;
+    canvas.height = 480;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    // Background gradient
+    const bgGrad = ctx.createLinearGradient(0, 0, 800, 480);
+    bgGrad.addColorStop(0, '#1e1b4b');
+    bgGrad.addColorStop(0.5, '#312e81');
+    bgGrad.addColorStop(1, '#0f172a');
+    ctx.fillStyle = bgGrad;
+    ctx.fillRect(0, 0, 800, 480);
+
+    // Rounded outer decorative border
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.15)';
+    ctx.lineWidth = 4;
+    ctx.strokeRect(20, 20, 760, 440);
+
+    // Inner gold accent corner markers
+    ctx.strokeStyle = '#fbbf24';
+    ctx.lineWidth = 2;
+    // Top-left
+    ctx.beginPath(); ctx.moveTo(28, 50); ctx.lineTo(28, 28); ctx.lineTo(50, 28); ctx.stroke();
+    // Top-right
+    ctx.beginPath(); ctx.moveTo(750, 50); ctx.lineTo(750, 28); ctx.lineTo(728, 28); ctx.stroke();
+    // Bottom-left
+    ctx.beginPath(); ctx.moveTo(28, 430); ctx.lineTo(28, 452); ctx.lineTo(50, 452); ctx.stroke();
+    // Bottom-right
+    ctx.beginPath(); ctx.moveTo(750, 430); ctx.lineTo(750, 452); ctx.lineTo(728, 452); ctx.stroke();
+
+    // Brand Header
+    ctx.fillStyle = '#fbbf24';
+    ctx.font = 'bold 20px sans-serif';
+    ctx.textAlign = 'left';
+    ctx.fillText('✨ ENGLISHMATE ACHIEVEMENT', 50, 65);
+
+    // XP Pill
+    ctx.fillStyle = '#fbbf24';
+    ctx.beginPath();
+    ctx.roundRect(650, 45, 100, 32, 16);
+    ctx.fill();
+    ctx.fillStyle = '#1e1b4b';
+    ctx.font = 'bold 16px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText(`+${currentActiveBadge.xp_reward || 50} XP`, 700, 67);
+
+    // Glowing Halo behind Badge Icon
+    const haloGrad = ctx.createRadialGradient(400, 175, 20, 400, 175, 90);
+    haloGrad.addColorStop(0, 'rgba(251, 191, 36, 0.45)');
+    haloGrad.addColorStop(1, 'rgba(251, 191, 36, 0)');
+    ctx.fillStyle = haloGrad;
+    ctx.beginPath();
+    ctx.arc(400, 175, 90, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Badge Icon Background Circle
+    ctx.fillStyle = '#ffffff';
+    ctx.beginPath();
+    ctx.arc(400, 175, 54, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.strokeStyle = '#fbbf24';
+    ctx.lineWidth = 4;
+    ctx.stroke();
+
+    // Badge Emoji / Icon
+    ctx.font = '52px "Segoe UI Emoji", "Apple Color Emoji", sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(currentActiveBadge.icon || '🏆', 400, 175);
+
+    // Badge Title
+    ctx.textBaseline = 'alphabetic';
+    ctx.fillStyle = '#ffffff';
+    ctx.font = 'bold 30px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText(currentActiveBadge.name || 'Huy Hiệu Thành Tích', 400, 275);
+
+    // Badge Description
+    ctx.fillStyle = '#cbd5e1';
+    ctx.font = '17px sans-serif';
+    ctx.fillText(currentActiveBadge.description || '', 400, 310);
+
+    // Separator line
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.15)';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(100, 345);
+    ctx.lineTo(700, 345);
+    ctx.stroke();
+
+    // Footer Info: Learner and Date
+    ctx.fillStyle = '#94a3b8';
+    ctx.font = '15px sans-serif';
+    ctx.textAlign = 'left';
+    ctx.fillText(`Học viên: ${currentActiveBadge.username || 'EnglishMate Learner'}`, 100, 385);
+
+    ctx.textAlign = 'right';
+    ctx.fillText(`Ngày đạt: ${currentActiveBadge.unlocked_at || new Date().toLocaleDateString('vi-VN')}`, 700, 385);
+
+    // Watermark
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.35)';
+    ctx.font = '13px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('Học tiếng Anh thông minh mỗi ngày cùng EnglishMate 🌟', 400, 425);
+
+    // Download trigger
+    const link = document.createElement('a');
+    const safeName = (currentActiveBadge.name || 'badge').toLowerCase().replace(/[^a-z0-9]/g, '-');
+    link.download = `englishmate-badge-${safeName}.png`;
+    link.href = canvas.toDataURL('image/png');
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+    if (window.showCustomFlashToast) {
+      window.showCustomFlashToast('Đã tải ảnh huy hiệu thành công!', 'success', 'Tải Về Thành Công 📥');
+    }
+  }
+
+  // Open modal programmatically
+  window.showBadgeShareModal = function(data) {
+    if (!data) return;
+    currentActiveBadge = Object.assign({}, currentActiveBadge, data);
+
+    const modalEl = document.getElementById('badgeUnlockModal');
+    if (!modalEl || !window.bootstrap) return;
+
+    // Populate data
+    const iconEl = document.getElementById('badgeModalIcon');
+    if (iconEl) iconEl.textContent = currentActiveBadge.icon || '🏆';
+
+    const nameEl = document.getElementById('badgeModalName');
+    if (nameEl) nameEl.textContent = currentActiveBadge.name || '';
+
+    const descEl = document.getElementById('badgeModalDesc');
+    if (descEl) descEl.textContent = currentActiveBadge.description || '';
+
+    const xpEl = document.getElementById('badgeCardXpBadge');
+    if (xpEl) xpEl.textContent = `+${currentActiveBadge.xp_reward || 50} XP`;
+
+    const userEl = document.getElementById('badgeModalUsername');
+    if (userEl && currentActiveBadge.username) userEl.textContent = currentActiveBadge.username;
+
+    const dateEl = document.getElementById('badgeModalDate');
+    if (dateEl) dateEl.textContent = currentActiveBadge.unlocked_at || new Date().toLocaleDateString('vi-VN');
+
+    // Header customization if newly unlocked
+    const tagEl = document.getElementById('badgeModalHeaderTag');
+    const headingEl = document.getElementById('badgeModalMainHeading');
+    if (data.is_new) {
+      if (tagEl) tagEl.textContent = '🎉 CHÚC MỪNG MỞ KHÓA HUY HIỆU!';
+      if (headingEl) headingEl.textContent = 'Bạn Vừa Đạt Được Thành Tích Mới!';
+    } else {
+      if (tagEl) tagEl.textContent = '🏆 HUY HIỆU THÀNH TÍCH';
+      if (headingEl) headingEl.textContent = 'Chia Sẻ Thành Tích Học Tập';
+    }
+
+    const modalObj = bootstrap.Modal.getOrCreateInstance(modalEl);
+    modalObj.show();
+
+    if (data.is_new) {
+      setTimeout(launchBadgeConfetti, 250);
+    }
+  };
+
+  // Setup event listeners on DOM ready
+  document.addEventListener('DOMContentLoaded', () => {
+    // Download image button
+    const btnDownload = document.getElementById('btnDownloadBadgeCard');
+    if (btnDownload) {
+      btnDownload.addEventListener('click', downloadBadgeImage);
+    }
+
+    // Facebook Share
+    const btnFb = document.getElementById('btnShareBadgeFb');
+    if (btnFb) {
+      btnFb.addEventListener('click', () => {
+        const shareUrl = window.location.origin + '/gamification';
+        const shareText = `Tôi vừa mở khóa huy hiệu "${currentActiveBadge.name}" trên EnglishMate! 🏆 Cùng học tiếng Anh ngay hôm nay nhé!`;
+        const fbUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}&quote=${encodeURIComponent(shareText)}`;
+        window.open(fbUrl, 'fb-share-dialog', 'width=626,height=436');
+      });
+    }
+
+    // Twitter Share
+    const btnTw = document.getElementById('btnShareBadgeTw');
+    if (btnTw) {
+      btnTw.addEventListener('click', () => {
+        const shareUrl = window.location.origin + '/gamification';
+        const tweetText = `Tôi vừa mở khóa huy hiệu "${currentActiveBadge.name}" (+${currentActiveBadge.xp_reward} XP) trên #EnglishMate! 🏆✨`;
+        const twUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(tweetText)}&url=${encodeURIComponent(shareUrl)}`;
+        window.open(twUrl, 'tw-share-dialog', 'width=626,height=436');
+      });
+    }
+
+    // Copy Link
+    const btnCopy = document.getElementById('btnCopyBadgeLink');
+    const txtCopyBtn = document.getElementById('txtCopyBadgeBtn');
+    if (btnCopy) {
+      btnCopy.addEventListener('click', () => {
+        const shareUrl = window.location.origin + '/gamification';
+        if (navigator.clipboard) {
+          navigator.clipboard.writeText(shareUrl).then(() => {
+            if (txtCopyBtn) txtCopyBtn.textContent = 'Đã chép!';
+            if (window.showCustomFlashToast) {
+              window.showCustomFlashToast('Đã sao chép liên kết thành tích!', 'success', 'Thành Công 📋');
+            }
+            setTimeout(() => {
+              if (txtCopyBtn) txtCopyBtn.textContent = 'Sao chép';
+            }, 2000);
+          });
+        }
+      });
+    }
+
+    // Native Web Share API (if supported on mobile)
+    const btnNative = document.getElementById('btnNativeWebShare');
+    if (btnNative && navigator.share) {
+      btnNative.classList.remove('d-none');
+      btnNative.classList.add('d-inline-flex');
+      btnNative.addEventListener('click', async () => {
+        try {
+          await navigator.share({
+            title: `EnglishMate Badge - ${currentActiveBadge.name}`,
+            text: `Tôi vừa đạt huy hiệu "${currentActiveBadge.name}" trên EnglishMate!`,
+            url: window.location.origin + '/gamification'
+          });
+        } catch (e) {
+          // Ignore abort
+        }
+      });
+    }
+  });
+})();
+</script>

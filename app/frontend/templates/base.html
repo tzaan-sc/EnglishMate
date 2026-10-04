@@ -362,6 +362,7 @@
   {% if current_user.is_authenticated and not current_user.is_admin %}
   {% include "_streak_modal.html" %}
   {% include "_goal_reminder_modal.html" %}
+  {% include "_badge_share_modal.html" %}
   {% endif %}
   <script src="https://unpkg.com/lucide@latest"></script>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
