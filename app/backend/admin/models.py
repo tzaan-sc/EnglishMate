@@ -87,6 +87,16 @@ class SystemSetting(db.Model):
         return str(val).strip().lower() in ("true", "1", "yes", "on")
 
     @classmethod
+    def get_int_setting(cls, key, default=None):
+        val = cls.get_setting(key, None)
+        if val is None:
+            return default
+        try:
+            return int(val)
+        except (ValueError, TypeError):
+            return default
+
+    @classmethod
     def set_setting(cls, key, value, description=None):
         item = cls.query.filter_by(key=key).first()
         if not item:

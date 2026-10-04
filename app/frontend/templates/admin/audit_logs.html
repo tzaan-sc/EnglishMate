@@ -31,6 +31,15 @@
       </div>
     </div>
     <div class="d-flex align-items-center gap-2">
+      <button type="button" 
+              class="btn btn-outline-danger fw-bold px-3.5 py-2 rounded-3 shadow-2xs d-inline-flex align-items-center gap-1.5" 
+              style="font-size: 0.88rem;"
+              data-bs-toggle="modal" 
+              data-bs-target="#retentionModal"
+              title="Cấu hình thời gian lưu trữ và dọn dẹp các log cũ">
+        <i class="ph-bold ph-trash-simple fs-5"></i>
+        <span>Dọn dẹp & Lưu trữ</span>
+      </button>
       <a href="{{ url_for('admin.audit_logs_export', q=search, action=action_filter, date_from=date_from, date_to=date_to) }}" 
          class="btn btn-outline-success fw-bold px-3.5 py-2 rounded-3 shadow-2xs d-inline-flex align-items-center gap-1.5" 
          style="font-size: 0.88rem;"
@@ -38,6 +47,28 @@
         <i class="ph-bold ph-download-simple fs-5"></i>
         <span>Xuất file CSV</span>
       </a>
+    </div>
+  </div>
+
+  <!-- Retention Policy Summary Banner -->
+  <div class="card-modern p-3 mb-3 d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3 bg-light-subtle border">
+    <div class="d-flex align-items-center gap-2.5">
+      <div class="rounded-circle bg-primary-subtle text-primary d-inline-flex align-items-center justify-content-center flex-shrink-0" style="width: 36px; height: 36px;">
+        <i class="ph-bold ph-archive fs-5"></i>
+      </div>
+      <div>
+        <span class="small fw-semibold text-dark">Chính sách lưu trữ log:</span>
+        <span class="badge bg-primary-subtle text-primary border border-primary-subtle ms-1 font-monospace">{{ retention_days }} ngày</span>
+        <span class="text-secondary small ms-2">
+          (Hiện có <strong class="text-danger">{{ retention_stats.eligible_logs }}</strong> bản ghi cũ hơn {{ retention_days }} ngày / Tổng {{ retention_stats.total_logs }} logs)
+        </span>
+      </div>
+    </div>
+    <div class="d-flex align-items-center gap-2">
+      <button type="button" class="btn btn-sm btn-light border text-primary fw-semibold px-2.5 py-1 d-inline-flex align-items-center gap-1" data-bs-toggle="modal" data-bs-target="#retentionModal">
+        <i class="ph-bold ph-gear"></i>
+        <span>Đổi cấu hình</span>
+      </button>
     </div>
   </div>
 
@@ -302,6 +333,153 @@
   </div>
 </div>
 
+<!-- RETENTION & CLEANUP MODAL -->
+<div class="modal fade" id="retentionModal" tabindex="-1" aria-labelledby="retentionModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content border-0 shadow-lg rounded-4">
+      <div class="modal-header border-bottom px-4 py-3 bg-light rounded-top-4">
+        <h5 class="modal-title fw-bold text-dark d-flex align-items-center gap-2" id="retentionModalLabel">
+          <i class="ph-bold ph-shield-warning text-danger fs-4"></i>
+          <span>Chính Sách Lưu Trữ & Dọn Dẹp Nhật Ký (Log Retention)</span>
+        </h5>
+        <button type="button" class="btn-close shadow-none" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body p-4">
+        <!-- TABS FOR MODAL -->
+        <ul class="nav nav-pills nav-fill bg-light p-1 rounded-3 mb-4" id="retentionTab" role="tablist">
+          <li class="nav-item" role="presentation">
+            <button class="nav-link active fw-bold small py-2 d-inline-flex align-items-center justify-content-center gap-2 w-100" id="retention-config-tab" data-bs-toggle="pill" data-bs-target="#retention-config-pane" type="button" role="tab">
+              <i class="ph-bold ph-sliders"></i>
+              <span>Cấu Hình Thời Gian Lưu Trữ</span>
+            </button>
+          </li>
+          <li class="nav-item" role="presentation">
+            <button class="nav-link fw-bold small py-2 d-inline-flex align-items-center justify-content-center gap-2 w-100 text-danger" id="retention-purge-tab" data-bs-toggle="pill" data-bs-target="#retention-purge-pane" type="button" role="tab">
+              <i class="ph-bold ph-trash"></i>
+              <span>Thực Hiện Dọn Dẹp Ngay</span>
+            </button>
+          </li>
+        </ul>
+
+        <div class="tab-content" id="retentionTabContent">
+          <!-- PANE 1: CONFIGURATION -->
+          <div class="tab-pane fade show active" id="retention-config-pane" role="tabpanel">
+            <div class="alert alert-info border-0 rounded-3 small mb-3">
+              <i class="ph-bold ph-info me-1"></i>
+              Cấu hình số ngày lưu trữ để kiểm soát dung lượng database. Lệnh cron định kỳ <code>flask cleanup-logs</code> sẽ tự động dọn dẹp các log cũ hơn số ngày này.
+            </div>
+
+            <form id="formRetentionSetting" onsubmit="handleSaveRetention(event)">
+              <label class="form-label fw-semibold text-dark small mb-2">Chọn thời gian lưu trữ tối đa:</label>
+              <div class="row g-2 mb-3">
+                <div class="col-6 col-md-4">
+                  <input type="radio" class="btn-check" name="retention_preset" id="preset30" value="30" {% if retention_days == 30 %}checked{% endif %} onchange="handlePresetChange(30)">
+                  <label class="btn btn-outline-secondary w-100 py-2.5 small fw-semibold text-start d-flex align-items-center justify-content-between" for="preset30">
+                    <span>30 ngày (1 tháng)</span>
+                    <i class="ph-bold ph-check d-none"></i>
+                  </label>
+                </div>
+                <div class="col-6 col-md-4">
+                  <input type="radio" class="btn-check" name="retention_preset" id="preset60" value="60" {% if retention_days == 60 %}checked{% endif %} onchange="handlePresetChange(60)">
+                  <label class="btn btn-outline-secondary w-100 py-2.5 small fw-semibold text-start d-flex align-items-center justify-content-between" for="preset60">
+                    <span>60 ngày (2 tháng)</span>
+                    <i class="ph-bold ph-check d-none"></i>
+                  </label>
+                </div>
+                <div class="col-6 col-md-4">
+                  <input type="radio" class="btn-check" name="retention_preset" id="preset90" value="90" {% if retention_days == 90 %}checked{% endif %} onchange="handlePresetChange(90)">
+                  <label class="btn btn-outline-secondary w-100 py-2.5 small fw-semibold text-start d-flex align-items-center justify-content-between" for="preset90">
+                    <span>90 ngày (Khuyến nghị)</span>
+                    <i class="ph-bold ph-check d-none"></i>
+                  </label>
+                </div>
+                <div class="col-6 col-md-4">
+                  <input type="radio" class="btn-check" name="retention_preset" id="preset180" value="180" {% if retention_days == 180 %}checked{% endif %} onchange="handlePresetChange(180)">
+                  <label class="btn btn-outline-secondary w-100 py-2.5 small fw-semibold text-start d-flex align-items-center justify-content-between" for="preset180">
+                    <span>180 ngày (6 tháng)</span>
+                    <i class="ph-bold ph-check d-none"></i>
+                  </label>
+                </div>
+                <div class="col-6 col-md-4">
+                  <input type="radio" class="btn-check" name="retention_preset" id="preset365" value="365" {% if retention_days == 365 %}checked{% endif %} onchange="handlePresetChange(365)">
+                  <label class="btn btn-outline-secondary w-100 py-2.5 small fw-semibold text-start d-flex align-items-center justify-content-between" for="preset365">
+                    <span>365 ngày (1 năm)</span>
+                    <i class="ph-bold ph-check d-none"></i>
+                  </label>
+                </div>
+                <div class="col-6 col-md-4">
+                  <input type="radio" class="btn-check" name="retention_preset" id="presetCustom" value="custom" {% if retention_days not in [30, 60, 90, 180, 365] %}checked{% endif %} onchange="handlePresetChange('custom')">
+                  <label class="btn btn-outline-secondary w-100 py-2.5 small fw-semibold text-start d-flex align-items-center justify-content-between" for="presetCustom">
+                    <span>Tùy chỉnh...</span>
+                    <i class="ph-bold ph-check d-none"></i>
+                  </label>
+                </div>
+              </div>
+
+              <div class="mb-4" id="customDaysGroup" style="{% if retention_days in [30, 60, 90, 180, 365] %}display: none;{% endif %}">
+                <label class="form-label small fw-semibold text-secondary">Số ngày lưu trữ tùy chỉnh:</label>
+                <div class="input-group input-group-sm" style="max-width: 250px;">
+                  <input type="number" id="inputCustomDays" min="1" max="3650" class="form-control" value="{{ retention_days }}">
+                  <span class="input-group-text">ngày</span>
+                </div>
+              </div>
+
+              <div class="d-flex justify-content-end gap-2">
+                <button type="submit" class="btn btn-primary fw-bold px-4 py-2 rounded-3" id="btnSaveRetention">
+                  <i class="ph-bold ph-check me-1"></i>
+                  <span>Lưu Cấu Hình</span>
+                </button>
+              </div>
+            </form>
+          </div>
+
+          <!-- PANE 2: PURGE ACTION -->
+          <div class="tab-pane fade" id="retention-purge-pane" role="tabpanel">
+            <div class="alert alert-warning border-0 rounded-3 small mb-3">
+              <i class="ph-bold ph-warning-circle me-1"></i>
+              Thao tác dọn dẹp sẽ <strong>xóa vĩnh viễn</strong> các bản ghi audit log cũ hơn số ngày đã chọn khỏi cơ sở dữ liệu. Bạn nên tải bản xuất CSV trước khi dọn dẹp.
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label small fw-semibold text-dark">Dọn dẹp nhật ký cũ hơn:</label>
+              <div class="input-group input-group-sm" style="max-width: 260px;">
+                <input type="number" id="purgeDaysInput" class="form-control" value="{{ retention_days }}" min="1" max="3650">
+                <span class="input-group-text">ngày</span>
+                <button type="button" class="btn btn-outline-secondary" onclick="checkPurgeCount()">
+                  <i class="ph-bold ph-arrows-clockwise"></i> Kiểm tra
+                </button>
+              </div>
+            </div>
+
+            <div class="p-3 bg-light rounded-3 border mb-3" id="purgeStatsBox">
+              <div class="d-flex align-items-center justify-content-between mb-1">
+                <span class="small text-secondary">Số log dự kiến dọn dẹp:</span>
+                <span class="badge bg-danger text-white fs-6" id="purgeEligibleCount">{{ retention_stats.eligible_logs }}</span>
+              </div>
+              <div class="small text-muted" id="purgeCutoffText">
+                Tất cả bản ghi tạo trước ngày {{ retention_stats.cutoff_date[:10] if retention_stats.cutoff_date else '---' }} sẽ bị xóa.
+              </div>
+            </div>
+
+            <div id="purgeResultMsg" class="alert d-none small mb-3"></div>
+
+            <div class="d-flex justify-content-end gap-2">
+              <button type="button" class="btn btn-outline-secondary fw-semibold px-3 py-2 rounded-3" onclick="executePurge(true)" id="btnDryRun">
+                <i class="ph-bold ph-eye me-1"></i>
+                <span>Chạy Thử Nghiệm (Dry-run)</span>
+              </button>
+              <button type="button" class="btn btn-danger fw-bold px-4 py-2 rounded-3" onclick="executePurge(false)" id="btnExecutePurge">
+                <i class="ph-bold ph-trash me-1"></i>
+                <span>Xác Nhận Dọn Dẹp Ngay</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
 <script>
 function showLogDetail(id, time, user, action, target, ip, details) {
   document.getElementById('detailLogId').textContent = id;
@@ -314,6 +492,112 @@ function showLogDetail(id, time, user, action, target, ip, details) {
 
   var modal = new bootstrap.Modal(document.getElementById('logDetailModal'));
   modal.show();
+}
+
+function handlePresetChange(val) {
+  var customGroup = document.getElementById('customDaysGroup');
+  if (val === 'custom') {
+    customGroup.style.display = 'block';
+  } else {
+    customGroup.style.display = 'none';
+    document.getElementById('inputCustomDays').value = val;
+  }
+}
+
+async function handleSaveRetention(e) {
+  e.preventDefault();
+  var preset = document.querySelector('input[name="retention_preset"]:checked').value;
+  var days = preset === 'custom' ? parseInt(document.getElementById('inputCustomDays').value, 10) : parseInt(preset, 10);
+
+  if (!days || days <= 0) {
+    alert('Vui lòng nhập số ngày hợp lệ (lớn hơn 0)');
+    return;
+  }
+
+  var btn = document.getElementById('btnSaveRetention');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Đang lưu...';
+
+  try {
+    var res = await fetch('{{ url_for("admin.update_audit_logs_retention_setting") }}', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRFToken': '{{ csrf_token() if csrf_token else "" }}'
+      },
+      body: JSON.stringify({ retention_days: days })
+    });
+    var data = await res.json();
+    if (data.success) {
+      alert(data.message || 'Cập nhật cấu hình lưu trữ thành công!');
+      window.location.reload();
+    } else {
+      alert('Lỗi: ' + (data.error || 'Không thể cập nhật cấu hình'));
+    }
+  } catch (err) {
+    alert('Lỗi kết nối máy chủ: ' + err.message);
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '<i class="ph-bold ph-check me-1"></i><span>Lưu Cấu Hình</span>';
+  }
+}
+
+async function checkPurgeCount() {
+  var days = parseInt(document.getElementById('purgeDaysInput').value, 10) || 90;
+  try {
+    var res = await fetch('{{ url_for("admin.audit_logs_retention_info") }}?days=' + days);
+    var data = await res.json();
+    if (data.success && data.stats) {
+      document.getElementById('purgeEligibleCount').textContent = data.stats.eligible_logs;
+      var cutoffStr = data.stats.cutoff_date ? data.stats.cutoff_date.substring(0, 10) : '';
+      document.getElementById('purgeCutoffText').textContent = 'Tất cả bản ghi tạo trước ngày ' + cutoffStr + ' sẽ bị xóa (' + data.stats.eligible_logs + ' bản ghi).';
+    }
+  } catch (err) {
+    console.error('Failed to check purge count', err);
+  }
+}
+
+async function executePurge(isDryRun) {
+  var days = parseInt(document.getElementById('purgeDaysInput').value, 10) || 90;
+  if (!isDryRun && !confirm('Bạn có chắc chắn muốn xóa vĩnh viễn các bản ghi audit logs cũ hơn ' + days + ' ngày? Hành động này không thể hoàn tác!')) {
+    return;
+  }
+
+  var btn = isDryRun ? document.getElementById('btnDryRun') : document.getElementById('btnExecutePurge');
+  btn.disabled = true;
+  var originalHtml = btn.innerHTML;
+  btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Đang xử lý...';
+
+  var resultBox = document.getElementById('purgeResultMsg');
+  resultBox.className = 'alert d-none small mb-3';
+
+  try {
+    var res = await fetch('{{ url_for("admin.cleanup_audit_logs_route") }}', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRFToken': '{{ csrf_token() if csrf_token else "" }}'
+      },
+      body: JSON.stringify({ days: days, dry_run: isDryRun })
+    });
+    var data = await res.json();
+    if (data.success) {
+      resultBox.className = isDryRun ? 'alert alert-info small mb-3' : 'alert alert-success small mb-3';
+      resultBox.textContent = data.message;
+      if (!isDryRun) {
+        setTimeout(function() { window.location.reload(); }, 1500);
+      }
+    } else {
+      resultBox.className = 'alert alert-danger small mb-3';
+      resultBox.textContent = 'Lỗi: ' + (data.error || 'Dọn dẹp thất bại.');
+    }
+  } catch (err) {
+    resultBox.className = 'alert alert-danger small mb-3';
+    resultBox.textContent = 'Lỗi kết nối máy chủ: ' + err.message;
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = originalHtml;
+  }
 }
 </script>
 {% endblock %}

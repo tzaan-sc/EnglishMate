@@ -608,6 +608,10 @@ def audit_logs():
     db_actions = [a[0] for a in db.session.query(AuditLog.action).distinct().all() if a[0]]
     all_actions = sorted(list(set(standard_actions + db_actions)))
 
+    from .log_service import get_log_retention_days, get_retention_stats
+    retention_days = get_log_retention_days()
+    retention_stats = get_retention_stats(custom_days=retention_days)
+
     return render_template(
         "admin/audit_logs.html",
         logs=logs,
@@ -617,7 +621,9 @@ def audit_logs():
         date_from=date_from_str,
         date_to=date_to_str,
         actions=all_actions,
-        total_count=total_count
+        total_count=total_count,
+        retention_days=retention_days,
+        retention_stats=retention_stats
     )
 
 
@@ -689,6 +695,56 @@ def audit_logs_export():
         mimetype="text/csv; charset=utf-8",
         headers={"Content-Disposition": f"attachment; filename={filename}"}
     )
+
+
+@bp.get("/audit-logs/retention-info")
+@admin_required
+def audit_logs_retention_info():
+    from .log_service import get_retention_stats
+    days = request.args.get("days", type=int)
+    stats = get_retention_stats(custom_days=days)
+    return jsonify({"success": True, "stats": stats})
+
+
+@bp.post("/audit-logs/settings")
+@admin_required
+def update_audit_logs_retention_setting():
+    from .log_service import set_log_retention_days
+    data = request.get_json() or {}
+    days = data.get("retention_days") or request.form.get("retention_days")
+    try:
+        updated_days = set_log_retention_days(days)
+        log_audit_action(
+            current_user.id,
+            "UPDATE_SETTING",
+            "SystemSetting",
+            None,
+            f"Cập nhật thời gian lưu trữ Audit Logs: {updated_days} ngày"
+        )
+        return jsonify({
+            "success": True, 
+            "days": updated_days, 
+            "message": f"Đã lưu cấu hình thời gian lưu trữ {updated_days} ngày thành công."
+        })
+    except ValueError as e:
+        return jsonify({"success": False, "error": str(e)}), 400
+
+
+@bp.post("/audit-logs/cleanup")
+@admin_required
+def cleanup_audit_logs_route():
+    from .log_service import cleanup_audit_logs
+    data = request.get_json() or {}
+    days = data.get("days")
+    dry_run = data.get("dry_run", False)
+    if days is not None:
+        try:
+            days = int(days)
+        except (ValueError, TypeError):
+            return jsonify({"success": False, "error": "Số ngày không hợp lệ."}), 400
+
+    res = cleanup_audit_logs(days=days, dry_run=dry_run, current_user_id=current_user.id)
+    return jsonify(res)
 
 
 # --- EXAM UPLOAD SYSTEM (GIAI ĐOẠN 3) ---

@@ -1,5 +1,6 @@
 import sys
 from pathlib import Path
+import click
 
 from flask import Flask, render_template, request, g
 from sqlalchemy import event
@@ -257,6 +258,21 @@ def create_app(config_object=Config):
         from .backend.learning.goal_reminder import send_daily_goal_reminders
         stats = send_daily_goal_reminders(force=False)
         print(f"Goal reminders check finished: {stats}")
+
+    @app.cli.command("cleanup-logs")
+    @click.option("--days", default=None, type=int, help="Số ngày lưu trữ log (mặc định lấy từ cấu hình SystemSetting hoặc 90 ngày).")
+    @click.option("--archive-path", default=None, type=str, help="Đường dẫn file CSV để xuất lưu trữ trước khi xóa.")
+    @click.option("--dry-run", is_flag=True, default=False, help="Chỉ kiểm tra và đếm số bản ghi sẽ bị xóa mà không xóa thật.")
+    def run_cleanup_logs_cli(days, archive_path, dry_run):
+        """Tự động dọn dẹp hoặc lưu trữ các bản ghi nhật ký kiểm tra (Audit Logs) cũ."""
+        from .backend.admin.log_service import cleanup_audit_logs
+        res = cleanup_audit_logs(days=days, archive_path=archive_path, dry_run=dry_run)
+        if res.get("dry_run"):
+            click.echo(f"[DRY RUN] {res['message']} (Cutoff: {res['cutoff_date']})")
+        else:
+            click.echo(f"[SUCCESS] {res['message']}")
+            if res.get("archived_file"):
+                click.echo(f"  Archive saved to: {res['archived_file']}")
 
     @app.errorhandler(403)
     def forbidden(_error):

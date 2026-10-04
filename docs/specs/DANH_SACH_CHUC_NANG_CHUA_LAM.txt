@@ -394,14 +394,15 @@ MODULE 10. ADMIN SYSTEM (HỆ THỐNG QUẢN TRỊ) — 7 TÍNH NĂNG CHƯA LÀM
   + Tích hợp tự động ghi nhận lịch sử vào `commit_import_records()` và cung cấp modal xem chi tiết lỗi import.
 - Mức độ ưu tiên: Trung bình (Medium)
 
-[ ] 10.2. Log Retention - Tự động dọn dẹp nhật ký kiểm tra (Mục 10.6)
+[x] 10.2. Log Retention - Tự động dọn dẹp nhật ký kiểm tra (Mục 10.6)
 - Hiện trạng trong EnglishMate_Features.txt:
   Đã có bảng `AuditLog` lưu chi tiết hành động, người dùng, IP, giờ Việt Nam, bộ lọc và xuất CSV.
 - Phần còn thiếu chưa làm:
   Chưa có cơ chế tự động dọn dẹp hoặc lưu trữ các log cũ hơn 90 hoặc 180 ngày khiến CSDL có nguy cơ phình to theo thời gian.
 - Giải pháp kỹ thuật cần làm:
-  + Viết lệnh Flask CLI `flask cleanup-logs --days=90` để xóa hoặc xuất lưu trữ các log cũ.
-  + Thêm cấu hình số ngày lưu trữ trong bảng cài đặt Admin.
+  + Viết lệnh Flask CLI `flask cleanup-logs --days=90` (hỗ trợ `--archive-path`, `--dry-run`) để xóa hoặc xuất lưu trữ các log cũ.
+  + Thêm cấu hình số ngày lưu trữ trong bảng cài đặt Admin (SystemSetting `LOG_RETENTION_DAYS`).
+  + Xây dựng modal quản lý lưu trữ & dọn dẹp trực quan trên giao diện `/admin/audit-logs` với tính năng kiểm tra số lượng trước khi purge.
 - Mức độ ưu tiên: Trung bình (Medium)
 
 [ ] 10.3. Feature Flags - Quản lý bật/tắt tính năng thời gian thực (Mục 10.7)
