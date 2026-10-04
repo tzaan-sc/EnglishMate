@@ -84,3 +84,104 @@ def bulk_update_feature_flags():
         "updated_count": len(updated),
         "message": f"Đã cập nhật {len(updated)} tính năng thành công."
     })
+
+
+# ---------------------------------------------------------------------------
+# SYSTEM LIMITS & RESOURCE THRESHOLDS ROUTES
+# ---------------------------------------------------------------------------
+from .system_limits import (
+    get_all_system_limits,
+    get_grouped_system_limits,
+    set_system_limit,
+    bulk_update_system_limits,
+    reset_system_limits,
+    SYSTEM_LIMITS_METADATA,
+    LIMIT_CATEGORIES,
+)
+
+
+@bp.get("/system/limits")
+@bp.get("/limits")
+@admin_required
+def system_limits():
+    """Trang giao diện quản trị cấu hình các giới hạn hệ thống (System Limits)."""
+    limits = get_all_system_limits()
+    grouped_limits = get_grouped_system_limits()
+    total_limits = len(limits)
+    customized_count = sum(1 for lim in limits if lim["is_customized"])
+
+    return render_template(
+        "admin/system_limits.html",
+        limits=limits,
+        grouped_limits=grouped_limits,
+        total_limits=total_limits,
+        customized_count=customized_count,
+    )
+
+
+@bp.post("/system/limits")
+@admin_required
+def update_system_limits():
+    """Cập nhật các thông số giới hạn hệ thống qua Form hoặc AJAX."""
+    data = request.get_json(silent=True) or request.form.to_dict()
+    
+    # Filter only relevant limit keys
+    limits_to_update = {}
+    for key in SYSTEM_LIMITS_METADATA:
+        if key in data:
+            limits_to_update[key] = data[key]
+
+    is_all_success, success_msgs, error_msgs = bulk_update_system_limits(
+        limits_to_update,
+        admin_id=current_user.id
+    )
+
+    if request.is_json:
+        return jsonify({
+            "success": is_all_success,
+            "success_count": len(success_msgs),
+            "error_count": len(error_msgs),
+            "success_messages": success_msgs,
+            "error_messages": error_msgs,
+            "message": "Cập nhật giới hạn hệ thống thành công." if is_all_success else "Có lỗi xảy ra khi cập nhật giới hạn.",
+        })
+
+    if error_msgs:
+        for err in error_msgs:
+            flash(err, "danger")
+    if success_msgs:
+        flash(f"Đã cập nhật thành công {len(success_msgs)} giới hạn hệ thống!", "success")
+
+    return redirect(url_for("admin.system_limits"))
+
+
+@bp.post("/system/limits/<limit_key>")
+@admin_required
+def update_single_system_limit(limit_key):
+    """Cập nhật một thông số giới hạn đơn lẻ qua AJAX."""
+    data = request.get_json(silent=True) or request.form
+    val = data.get("value")
+    
+    res = set_system_limit(limit_key, val, admin_id=current_user.id)
+    if request.is_json:
+        return jsonify(res)
+
+    if res["success"]:
+        flash(res["message"], "success")
+    else:
+        flash(res.get("error", "Lỗi không xác định"), "danger")
+
+    return redirect(url_for("admin.system_limits"))
+
+
+@bp.post("/system/limits/reset")
+@admin_required
+def reset_all_system_limits():
+    """Khôi phục toàn bộ các giới hạn hệ thống về mặc định."""
+    res = reset_system_limits(admin_id=current_user.id)
+    if request.is_json:
+        return jsonify(res)
+
+    flash(res["message"], "info")
+    return redirect(url_for("admin.system_limits"))
+

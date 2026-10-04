@@ -1,0 +1,515 @@
+{% extends "base.html" %}
+{% block title %}Cấu hình Giới hạn Hệ thống (System Limits) · EnglishMate Admin{% endblock %}
+
+{% block content %}
+<div class="container-fluid max-w-7xl py-4">
+
+  <!-- Breadcrumb Navigation -->
+  <nav class="app-breadcrumb mb-3" aria-label="breadcrumb">
+    <ol class="breadcrumb mb-0 align-items-center flex-wrap">
+      <li class="breadcrumb-item">
+        <a href="{{ url_for('admin.dashboard') }}" class="d-inline-flex align-items-center gap-1">
+          <i class="ph-bold ph-shield-check"></i>
+          <span>Quản trị Hệ thống</span>
+        </a>
+      </li>
+      <li class="breadcrumb-item active" aria-current="page">
+        <span>Giới hạn Hệ thống (System Limits)</span>
+      </li>
+    </ol>
+  </nav>
+
+  <!-- Page Header -->
+  <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
+    <div class="d-flex align-items-center gap-3">
+      <div class="rounded-3 bg-primary-subtle text-primary border border-primary-subtle d-inline-flex align-items-center justify-content-center flex-shrink-0" style="width: 48px; height: 48px; font-size: 1.45rem;">
+        <i class="ph-bold ph-sliders-horizontal"></i>
+      </div>
+      <div>
+        <h3 class="fw-bold text-dark mb-0.5" style="letter-spacing: -0.01em;">Cấu hình Giới hạn Hệ thống (System Limits)</h3>
+        <p class="text-secondary small mb-0">Điều chỉnh linh hoạt số lần đăng nhập sai, thời gian khóa tài khoản, thời gian hết hạn phiên làm việc và dung lượng tệp tin tải lên</p>
+      </div>
+    </div>
+    <div class="d-flex align-items-center gap-2 flex-wrap">
+      <button type="button" class="btn btn-outline-danger fw-semibold px-3 py-2 rounded-3 shadow-2xs d-inline-flex align-items-center gap-1.5" data-bs-toggle="modal" data-bs-target="#resetConfirmModal" title="Khôi phục mặc định ban đầu">
+        <i class="ph-bold ph-arrow-counter-clockwise fs-5"></i>
+        <span>Đặt lại Mặc định</span>
+      </button>
+      <button type="button" class="btn btn-primary fw-semibold px-3.5 py-2 rounded-3 shadow-2xs d-inline-flex align-items-center gap-1.5" onclick="saveAllLimits()" id="btnSaveAll">
+        <i class="ph-bold ph-floppy-disk fs-5"></i>
+        <span>Lưu Toàn bộ</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Metric Overview Cards -->
+  <div class="row g-3 mb-4">
+    <div class="col-12 col-sm-4">
+      <div class="card-modern p-3.5 h-100 d-flex align-items-center gap-3 border shadow-2xs">
+        <div class="rounded-circle bg-primary-subtle text-primary d-inline-flex align-items-center justify-content-center flex-shrink-0" style="width: 46px; height: 46px;">
+          <i class="ph-bold ph-list-numbers fs-4"></i>
+        </div>
+        <div>
+          <span class="text-secondary small fw-semibold d-block">Tổng số thông số giới hạn</span>
+          <h4 class="fw-bold text-dark mb-0">{{ total_limits }}</h4>
+        </div>
+      </div>
+    </div>
+    <div class="col-12 col-sm-4">
+      <div class="card-modern p-3.5 h-100 d-flex align-items-center gap-3 border shadow-2xs">
+        <div class="rounded-circle bg-warning-subtle text-warning d-inline-flex align-items-center justify-content-center flex-shrink-0" style="width: 46px; height: 46px;">
+          <i class="ph-bold ph-pencil-simple-line fs-4"></i>
+        </div>
+        <div>
+          <span class="text-secondary small fw-semibold d-block">Đang tùy chỉnh (Customized)</span>
+          <h4 class="fw-bold text-warning mb-0" id="customizedCount">{{ customized_count }}</h4>
+        </div>
+      </div>
+    </div>
+    <div class="col-12 col-sm-4">
+      <div class="card-modern p-3.5 h-100 d-flex align-items-center gap-3 border shadow-2xs">
+        <div class="rounded-circle bg-success-subtle text-success d-inline-flex align-items-center justify-content-center flex-shrink-0" style="width: 46px; height: 46px;">
+          <i class="ph-bold ph-check-circle fs-4"></i>
+        </div>
+        <div>
+          <span class="text-secondary small fw-semibold d-block">Sử dụng giá trị mặc định</span>
+          <h4 class="fw-bold text-success mb-0" id="defaultCount">{{ total_limits - customized_count }}</h4>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- In-page Live Alert Banner -->
+  <div id="statusAlert" class="alert alert-dismissible fade show border-0 rounded-3 mb-4 d-none align-items-center gap-2 shadow-sm" role="alert">
+    <i class="ph-bold ph-info fs-5 flex-shrink-0" id="statusAlertIcon"></i>
+    <div class="flex-grow-1 small fw-medium" id="statusAlertMsg"></div>
+    <button type="button" class="btn-close shadow-none" onclick="document.getElementById('statusAlert').classList.add('d-none')"></button>
+  </div>
+
+  <!-- Filter & Search Toolbar -->
+  <div class="card-modern p-3 mb-4 border shadow-2xs">
+    <div class="row g-2 align-items-center">
+      <div class="col-12 col-md-5">
+        <div class="input-group input-group-sm">
+          <span class="input-group-text bg-white border-end-0 text-muted ps-2.5">
+            <i class="ph-bold ph-magnifying-glass"></i>
+          </span>
+          <input type="text" id="limitSearchInput" class="form-control border-start-0 ps-1" placeholder="Tìm kiếm giới hạn theo tên hoặc mã tham số..." oninput="filterLimits()">
+        </div>
+      </div>
+      <div class="col-12 col-md-7">
+        <div class="d-flex flex-wrap gap-1.5 justify-content-md-end">
+          <button type="button" class="btn btn-sm btn-dark filter-pill active rounded-pill px-3" data-category="ALL" onclick="setCategoryFilter('ALL', this)">Tất cả</button>
+          <button type="button" class="btn btn-sm btn-light border filter-pill rounded-pill px-3" data-category="SECURITY" onclick="setCategoryFilter('SECURITY', this)">Bảo mật & Đăng nhập</button>
+          <button type="button" class="btn btn-sm btn-light border filter-pill rounded-pill px-3" data-category="SESSION" onclick="setCategoryFilter('SESSION', this)">Phiên làm việc</button>
+          <button type="button" class="btn btn-sm btn-light border filter-pill rounded-pill px-3" data-category="STORAGE" onclick="setCategoryFilter('STORAGE', this)">Lưu trữ & File</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SYSTEM LIMITS SECTIONS BY CATEGORY -->
+  <form id="systemLimitsForm" onsubmit="return false;">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() if csrf_token else '' }}">
+
+    {% for cat_key, cat_data in grouped_limits.items() %}
+    <div class="category-section mb-4" data-category-group="{{ cat_key }}">
+      <div class="d-flex align-items-center justify-content-between mb-3 flex-wrap gap-2">
+        <div class="d-flex align-items-center gap-2.5">
+          <div class="rounded-3 {{ cat_data.badge_class }} d-inline-flex align-items-center justify-content-center p-1.5" style="font-size: 1.15rem;">
+            <i class="ph-bold {{ cat_data.icon }}"></i>
+          </div>
+          <div>
+            <h5 class="fw-bold text-dark mb-0">{{ cat_data.title }}</h5>
+            <p class="text-secondary small mb-0">{{ cat_data.description }}</p>
+          </div>
+        </div>
+        <span class="badge {{ cat_data.badge_class }} border rounded-pill">{{ cat_data.limits|length }} thông số</span>
+      </div>
+
+      <div class="row g-3">
+        {% for lim in cat_data.limits %}
+        <div class="col-12 col-lg-6 limit-card-col" data-key="{{ lim.key }}" data-category="{{ lim.category }}" data-name="{{ lim.name|lower }}">
+          <div class="card-modern h-100 p-4 border rounded-4 d-flex flex-column justify-content-between transition-all hover-shadow-md limit-card bg-white" id="card-{{ lim.key }}">
+            <div>
+              <!-- Top Row: Icon, Key Badge, Custom status -->
+              <div class="d-flex align-items-start justify-content-between gap-2 mb-3">
+                <div class="d-flex align-items-center gap-2.5">
+                  <div class="rounded-3 bg-primary-subtle text-primary d-inline-flex align-items-center justify-content-center flex-shrink-0" style="width: 40px; height: 40px; font-size: 1.25rem;">
+                    <i class="ph-bold {{ lim.icon }}"></i>
+                  </div>
+                  <div>
+                    <code class="text-primary fw-bold" style="font-size: 0.8rem;">{{ lim.key }}</code>
+                  </div>
+                </div>
+                <div id="badge-status-{{ lim.key }}">
+                  {% if lim.is_customized %}
+                  <span class="badge bg-warning-subtle text-warning border border-warning-subtle rounded-pill px-2.5 py-1 small fw-semibold">
+                    <i class="ph-bold ph-pencil-simple me-0.5"></i> Đã tùy chỉnh
+                  </span>
+                  {% else %}
+                  <span class="badge bg-secondary-subtle text-secondary border rounded-pill px-2.5 py-1 small fw-semibold">
+                    <i class="ph-bold ph-shield-check me-0.5"></i> Mặc định
+                  </span>
+                  {% endif %}
+                </div>
+              </div>
+
+              <!-- Name & Description -->
+              <h6 class="fw-bold text-dark mb-1.5" style="letter-spacing: -0.01em;">{{ lim.name }}</h6>
+              <p class="text-secondary small mb-3" style="line-height: 1.5; min-height: 42px;">{{ lim.description }}</p>
+
+              <!-- Interactive Controls (Slider + Number Input + Steppers) -->
+              <div class="bg-light-subtle p-3 rounded-3 border border-light-subtle mb-3">
+                <div class="d-flex align-items-center justify-content-between mb-2">
+                  <span class="text-muted small fw-medium">Giá trị thiết lập:</span>
+                  <div class="d-flex align-items-center gap-1.5">
+                    <span class="badge bg-white text-dark border px-2 py-1 small fw-bold" id="badge-val-{{ lim.key }}">
+                      {{ lim.value }} {{ lim.unit }}
+                    </span>
+                    <button type="button" class="btn btn-link btn-sm text-decoration-none p-0 text-muted" onclick="resetToRecommended('{{ lim.key }}', {{ lim.recommended }})" title="Gán giá trị khuyến nghị ({{ lim.recommended }} {{ lim.unit }})">
+                      <i class="ph-bold ph-sparkle text-warning"></i>
+                      <span class="small" style="font-size: 0.75rem;">Gợi ý: {{ lim.recommended }} {{ lim.unit }}</span>
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Input Group with +/- Buttons -->
+                <div class="input-group input-group-sm mb-2.5">
+                  <button class="btn btn-outline-secondary" type="button" onclick="stepChange('{{ lim.key }}', -{{ lim.step }})">
+                    <i class="ph-bold ph-minus"></i>
+                  </button>
+                  <input type="number" 
+                         class="form-control text-center fw-bold fs-6 limit-input" 
+                         id="input-{{ lim.key }}" 
+                         name="{{ lim.key }}" 
+                         value="{{ lim.value }}" 
+                         min="{{ lim.min }}" 
+                         max="{{ lim.max }}" 
+                         step="{{ lim.step }}" 
+                         data-default="{{ lim.default }}"
+                         data-unit="{{ lim.unit }}"
+                         oninput="syncSlider('{{ lim.key }}')"
+                         onchange="validateAndSync('{{ lim.key }}')">
+                  <span class="input-group-text bg-white fw-semibold text-muted px-2.5">{{ lim.unit }}</span>
+                  <button class="btn btn-outline-secondary" type="button" onclick="stepChange('{{ lim.key }}', {{ lim.step }})">
+                    <i class="ph-bold ph-plus"></i>
+                  </button>
+                </div>
+
+                <!-- Range Slider -->
+                <div class="px-1">
+                  <input type="range" 
+                         class="form-range custom-range" 
+                         id="slider-{{ lim.key }}" 
+                         min="{{ lim.min }}" 
+                         max="{{ lim.max }}" 
+                         step="{{ lim.step }}" 
+                         value="{{ lim.value }}" 
+                         oninput="syncInput('{{ lim.key }}')">
+                  <div class="d-flex justify-content-between text-muted" style="font-size: 0.72rem;">
+                    <span>Tối thiểu: {{ lim.min }} {{ lim.unit }}</span>
+                    <span>Tối đa: {{ lim.max }} {{ lim.unit }}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Footer: Meta & Action Button -->
+            <div class="pt-3 border-top d-flex align-items-center justify-content-between gap-2 flex-wrap">
+              <div class="text-muted small" style="font-size: 0.75rem;">
+                <span class="d-inline-flex align-items-center gap-1">
+                  <i class="ph-bold ph-info text-primary"></i> Mặc định gốc: <strong>{{ lim.default }} {{ lim.unit }}</strong>
+                </span>
+              </div>
+              <div class="d-flex align-items-center gap-2">
+                <button type="button" class="btn btn-sm btn-outline-primary fw-semibold rounded-2 px-3 d-inline-flex align-items-center gap-1" id="btn-save-{{ lim.key }}" onclick="saveSingleLimit('{{ lim.key }}')">
+                  <i class="ph-bold ph-check"></i>
+                  <span>Lưu</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+    {% endfor %}
+  </form>
+
+</div>
+
+<!-- MODAL: CONFIRM RESET TO DEFAULTS -->
+<div class="modal fade" id="resetConfirmModal" tabindex="-1" aria-labelledby="resetConfirmModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content rounded-4 border-0 shadow-lg">
+      <div class="modal-header border-0 pb-0">
+        <div class="rounded-circle bg-danger-subtle text-danger d-inline-flex align-items-center justify-content-center p-3 mb-2">
+          <i class="ph-bold ph-warning-octagon fs-3"></i>
+        </div>
+        <button type="button" class="btn-close shadow-none" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body pt-2 pb-3">
+        <h5 class="fw-bold text-dark mb-2" id="resetConfirmModalLabel">Khôi phục cấu hình giới hạn mặc định?</h5>
+        <p class="text-secondary small mb-0">
+          Thao tác này sẽ đưa tất cả các thông số giới hạn hệ thống (số lần thử sai, thời gian khóa, session timeout, dung lượng file) về giá trị chuẩn mặc định ban đầu. Bạn có chắc chắn muốn thực hiện?
+        </p>
+      </div>
+      <div class="modal-footer border-0 pt-0">
+        <button type="button" class="btn btn-light rounded-3 px-3 fw-semibold" data-bs-dismiss="modal">Hủy bỏ</button>
+        <button type="button" class="btn btn-danger rounded-3 px-3.5 fw-semibold d-inline-flex align-items-center gap-1.5" onclick="executeResetLimits()">
+          <i class="ph-bold ph-arrow-counter-clockwise"></i>
+          <span>Xác nhận Đặt lại</span>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+let currentCategory = 'ALL';
+const CSRF_TOKEN = '{{ csrf_token() if csrf_token else "" }}';
+
+function syncInput(key) {
+  const slider = document.getElementById('slider-' + key);
+  const input = document.getElementById('input-' + key);
+  const badgeVal = document.getElementById('badge-val-' + key);
+  const unit = input.getAttribute('data-unit');
+
+  input.value = slider.value;
+  badgeVal.textContent = slider.value + ' ' + unit;
+  checkCustomStatus(key);
+}
+
+function syncSlider(key) {
+  const slider = document.getElementById('slider-' + key);
+  const input = document.getElementById('input-' + key);
+  const badgeVal = document.getElementById('badge-val-' + key);
+  const unit = input.getAttribute('data-unit');
+
+  slider.value = input.value;
+  badgeVal.textContent = input.value + ' ' + unit;
+  checkCustomStatus(key);
+}
+
+function validateAndSync(key) {
+  const input = document.getElementById('input-' + key);
+  const min = parseInt(input.min, 10);
+  const max = parseInt(input.max, 10);
+  let val = parseInt(input.value, 10);
+
+  if (isNaN(val) || val < min) {
+    val = min;
+  } else if (val > max) {
+    val = max;
+  }
+
+  input.value = val;
+  syncSlider(key);
+}
+
+function stepChange(key, delta) {
+  const input = document.getElementById('input-' + key);
+  const min = parseInt(input.min, 10);
+  const max = parseInt(input.max, 10);
+  let val = (parseInt(input.value, 10) || min) + delta;
+
+  if (val < min) val = min;
+  if (val > max) val = max;
+
+  input.value = val;
+  syncSlider(key);
+}
+
+function resetToRecommended(key, recommendedVal) {
+  const input = document.getElementById('input-' + key);
+  input.value = recommendedVal;
+  syncSlider(key);
+}
+
+function checkCustomStatus(key) {
+  const input = document.getElementById('input-' + key);
+  const defaultVal = input.getAttribute('data-default');
+  const badgeStatus = document.getElementById('badge-status-' + key);
+
+  if (String(input.value) !== String(defaultVal)) {
+    badgeStatus.innerHTML = `
+      <span class="badge bg-warning-subtle text-warning border border-warning-subtle rounded-pill px-2.5 py-1 small fw-semibold">
+        <i class="ph-bold ph-pencil-simple me-0.5"></i> Đã tùy chỉnh
+      </span>
+    `;
+  } else {
+    badgeStatus.innerHTML = `
+      <span class="badge bg-secondary-subtle text-secondary border rounded-pill px-2.5 py-1 small fw-semibold">
+        <i class="ph-bold ph-shield-check me-0.5"></i> Mặc định
+      </span>
+    `;
+  }
+  recalcMetrics();
+}
+
+function recalcMetrics() {
+  const allInputs = document.querySelectorAll('.limit-input');
+  let customized = 0;
+  allInputs.forEach(inp => {
+    if (String(inp.value) !== String(inp.getAttribute('data-default'))) {
+      customized++;
+    }
+  });
+  const defaults = allInputs.length - customized;
+  const custEl = document.getElementById('customizedCount');
+  const defEl = document.getElementById('defaultCount');
+  if (custEl) custEl.textContent = customized;
+  if (defEl) defEl.textContent = defaults;
+}
+
+function filterLimits() {
+  const query = document.getElementById('limitSearchInput').value.toLowerCase().trim();
+  const cards = document.querySelectorAll('.limit-card-col');
+  const sections = document.querySelectorAll('.category-section');
+
+  cards.forEach(card => {
+    const key = card.getAttribute('data-key').toLowerCase();
+    const name = card.getAttribute('data-name');
+    const category = card.getAttribute('data-category');
+
+    const matchesQuery = !query || key.includes(query) || name.includes(query);
+    const matchesCat = currentCategory === 'ALL' || category === currentCategory;
+
+    if (matchesQuery && matchesCat) {
+      card.style.display = '';
+    } else {
+      card.style.display = 'none';
+    }
+  });
+
+  sections.forEach(sec => {
+    const visibleCards = sec.querySelectorAll('.limit-card-col:not([style*="display: none"])');
+    sec.style.display = (visibleCards.length === 0) ? 'none' : '';
+  });
+}
+
+function setCategoryFilter(cat, btn) {
+  currentCategory = cat;
+  document.querySelectorAll('.filter-pill').forEach(b => {
+    b.classList.remove('btn-dark', 'active');
+    b.classList.add('btn-light');
+  });
+  btn.classList.remove('btn-light');
+  btn.classList.add('btn-dark', 'active');
+  filterLimits();
+}
+
+async function saveSingleLimit(key) {
+  const input = document.getElementById('input-' + key);
+  const btn = document.getElementById('btn-save-' + key);
+  const origHtml = btn.innerHTML;
+
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status"></span>';
+
+  try {
+    const res = await fetch('{{ url_for("admin.update_single_system_limit", limit_key="KEY_PLACEHOLDER") }}'.replace('KEY_PLACEHOLDER', key), {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRFToken': CSRF_TOKEN
+      },
+      body: JSON.stringify({ value: parseInt(input.value, 10) })
+    });
+
+    const data = await res.json();
+    if (data.success) {
+      showAlert(data.message, 'success');
+      checkCustomStatus(key);
+    } else {
+      showAlert(data.error || 'Lỗi khi cập nhật giới hạn', 'danger');
+    }
+  } catch (err) {
+    showAlert('Lỗi kết nối máy chủ: ' + err.message, 'danger');
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = origHtml;
+  }
+}
+
+async function saveAllLimits() {
+  const btn = document.getElementById('btnSaveAll');
+  const origHtml = btn.innerHTML;
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1" role="status"></span><span>Đang lưu...</span>';
+
+  const allInputs = document.querySelectorAll('.limit-input');
+  const payload = {};
+  allInputs.forEach(inp => {
+    payload[inp.name] = parseInt(inp.value, 10);
+  });
+
+  try {
+    const res = await fetch('{{ url_for("admin.update_system_limits") }}', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRFToken': CSRF_TOKEN
+      },
+      body: JSON.stringify(payload)
+    });
+
+    const data = await res.json();
+    if (data.success) {
+      showAlert(data.message || 'Đã lưu toàn bộ cấu hình giới hạn thành công!', 'success');
+      allInputs.forEach(inp => checkCustomStatus(inp.name));
+    } else {
+      const errMsg = (data.error_messages && data.error_messages.length) ? data.error_messages.join(', ') : (data.message || 'Có lỗi xảy ra.');
+      showAlert(errMsg, 'danger');
+    }
+  } catch (err) {
+    showAlert('Lỗi kết nối máy chủ: ' + err.message, 'danger');
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = origHtml;
+  }
+}
+
+async function executeResetLimits() {
+  const modalEl = document.getElementById('resetConfirmModal');
+  const modal = bootstrap.Modal.getInstance(modalEl);
+  if (modal) modal.hide();
+
+  try {
+    const res = await fetch('{{ url_for("admin.reset_all_system_limits") }}', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRFToken': CSRF_TOKEN
+      }
+    });
+
+    const data = await res.json();
+    if (data.success) {
+      showAlert(data.message, 'success');
+      setTimeout(() => location.reload(), 800);
+    } else {
+      showAlert(data.error || 'Lỗi khi khôi phục mặc định.', 'danger');
+    }
+  } catch (err) {
+    showAlert('Lỗi kết nối máy chủ: ' + err.message, 'danger');
+  }
+}
+
+function showAlert(msg, type) {
+  const alertBox = document.getElementById('statusAlert');
+  const alertMsg = document.getElementById('statusAlertMsg');
+  const alertIcon = document.getElementById('statusAlertIcon');
+
+  alertBox.className = `alert alert-${type} alert-dismissible fade show border-0 rounded-3 mb-4 d-flex align-items-center gap-2 shadow-sm`;
+  alertMsg.textContent = msg;
+  alertIcon.className = type === 'success' ? 'ph-bold ph-check-circle fs-5 flex-shrink-0' : 'ph-bold ph-warning-circle fs-5 flex-shrink-0';
+  alertBox.classList.remove('d-none');
+
+  setTimeout(() => {
+    alertBox.classList.add('d-none');
+  }, 4500);
+}
+</script>
+{% endblock %}

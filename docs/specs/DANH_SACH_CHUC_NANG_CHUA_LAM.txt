@@ -417,14 +417,14 @@ MODULE 10. ADMIN SYSTEM (HỆ THỐNG QUẢN TRỊ) — 7 TÍNH NĂNG CHƯA LÀM
   + Tích hợp cờ vào các luồng nghiệp vụ quan trọng (Khóa đăng ký `USER_REGISTRATION`, Sảnh game `ARCADE_GAMES`, Chấm bài AI `AI_GRADING`, Chia sẻ huy hiệu `BADGE_SHARING`, v.v.).
 - Mức độ ưu tiên: Cao (High)
 
-[ ] 10.4. System Limits - Giao diện cấu hình giới hạn hệ thống (Mục 10.7)
-- Hiện trạng trong EnglishMate_Features.txt:
-  Các giới hạn (dung lượng avatar tối đa 5MB, thời gian khóa đăng nhập 15 phút, số lần thử sai tối đa 5 lần) đang là các hằng số cố định trong mã nguồn.
-- Phần còn thiếu chưa làm:
-  Chưa có trang giao diện Admin để điều chỉnh linh hoạt các giá trị giới hạn này.
-- Giải pháp kỹ thuật cần làm:
-  + Lưu các thông số `MAX_FAILED_LOGIN_ATTEMPTS`, `LOCKOUT_MINUTES`, `SESSION_TIMEOUT_MINUTES` vào bảng `SystemConfig`.
+[x] 10.4. System Limits - Giao diện cấu hình giới hạn hệ thống (Mục 10.7)
+- Hiện trạng: Đã hoàn thiện trang quản trị `/admin/system/limits` (alias `/admin/limits`).
+- Giải pháp kỹ thuật đã làm:
+  + Lưu các thông số `MAX_FAILED_LOGIN_ATTEMPTS`, `LOCKOUT_MINUTES`, `SESSION_TIMEOUT_MINUTES`, `MAX_AVATAR_SIZE_MB`, `MAX_UPLOAD_SIZE_MB` vào bảng `SystemConfig`.
+  + Tích hợp dynamic limits vào middleware kiểm tra phiên làm việc (Session Inactivity Timeout), cơ chế khóa tài khoản đăng nhập sai liên tiếp và bộ lọc dung lượng tải file ảnh avatar.
+  + Xây dựng giao diện Admin trực quan với slider, stepper +/- controls, presets khuyến nghị, single/bulk save AJAX và tính năng khôi phục mặc định ban đầu.
 - Mức độ ưu tiên: Trung bình (Medium)
+
 
 [ ] 10.5. Performance Settings - Cài đặt thông số hiệu năng (Mục 10.7)
 - Hiện trạng: Chưa có.

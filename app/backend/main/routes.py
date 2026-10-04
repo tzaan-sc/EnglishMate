@@ -398,6 +398,20 @@ def edit_profile_info():
 
         if form.avatar.data:
             file = form.avatar.data
+            try:
+                from app.backend.admin.models import SystemConfig
+                max_avatar_mb = SystemConfig.get_int_config("MAX_AVATAR_SIZE_MB", default=5)
+            except Exception:
+                max_avatar_mb = 5
+
+            file.seek(0, os.SEEK_END)
+            size_bytes = file.tell()
+            file.seek(0)
+
+            if size_bytes > (max_avatar_mb or 5) * 1024 * 1024:
+                flash(f"Dung lượng ảnh đại diện vượt quá giới hạn cho phép ({max_avatar_mb}MB).", "danger")
+                return redirect(url_for("main.profile"))
+
             ext = os.path.splitext(file.filename)[1].lower()
             filename = f"avatar_{current_user.id}_{uuid.uuid4().hex[:8]}{ext}"
             upload_folder = Path(current_app.static_folder) / "uploads" / "avatars"

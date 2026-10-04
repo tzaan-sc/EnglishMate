@@ -151,6 +151,53 @@ class SystemConfig(db.Model):
             return default
 
     @classmethod
+    def get_int_config(cls, key: str, default: int = None) -> int:
+        val = cls.get_config(key, None)
+        if val is None:
+            return default
+        try:
+            return int(val)
+        except (ValueError, TypeError):
+            return default
+
+    @classmethod
+    def get_float_config(cls, key: str, default: float = None) -> float:
+        val = cls.get_config(key, None)
+        if val is None:
+            return default
+        try:
+            return float(val)
+        except (ValueError, TypeError):
+            return default
+
+    @classmethod
+    def set_config(cls, key: str, value, description: str = None, category: str = None, is_active: bool = True) -> "SystemConfig":
+        item = cls.query.filter_by(key=key).first()
+        if not item:
+            item = cls(
+                key=key,
+                value=str(value) if value is not None else None,
+                description=description,
+                category=category or "GENERAL",
+                is_active=is_active
+            )
+            db.session.add(item)
+        else:
+            item.value = str(value) if value is not None else None
+            if description is not None:
+                item.description = description
+            if category is not None:
+                item.category = category
+            if is_active is not None:
+                item.is_active = is_active
+        try:
+            db.session.commit()
+        except Exception:
+            db.session.rollback()
+            raise
+        return item
+
+    @classmethod
     def is_feature_enabled(cls, key: str, default: bool = True) -> bool:
         try:
             item = cls.query.filter_by(key=key).first()
@@ -186,5 +233,6 @@ class SystemConfig(db.Model):
             db.session.rollback()
             raise
         return item
+
 
 

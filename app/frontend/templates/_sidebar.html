@@ -50,12 +50,19 @@
                     <span>Nhật ký Audit</span>
                 </a>
             </li>
-            <li class="nav-item mb-2">
+            <li class="nav-item">
                 <a class="nav-link-modern {% if request.path.startswith('/admin/system/feature-flags') or request.path.startswith('/admin/feature-flags') %}active{% endif %}" href="{{ url_for('admin.feature_flags') }}" title="Quản lý Tính năng">
                     <i class="ph ph-sliders text-warning"></i>
                     <span>Quản lý Tính năng</span>
                 </a>
             </li>
+            <li class="nav-item mb-2">
+                <a class="nav-link-modern {% if request.path.startswith('/admin/system/limits') or request.path.startswith('/admin/limits') %}active{% endif %}" href="{{ url_for('admin.system_limits') }}" title="Giới hạn hệ thống">
+                    <i class="ph ph-sliders-horizontal text-primary"></i>
+                    <span>Giới hạn hệ thống</span>
+                </a>
+            </li>
+
 
             <!-- SEPARATOR -->
             <li class="nav-item my-2 border-top"></li>

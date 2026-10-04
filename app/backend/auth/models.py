@@ -206,10 +206,23 @@ class User(UserMixin, db.Model):
             return True, remaining_mins
         return False, 0
 
-    def record_failed_login(self):
+    def record_failed_login(self, max_attempts=None, lockout_minutes=None):
+        if max_attempts is None:
+            try:
+                from app.backend.admin.models import SystemConfig
+                max_attempts = SystemConfig.get_int_config("MAX_FAILED_LOGIN_ATTEMPTS", default=5)
+            except Exception:
+                max_attempts = 5
+        if lockout_minutes is None:
+            try:
+                from app.backend.admin.models import SystemConfig
+                lockout_minutes = SystemConfig.get_int_config("LOCKOUT_MINUTES", default=15)
+            except Exception:
+                lockout_minutes = 15
+
         self.failed_login_attempts = (self.failed_login_attempts or 0) + 1
-        if self.failed_login_attempts >= 5:
-            self.lockout_until = datetime.now(timezone.utc) + timedelta(minutes=15)
+        if self.failed_login_attempts >= max_attempts:
+            self.lockout_until = datetime.now(timezone.utc) + timedelta(minutes=lockout_minutes)
         return self.failed_login_attempts
 
     def record_successful_login(self):

@@ -35,8 +35,15 @@ def check_session_timeout():
                 session["last_activity_ts"] = now_ts
             return None
 
-        # Check 30-minute inactivity (1800 seconds)
-        if last_act and (now_ts - last_act > 1800):
+        # Check dynamic inactivity timeout (default 30 minutes)
+        try:
+            from app.backend.admin.models import SystemConfig
+            timeout_mins = SystemConfig.get_int_config("SESSION_TIMEOUT_MINUTES", default=30)
+        except Exception:
+            timeout_mins = 30
+        timeout_seconds = max(60, (timeout_mins or 30) * 60)
+
+        if last_act and (now_ts - last_act > timeout_seconds):
             sess_key = session.get("session_key")
             if sess_key:
                 user_sess = db.session.get(UserSession, sess_key)
@@ -46,7 +53,7 @@ def check_session_timeout():
 
             logout_user()
             session.clear()
-            flash("Phiên đăng nhập của bạn đã hết hạn do không hoạt động trong 30 phút. Vui lòng đăng nhập lại.", "warning")
+            flash(f"Phiên đăng nhập của bạn đã hết hạn do không hoạt động trong {timeout_mins} phút. Vui lòng đăng nhập lại.", "warning")
             return redirect(url_for("auth.login"))
 
         # Update last activity
@@ -403,9 +410,17 @@ def login():
         user = User.query.filter_by(email=email).first()
 
         if user:
+            try:
+                from app.backend.admin.models import SystemConfig
+                max_attempts = SystemConfig.get_int_config("MAX_FAILED_LOGIN_ATTEMPTS", default=5)
+                lockout_mins = SystemConfig.get_int_config("LOCKOUT_MINUTES", default=15)
+            except Exception:
+                max_attempts = 5
+                lockout_mins = 15
+
             is_locked, remaining_mins = user.is_locked_out()
             if is_locked:
-                flash(f"Tài khoản tạm thời bị khóa do nhập sai mật khẩu 5 lần. Vui lòng thử lại sau {remaining_mins} phút.", "danger")
+                flash(f"Tài khoản tạm thời bị khóa do nhập sai mật khẩu {max_attempts} lần. Vui lòng thử lại sau {remaining_mins} phút.", "danger")
                 return render_template("auth/login.html", form=form)
 
             if not user.is_active:
@@ -421,12 +436,12 @@ def login():
                 default_target = "admin.dashboard" if user.is_admin else "main.dashboard"
                 return redirect(next_url if next_url and is_safe_url(next_url) else url_for(default_target))
             else:
-                attempts = user.record_failed_login()
+                attempts = user.record_failed_login(max_attempts=max_attempts, lockout_minutes=lockout_mins)
                 db.session.commit()
-                if attempts >= 5:
-                    flash("Tài khoản của bạn đã bị khóa 15 phút do nhập sai mật khẩu 5 lần.", "danger")
+                if attempts >= max_attempts:
+                    flash(f"Tài khoản của bạn đã bị khóa {lockout_mins} phút do nhập sai mật khẩu {max_attempts} lần.", "danger")
                 else:
-                    remaining = 5 - attempts
+                    remaining = max(1, max_attempts - attempts)
                     flash(f"Email hoặc mật khẩu không chính xác. Bạn còn {remaining} lần thử.", "danger")
         else:
             flash("Email hoặc mật khẩu không chính xác.", "danger")
