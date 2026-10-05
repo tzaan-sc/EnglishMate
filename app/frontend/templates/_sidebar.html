@@ -5,71 +5,70 @@
             <!-- ADMIN MANAGEMENT SECTION (FOR ADMINS) -->
             <li class="nav-item mb-1">
                 <span class="sidebar-heading text-primary d-flex align-items-center gap-1.5 font-semibold" style="font-size: 0.76rem; letter-spacing: 0.05em;">
-                    <i class="ph ph-shield-check"></i> Quản trị hệ thống
+                    <svg class="app-icon text-primary"><use href="#icon-shield-check"></use></svg>
+                    <span>Quản trị hệ thống</span>
                 </span>
             </li>
             <li class="nav-item">
                 <a class="nav-link-modern {% if request.path == url_for('admin.dashboard') %}active{% endif %}" href="{{ url_for('admin.dashboard') }}" title="Tổng quan Admin">
-                    <i class="ph ph-gauge"></i>
+                    <svg class="app-icon"><use href="#icon-dashboard"></use></svg>
                     <span>Tổng quan Admin</span>
                 </a>
             </li>
             <li class="nav-item">
                 <a class="nav-link-modern {% if request.path.startswith('/admin/lessons') %}active{% endif %}" href="{{ url_for('admin.lessons') }}" title="Quản lý Bài học">
-                    <i class="ph ph-book-open"></i>
+                    <svg class="app-icon"><use href="#icon-book-open"></use></svg>
                     <span>Quản lý Bài học</span>
                 </a>
             </li>
             <li class="nav-item">
                 <a class="nav-link-modern {% if request.path.startswith('/admin/vocabulary') %}active{% endif %}" href="{{ url_for('admin.vocabulary') }}" title="Quản lý Từ vựng">
-                    <i class="ph ph-translate"></i>
+                    <svg class="app-icon"><use href="#icon-vocabulary"></use></svg>
                     <span>Quản lý Từ vựng</span>
                 </a>
             </li>
             <li class="nav-item">
                 <a class="nav-link-modern {% if request.path.startswith('/admin/exams') or request.path.startswith('/admin/exam-upload') %}active{% endif %}" href="{{ url_for('admin.exams_list') }}" title="Quản lý Đề thi">
-                    <i class="ph ph-certificate"></i>
+                    <svg class="app-icon"><use href="#icon-exam"></use></svg>
                     <span>Quản lý Đề thi</span>
                 </a>
             </li>
             <li class="nav-item">
                 <a class="nav-link-modern {% if request.path.startswith('/admin/import') %}active{% endif %}" href="{{ url_for('admin.import_hub') }}" title="Import Dữ liệu">
-                    <i class="ph ph-file-arrow-down text-success"></i>
+                    <svg class="app-icon text-success"><use href="#icon-import"></use></svg>
                     <span>Import Dữ liệu</span>
                 </a>
             </li>
             <li class="nav-item">
                 <a class="nav-link-modern {% if request.path.startswith('/admin/users') or request.path.startswith('/admin/roles') %}active{% endif %}" href="{{ url_for('admin.users') }}" title="Người dùng & Phân quyền">
-                    <i class="ph ph-users-three"></i>
+                    <svg class="app-icon"><use href="#icon-users"></use></svg>
                     <span>Người dùng & Phân quyền</span>
                 </a>
             </li>
             <li class="nav-item">
                 <a class="nav-link-modern {% if request.path == url_for('admin.audit_logs') %}active{% endif %}" href="{{ url_for('admin.audit_logs') }}" title="Nhật ký Audit">
-                    <i class="ph ph-clock-counter-clockwise"></i>
+                    <svg class="app-icon"><use href="#icon-audit-log"></use></svg>
                     <span>Nhật ký Audit</span>
                 </a>
             </li>
             <li class="nav-item">
                 <a class="nav-link-modern {% if request.path.startswith('/admin/system/feature-flags') or request.path.startswith('/admin/feature-flags') %}active{% endif %}" href="{{ url_for('admin.feature_flags') }}" title="Quản lý Tính năng">
-                    <i class="ph ph-sliders text-warning"></i>
+                    <svg class="app-icon text-warning"><use href="#icon-feature-flags"></use></svg>
                     <span>Quản lý Tính năng</span>
                 </a>
             </li>
             <li class="nav-item">
                 <a class="nav-link-modern {% if request.path.startswith('/admin/system/limits') or request.path.startswith('/admin/limits') %}active{% endif %}" href="{{ url_for('admin.system_limits') }}" title="Giới hạn hệ thống">
-                    <i class="ph ph-sliders-horizontal text-primary"></i>
+                    <svg class="app-icon text-primary"><use href="#icon-system-limits"></use></svg>
                     <span>Giới hạn hệ thống</span>
                 </a>
             </li>
             <li class="nav-item mb-2">
                 <a class="nav-link-modern {% if request.path.startswith('/admin/system/performance') or request.path.startswith('/admin/performance') %}active{% endif %}" href="{{ url_for('admin.performance_settings') }}" title="Cấu hình Hiệu năng">
-                    <i class="ph ph-gauge text-info"></i>
+                    <svg class="app-icon text-info"><use href="#icon-performance"></use></svg>
                     <span>Cấu hình Hiệu năng</span>
                 </a>
             </li>
-
-
 
             <!-- SEPARATOR -->
             <li class="nav-item my-2 border-top"></li>
@@ -82,7 +81,7 @@
             </li>
             <li class="nav-item">
                 <a class="nav-link-modern {% if request.path == url_for('main.dashboard') %}active{% endif %}" href="{{ url_for('main.dashboard') }}" title="Trang chủ">
-                    <i class="ph ph-house"></i>
+                    <svg class="app-icon"><use href="#icon-home"></use></svg>
                     <span>Trang chủ</span>
                 </a>
             </li>
@@ -97,39 +96,39 @@
 
             <li class="nav-item">
                 <button type="button" class="nav-link-modern w-100 border-0 bg-transparent text-start {% if is_lessons_active %}active{% endif %}" data-bs-toggle="collapse" data-bs-target="#{{ menu_id }}" aria-expanded="{{ 'true' if is_lessons_active else 'false' }}" aria-controls="{{ menu_id }}" title="Bài học">
-                    <i class="ph ph-graduation-cap"></i>
+                    <svg class="app-icon"><use href="#icon-book-open"></use></svg>
                     <span>Bài học</span>
-                    <i class="ph-bold ph-caret-down ms-auto submenu-arrow" style="font-size: 0.72rem;"></i>
+                    <svg class="app-icon ms-auto submenu-arrow" style="width: 0.9em; height: 0.9em;"><use href="#icon-caret-down"></use></svg>
                 </button>
                 <div class="collapse {% if is_lessons_active %}show{% endif %}" id="{{ menu_id }}">
                     <ul class="sidebar-submenu">
                         <li>
                             <a class="nav-sublink {% if is_all_lessons_active %}active{% endif %}" href="{{ url_for('learning.lessons') }}" title="Tất cả bài học">
-                                <i class="ph-bold ph-squares-four"></i>
+                                <svg class="app-icon app-icon-sm"><use href="#icon-book-open"></use></svg>
                                 <span>Tất cả bài học</span>
                             </a>
                         </li>
                         <li>
                             <a class="nav-sublink {% if is_listening_active %}active{% endif %}" href="/listening" title="Luyện Nghe">
-                                <i class="ph-bold ph-headphones text-warning"></i>
+                                <svg class="app-icon app-icon-sm text-warning"><use href="#icon-headphones"></use></svg>
                                 <span>Luyện Nghe</span>
                             </a>
                         </li>
                         <li>
                             <a class="nav-sublink {% if is_reading_active %}active{% endif %}" href="/reading" title="Đọc Hiểu">
-                                <i class="ph-bold ph-book-open-text" style="color: #0d9488;"></i>
+                                <svg class="app-icon app-icon-sm" style="color: #0d9488;"><use href="#icon-book-open"></use></svg>
                                 <span>Đọc Hiểu</span>
                             </a>
                         </li>
                         <li>
                             <a class="nav-sublink {% if is_speaking_active %}active{% endif %}" href="/speaking" title="Luyện Nói">
-                                <i class="ph-bold ph-chats-circle" style="color: #ea580c;"></i>
+                                <svg class="app-icon app-icon-sm" style="color: #ea580c;"><use href="#icon-mic"></use></svg>
                                 <span>Luyện Nói</span>
                             </a>
                         </li>
                         <li>
                             <a class="nav-sublink {% if is_writing_active %}active{% endif %}" href="/writing" title="Luyện Viết">
-                                <i class="ph-bold ph-pen-nib" style="color: #be123c;"></i>
+                                <svg class="app-icon app-icon-sm" style="color: #be123c;"><use href="#icon-pen-nib"></use></svg>
                                 <span>Luyện Viết</span>
                             </a>
                         </li>
@@ -138,13 +137,13 @@
             </li>
             <li class="nav-item">
                 <a class="nav-link-modern {% if request.path.startswith(url_for('learning.vocabulary')) or request.path.startswith('/flashcard-sets') and not request.path.startswith('/admin') %}active{% endif %}" href="{{ url_for('learning.vocabulary') }}" title="Từ vựng & Flashcards">
-                    <i class="ph ph-book-open"></i>
+                    <svg class="app-icon"><use href="#icon-vocabulary"></use></svg>
                     <span>Từ vựng & Flashcards</span>
                 </a>
             </li>
             <li class="nav-item">
                 <a class="nav-link-modern {% if request.path.startswith('/grammar') %}active{% endif %}" href="{{ url_for('learning.grammar_overview') }}" title="Ngữ pháp">
-                    <i class="ph ph-textbox"></i>
+                    <svg class="app-icon"><use href="#icon-pencil"></use></svg>
                     <span>Ngữ pháp</span>
                 </a>
             </li>
@@ -155,19 +154,19 @@
             </li>
             <li class="nav-item">
                 <a class="nav-link-modern {% if request.path.startswith('/games') %}active{% endif %}" href="{{ url_for('learning.game_lobby') }}" title="Game phản xạ">
-                    <i class="ph ph-game-controller"></i>
+                    <svg class="app-icon"><use href="#icon-game-arcade"></use></svg>
                     <span>Game phản xạ</span>
                 </a>
             </li>
             <li class="nav-item">
                 <a class="nav-link-modern {% if request.path.startswith('/quizzes') or request.path == '/quiz' %}active{% endif %}" href="{{ url_for('learning.quiz_dashboard') }}" title="Quiz ôn tập">
-                    <i class="ph ph-check-circle"></i>
+                    <svg class="app-icon"><use href="#icon-check-circle"></use></svg>
                     <span>Quiz ôn tập</span>
                 </a>
             </li>
             <li class="nav-item">
                 <a class="nav-link-modern {% if request.path.startswith('/exam') or request.path.startswith('/toeic') or request.path.startswith('/specialized') or request.path.startswith('/test-history') or request.path == '/settings' %}active{% endif %}" href="{{ url_for('exams.exam_list') }}" title="Luyện thi & Đề thi">
-                    <i class="ph ph-certificate"></i>
+                    <svg class="app-icon"><use href="#icon-exam"></use></svg>
                     <span>Luyện thi & Đề thi</span>
                 </a>
             </li>
@@ -178,13 +177,13 @@
             </li>
             <li class="nav-item">
                 <a class="nav-link-modern {% if request.path.startswith('/gamification') or request.path == '/leaderboard' %}active{% endif %}" href="{{ url_for('learning.gamification_hub') }}" title="Xếp hạng & Thưởng">
-                    <i class="ph ph-trophy"></i>
+                    <svg class="app-icon"><use href="#icon-trophy"></use></svg>
                     <span>Xếp hạng & Thưởng</span>
                 </a>
             </li>
             <li class="nav-item">
                 <a class="nav-link-modern {% if request.path.startswith(url_for('learning.progress')) %}active{% endif %}" href="{{ url_for('learning.progress') }}" title="Tiến độ học tập">
-                    <i class="ph ph-chart-line-up"></i>
+                    <svg class="app-icon"><use href="#icon-chart"></use></svg>
                     <span>Tiến độ học tập</span>
                 </a>
             </li>
@@ -215,9 +214,10 @@
             <form method="post" action="{{ url_for('auth.logout') }}" class="m-0 sidebar-logout-form">
                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                 <button class="btn btn-sm btn-light border-0 text-muted p-2 d-flex align-items-center justify-content-center rounded-3" type="submit" title="Đăng xuất" style="transition: all 0.2s ease;" onmouseover="this.classList.add('text-danger')" onmouseout="this.classList.remove('text-danger')">
-                    <i class="ph ph-sign-out fs-5"></i>
+                    <svg class="app-icon"><use href="#icon-logout"></use></svg>
                 </button>
             </form>
         </div>
     </div>
 </div>
+

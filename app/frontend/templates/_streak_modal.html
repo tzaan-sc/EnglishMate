@@ -20,7 +20,7 @@
             <div class="rounded-circle d-flex align-items-center justify-content-center position-relative shadow-lg"
                  style="width: 88px; height: 88px; background: linear-gradient(135deg, #fff7ed 0%, #ffedd5 50%, #fee2e2 100%); border: 3px solid #fdba74;">
               <span class="streak-flame-lit d-flex align-items-center justify-content-center">
-                <i class="ph-fill ph-flame" style="font-size: 3.6rem; color: #ea580c; background: linear-gradient(180deg, #f97316 0%, #dc2626 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;"></i>
+                <svg class="app-icon" style="width: 52px; height: 52px; color: #ea580c;"><use href="#icon-flame-streak"></use></svg>
               </span>
             </div>
           </div>
@@ -64,7 +64,7 @@
                   style="background: linear-gradient(135deg, #f97316 0%, #ea580c 100%); border: none; font-size: 0.95rem;"
                   data-bs-dismiss="modal">
             <span>Tiếp tục học tập</span>
-            <i class="ph-bold ph-arrow-right"></i>
+            <svg class="app-icon app-icon-sm"><use href="#icon-caret-right"></use></svg>
           </button>
           <a href="{{ url_for('main.dashboard') }}" class="btn btn-link text-muted text-decoration-none small py-1" style="font-size: 0.82rem;">
             Về Trang chủ

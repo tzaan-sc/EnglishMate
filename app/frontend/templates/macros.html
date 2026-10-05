@@ -46,3 +46,16 @@
 </nav>
 {% endmacro %}
 
+{% macro icon(name, class="", size=None, style=None) %}
+  <svg class="app-icon {{ class }}" aria-hidden="true"{% if size %} width="{{ size }}" height="{{ size }}"{% endif %}{% if style %} style="{{ style }}"{% endif %}>
+    <use href="#icon-{{ name }}"></use>
+  </svg>
+{% endmacro %}
+
+{% macro svg_icon(name, class="", size=None, style=None) %}
+  <svg class="app-icon {{ class }}" aria-hidden="true"{% if size %} width="{{ size }}" height="{{ size }}"{% endif %}{% if style %} style="{{ style }}"{% endif %}>
+    <use href="#icon-{{ name }}"></use>
+  </svg>
+{% endmacro %}
+
+

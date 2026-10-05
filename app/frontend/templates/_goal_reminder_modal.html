@@ -17,7 +17,7 @@
             <div class="rounded-circle d-flex align-items-center justify-content-center position-relative shadow-lg"
                  style="width: 86px; height: 86px; background: linear-gradient(135deg, #fff7ed 0%, #ffedd5 50%, #fee2e2 100%); border: 3px solid #fb923c;">
               <span class="goal-clock-icon d-flex align-items-center justify-content-center">
-                <i class="ph-fill ph-alarm" style="font-size: 3.2rem; color: #ea580c; background: linear-gradient(180deg, #f97316 0%, #dc2626 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;"></i>
+                <svg class="app-icon" style="width: 48px; height: 48px; color: #ea580c;"><use href="#icon-timer"></use></svg>
               </span>
             </div>
           </div>
@@ -41,7 +41,7 @@
         <div class="p-3.5 rounded-4 border bg-white shadow-2xs mb-3 text-start" style="border-color: #fed7aa !important;">
           <div class="d-flex justify-content-between align-items-center mb-1.5">
             <span class="small fw-bold text-dark d-flex align-items-center gap-1.5">
-              <i class="ph-bold ph-target text-warning"></i> Tiến độ Daily Goal
+              <svg class="app-icon app-icon-sm text-warning"><use href="#icon-target-goal"></use></svg> Tiến độ Daily Goal
             </span>
             <span class="small fw-800 text-warning-emphasis" id="goalModalProgressXp">
               {{ daily_goal_stat.progress_xp if daily_goal_stat else 0 }} / {{ daily_goal_stat.target_xp if daily_goal_stat else 50 }} XP
@@ -79,12 +79,13 @@
           <a href="{{ url_for('learning.lessons') }}" id="goalModalCtaBtn" class="btn btn-primary rounded-pill py-2.5 fw-bold shadow-sm d-flex align-items-center justify-content-center gap-2 text-decoration-none"
              style="background: linear-gradient(135deg, #f97316 0%, #ea580c 100%); border: none; font-size: 0.95rem;">
             <span>🚀 Bắt đầu bài học ngay</span>
-            <i class="ph-bold ph-arrow-right"></i>
+            <svg class="app-icon app-icon-sm"><use href="#icon-caret-right"></use></svg>
           </a>
 
           <div class="d-flex gap-2">
-            <a href="{{ url_for('learning.review_vocabulary') }}" class="btn btn-outline-warning rounded-pill py-1.5 flex-grow-1 fw-semibold small text-decoration-none" style="font-size: 0.82rem;">
-              <i class="ph-bold ph-cards me-1"></i>Ôn 10 từ SRS
+            <a href="{{ url_for('learning.review_vocabulary') }}" class="btn btn-outline-warning rounded-pill py-1.5 flex-grow-1 fw-semibold small text-decoration-none d-inline-flex align-items-center justify-content-center gap-1" style="font-size: 0.82rem;">
+              <svg class="app-icon app-icon-xs"><use href="#icon-cards"></use></svg>
+              <span>Ôn 10 từ SRS</span>
             </a>
             <button type="button" class="btn btn-light rounded-pill py-1.5 px-3 text-muted fw-semibold small" id="btnGoalModalDismiss" data-bs-dismiss="modal" style="font-size: 0.82rem;">
               Để sau

@@ -9,13 +9,13 @@
     <ol class="breadcrumb mb-0 align-items-center flex-wrap">
       <li class="breadcrumb-item">
         <a href="{{ url_for('admin.dashboard') }}" class="d-inline-flex align-items-center gap-1">
-          <i class="ph ph-house"></i>
+          <svg class="app-icon app-icon-sm"><use href="#icon-home"></use></svg>
           <span>Trang Chủ</span>
         </a>
       </li>
       <li class="breadcrumb-item active" aria-current="page">
         <span class="d-inline-flex align-items-center gap-1">
-          <i class="ph-bold ph-shield-check"></i>
+          <svg class="app-icon app-icon-sm"><use href="#icon-shield-check"></use></svg>
           <span>Quản trị Hệ thống</span>
         </span>
       </li>
@@ -25,7 +25,7 @@
   <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
     <div class="d-flex align-items-center gap-3">
       <div class="rounded-3 bg-primary-subtle text-primary border border-primary-subtle d-inline-flex align-items-center justify-content-center flex-shrink-0" style="width: 48px; height: 48px; font-size: 1.45rem;">
-        <i class="ph-bold ph-gauge"></i>
+        <svg class="app-icon app-icon-lg"><use href="#icon-gauge"></use></svg>
       </div>
       <div>
         <h3 class="fw-bold text-dark mb-0.5" style="letter-spacing: -0.01em;">Thống kê hệ thống</h3>
@@ -45,7 +45,7 @@
       <div class="card-modern p-3.5 h-100">
         <div class="d-flex align-items-center gap-3">
           <div class="rounded-3 bg-primary-subtle text-primary d-inline-flex align-items-center justify-content-center flex-shrink-0" style="width: 44px; height: 44px; font-size: 1.25rem;">
-            <i class="ph-bold ph-users"></i>
+            <svg class="app-icon app-icon-md"><use href="#icon-users"></use></svg>
           </div>
           <div>
             <h3 class="fw-800 text-dark mb-0" style="font-size: 1.5rem; letter-spacing: -0.02em;">{{ stats.users }}</h3>
@@ -60,7 +60,7 @@
       <div class="card-modern p-3.5 h-100">
         <div class="d-flex align-items-center gap-3">
           <div class="rounded-3 bg-info-subtle text-info d-inline-flex align-items-center justify-content-center flex-shrink-0" style="width: 44px; height: 44px; font-size: 1.25rem;">
-            <i class="ph-bold ph-book-open"></i>
+            <svg class="app-icon app-icon-md"><use href="#icon-book-open"></use></svg>
           </div>
           <div>
             <h3 class="fw-800 text-dark mb-0" style="font-size: 1.5rem; letter-spacing: -0.02em;">{{ stats.lessons }}</h3>
@@ -75,7 +75,7 @@
       <div class="card-modern p-3.5 h-100">
         <div class="d-flex align-items-center gap-3">
           <div class="rounded-3 bg-success-subtle text-success d-inline-flex align-items-center justify-content-center flex-shrink-0" style="width: 44px; height: 44px; font-size: 1.25rem;">
-            <i class="ph-bold ph-translate"></i>
+            <svg class="app-icon app-icon-md"><use href="#icon-vocabulary"></use></svg>
           </div>
           <div>
             <h3 class="fw-800 text-dark mb-0" style="font-size: 1.5rem; letter-spacing: -0.02em;">{{ stats.words }}</h3>
@@ -90,7 +90,7 @@
       <div class="card-modern p-3.5 h-100">
         <div class="d-flex align-items-center gap-3">
           <div class="rounded-3 bg-warning-subtle text-warning d-inline-flex align-items-center justify-content-center flex-shrink-0" style="width: 44px; height: 44px; font-size: 1.25rem;">
-            <i class="ph-bold ph-question"></i>
+            <svg class="app-icon app-icon-md"><use href="#icon-question"></use></svg>
           </div>
           <div>
             <h3 class="fw-800 text-dark mb-0" style="font-size: 1.5rem; letter-spacing: -0.02em;">{{ stats.questions }}</h3>
@@ -105,7 +105,7 @@
       <div class="card-modern p-3.5 h-100">
         <div class="d-flex align-items-center gap-3">
           <div class="rounded-3 bg-purple-subtle text-purple d-inline-flex align-items-center justify-content-center flex-shrink-0" style="width: 44px; height: 44px; font-size: 1.25rem;">
-            <i class="ph-bold ph-clipboard-text"></i>
+            <svg class="app-icon app-icon-md"><use href="#icon-clipboard-text"></use></svg>
           </div>
           <div>
             <h3 class="fw-800 text-dark mb-0" style="font-size: 1.5rem; letter-spacing: -0.02em;">{{ stats.attempts }}</h3>
@@ -127,7 +127,7 @@
       <a class="card-modern p-4 text-decoration-none transition-hover h-100 d-block border-primary-subtle" href="{{ url_for('admin.import_hub') }}">
         <div class="d-flex align-items-start gap-3">
           <div class="rounded-3 bg-primary text-white d-inline-flex align-items-center justify-content-center flex-shrink-0" style="width: 42px; height: 42px; font-size: 1.25rem;">
-            <i class="ph-bold ph-file-arrow-down"></i>
+            <svg class="app-icon app-icon-md"><use href="#icon-file-arrow-down"></use></svg>
           </div>
           <div>
             <div class="d-flex align-items-center gap-1.5 mb-1">
@@ -145,7 +145,7 @@
       <a class="card-modern p-4 text-decoration-none transition-hover h-100 d-block" href="{{ url_for('admin.lesson_create') }}">
         <div class="d-flex align-items-start gap-3">
           <div class="rounded-3 bg-info text-white d-inline-flex align-items-center justify-content-center flex-shrink-0" style="width: 42px; height: 42px; font-size: 1.25rem;">
-            <i class="ph-bold ph-plus-circle"></i>
+            <svg class="app-icon app-icon-md"><use href="#icon-plus-circle"></use></svg>
           </div>
           <div>
             <h6 class="fw-bold text-dark mb-1" style="font-size: 0.98rem;">Thêm bài học mới</h6>
@@ -160,7 +160,7 @@
       <a class="card-modern p-4 text-decoration-none transition-hover h-100 d-block" href="{{ url_for('admin.vocabulary_create') }}">
         <div class="d-flex align-items-start gap-3">
           <div class="rounded-3 bg-success text-white d-inline-flex align-items-center justify-content-center flex-shrink-0" style="width: 42px; height: 42px; font-size: 1.25rem;">
-            <i class="ph-bold ph-plus-circle"></i>
+            <svg class="app-icon app-icon-md"><use href="#icon-plus-circle"></use></svg>
           </div>
           <div>
             <h6 class="fw-bold text-dark mb-1" style="font-size: 0.98rem;">Thêm từ vựng mới</h6>
@@ -175,7 +175,7 @@
       <a class="card-modern p-4 text-decoration-none transition-hover h-100 d-block" href="{{ url_for('admin.users') }}">
         <div class="d-flex align-items-start gap-3">
           <div class="rounded-3 bg-primary-subtle text-primary d-inline-flex align-items-center justify-content-center flex-shrink-0" style="width: 42px; height: 42px; font-size: 1.25rem;">
-            <i class="ph-bold ph-users-three"></i>
+            <svg class="app-icon app-icon-md"><use href="#icon-users-three"></use></svg>
           </div>
           <div>
             <h6 class="fw-bold text-dark mb-1" style="font-size: 0.98rem;">Quản lý người dùng</h6>
@@ -190,7 +190,7 @@
       <a class="card-modern p-4 text-decoration-none transition-hover h-100 d-block" href="{{ url_for('admin.users', tab='roles') }}">
         <div class="d-flex align-items-start gap-3">
           <div class="rounded-3 bg-purple-subtle text-purple d-inline-flex align-items-center justify-content-center flex-shrink-0" style="width: 42px; height: 42px; font-size: 1.25rem;">
-            <i class="ph-bold ph-shield-check"></i>
+            <svg class="app-icon app-icon-md"><use href="#icon-shield-check"></use></svg>
           </div>
           <div>
             <h6 class="fw-bold text-dark mb-1" style="font-size: 0.98rem;">Vai trò & Phân quyền</h6>
@@ -205,7 +205,7 @@
       <a class="card-modern p-4 text-decoration-none transition-hover h-100 d-block" href="{{ url_for('admin.exam_upload') }}">
         <div class="d-flex align-items-start gap-3">
           <div class="rounded-3 bg-danger-subtle text-danger d-inline-flex align-items-center justify-content-center flex-shrink-0" style="width: 42px; height: 42px; font-size: 1.25rem;">
-            <i class="ph-bold ph-file-arrow-up"></i>
+            <svg class="app-icon app-icon-md"><use href="#icon-file-arrow-up"></use></svg>
           </div>
           <div>
             <h6 class="fw-bold text-dark mb-1" style="font-size: 0.98rem;">Quản lý Đề thi TOEIC</h6>
@@ -220,7 +220,7 @@
       <a class="card-modern p-4 text-decoration-none transition-hover h-100 d-block" href="{{ url_for('admin.feature_flags') }}">
         <div class="d-flex align-items-start gap-3">
           <div class="rounded-3 bg-warning-subtle text-warning d-inline-flex align-items-center justify-content-center flex-shrink-0" style="width: 42px; height: 42px; font-size: 1.25rem;">
-            <i class="ph-bold ph-sliders"></i>
+            <svg class="app-icon app-icon-md"><use href="#icon-sliders"></use></svg>
           </div>
           <div>
             <h6 class="fw-bold text-dark mb-1" style="font-size: 0.98rem;">Quản lý Tính năng (Feature Flags)</h6>
@@ -235,7 +235,7 @@
       <a class="card-modern p-4 text-decoration-none transition-hover h-100 d-block border-primary-subtle" href="{{ url_for('admin.system_limits') }}">
         <div class="d-flex align-items-start gap-3">
           <div class="rounded-3 bg-primary-subtle text-primary d-inline-flex align-items-center justify-content-center flex-shrink-0" style="width: 42px; height: 42px; font-size: 1.25rem;">
-            <i class="ph-bold ph-sliders-horizontal"></i>
+            <svg class="app-icon app-icon-md"><use href="#icon-sliders-horizontal"></use></svg>
           </div>
           <div>
             <h6 class="fw-bold text-dark mb-1" style="font-size: 0.98rem;">Giới hạn Hệ thống (System Limits)</h6>
@@ -250,7 +250,7 @@
       <a class="card-modern p-4 text-decoration-none transition-hover h-100 d-block border-warning-subtle" href="{{ url_for('admin.performance_settings') }}">
         <div class="d-flex align-items-start gap-3">
           <div class="rounded-3 bg-warning-subtle text-warning d-inline-flex align-items-center justify-content-center flex-shrink-0" style="width: 42px; height: 42px; font-size: 1.25rem;">
-            <i class="ph-bold ph-gauge"></i>
+            <svg class="app-icon app-icon-md"><use href="#icon-performance"></use></svg>
           </div>
           <div>
             <h6 class="fw-bold text-dark mb-1" style="font-size: 0.98rem;">Cấu hình Hiệu năng (Performance)</h6>
@@ -269,7 +269,7 @@
       <div class="d-flex align-items-center gap-3">
         <div class="rounded-3 d-inline-flex align-items-center justify-content-center flex-shrink-0 shadow-2xs"
              style="width: 44px; height: 44px; font-size: 1.35rem; background: {% if maintenance.is_enabled %}#ffedd5{% else %}#f1f5f9{% endif %}; color: {% if maintenance.is_enabled %}#ea580c{% else %}#475569{% endif %};">
-          <i class="ph-bold ph-wrench"></i>
+          <svg class="app-icon app-icon-md"><use href="#icon-wrench"></use></svg>
         </div>
         <div>
           <div class="d-flex align-items-center gap-2">
@@ -311,7 +311,7 @@
             </div>
             <div class="mt-3 pt-2 border-top">
               <small class="text-muted" style="font-size: 0.74rem;">
-                <i class="ph-bold ph-shield-check text-success me-1"></i>Admin vẫn truy cập toàn quyền bình thường.
+                <svg class="app-icon app-icon-xs text-success me-1"><use href="#icon-shield-check"></use></svg>Admin vẫn truy cập toàn quyền bình thường.
               </small>
             </div>
           </div>
@@ -338,7 +338,7 @@
             </div>
             <div class="mt-3 pt-2 border-top text-end">
               <button type="submit" id="btnSaveMaintenance" class="btn btn-sm btn-primary rounded-pill px-3.5 py-1.5 fw-bold shadow-xs w-100 d-inline-flex align-items-center justify-content-center gap-1.5" style="font-size: 0.84rem;">
-                <i class="ph-bold ph-floppy-disk"></i>
+                <svg class="app-icon app-icon-xs"><use href="#icon-save"></use></svg>
                 <span>Lưu Cài Đặt Bảo Trì</span>
               </button>
             </div>
