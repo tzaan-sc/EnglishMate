@@ -923,6 +923,9 @@
                   <i class="ph-bold ph-spell-check text-primary"></i> Sửa lỗi tự động (1.5s)
                 </label>
               </div>
+              <span id="draftSaveStatus" class="badge bg-white border text-muted rounded-pill px-2.5 py-0.5" style="font-size: 0.72rem;">
+                <i class="ph-bold ph-cloud-check text-primary me-1"></i> Tự động lưu nháp
+              </span>
             </div>
 
             <div class="d-flex align-items-center gap-1.5">
@@ -1597,7 +1600,7 @@
               <div class="mb-3">
                 <label for="speakingNoteInput" class="form-label small fw-bold text-dark d-flex align-items-center justify-content-between">
                   <span>Ghi chú từ vựng & âm cần nhớ:</span>
-                  <span class="text-muted fw-normal" style="font-size: 0.72rem;">Tự động lưu</span>
+                  <span id="speakingNoteSaveStatus" class="badge bg-white text-muted border rounded-pill px-2 py-0.5" style="font-size: 0.72rem;"><i class="ph-bold ph-cloud-check text-primary me-1"></i> Tự động lưu</span>
                 </label>
                 <textarea id="speakingNoteInput" class="form-control form-control-sm rounded-3" rows="4" placeholder="Ghi lại các âm khó, từ nối âm cần chú ý..." style="font-size: 0.82rem;">{{ user_note }}</textarea>
               </div>

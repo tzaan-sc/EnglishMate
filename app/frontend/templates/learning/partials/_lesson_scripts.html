@@ -1569,21 +1569,88 @@ document.addEventListener("DOMContentLoaded", function() {
     });
   }
 
-  // Load saved draft from localStorage
-  if (writingInput) {
-    const savedDraft = localStorage.getItem(draftKey);
-    if (savedDraft && !writingInput.value) {
-      writingInput.value = savedDraft;
+  // Enhanced Auto-save & Draft Recovery for Writing
+  const draftSaveStatusEl = document.getElementById("draftSaveStatus");
+  let serverDraftSaveTimer = null;
+
+  function setDraftStatus(status, message) {
+    if (!draftSaveStatusEl) return;
+    const now = new Date();
+    const timeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+    
+    if (status === "saving") {
+      draftSaveStatusEl.className = "badge bg-light text-primary border rounded-pill px-2.5 py-0.5";
+      draftSaveStatusEl.innerHTML = `<i class="ph-bold ph-spinner animate-spin me-1"></i> Đang lưu nháp...`;
+    } else if (status === "saved") {
+      draftSaveStatusEl.className = "badge bg-success-subtle text-success border border-success-subtle rounded-pill px-2.5 py-0.5";
+      draftSaveStatusEl.innerHTML = `<i class="ph-bold ph-check-circle me-1"></i> ${message || 'Đã tự động lưu nháp'} (${timeStr})`;
+    } else if (status === "restored") {
+      draftSaveStatusEl.className = "badge bg-info-subtle text-info border border-info-subtle rounded-pill px-2.5 py-0.5";
+      draftSaveStatusEl.innerHTML = `<i class="ph-bold ph-clock-counter-clockwise me-1"></i> Đã khôi phục bản nháp (${timeStr})`;
+    } else {
+      draftSaveStatusEl.className = "badge bg-white border text-muted rounded-pill px-2.5 py-0.5";
+      draftSaveStatusEl.innerHTML = `<i class="ph-bold ph-cloud-check text-primary me-1"></i> Tự động lưu nháp`;
     }
+  }
+
+  if (writingInput) {
+    // 1. Try local storage draft first
+    const localDraft = localStorage.getItem(draftKey);
+    if (localDraft && !writingInput.value) {
+      writingInput.value = localDraft;
+      setDraftStatus("restored");
+    }
+
+    // 2. Fetch server draft to sync across devices if logged in
+    {% if current_user.is_authenticated %}
+    fetch(`/lessons/{{ lesson.id }}/draft?draft_type=writing`)
+      .then(res => res.json())
+      .then(data => {
+        if (data.success && data.draft && data.draft.content) {
+          if (!writingInput.value || writingInput.value !== data.draft.content) {
+            writingInput.value = data.draft.content;
+            localStorage.setItem(draftKey, data.draft.content);
+            updateWritingStats();
+            setDraftStatus("restored");
+          }
+        }
+      })
+      .catch(() => {});
+    {% endif %}
+
     updateWritingStats();
 
     writingInput.addEventListener("input", function() {
       updateWritingStats();
       localStorage.setItem(draftKey, writingInput.value);
+      setDraftStatus("saving");
+
       if (toggleLiveCorrection && toggleLiveCorrection.checked) {
         if (debounceTimer) clearTimeout(debounceTimer);
         debounceTimer = setTimeout(() => triggerCheck(false), 1500);
       }
+
+      // Debounced server auto-save
+      clearTimeout(serverDraftSaveTimer);
+      serverDraftSaveTimer = setTimeout(() => {
+        {% if current_user.is_authenticated %}
+        fetch(`/lessons/{{ lesson.id }}/draft`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "X-CSRFToken": "{{ csrf_token() if csrf_token else '' }}"
+          },
+          body: JSON.stringify({ draft_type: "writing", content: writingInput.value })
+        })
+        .then(res => res.json())
+        .then(data => {
+          if (data.success) setDraftStatus("saved");
+        })
+        .catch(() => setDraftStatus("saved", "Đã lưu nháp"));
+        {% else %}
+        setDraftStatus("saved", "Đã lưu nháp");
+        {% endif %}
+      }, 1000);
     });
   }
 
@@ -1622,6 +1689,17 @@ document.addEventListener("DOMContentLoaded", function() {
         writingInput.value = "";
         localStorage.removeItem(draftKey);
         updateWritingStats();
+        setDraftStatus("reset");
+        {% if current_user.is_authenticated %}
+        fetch(`/lessons/{{ lesson.id }}/draft`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "X-CSRFToken": "{{ csrf_token() if csrf_token else '' }}"
+          },
+          body: JSON.stringify({ draft_type: "writing", content: "" })
+        }).catch(() => {});
+        {% endif %}
         if (writingFeedbackBox) writingFeedbackBox.classList.add("d-none");
         if (writingLiveErrorsBox) writingLiveErrorsBox.classList.add("d-none");
         currentMatches = [];
@@ -2518,9 +2596,14 @@ document.addEventListener("DOMContentLoaded", function() {
 
   // Speaking notes auto save
   const speakingNoteInput = document.getElementById("speakingNoteInput");
+  const speakingNoteSaveStatus = document.getElementById("speakingNoteSaveStatus");
   let speakingNoteTimer = null;
   if (speakingNoteInput) {
     speakingNoteInput.addEventListener("input", function() {
+      if (speakingNoteSaveStatus) {
+        speakingNoteSaveStatus.className = "badge bg-light text-primary border rounded-pill px-2 py-0.5";
+        speakingNoteSaveStatus.innerHTML = `<i class="ph-bold ph-spinner animate-spin me-1"></i> Đang lưu...`;
+      }
       clearTimeout(speakingNoteTimer);
       speakingNoteTimer = setTimeout(() => {
         const formData = new FormData();
@@ -2529,8 +2612,23 @@ document.addEventListener("DOMContentLoaded", function() {
         fetch(`/lessons/{{ lesson.id }}/notes`, {
           method: "POST",
           body: formData
-        }).catch(err => console.error(err));
-      }, 1500);
+        })
+        .then(res => res.json())
+        .then(() => {
+          if (speakingNoteSaveStatus) {
+            const timeStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+            speakingNoteSaveStatus.className = "badge bg-success-subtle text-success border border-success-subtle rounded-pill px-2 py-0.5";
+            speakingNoteSaveStatus.innerHTML = `<i class="ph-bold ph-check-circle me-1"></i> Đã lưu (${timeStr})`;
+          }
+        })
+        .catch(err => {
+          console.error(err);
+          if (speakingNoteSaveStatus) {
+            speakingNoteSaveStatus.className = "badge bg-warning-subtle text-warning border rounded-pill px-2 py-0.5";
+            speakingNoteSaveStatus.innerHTML = `<i class="ph-bold ph-warning me-1"></i> Chưa lưu được`;
+          }
+        });
+      }, 1200);
     });
   }
 

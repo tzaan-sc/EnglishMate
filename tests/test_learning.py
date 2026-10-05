@@ -1,4 +1,4 @@
-﻿from datetime import date, timedelta
+from datetime import date, timedelta
 from app.backend.learning.models import Lesson, LessonProgress, QuizAttempt, Question
 from app.backend.auth.models import User
 from tests.conftest import login
@@ -198,5 +198,40 @@ def test_admin_excluded_from_level_and_streak(app):
         # Attempting to add XP or record activity should be no-op for admin
         assert admin.add_xp(100) == 0
         assert record_daily_activity(admin) is None
+
+
+def test_lesson_draft_save_and_retrieve(client, app):
+    login(client)
+    with app.app_context():
+        lesson_id = Lesson.query.first().id
+
+    # 1. Save writing draft
+    res = client.post(
+        f"/lessons/{lesson_id}/draft",
+        json={"draft_type": "writing", "content": "This is a test writing draft content."}
+    )
+    assert res.status_code == 200
+    data = res.get_json()
+    assert data["success"] is True
+    assert data["draft"]["content"] == "This is a test writing draft content."
+
+    # 2. Retrieve writing draft
+    res_get = client.get(f"/lessons/{lesson_id}/draft?draft_type=writing")
+    assert res_get.status_code == 200
+    get_data = res_get.get_json()
+    assert get_data["success"] is True
+    assert get_data["draft"]["content"] == "This is a test writing draft content."
+
+    # 3. Clear writing draft
+    res_clear = client.post(
+        f"/lessons/{lesson_id}/draft",
+        json={"draft_type": "writing", "content": ""}
+    )
+    assert res_clear.status_code == 200
+    assert res_clear.get_json()["deleted"] is True
+
+    # 4. Verify cleared
+    res_verify = client.get(f"/lessons/{lesson_id}/draft?draft_type=writing")
+    assert res_verify.get_json()["draft"] is None
 
 

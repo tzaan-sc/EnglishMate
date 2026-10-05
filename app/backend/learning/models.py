@@ -288,6 +288,28 @@ class LessonNote(db.Model):
     __table_args__ = (db.UniqueConstraint("user_id", "lesson_id", name="uq_user_lesson_note"),)
 
 
+class LessonDraft(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False, index=True)
+    lesson_id = db.Column(db.Integer, db.ForeignKey("lesson.id"), nullable=False, index=True)
+    draft_type = db.Column(db.String(30), nullable=False, default="writing")
+    content = db.Column(db.Text, nullable=True)
+    updated_at = db.Column(db.DateTime(timezone=True), default=now, onupdate=now, nullable=False)
+
+    user = db.relationship("User", backref=db.backref("lesson_drafts", cascade="all, delete-orphan"))
+    lesson = db.relationship("Lesson", backref=db.backref("user_drafts", cascade="all, delete-orphan"))
+    __table_args__ = (db.UniqueConstraint("user_id", "lesson_id", "draft_type", name="uq_user_lesson_draft_type"),)
+
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "lesson_id": self.lesson_id,
+            "draft_type": self.draft_type,
+            "content": self.content or "",
+            "updated_at": self.updated_at.isoformat() if self.updated_at else None
+        }
+
+
 class ReadingAnnotation(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     lesson_id = db.Column(db.Integer, db.ForeignKey("lesson.id"), nullable=False, index=True)

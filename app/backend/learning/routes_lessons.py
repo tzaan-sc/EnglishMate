@@ -33,7 +33,7 @@ from ..auth.models import record_daily_activity
 from .models import (
     Badge, Challenge, FlashcardSet, GrammarErrorLog,
     GrammarExerciseAttempt, GrammarProgress, GrammarRule, GrammarRuleBookmark,
-    GrammarTopic, Lesson, LessonBookmark, LessonFavorite, LessonNote,
+    GrammarTopic, Lesson, LessonBookmark, LessonDraft, LessonFavorite, LessonNote,
     LessonProgress, LessonRating, LessonReport, Question, Quiz, QuizAttempt,
     QuizAttemptAnswer, ReadingAnnotation, UserBadge, UserChallenge, Vocabulary,
     VocabularyProgress, WordReport, WritingSubmission
@@ -1094,6 +1094,67 @@ def save_lesson_note(lesson_id):
 
     flash("Đã lưu ghi chú bài học thành công!", "success")
     return redirect(lesson.url)
+
+
+@bp.get("/lessons/<int:lesson_id>/draft")
+@login_required
+def get_lesson_draft(lesson_id):
+    lesson = db.session.get(Lesson, lesson_id)
+    if not lesson or not lesson.is_active:
+        return jsonify({"success": False, "error": "Bài học không tồn tại"}), 404
+    
+    draft_type = request.args.get("draft_type", "writing")
+    draft = LessonDraft.query.filter_by(
+        user_id=current_user.id, 
+        lesson_id=lesson.id, 
+        draft_type=draft_type
+    ).first()
+    
+    return jsonify({
+        "success": True, 
+        "draft": draft.to_dict() if draft else None
+    })
+
+
+@bp.post("/lessons/<int:lesson_id>/draft")
+@login_required
+def save_lesson_draft(lesson_id):
+    lesson = db.session.get(Lesson, lesson_id)
+    if not lesson or not lesson.is_active:
+        return jsonify({"success": False, "error": "Bài học không tồn tại"}), 404
+    
+    payload = request.get_json(silent=True) or (request.form.to_dict() if request.form else {})
+    draft_type = payload.get("draft_type", "writing")
+    content = payload.get("content", "")
+    
+    draft = LessonDraft.query.filter_by(
+        user_id=current_user.id, 
+        lesson_id=lesson.id, 
+        draft_type=draft_type
+    ).first()
+    
+    if content == "" and draft:
+        db.session.delete(draft)
+        db.session.commit()
+        return jsonify({"success": True, "message": "Đã xóa bản nháp thành công", "deleted": True})
+
+    if not draft:
+        draft = LessonDraft(
+            user_id=current_user.id,
+            lesson_id=lesson.id,
+            draft_type=draft_type,
+            content=content
+        )
+        db.session.add(draft)
+    else:
+        draft.content = content
+    
+    db.session.commit()
+    return jsonify({
+        "success": True, 
+        "message": "Đã tự động lưu bản nháp thành công", 
+        "draft": draft.to_dict()
+    })
 
 
 @bp.post("/lessons/<int:lesson_id>/bookmark")
