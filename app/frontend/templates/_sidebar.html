@@ -63,10 +63,16 @@
                     <span>Giới hạn hệ thống</span>
                 </a>
             </li>
-            <li class="nav-item mb-2">
+            <li class="nav-item">
                 <a class="nav-link-modern {% if request.path.startswith('/admin/system/performance') or request.path.startswith('/admin/performance') %}active{% endif %}" href="{{ url_for('admin.performance_settings') }}" title="Cấu hình Hiệu năng">
                     <svg class="app-icon text-info"><use href="#icon-performance"></use></svg>
                     <span>Cấu hình Hiệu năng</span>
+                </a>
+            </li>
+            <li class="nav-item mb-2">
+                <a class="nav-link-modern {% if request.path.startswith('/admin/system/backup') or request.path.startswith('/admin/backup') %}active{% endif %}" href="{{ url_for('admin.backup_settings') }}" title="Sao lưu CSDL">
+                    <svg class="app-icon text-success"><use href="#icon-database"></use></svg>
+                    <span>Sao lưu CSDL</span>
                 </a>
             </li>
 

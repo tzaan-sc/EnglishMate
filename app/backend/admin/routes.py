@@ -1551,7 +1551,22 @@ from .routes_system import (
     update_performance_settings,
     update_single_performance_setting,
     reset_all_performance_settings,
+    backup_settings,
+    create_backup_route,
+    update_backup_settings_route,
+    download_backup_route,
+    delete_backup_route,
+    cleanup_backups_route,
 )
+from .backup_service import (
+    get_backup_settings,
+    save_backup_settings,
+    get_backup_stats,
+    create_database_backup,
+    cleanup_old_backups,
+    delete_backup,
+)
+
 
 
 

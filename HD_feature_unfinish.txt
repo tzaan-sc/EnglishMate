@@ -442,15 +442,16 @@ MODULE 10. ADMIN SYSTEM (HỆ THỐNG QUẢN TRỊ) — 7 TÍNH NĂNG CHƯA LÀM
 - Mức độ ưu tiên: Thấp (Low)
 
 
-[ ] 10.6. Backup Settings - Cài đặt sao lưu CSDL tự động (Mục 10.7)
-- Hiện trạng trong EnglishMate_Features.txt:
-  Chưa có tính năng sao lưu CSDL trên giao diện Admin.
-- Phần còn thiếu chưa làm:
-  Chưa có nút bấm "Tạo bản sao lưu ngay (Backup Now)" và cấu hình tần suất tự động sao lưu CSDL (hàng ngày, hàng tuần).
-- Giải pháp kỹ thuật cần làm:
-  + Viết hàm sao lưu CSDL SQLite/PostgreSQL xuất ra file `.sql.gz` hoặc `.dump`.
-  + Tạo route `/admin/system/backup` cho phép tải file sao lưu về máy.
+[x] 10.6. Backup Settings - Cài đặt sao lưu CSDL tự động (Mục 10.7)
+- Hiện trạng: Đã hoàn thiện tính năng sao lưu CSDL trên giao diện Admin `/admin/system/backup` (alias `/admin/backup`).
+- Giải pháp kỹ thuật đã làm:
+  + Xây dựng module `backup_service.py` hỗ trợ sao lưu SQLite (sử dụng sqlite3 Backup API và streaming dump) kèm nén Gzip (.sqlite.gz, .sql.gz).
+  + Tạo model `DatabaseBackup` lưu metadata bản sao lưu (kích thước, loại sao lưu, trạng thái, người tạo).
+  + Tạo các route quản trị: `/admin/system/backup` (xem danh sách & cấu hình), `/admin/system/backup/create` (tạo sao lưu ngay), `/admin/system/backup/settings` (cài đặt tần suất DAILY/WEEKLY/OFF, retention count, nén Gzip), `/admin/system/backup/download/<id>` (tải file sao lưu về máy), `/admin/system/backup/delete/<id>` (xóa bản sao lưu), `/admin/system/backup/cleanup` (dọn dẹp các bản sao lưu cũ vượt quá số lượng lưu trữ).
+  + Tích hợp lệnh CLI `flask backup-db --type=DAILY` hỗ trợ chạy tự động qua Cron/Task Scheduler.
+  + Thiết kế giao diện Admin hiện đại, responsive table & mobile card view, metric overview cards và modal xác nhận.
 - Mức độ ưu tiên: Cao (High)
+
 
 [x] 10.7. Maintenance Mode - Chế độ bảo trì hệ thống (Mục 10.7)
 - Hiện trạng trong EnglishMate_Features.txt:

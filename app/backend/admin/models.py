@@ -235,4 +235,35 @@ class SystemConfig(db.Model):
         return item
 
 
+class DatabaseBackup(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    filename = db.Column(db.String(255), nullable=False, unique=True, index=True)
+    file_path = db.Column(db.String(500), nullable=False)
+    file_size_bytes = db.Column(db.BigInteger, default=0, nullable=False)
+    backup_type = db.Column(db.String(50), default="MANUAL", nullable=False, index=True)  # MANUAL, DAILY, WEEKLY, AUTO
+    db_type = db.Column(db.String(50), default="SQLITE", nullable=False)  # SQLITE, POSTGRESQL
+    is_compressed = db.Column(db.Boolean, default=True, nullable=False)
+    status = db.Column(db.String(50), default="SUCCESS", nullable=False)  # SUCCESS, FAILED
+    notes = db.Column(db.String(255), nullable=True)
+    created_by_id = db.Column(db.Integer, db.ForeignKey("user.id", ondelete="SET NULL"), nullable=True, index=True)
+    created_at = db.Column(db.DateTime(timezone=True), default=now, nullable=False, index=True)
 
+    created_by = db.relationship("User", backref=db.backref("created_backups", lazy="dynamic"))
+
+    @property
+    def created_at_vn(self):
+        if not self.created_at:
+            return None
+        return self.created_at + timedelta(hours=7)
+
+    @property
+    def file_size_display(self):
+        bytes_val = self.file_size_bytes or 0
+        if bytes_val < 1024:
+            return f"{bytes_val} B"
+        elif bytes_val < 1024 * 1024:
+            return f"{round(bytes_val / 1024, 1)} KB"
+        elif bytes_val < 1024 * 1024 * 1024:
+            return f"{round(bytes_val / (1024 * 1024), 2)} MB"
+        else:
+            return f"{round(bytes_val / (1024 * 1024 * 1024), 2)} GB"

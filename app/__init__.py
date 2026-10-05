@@ -139,6 +139,10 @@ def create_app(config_object=Config):
                         from app.backend.admin.models import SystemConfig
                         SystemConfig.__table__.create(conn)
                         conn.commit()
+                    if "database_backup" not in tables:
+                        from app.backend.admin.models import DatabaseBackup
+                        DatabaseBackup.__table__.create(conn)
+                        conn.commit()
         except Exception:
             pass
 
@@ -288,6 +292,18 @@ def create_app(config_object=Config):
             click.echo(f"[SUCCESS] {res['message']}")
             if res.get("archived_file"):
                 click.echo(f"  Archive saved to: {res['archived_file']}")
+
+    @app.cli.command("backup-db")
+    @click.option("--type", default="AUTO", type=click.Choice(["AUTO", "DAILY", "WEEKLY", "MANUAL"], case_sensitive=False), help="Loại bản sao lưu (AUTO, DAILY, WEEKLY, MANUAL).")
+    @click.option("--notes", default="Tự động sao lưu định kỳ qua CLI/Cron", type=str, help="Ghi chú cho bản sao lưu.")
+    def run_backup_db_cli(type, notes):
+        """Tự động tạo bản sao lưu CSDL (SQLite/PostgreSQL) nén Gzip qua dòng lệnh."""
+        from .backend.admin.backup_service import create_database_backup
+        res = create_database_backup(backup_type=type.upper(), notes=notes)
+        if res.get("success"):
+            click.echo(f"[SUCCESS] {res['message']} (File: {res.get('filename')})")
+        else:
+            click.echo(f"[ERROR] {res.get('message')}")
 
     @app.errorhandler(403)
     def forbidden(_error):

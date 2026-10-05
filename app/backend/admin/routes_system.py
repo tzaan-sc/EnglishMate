@@ -1,4 +1,4 @@
-from flask import render_template, request, jsonify, flash, redirect, url_for
+from flask import render_template, request, jsonify, flash, redirect, url_for, send_file, abort
 from flask_login import current_user
 from . import bp
 from .utils import admin_required, log_audit_action
@@ -283,5 +283,143 @@ def reset_all_performance_settings():
 
     flash(res["message"], "info")
     return redirect(url_for("admin.performance_settings"))
+
+
+# ---------------------------------------------------------------------------
+# DATABASE BACKUP & RESTORE / RETENTION CONFIGURATION ROUTES
+# ---------------------------------------------------------------------------
+import os
+from .models import DatabaseBackup
+from .backup_service import (
+    get_backup_settings,
+    save_backup_settings,
+    get_backup_stats,
+    create_database_backup,
+    cleanup_old_backups,
+    delete_backup,
+)
+
+
+@bp.get("/system/backup")
+@bp.get("/backup")
+@admin_required
+def backup_settings():
+    """Trang giao diện quản trị Cài đặt và Quản lý sao lưu CSDL (Database Backup Settings)."""
+    backups = DatabaseBackup.query.order_by(DatabaseBackup.created_at.desc()).all()
+    stats = get_backup_stats()
+    settings = get_backup_settings()
+
+    return render_template(
+        "admin/backup_settings.html",
+        backups=backups,
+        stats=stats,
+        settings=settings
+    )
+
+
+@bp.post("/system/backup/create")
+@bp.post("/backup/create")
+@admin_required
+def create_backup_route():
+    """Thực hiện tạo bản sao lưu CSDL ngay lập tức (Backup Now)."""
+    data = request.get_json(silent=True) or request.form
+    backup_type = data.get("backup_type", "MANUAL")
+    notes = data.get("notes")
+
+    res = create_database_backup(
+        backup_type=backup_type,
+        admin_id=current_user.id,
+        notes=notes
+    )
+
+    if request.is_json:
+        return jsonify(res)
+
+    if res["success"]:
+        flash(res["message"], "success")
+    else:
+        flash(res.get("error", "Lỗi tạo bản sao lưu CSDL."), "danger")
+
+    return redirect(url_for("admin.backup_settings"))
+
+
+@bp.post("/system/backup/settings")
+@bp.post("/backup/settings")
+@admin_required
+def update_backup_settings_route():
+    """Cập nhật cấu hình tần suất tự động sao lưu và số lượng bản sao lưu giữ lại."""
+    data = request.get_json(silent=True) or request.form.to_dict()
+
+    res = save_backup_settings(data, admin_id=current_user.id)
+
+    if request.is_json:
+        return jsonify(res)
+
+    flash(res["message"], "success")
+    return redirect(url_for("admin.backup_settings"))
+
+
+@bp.get("/system/backup/download/<int:backup_id>")
+@bp.get("/backup/download/<int:backup_id>")
+@admin_required
+def download_backup_route(backup_id):
+    """Tải file sao lưu CSDL về máy an toàn."""
+    from ...extensions import db
+    backup = db.session.get(DatabaseBackup, backup_id)
+    if not backup:
+        flash("Không tìm thấy bản sao lưu yêu cầu.", "danger")
+        return redirect(url_for("admin.backup_settings"))
+
+    if not backup.file_path or not os.path.exists(backup.file_path):
+        flash(f"File sao lưu vật lý '{backup.filename}' không tồn tại trên máy chủ.", "danger")
+        return redirect(url_for("admin.backup_settings"))
+
+    log_audit_action(
+        user_id=current_user.id,
+        action="DOWNLOAD_DATABASE_BACKUP",
+        target_type="DATABASE_BACKUP",
+        target_id=str(backup.id),
+        details=f"Tải xuống file sao lưu CSDL: {backup.filename}"
+    )
+
+    return send_file(
+        backup.file_path,
+        as_attachment=True,
+        download_name=backup.filename
+    )
+
+
+@bp.post("/system/backup/delete/<int:backup_id>")
+@bp.post("/backup/delete/<int:backup_id>")
+@admin_required
+def delete_backup_route(backup_id):
+    """Xóa một bản sao lưu CSDL khỏi hệ thống."""
+    res = delete_backup(backup_id, admin_id=current_user.id)
+
+    if request.is_json:
+        return jsonify(res)
+
+    if res["success"]:
+        flash(res["message"], "success")
+    else:
+        flash(res.get("error", "Lỗi khi xóa bản sao lưu."), "danger")
+
+    return redirect(url_for("admin.backup_settings"))
+
+
+@bp.post("/system/backup/cleanup")
+@bp.post("/backup/cleanup")
+@admin_required
+def cleanup_backups_route():
+    """Dọn dẹp các bản sao lưu cũ theo chính sách Retention Count."""
+    deleted_count = cleanup_old_backups()
+    msg = f"Đã dọn dẹp {deleted_count} bản sao lưu cũ thành công." if deleted_count > 0 else "Không có bản sao lưu nào vượt quá số lượng lưu trữ cho phép."
+
+    if request.is_json:
+        return jsonify({"success": True, "deleted_count": deleted_count, "message": msg})
+
+    flash(msg, "info")
+    return redirect(url_for("admin.backup_settings"))
+
 
 
