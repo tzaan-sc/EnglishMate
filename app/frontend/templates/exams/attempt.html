@@ -61,9 +61,15 @@
           {% set ns.current_part = q.part %}
         {% endif %}
         
-        <div class="card mb-4 shadow-sm question-card" id="q-{{ q.id }}">
+        <div class="card mb-4 shadow-sm question-card" id="q-{{ q.id }}" data-qid="{{ q.id }}">
           <div class="card-body">
-            <h5 class="card-title fw-bold">Câu {{ loop.index }}</h5>
+            <div class="d-flex align-items-center justify-content-between mb-3 flex-wrap gap-2">
+              <h5 class="card-title fw-bold mb-0">Câu {{ loop.index }}</h5>
+              <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill px-2.5 py-1 btn-bookmark-q d-inline-flex align-items-center gap-1.5" data-qid="{{ q.id }}" title="Đánh dấu câu hỏi này để xem lại sau">
+                <i class="ph-bold ph-bookmark-simple icon-bookmark text-warning"></i>
+                <span class="small btn-bookmark-text fw-semibold">Đánh dấu xem lại</span>
+              </button>
+            </div>
             
             {% if q.media_info and q.media_info.audio_url %}
             <div class="mb-3 p-3 bg-light rounded">
@@ -132,23 +138,72 @@
       </div>
     </div>
     
-    <!-- Right Sidebar (Navigation) -->
+    <!-- Right Sidebar (Question Palette Grid) -->
     <div class="col-lg-4 d-none d-lg-block">
-      <div class="card shadow-sm position-sticky" style="top: 20px;">
-        <div class="card-body">
-          <h5 class="card-title">Danh sách câu hỏi</h5>
-          <div class="d-flex flex-wrap gap-2 mt-3">
-            {% for q in questions %}
-            <a href="#q-{{ q.id }}" class="btn btn-outline-secondary btn-sm" style="width: 40px; height: 40px; line-height: 25px;" id="nav-{{ q.id }}">
-              {{ loop.index }}
-            </a>
-            {% endfor %}
-          </div>
+      <div class="card border-0 shadow-sm rounded-4 position-sticky p-4 bg-white" style="top: 20px;">
+        <div class="d-flex align-items-center justify-content-between mb-2">
+          <h5 class="card-title fw-bold text-dark mb-0 d-flex align-items-center gap-1.5" style="font-size: 1.05rem;">
+            <i class="ph-bold ph-squares-four text-primary fs-5"></i>
+            <span>Ma Trận Câu Hỏi</span>
+          </h5>
+          <span class="badge bg-primary-subtle text-primary rounded-pill px-2.5 py-1 fw-bold" id="paletteAnsweredProgress">
+            0 / {{ questions|length }} câu
+          </span>
         </div>
+
+        <!-- Progress Bar -->
+        <div class="progress mb-3" style="height: 6px;">
+          <div class="progress-bar bg-success transition-all" role="progressbar" id="paletteProgressBar" style="width: 0%;"></div>
+        </div>
+
+        <!-- Palette Filter Buttons -->
+        <div class="d-flex flex-wrap gap-1.5 mb-3" id="paletteFilterGroup">
+          <button type="button" class="btn btn-sm btn-dark filter-palette-pill active rounded-pill px-2.5 py-0.5 small fw-semibold" data-filter="all">Tất cả ({{ questions|length }})</button>
+          <button type="button" class="btn btn-sm btn-light border filter-palette-pill rounded-pill px-2.5 py-0.5 small fw-semibold" data-filter="done">Đã làm (<span id="countDone">0</span>)</button>
+          <button type="button" class="btn btn-sm btn-light border filter-palette-pill rounded-pill px-2.5 py-0.5 small fw-semibold" data-filter="todo">Chưa làm (<span id="countTodo">{{ questions|length }}</span>)</button>
+          <button type="button" class="btn btn-sm btn-light border filter-palette-pill rounded-pill px-2.5 py-0.5 small fw-semibold" data-filter="bookmarked">Đánh dấu (<span id="countBookmarked">0</span>)</button>
+        </div>
+
+        <!-- Question Buttons Matrix Grid -->
+        <div class="d-grid gap-2 question-palette-grid mb-4" id="desktopPaletteGrid" style="grid-template-columns: repeat(5, 1fr); max-height: 380px; overflow-y: auto;">
+          {% for q in questions %}
+          <a href="#q-{{ q.id }}" class="btn btn-sm btn-outline-secondary palette-btn-item rounded-3 d-flex flex-column align-items-center justify-content-center fw-bold transition-all position-relative" style="height: 42px;" id="nav-{{ q.id }}" data-qid="{{ q.id }}" data-index="{{ loop.index }}">
+            <span>{{ loop.index }}</span>
+            <span class="position-absolute top-0 end-0 p-0.5 me-0.5 d-none bookmark-dot" style="font-size: 0.65rem; color: #d97706;">★</span>
+          </a>
+          {% endfor %}
+        </div>
+
+        <button type="submit" class="btn btn-success w-100 rounded-pill py-2.5 fw-bold shadow-sm d-inline-flex align-items-center justify-content-center gap-2">
+          <i class="ph-bold ph-paper-plane-tilt fs-5"></i>
+          <span>Nộp bài ngay</span>
+        </button>
       </div>
     </div>
   </div>
 </form>
+
+<!-- Mobile Floating Bottom Trigger Bar -->
+<div class="position-fixed bottom-0 start-50 translate-middle-x mb-3 z-3 d-lg-none">
+  <button type="button" class="btn btn-navy text-white rounded-pill px-4 py-2.5 fw-bold shadow-lg d-inline-flex align-items-center gap-2" data-bs-toggle="offcanvas" data-bs-target="#questionPaletteOffcanvas">
+    <i class="ph-bold ph-squares-four fs-5 text-warning"></i>
+    <span>Bảng câu hỏi (<span id="mobileAnsweredText">0/{{ questions|length }}</span>)</span>
+  </button>
+</div>
+
+<!-- Offcanvas Question Palette Drawer for Mobile -->
+<div class="offcanvas offcanvas-bottom rounded-top-4 d-lg-none" tabindex="-1" id="questionPaletteOffcanvas" style="height: 75vh;">
+  <div class="offcanvas-header border-bottom">
+    <h5 class="offcanvas-title fw-bold text-dark d-flex align-items-center gap-2">
+      <i class="ph-bold ph-squares-four text-primary"></i>
+      <span>Bảng Ma Trận Câu Hỏi</span>
+    </h5>
+    <button type="button" class="btn-close text-reset shadow-none" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+  </div>
+  <div class="offcanvas-body p-3">
+    <div id="mobilePaletteContainer"></div>
+  </div>
+</div>
 </div>
 
 <!-- Pause / Resume Modal -->
@@ -365,6 +420,143 @@ document.addEventListener("DOMContentLoaded", function() {
       taDebounceTimer = setTimeout(saveDraft, 1000);
     });
   });
+
+  // --- QUESTION PALETTE GRID & BOOKMARK MANAGER ---
+  const bookmarkedQids = new Set();
+  const totalQuestionsCount = {{ questions|length }};
+
+  const countDoneEl = document.getElementById('countDone');
+  const countTodoEl = document.getElementById('countTodo');
+  const countBookmarkedEl = document.getElementById('countBookmarked');
+  const paletteProgressEl = document.getElementById('paletteAnsweredProgress');
+  const mobileAnsweredTextEl = document.getElementById('mobileAnsweredText');
+  const paletteProgressBarEl = document.getElementById('paletteProgressBar');
+
+  function updatePaletteStats() {
+    let doneCount = 0;
+    const allQCards = document.querySelectorAll('.question-card');
+
+    allQCards.forEach(card => {
+      const qid = card.getAttribute('data-qid');
+      const isRadioChecked = card.querySelector('input[type="radio"]:checked') !== null;
+      const textarea = card.querySelector('textarea');
+      const isTextareaFilled = textarea && textarea.value.trim().length > 0;
+      const isAnswered = isRadioChecked || isTextareaFilled;
+      const isBookmarked = bookmarkedQids.has(qid);
+
+      if (isAnswered) doneCount++;
+
+      // Update palette buttons (desktop & mobile)
+      document.querySelectorAll(`.palette-btn-item[data-qid="${qid}"]`).forEach(btn => {
+        btn.setAttribute('data-status-done', isAnswered ? 'true' : 'false');
+        btn.setAttribute('data-status-bookmarked', isBookmarked ? 'true' : 'false');
+
+        const starDot = btn.querySelector('.bookmark-dot');
+        if (starDot) {
+          starDot.classList.toggle('d-none', !isBookmarked);
+        }
+
+        if (isAnswered) {
+          btn.className = 'btn btn-sm btn-success text-white border-success palette-btn-item rounded-3 d-flex flex-column align-items-center justify-content-center fw-bold transition-all position-relative';
+        } else if (isBookmarked) {
+          btn.className = 'btn btn-sm btn-warning text-dark border-warning palette-btn-item rounded-3 d-flex flex-column align-items-center justify-content-center fw-bold transition-all position-relative';
+        } else {
+          btn.className = 'btn btn-sm btn-outline-secondary palette-btn-item rounded-3 d-flex flex-column align-items-center justify-content-center fw-bold transition-all position-relative';
+        }
+      });
+    });
+
+    const todoCount = totalQuestionsCount - doneCount;
+    const bookmarkedCount = bookmarkedQids.size;
+
+    if (countDoneEl) countDoneEl.innerText = doneCount;
+    if (countTodoEl) countTodoEl.innerText = todoCount;
+    if (countBookmarkedEl) countBookmarkedEl.innerText = bookmarkedCount;
+    if (paletteProgressEl) paletteProgressEl.innerText = `${doneCount} / ${totalQuestionsCount} câu`;
+    if (mobileAnsweredTextEl) mobileAnsweredTextEl.innerText = `${doneCount}/${totalQuestionsCount}`;
+    if (paletteProgressBarEl) {
+      const pct = Math.round((doneCount / totalQuestionsCount) * 100);
+      paletteProgressBarEl.style.width = `${pct}%`;
+    }
+  }
+
+  // Bookmark button click handler
+  document.querySelectorAll('.btn-bookmark-q').forEach(btn => {
+    btn.addEventListener('click', function(e) {
+      e.preventDefault();
+      const qid = this.getAttribute('data-qid');
+      const icon = this.querySelector('.icon-bookmark');
+      const textSpan = this.querySelector('.btn-bookmark-text');
+
+      if (bookmarkedQids.has(qid)) {
+        bookmarkedQids.delete(qid);
+        this.className = 'btn btn-sm btn-outline-secondary rounded-pill px-2.5 py-1 btn-bookmark-q d-inline-flex align-items-center gap-1.5';
+        if (textSpan) textSpan.innerText = 'Đánh dấu xem lại';
+      } else {
+        bookmarkedQids.add(qid);
+        this.className = 'btn btn-sm btn-warning text-dark border-warning rounded-pill px-2.5 py-1 btn-bookmark-q d-inline-flex align-items-center gap-1.5 fw-bold';
+        if (textSpan) textSpan.innerText = '★ Đã đánh dấu';
+      }
+      updatePaletteStats();
+      saveDraft();
+    });
+  });
+
+  // Palette Filtering Logic (All / Done / Todo / Bookmarked)
+  let currentPaletteFilter = 'all';
+  document.querySelectorAll('.filter-palette-pill').forEach(pill => {
+    pill.addEventListener('click', function() {
+      currentPaletteFilter = this.getAttribute('data-filter');
+      document.querySelectorAll('.filter-palette-pill').forEach(p => {
+        p.classList.remove('btn-dark', 'active');
+        p.classList.add('btn-light', 'border');
+      });
+      this.classList.remove('btn-light', 'border');
+      this.classList.add('btn-dark', 'active');
+
+      document.querySelectorAll('.palette-btn-item').forEach(btn => {
+        const isDone = btn.getAttribute('data-status-done') === 'true';
+        const isBookmarked = btn.getAttribute('data-status-bookmarked') === 'true';
+
+        if (currentPaletteFilter === 'all') {
+          btn.style.display = '';
+        } else if (currentPaletteFilter === 'done' && isDone) {
+          btn.style.display = '';
+        } else if (currentPaletteFilter === 'todo' && !isDone) {
+          btn.style.display = '';
+        } else if (currentPaletteFilter === 'bookmarked' && isBookmarked) {
+          btn.style.display = '';
+        } else {
+          btn.style.display = 'none';
+        }
+      });
+    });
+  });
+
+  // Populate Mobile Offcanvas Drawer with cloned grid
+  const desktopGrid = document.getElementById('desktopPaletteGrid');
+  const mobileContainer = document.getElementById('mobilePaletteContainer');
+  if (desktopGrid && mobileContainer) {
+    const clonedGrid = desktopGrid.cloneNode(true);
+    clonedGrid.id = 'mobilePaletteGrid';
+    mobileContainer.appendChild(clonedGrid);
+
+    // Bind smooth scroll & dismiss offcanvas on mobile item click
+    clonedGrid.querySelectorAll('.palette-btn-item').forEach(link => {
+      link.addEventListener('click', function() {
+        const offcanvasEl = document.getElementById('questionPaletteOffcanvas');
+        const bsOffcanvas = bootstrap.Offcanvas.getInstance(offcanvasEl);
+        if (bsOffcanvas) bsOffcanvas.hide();
+      });
+    });
+  }
+
+  // Update on input/change
+  radios.forEach(r => r.addEventListener('change', updatePaletteStats));
+  textareas.forEach(ta => ta.addEventListener('input', updatePaletteStats));
+
+  // Initial update call
+  updatePaletteStats();
 
   // Custom Audio Player Enhancements for Exam Audios
   const audios = document.querySelectorAll('.exam-audio');
