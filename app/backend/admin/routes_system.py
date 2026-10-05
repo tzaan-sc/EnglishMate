@@ -758,6 +758,94 @@ def network_deployment_scripts_route():
     })
 
 
+# ---------------------------------------------------------------------------
+# DATABASE MANAGEMENT & AUTOMATION ROUTES (MỤC 12.1 - DATABASE FEATURES)
+# ---------------------------------------------------------------------------
+from .database_service import (
+    get_migration_status,
+    run_database_upgrade,
+    generate_database_migration,
+    get_backup_automation_status,
+    check_and_run_auto_backup,
+    auto_restore_database,
+)
+
+
+@bp.get("/system/database/status")
+@bp.get("/system/migrations/status")
+@admin_required
+def database_status_route():
+    """Lấy thông tin tổng hợp về Database Migrations và Backup Automation."""
+    mig_status = get_migration_status()
+    auto_backup_status = get_backup_automation_status()
+
+    return jsonify({
+        "success": True,
+        "migrations": mig_status,
+        "auto_backup": auto_backup_status,
+    })
+
+
+@bp.post("/system/database/upgrade")
+@bp.post("/system/migrations/upgrade")
+@admin_required
+def database_upgrade_route():
+    """Thực thi nâng cấp CSDL lên phiên bản migration mới nhất (Alembic Upgrade)."""
+    data = request.get_json(silent=True) or request.form
+    revision = data.get("revision", "head")
+    res = run_database_upgrade(revision=revision, admin_id=current_user.id)
+    return jsonify(res)
+
+
+@bp.post("/system/database/migrate")
+@bp.post("/system/migrations/generate")
+@admin_required
+def database_generate_migration_route():
+    """Tự động phát hiện thay đổi schema và tạo tệp migration mới."""
+    data = request.get_json(silent=True) or request.form
+    message = data.get("message", "Auto migration")
+    res = generate_database_migration(message=message, admin_id=current_user.id)
+    return jsonify(res)
+
+
+@bp.post("/system/database/auto-backup")
+@admin_required
+def run_auto_backup_route():
+    """Chạy quy trình kiểm tra và tự động sao lưu CSDL theo lịch trình (Backup Automation)."""
+    data = request.get_json(silent=True) or request.form
+    force = data.get("force", False)
+    if isinstance(force, str):
+        force = force.lower() in ("true", "1", "yes")
+
+    res = check_and_run_auto_backup(force=force, admin_id=current_user.id)
+    return jsonify(res)
+
+
+@bp.post("/system/database/auto-restore")
+@admin_required
+def run_auto_restore_route():
+    """Tự động phục hồi CSDL từ bản sao lưu gần nhất hoặc theo ID (Restore Automation)."""
+    data = request.get_json(silent=True) or request.form
+    backup_id = data.get("backup_id")
+    use_latest = data.get("use_latest", False)
+    if isinstance(use_latest, str):
+        use_latest = use_latest.lower() in ("true", "1", "yes")
+
+    if backup_id is not None and str(backup_id).isdigit():
+        backup_id = int(backup_id)
+    else:
+        backup_id = None
+        use_latest = True
+
+    res = auto_restore_database(
+        backup_id=backup_id,
+        use_latest=use_latest,
+        admin_id=current_user.id,
+    )
+    return jsonify(res)
+
+
+
 
 
 

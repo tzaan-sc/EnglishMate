@@ -8,7 +8,7 @@ from sqlalchemy.engine import Engine
 import sqlite3
 
 from .config import Config
-from .extensions import csrf, db, login_manager
+from .extensions import csrf, db, login_manager, migrate
 
 
 @event.listens_for(Engine, "connect")
@@ -42,6 +42,7 @@ def create_app(config_object=Config):
     Path(app.instance_path).mkdir(parents=True, exist_ok=True)
 
     db.init_app(app)
+    migrate.init_app(app, db, render_as_batch=True)
     login_manager.init_app(app)
     csrf.init_app(app)
     login_manager.login_view = "auth.login"
@@ -403,7 +404,60 @@ def create_app(config_object=Config):
         else:
             click.echo(f"[ERROR] {res.get('message')}")
 
+    @app.cli.command("auto-backup-db")
+    @click.option("--force", is_flag=True, default=False, help="Bắt buộc chạy sao lưu ngay bỏ qua kiểm tra lịch.")
+    def run_auto_backup_db_cli(force):
+        """Tác vụ tự động sao lưu CSDL định kỳ (Backup Automation) dùng cho Cron job / Task Scheduler."""
+        from .backend.admin.database_service import check_and_run_auto_backup
+        res = check_and_run_auto_backup(force=force)
+        if res.get("skipped"):
+            click.echo(f"[SKIPPED] {res.get('message')}")
+        elif res.get("success"):
+            click.echo(f"[SUCCESS] {res.get('message')}")
+        else:
+            click.echo(f"[ERROR] {res.get('message', res.get('error'))}")
+
+    @app.cli.command("auto-restore-db")
+    @click.option("--latest", is_flag=True, default=False, help="Tự động khôi phục từ bản sao lưu gần nhất.")
+    @click.option("--id", "backup_id", type=int, default=None, help="Mã ID của bản sao lưu chỉ định.")
+    @click.option("--confirm", is_flag=True, default=False, help="Xác nhận khôi phục ghi đè dữ liệu hiện tại.")
+    def run_auto_restore_db_cli(latest, backup_id, confirm):
+        """Kịch bản tự động khôi phục CSDL an toàn từ bản sao lưu (Restore Automation)."""
+        if not confirm:
+            click.echo("[ABORTED] Vui lòng sử dụng cờ --confirm để xác nhận phục hồi CSDL.")
+            return
+
+        from .backend.admin.database_service import auto_restore_database
+        res = auto_restore_database(backup_id=backup_id, use_latest=latest)
+        if res.get("success"):
+            click.echo(f"[SUCCESS] {res.get('message')} (Safety Backup: {res.get('safety_backup')})")
+        else:
+            click.echo(f"[ERROR] {res.get('message', res.get('error'))}")
+
+    @app.cli.command("db-migration-status")
+    def run_db_migration_status_cli():
+        """Hiển thị trạng thái phiên bản Migration CSDL (Flask-Migrate / Alembic)."""
+        from .backend.admin.database_service import get_migration_status
+        status = get_migration_status()
+        click.echo(f"Initialized: {status['is_initialized']}")
+        click.echo(f"Current DB Revision: {status['current_revision']}")
+        click.echo(f"Head Revision: {status['head_revision']}")
+        click.echo(f"Up to date: {status['is_up_to_date']}")
+        click.echo(f"Total Versions: {status['total_versions']}")
+
+    @app.cli.command("db-upgrade")
+    @click.option("--revision", default="head", help="Mục tiêu revision migration cần nâng cấp tới.")
+    def run_db_upgrade_cli(revision):
+        """Nâng cấp CSDL lên phiên bản migration chỉ định."""
+        from .backend.admin.database_service import run_database_upgrade
+        res = run_database_upgrade(revision=revision)
+        if res.get("success"):
+            click.echo(f"[SUCCESS] {res.get('message')}")
+        else:
+            click.echo(f"[ERROR] {res.get('error')}")
+
     @app.cli.command("purge-inactive-users")
+
     @click.option("--days", default=180, type=int, help="Số ngày soft-deleted / không hoạt động để dọn dẹp vĩnh viễn.")
     @click.option("--dry-run", is_flag=True, default=False, help="Chế độ kiểm tra, không xóa thật.")
     def run_purge_inactive_users_cli(days, dry_run):

@@ -526,10 +526,10 @@ MODULE 11. SECURITY SYSTEM (HỆ THỐNG BẢO MẬT) — 15 TÍNH NĂNG CHƯA L
 MODULE 12. SYSTEM FEATURES (TÍNH NĂNG HỆ THỐNG) — 46 TÍNH NĂNG CHƯA LÀM
 ----------------------------------------------------------------------------------------------------
 
-12.1. Database Features (3 tính năng chưa làm):
-- [ ] `Migration System`: Chưa cài `Flask-Migrate` (Alembic) để quản lý lịch sử thay đổi bảng CSDL (hiện đang dùng `db.create_all()`). (Ưu tiên: RẤT CAO)
-- [ ] `Backup Automation`: Chưa có cron job tự động sao lưu CSDL hàng ngày. (Ưu tiên: Cao)
-- [ ] `Restore Automation`: Chưa có script tự động khôi phục dữ liệu từ bản sao lưu. (Ưu tiên: Trung bình)
+12.1. Database Features (3 tính năng - ĐÃ HOÀN THÀNH 3/3):
+- [x] `Migration System`: Tích hợp `Flask-Migrate` (Alembic) quản lý lịch sử và nâng cấp schema cơ sở dữ liệu (`flask db init`, `flask db migrate`, `flask db upgrade`, `flask db-upgrade`, `flask db-migration-status`). Quản trị viên có thể theo dõi và kích hoạt migration qua Admin REST API. (Ưu tiên: RẤT CAO)
+- [x] `Backup Automation`: Tự động hóa tác vụ sao lưu CSDL định kỳ theo lịch trình (Hàng ngày / Hàng tuần) qua `database_service.py`, CLI command `flask auto-backup-db` và Admin endpoint `/admin/system/database/auto-backup`, tự động dọn dẹp bản sao lưu cũ theo chính sách retention. (Ưu tiên: Cao)
+- [x] `Restore Automation`: Kịch bản và lệnh khôi phục CSDL an toàn (Data Recovery) qua `auto_restore_database()`, CLI command `flask auto-restore-db` và Admin endpoint `/admin/system/database/auto-restore`, tự động tạo Safety Backup snapshot trước khi khôi phục để bảo vệ dữ liệu. (Ưu tiên: Trung bình)
 
 12.2. API Features (4 tính năng chưa làm):
 - [ ] `Rate Limiting`: Chưa cài đặt `Flask-Limiter` để giới hạn số lượt gọi API/phút chống spam API. (Ưu tiên: Cao)

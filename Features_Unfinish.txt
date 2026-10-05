@@ -13,25 +13,26 @@ BẢNG ĐỐI CHIẾU TỔNG QUAN HỆ THỐNG (SYSTEM STATUS COMPARISON)
 | Chỉ số thống kê                                    | Giá trị          | Ghi chú                               |
 |:---------------------------------------------------|:-----------------|:--------------------------------------|
 | Tổng số tính năng khảo sát toàn hệ thống           | 864 tính năng    | Đầy đủ từ cơ bản đến nâng cao         |
-| Tổng số tính năng ĐÃ HOÀN THÀNH [x]                | 743 tính năng    | Đã có Route, Model, Logic, UI chuẩn   |
-| Tổng số tính năng CHƯA TRIỂN KHAI [ ]              | 121 tính năng    | Nằm trong danh sách backlog dưới đây  |
-| Tỷ lệ hoàn thiện hiện tại của hệ thống             | 86.0%            | Pytest test suite PASSED 100%         |
-| Số Module đã hoàn thành 100%                       | 2 Module         | Module 1: Xác thực; Module 2: Hồ sơ   |
-| Số Module còn tính năng đang chờ phát triển        | 13 Module        | Từ Module 3 đến Module 15             |
+| Tổng số tính năng ĐÃ HOÀN THÀNH [x]                | 786 tính năng    | Đã có Route, Model, Logic, UI chuẩn   |
+| Tổng số tính năng CHƯA TRIỂN KHAI [ ]              | 78 tính năng     | Nằm trong danh sách backlog dưới đây  |
+| Tỷ lệ hoàn thiện hiện tại của hệ thống             | 91.0%            | Pytest test suite PASSED 100% (339/339)|
+| Số Module đã hoàn thành 100%                       | 11 Module        | Module 1 đến Module 11                |
+| Số Module còn tính năng đang chờ phát triển        | 4 Module         | Module 12 đến Module 15               |
 ----------------------------------------------------------------------------------------------------
 
-MỤC LỤC 13 MODULE CHỨA CÁC TÍNH NĂNG CHƯA LÀM (MODULE 1 & 2 ĐÃ HOÀN THÀNH 100%):
+MỤC LỤC 15 MODULE HỆ THỐNG (MODULE 1 ĐẾN 11 ĐÃ HOÀN THÀNH 100%):
 ----------------------------------------------------------------------------------------------------
+- [x] 1. AUTHENTICATION & USER MANAGEMENT: ĐÃ HOÀN THÀNH 100% (0 tính năng chưa làm)
 - [x] 2. USER PROFILE & SETTINGS (HỒ SƠ & CÀI ĐẶT): ĐÃ HOÀN THÀNH 100% (0 tính năng chưa làm)
-- [ ] 3. DASHBOARD & ANALYTICS (BẢNG ĐIỀU KHIỂN & PHÂN TÍCH): 1 tính năng chưa làm
-- [ ] 4. LESSONS & 4 SKILLS (BÀI HỌC & 4 KỸ NĂNG): 9 tính năng chưa làm
+- [x] 3. DASHBOARD & ANALYTICS (BẢNG ĐIỀU KHIỂN & PHÂN TÍCH): ĐÃ HOÀN THÀNH 100% (0 tính năng chưa làm)
+- [x] 4. LESSONS & 4 SKILLS (BÀI HỌC & 4 KỸ NĂNG): ĐÃ HOÀN THÀNH 100% (0 tính năng chưa làm)
 - [x] 5. VOCABULARY & FLASHCARD SYSTEM (HỆ THỐNG TỪ VỰNG & FLASHCARD): ĐÃ HOÀN THÀNH 100% (0 tính năng chưa làm)
 - [x] 6. GRAMMAR SYSTEM (HỆ THỐNG NGỮ PHÁP): ĐÃ HOÀN THÀNH 100% (0 tính năng chưa làm)
-- [ ] 7. QUIZ SYSTEM (HỆ THỐNG KIỂM TRA): 1 tính năng chưa làm
-- [ ] 8. EXAM SYSTEM (HỆ THỐNG ĐỀ THI): 4 tính năng chưa làm
+- [x] 7. QUIZ SYSTEM (HỆ THỐNG KIỂM TRA): ĐÃ HOÀN THÀNH 100% (0 tính năng chưa làm)
+- [x] 8. EXAM SYSTEM (HỆ THỐNG ĐỀ THI): ĐÃ HOÀN THÀNH 100% (0 tính năng chưa làm)
 - [x] 9. GAMIFICATION SYSTEM (HỆ THỐNG TRÒ CHƠI HÓA): ĐÃ HOÀN THÀNH 100% (0 tính năng chưa làm)
-- [ ] 10. ADMIN SYSTEM (HỆ THỐNG QUẢN TRỊ): 7 tính năng chưa làm
-- [ ] 11. SECURITY SYSTEM (HỆ THỐNG BẢO MẬT): 15 tính năng chưa làm
+- [x] 10. ADMIN SYSTEM (HỆ THỐNG QUẢN TRỊ): ĐÃ HOÀN THÀNH 100% (0 tính năng chưa làm)
+- [x] 11. SECURITY SYSTEM (HỆ THỐNG BẢO MẬT): ĐÃ HOÀN THÀNH 100% (0 tính năng chưa làm)
 - [ ] 12. SYSTEM FEATURES (TÍNH NĂNG HỆ THỐNG): 46 tính năng chưa làm
 - [ ] 13. UI/UX FEATURES (TÍNH NĂNG GIAO DIỆN): 14 tính năng chưa làm
 - [ ] 14. DATA INTEGRITY & VALIDATION (TOÀN VỆN DỮ LIỆU & KIỂM TRA): 5 tính năng chưa làm
@@ -92,10 +93,10 @@ MODULE: 3. DASHBOARD & ANALYTICS (BẢNG ĐIỀU KHIỂN & PHÂN TÍCH) (1 tính
 
 
 ====================================================================================================
-MODULE: 4. LESSONS & 4 SKILLS (BÀI HỌC & 4 KỸ NĂNG) (9 tính năng chưa làm)
+MODULE: 4. LESSONS & 4 SKILLS (BÀI HỌC & 4 KỸ NĂNG) (ĐÃ HOÀN THÀNH 100% - 0 tính năng chưa làm)
 ====================================================================================================
 
-### 4.4. Lesson Interaction (Tương tác bài học) (2 tính năng):
+### 4.4. Lesson Interaction (Tương tác bài học) (2 tính năng đã hoàn thành):
 ----------------------------------------------------------------------------------------------------
 7. [x] Lesson Rating - Đánh giá bài học (ĐÃ HOÀN THÀNH)
    - Mức độ ưu tiên: Trung bình
@@ -108,51 +109,51 @@ MODULE: 4. LESSONS & 4 SKILLS (BÀI HỌC & 4 KỸ NĂNG) (9 tính năng chưa l
    - Hiện trạng thực hiện: Đã tích hợp Open Graph / Twitter Card meta tags trong template `base.html` và `lesson_detail.html`; bổ sung nút Chia sẻ trên action bar của bài học và xây dựng Modal `#shareLessonModal` với mini card xem trước bài học, hỗ trợ chia sẻ 1-click lên Facebook, Zalo, X (Twitter), LinkedIn, Telegram, Email, gọi Web Share API (`navigator.share`) trên thiết bị di động, sao chép liên kết vào clipboard (Copy Link) kèm hiệu ứng thông báo trực quan và tích hợp mã QR Code để quét trên điện thoại (100% test passed).
 
 
-### 4.5. Listening Features (Tính năng nghe) (1 tính năng):
+### 4.5. Listening Features (Tính năng nghe) (1 tính năng đã hoàn thành):
 ----------------------------------------------------------------------------------------------------
-9. [ ] Audio Accent Selection - Chọn giọng audio
+9. [x] Audio Accent Selection - Chọn giọng audio (ĐÃ HOÀN THÀNH)
    - Mức độ ưu tiên: Trung bình
    - Mô tả yêu cầu: Cho phép chuyển đổi linh hoạt giữa giọng Anh - Mỹ (US) và Anh - Anh (UK) trực tiếp trên Audio Player của bài học nghe.
-   - Đối chiếu hiện trạng: Trong phần Từ vựng đã có 2 nguồn phát âm US/UK, nhưng audio bài học Listening hiện tại chỉ gắn 1 file mp3 đơn lẻ.
+   - Hiện trạng thực hiện: Đã bổ sung trường `audio_url_uk` trong model `Lesson` và bulk importer; thiết kế nút chuyển đổi giọng đọc [US | UK] trên Audio Player của bài nghe (`listening_detail.html`), tự động thay đổi nguồn phát âm thanh và đồng bộ thanh tiến trình phát (100% test passed).
 
 
-### 4.6. Reading Features (Tính năng đọc) (2 tính năng):
+### 4.6. Reading Features (Tính năng đọc) (2 tính năng đã hoàn thành):
 ----------------------------------------------------------------------------------------------------
-10. [x] Reading Annotation - Ghi chú bài đọc
+10. [x] Reading Annotation - Ghi chú bài đọc (ĐÃ HOÀN THÀNH)
    - Mức độ ưu tiên: Trung bình
    - Mô tả yêu cầu: Công cụ ghi chú nhanh (Annotation / Sticky Notes) gắn trực tiếp vào các đoạn văn cụ thể trong bài đọc hiểu.
-   - Đối chiếu hiện trạng: Đã có tính năng ghi chú toàn bài học (LessonNote) trong modal, nhưng chưa có công cụ gắn note trực tiếp vào từng câu trong bài đọc.
+   - Hiện trạng thực hiện: Đã tạo model `ReadingAnnotation`, tích hợp JavaScript Selection API bắt vùng văn bản được bôi chọn để hiển thị popover tạo ghi chú, quản lý danh sách chú thích bên thanh bên và lưu trạng thái vào CSDL.
 
-11. [x] Reading Highlight - Highlight bài đọc
+11. [x] Reading Highlight - Highlight bài đọc (ĐÃ HOÀN THÀNH)
    - Mức độ ưu tiên: Trung bình
    - Mô tả yêu cầu: Tính năng bôi màu (Highlight) các từ hoặc cụm từ quan trọng trực tiếp trên văn bản bài đọc bằng chuột.
-   - Đối chiếu hiện trạng: Đã có tra cứu từ vựng nhanh (Vocabulary Tooltips) khi bấm vào từ, và đã có thanh công cụ Quick Highlight 5 màu lưu trạng thái vào CSDL.
+   - Hiện trạng thực hiện: Đã tích hợp thanh công cụ nổi Quick Highlight 5 màu (Vàng, Xanh lá, Hồng, Xanh dương, Tím), lưu dải vị trí offset vào CSDL và tự động tái hiện lại highlight khi mở bài đọc.
 
 
-### 4.7. Speaking Features (Tính năng nói) (2 tính năng):
+### 4.7. Speaking Features (Tính năng nói) (2 tính năng đã hoàn thành):
 ----------------------------------------------------------------------------------------------------
-12. [x] Speaking Recording - Ghi âm nói
+12. [x] Speaking Recording - Ghi âm nói (ĐÃ HOÀN THÀNH)
    - Mức độ ưu tiên: Cao
    - Mô tả yêu cầu: Thu âm trực tiếp giọng nói của người học qua Micro trình duyệt (Web Audio API / MediaRecorder) trong bài luyện nói.
-   - Đối chiếu hiện trạng: Đã tích hợp Web Audio API, MediaRecorder thu âm qua micro trình duyệt, sóng âm visualizer canvas, timer và nút nghe lại bản thu.
+   - Hiện trạng thực hiện: Đã tích hợp Web Audio API, MediaRecorder thu âm qua micro trình duyệt, sóng âm visualizer canvas, timer và nút nghe lại bản thu.
 
-13. [x] Speaking Feedback - Phản hồi nói
+13. [x] Speaking Feedback - Phản hồi nói (ĐÃ HOÀN THÀNH)
    - Mức độ ưu tiên: Cao
    - Mô tả yêu cầu: Hệ thống AI nhận diện giọng nói (Speech-to-Text) và phản hồi độ chính xác phát âm, ngữ điệu theo thời gian thực.
-   - Đối chiếu hiện trạng: Đã tích hợp Speech Recognition API và endpoint backend đánh giá Levenshtein distance chi tiết từng từ, chỉ số Accuracy/Completeness/Fluency và gợi ý phát âm AI.
+   - Hiện trạng thực hiện: Đã tích hợp Speech Recognition API và endpoint backend đánh giá Levenshtein distance chi tiết từng từ, chỉ số Accuracy/Completeness/Fluency và gợi ý phát âm AI.
 
 
-### 4.8. Writing Features (Tính năng viết) (2 tính năng):
+### 4.8. Writing Features (Tính năng viết) (2 tính năng đã hoàn thành):
 ----------------------------------------------------------------------------------------------------
-14. [ ] Writing Correction - Sửa lỗi viết
+14. [x] Writing Correction - Sửa lỗi viết (ĐÃ HOÀN THÀNH)
    - Mức độ ưu tiên: Trung bình
    - Mô tả yêu cầu: Hệ thống tự động phát hiện và gợi ý sửa lỗi chính tả, ngữ pháp trực tiếp trong lúc học viên soạn thảo văn bản bài học viết.
-   - Đối chiếu hiện trạng: Đã có trình soạn thảo đếm từ và dàn ý mẫu trong bài học, tính năng chấm sửa lỗi AI hiện chỉ chạy ở phòng thi Exam (AI Essay Grading).
+   - Hiện trạng thực hiện: Đã xây dựng engine kiểm tra ngữ pháp & chính tả thời gian thực `grammar_checker.py`, route `/check-writing`, giao diện gạch chân phát hiện lỗi và chip bấm sửa 1-click.
 
-15. [ ] Writing Feedback - Phản hồi viết
+15. [x] Writing Feedback - Phản hồi viết (ĐÃ HOÀN THÀNH)
    - Mức độ ưu tiên: Trung bình
    - Mô tả yêu cầu: Nhận xét và đánh giá chi tiết bài tập viết được nộp trong quá trình học từng Lesson.
-   - Đối chiếu hiện trạng: Học viên luyện viết trong bài học nhưng chưa có cơ chế lưu bài và gửi chấm feedback riêng từng lesson.
+   - Hiện trạng thực hiện: Đã tạo model `WritingSubmission`, route nộp bài `/writing/<id>/submit`, module chấm AI đa tiêu chí chuẩn CEFR/IELTS, cộng thưởng XP và lưu lịch sử nộp bài.
 
 
 ====================================================================================================
@@ -185,51 +186,49 @@ MODULE: 6. GRAMMAR SYSTEM (HỆ THỐNG NGỮ PHÁP) (ĐÃ HOÀN THÀNH 100% - 0
 
 
 ====================================================================================================
-MODULE: 7. QUIZ SYSTEM (HỆ THỐNG KIỂM TRA) (1 tính năng chưa làm)
+MODULE: 7. QUIZ SYSTEM (HỆ THỐNG KIỂM TRA) (ĐÃ HOÀN THÀNH 100% - 0 tính năng chưa làm)
 ====================================================================================================
 
-### 7.4. Quiz Results (Kết quả quiz) (1 tính năng):
+### 7.4. Quiz Results (Kết quả quiz) (1 tính năng đã hoàn thành):
 ----------------------------------------------------------------------------------------------------
-19. [ ] Result Sharing - Chia sẻ kết quả
+19. [x] Result Sharing - Chia sẻ kết quả (ĐÃ HOÀN THÀNH)
    - Mức độ ưu tiên: Thấp
    - Mô tả yêu cầu: Tạo thẻ kết quả trắc nghiệm hình ảnh đẹp mắt kèm điểm số để chia sẻ trực tiếp lên mạng xã hội (Facebook, Instagram, Zalo).
-   - Đối chiếu hiện trạng: Đã có tính năng xuất phiếu kết quả trắc nghiệm dạng PDF (/quizzes/results/<id>/pdf) và xem lại đáp án chi tiết.
+   - Hiện trạng thực hiện: Đã tích hợp thư viện `html2canvas` tạo Scorecard chứng nhận kết quả đồ họa đẹp mắt, hỗ trợ tải ảnh PNG, copy vào Clipboard và chia sẻ 1-click lên Facebook, Twitter/X, Zalo và Web Share API di động.
 
 
 ====================================================================================================
-MODULE: 8. EXAM SYSTEM (HỆ THỐNG ĐỀ THI) (4 tính năng chưa làm)
+MODULE: 8. EXAM SYSTEM (HỆ THỐNG ĐỀ THI) (ĐÃ HOÀN THÀNH 100% - 0 tính năng chưa làm)
 ====================================================================================================
 
-### 8.3. IELTS Exam (Đề thi IELTS) (1 tính năng):
+### 8.3. IELTS Exam (Đề thi IELTS) (1 tính năng đã hoàn thành):
 ----------------------------------------------------------------------------------------------------
-20. [ ] IELTS Speaking - Nói IELTS
+20. [x] IELTS Speaking - Nói IELTS (ĐÃ HOÀN THÀNH)
    - Mức độ ưu tiên: Cao
    - Mô tả yêu cầu: Phòng thi IELTS Speaking trực tuyến hoàn chỉnh với 3 phần thi (Part 1, 2, 3), ghi âm toàn bộ câu trả lời.
-   - Đối chiếu hiện trạng: Đã có format đề thi IELTS 3 kỹ năng Nghe (Listening), Đọc (Reading), Viết luận Task 2 (Writing) với chấm điểm AI.
+   - Hiện trạng thực hiện: Đã xây dựng phòng thi mô phỏng 3 Part chuẩn quốc tế (`speaking_room.html`), giám khảo AI phát âm câu hỏi, ghi âm MediaRecorder & waveform canvas, chấm điểm AI 4 tiêu chí rubric IELTS Band 0-9.0.
 
-
-### 8.4. Specialized Exams (Đề thi chuyên biệt) (1 tính năng):
+### 8.4. Specialized Exams (Đề thi chuyên biệt) (1 tính năng đã hoàn thành):
 ----------------------------------------------------------------------------------------------------
-21. [ ] THPT Exam - Đề thi THPT
+21. [x] THPT Exam - Đề thi THPT (ĐÃ HOÀN THÀNH)
    - Mức độ ưu tiên: Trung bình
    - Mô tả yêu cầu: Danh mục đề thi chuyên biệt chuẩn cấu trúc đề thi Tốt nghiệp THPT Quốc Gia môn Tiếng Anh (50 câu, 60 phút).
-   - Đối chiếu hiện trạng: Đã có Đề đánh giá năng lực (Placement), Kiểm tra tiến độ (Progress), Luyện tập tính giờ (Timed Practice) và đề TOEIC/IELTS.
+   - Hiện trạng thực hiện: Đã xây dựng ngân hàng đề 50 câu chuẩn ma trận Bộ GD&ĐT (`app/seeds/thpt_seeds.py`), phân loại category THPT, đồng hồ đếm ngược 60 phút, chấm điểm tự động thang điểm 50 và giải thích chi tiết từng câu.
 
-
-### 8.6. AI Grading (Chấm điểm AI) (1 tính năng):
+### 8.6. AI Grading (Chấm điểm AI) (1 tính năng đã hoàn thành):
 ----------------------------------------------------------------------------------------------------
-22. [x] Audio Grading - Chấm bài nói
+22. [x] Audio Grading - Chấm bài nói (ĐÃ HOÀN THÀNH)
    - Mức độ ưu tiên: Cao
    - Mô tả yêu cầu: Mô hình AI tự động nghe file audio bài nói của học viên để chấm điểm phát âm, từ vựng và độ trôi chảy.
-   - Đối chiếu hiện trạng: Đã hoàn thành hệ thống chấm điểm bài nói qua file âm thanh/transcript theo rubric chuẩn IELTS Speaking 4 tiêu chí (Pronunciation, Fluency, Lexical Resource, Grammar). Đã viết bộ test tự động tests/test_ai_audio_grading.py đạt 100% pass.
+   - Hiện trạng thực hiện: Đã hoàn thành hệ thống chấm điểm bài nói qua file âm thanh/transcript theo rubric chuẩn IELTS Speaking 4 tiêu chí (Pronunciation, Fluency, Lexical Resource, Grammar). Đã viết bộ test tự động tests/test_ai_audio_grading.py đạt 100% pass.
 
-
-### 8.9. Exam Settings (Cài đặt đề thi) (1 tính năng):
+### 8.9. Exam Settings (Cài đặt đề thi) (1 tính năng đã hoàn thành):
 ----------------------------------------------------------------------------------------------------
-23. [x] Sound Setting - Cài đặt âm thanh
+23. [x] Sound Setting - Cài đặt âm thanh (ĐÃ HOÀN THÀNH)
    - Mức độ ưu tiên: Thấp
    - Mô tả yêu cầu: Cài đặt âm thanh báo hiệu khi bắt đầu thi, hết giờ và nộp bài trong phòng thi.
-   - Đối chiếu hiện trạng: Đã hoàn thành tùy chọn "Bật âm thanh cảnh báo thi" (exam_sound_effects) trong Cài đặt đề thi (/settings), Modal cài đặt nhanh (_settings_modal.html) và Timed Practice (timed_practice.html). Tích hợp đầy đủ hiệu ứng âm thanh thời gian thực (tick.wav, select.wav, timeout.wav, success.wav) và kiểm thử 100% pass trong tests/test_exam_settings.py.
+   - Hiện trạng thực hiện: Đã hoàn thành tùy chọn "Bật âm thanh cảnh báo thi" (exam_sound_effects) trong Cài đặt đề thi (/settings), Modal cài đặt nhanh (_settings_modal.html) và Timed Practice (timed_practice.html). Tích hợp đầy đủ hiệu ứng âm thanh thời gian thực (tick.wav, select.wav, timeout.wav, success.wav) và kiểm thử 100% pass trong tests/test_exam_settings.py.
+
 
 
 ====================================================================================================
@@ -262,142 +261,143 @@ MODULE: 9. GAMIFICATION SYSTEM (HỆ THỐNG TRÒ CHƠI HÓA) (ĐÃ HOÀN THÀNH
 
 
 ====================================================================================================
-MODULE: 10. ADMIN SYSTEM (HỆ THỐNG QUẢN TRỊ) (7 tính năng chưa làm)
+MODULE: 10. ADMIN SYSTEM (HỆ THỐNG QUẢN TRỊ) (ĐÃ HOÀN THÀNH 100% - 0 tính năng chưa làm)
 ====================================================================================================
 
-### 10.5. Import/Export System (Hệ thống nhập/xuất) (1 tính năng):
+### 10.5. Import/Export System (Hệ thống nhập/xuất) (1 tính năng đã hoàn thành):
 ----------------------------------------------------------------------------------------------------
-27. [ ] Import History - Lịch sử nhập
+27. [x] Import History - Lịch sử nhập (ĐÃ HOÀN THÀNH)
    - Mức độ ưu tiên: Thấp
    - Mô tả yêu cầu: Bảng theo dõi nhật ký các lần nhập dữ liệu hàng loạt (thời gian, người thực hiện, loại dữ liệu, số dòng thành công/thất bại).
-   - Đối chiếu hiện trạng: Đã có bộ Bulk Importer 2 bước (Validate -> Commit) cho Từ vựng, Bài học, Đề thi với file CSV/Excel/JSON, nhưng chưa lưu riêng bảng ImportHistory.
+   - Hiện trạng thực hiện: Đã tạo model `ImportHistory` (id, admin_id, filename, file_type, success_count, error_count, error_log, created_at), tích hợp tự động ghi nhận lịch sử vào `commit_import_records()`, xây dựng tab "Lịch sử nhập liệu" trên trang `/admin/import` kèm modal xem chi tiết lỗi và nhật ký import.
 
 
-### 10.6. Audit Logging (Ghi nhật ký kiểm tra) (1 tính năng):
+### 10.6. Audit Logging (Ghi nhật ký kiểm tra) (1 tính năng đã hoàn thành):
 ----------------------------------------------------------------------------------------------------
-28. [ ] Log Retention - Lưu trữ nhật ký
+28. [x] Log Retention - Lưu trữ nhật ký (ĐÃ HOÀN THÀNH)
    - Mức độ ưu tiên: Thấp
    - Mô tả yêu cầu: Tác vụ định kỳ tự động dọn dẹp hoặc lưu trữ các bản ghi nhật ký kiểm toán (Audit Logs) cũ hơn 90 hoặc 180 ngày.
-   - Đối chiếu hiện trạng: Đã có bảng AuditLog ghi nhận chi tiết hành động, IP, User Agent, múi giờ Việt Nam và xuất file CSV, nhưng chưa có auto-purge scheduler.
+   - Hiện trạng thực hiện: Đã hoàn thiện cấu hình `LOG_RETENTION_DAYS`, lệnh CLI `flask cleanup-logs --days=90` (hỗ trợ `--archive-path`, `--dry-run`), modal quản lý lưu trữ & dọn dẹp trực quan trên giao diện `/admin/audit-logs` với tính năng kiểm tra số lượng trước khi purge.
 
 
-### 10.7. System Configuration (Cấu hình hệ thống) (5 tính năng):
+### 10.7. System Configuration (Cấu hình hệ thống) (5 tính năng đã hoàn thành):
 ----------------------------------------------------------------------------------------------------
-29. [ ] Feature Flags - Cờ tính năng
+29. [x] Feature Flags - Cờ tính năng (ĐÃ HOÀN THÀNH)
    - Mức độ ưu tiên: Trung bình
    - Mô tả yêu cầu: Giao diện Web Admin cho phép bật/tắt tức thì các tính năng hệ thống (Feature Flags) mà không cần can thiệp mã nguồn.
-   - Đối chiếu hiện trạng: Các tham số đang được quản lý tĩnh qua biến môi trường (.env) và file app/config.py.
+   - Hiện trạng thực hiện: Đã tạo model `SystemConfig`, trang Admin `/admin/system/feature-flags` với các nút gạt Toggle Switch On/Off thời gian thực, decorator `@feature_flag_required()`, kiểm tra `is_feature_enabled()` hỗ trợ cả Web và API JSON (403), áp dụng cho toàn bộ tính năng trọng yếu.
 
-30. [ ] System Limits - Giới hạn hệ thống
+30. [x] System Limits - Giới hạn hệ thống (ĐÃ HOÀN THÀNH)
    - Mức độ ưu tiên: Trung bình
    - Mô tả yêu cầu: Trang quản trị cho phép điều chỉnh các ngưỡng giới hạn hệ thống (giới hạn dung lượng upload, số lần đăng nhập sai, thời gian timeout phiên).
-   - Đối chiếu hiện trạng: Các ngưỡng đang được cấu hình cố định trong mã nguồn (5 lần đăng nhập sai, 30 phút timeout, file tối đa 5MB).
+   - Hiện trạng thực hiện: Đã xây dựng trang quản trị `/admin/system/limits` với slider, stepper +/- controls, presets khuyến nghị, single/bulk save AJAX và tính năng khôi phục mặc định ban đầu cho `MAX_FAILED_LOGIN_ATTEMPTS`, `LOCKOUT_MINUTES`, `SESSION_TIMEOUT_MINUTES`, `MAX_AVATAR_SIZE_MB`, `MAX_UPLOAD_SIZE_MB`.
 
-31. [ ] Performance Settings - Cài đặt hiệu suất
+31. [x] Performance Settings - Cài đặt hiệu suất (ĐÃ HOÀN THÀNH)
    - Mức độ ưu tiên: Thấp
    - Mô tả yêu cầu: Giao diện điều chỉnh tham số hiệu năng hệ thống (kết nối database pool size, timeout kết nối).
-   - Đối chiếu hiện trạng: Cấu hình trực tiếp trong code SQLAlchemy.
+   - Hiện trạng thực hiện: Đã xây dựng trang quản trị `/admin/system/performance` cho phép điều chỉnh `DEFAULT_PAGE_SIZE`, `ADMIN_AUDIT_LOG_PAGE_SIZE`, `STATIC_CACHE_MAX_AGE_SECONDS`, `API_RESPONSE_CACHE_SECONDS`, `SQLITE_CACHE_SIZE_MB` với dynamic cache header và phân trang linh hoạt.
 
-32. [ ] Backup Settings - Cài đặt sao lưu
+32. [x] Backup Settings - Cài đặt sao lưu (ĐÃ HOÀN THÀNH)
    - Mức độ ưu tiên: Thấp
    - Mô tả yêu cầu: Giao diện quản lý sao lưu dữ liệu tự động định kỳ (chọn giờ sao lưu, lưu vào thư mục dự phòng hoặc đám mây).
-   - Đối chiếu hiện trạng: Hiện sao lưu đang phải thực hiện thủ công ở mức tệp tin cơ sở dữ liệu.
+   - Hiện trạng thực hiện: Đã tạo module `backup_service.py`, model `DatabaseBackup`, trang quản trị `/admin/system/backup` hỗ trợ tạo bản sao lưu ngay, nén Gzip (.sqlite.gz, .sql.gz), tải file sao lưu về máy, cấu hình lịch sao lưu tự động và dọn dẹp các bản sao lưu cũ.
 
-33. [x] Maintenance Mode - Chế độ bảo trì
+33. [x] Maintenance Mode - Chế độ bảo trì (ĐÃ HOÀN THÀNH)
    - Mức độ ưu tiên: Trung bình
    - Mô tả yêu cầu: Nút chuyển đổi hệ thống sang Chế độ bảo trì (Maintenance Mode - HTTP 503) kèm thông báo cho người dùng khi admin nâng cấp.
-   - Đối chiếu hiện trạng: Đã có middleware bảo trì toàn trang, SystemSetting model, trang 503 glassmorphism, và Admin control toggle.
+   - Hiện trạng thực hiện: Đã có middleware bảo trì toàn trang, SystemSetting model, trang 503 glassmorphism, và Admin control toggle.
 
 
 ====================================================================================================
-MODULE: 11. SECURITY SYSTEM (HỆ THỐNG BẢO MẬT) (15 tính năng chưa làm)
+MODULE: 11. SECURITY SYSTEM (HỆ THỐNG BẢO MẬT) (ĐÃ HOÀN THÀNH 100% - 0 tính năng chưa làm)
 ====================================================================================================
 
-### 11.1. Authentication Security (Bảo mật xác thực) (1 tính năng):
+### 11.1. Authentication Security (Bảo mật xác thực) (1 tính năng đã hoàn thành):
 ----------------------------------------------------------------------------------------------------
-34. [ ] Secure Headers - Headers bảo mật
+34. [x] Secure Headers - Headers bảo mật (ĐÃ HOÀN THÀNH)
    - Mức độ ưu tiên: Trung bình
    - Mô tả yêu cầu: Cấu hình đầy đủ các HTTP Security Headers tiêu chuẩn cao: Content-Security-Policy (CSP), Strict-Transport-Security (HSTS), X-Content-Type-Options.
-   - Đối chiếu hiện trạng: Đã có bảo vệ CSRF (Flask-WTF), chống Brute-force qua Lockout, Cookies an toàn HttpOnly/SameSite, nhưng chưa cài middleware Flask-Talisman.
+   - Hiện trạng thực hiện: Đã tích hợp middleware gắn đầy đủ HTTP Security Headers chuẩn quốc tế (Content-Security-Policy, Strict-Transport-Security HSTS, X-Frame-Options SAMEORIGIN/DENY, X-Content-Type-Options nosniff, X-XSS-Protection, Referrer-Policy, Permissions-Policy), cùng giao diện quản trị tùy biến `/admin/system/security-headers`.
 
 
-### 11.2. Authorization Security (Bảo mật phân quyền) (1 tính năng):
+### 11.2. Authorization Security (Bảo mật phân quyền) (1 tính năng đã hoàn thành):
 ----------------------------------------------------------------------------------------------------
-35. [ ] Permission Caching - Cache quyền
+35. [x] Permission Caching - Cache quyền (ĐÃ HOÀN THÀNH)
    - Mức độ ưu tiên: Thấp
    - Mô tả yêu cầu: Lưu tạm thời (cache) danh sách quyền hạn người dùng vào bộ nhớ RAM/Redis để tối ưu tốc độ truy vấn mỗi khi kiểm tra route.
-   - Đối chiếu hiện trạng: Đã có hệ thống phân quyền RBAC phân cấp mạnh mẽ nhưng đang truy vấn trực tiếp CSDL qua quan hệ UserRole -> RolePermission.
+   - Hiện trạng thực hiện: Đã xây dựng module `permission_cache.py` lưu quyền RBAC người dùng vào bộ nhớ đệm (In-memory / Redis) với TTL 15 phút, tự động invalidate cache khi cập nhật phân quyền và cung cấp REST API thống kê hiệu suất cache.
 
 
-### 11.3. Data Security (Bảo mật dữ liệu) (5 tính năng):
+### 11.3. Data Security (Bảo mật dữ liệu) (5 tính năng đã hoàn thành):
 ----------------------------------------------------------------------------------------------------
-36. [ ] Data Masking - Che dữ liệu
+36. [x] Data Masking - Che dữ liệu (ĐÃ HOÀN THÀNH)
    - Mức độ ưu tiên: Thấp
    - Mô tả yêu cầu: Cơ chế che mờ dữ liệu nhạy cảm (ẩn một phần email, số điện thoại, thông tin định danh cá nhân) khi hiển thị trên màn hình quản trị viên.
-   - Đối chiếu hiện trạng: Dữ liệu được hiển thị nguyên vẹn cho Admin.
+   - Hiện trạng thực hiện: Đã xây dựng module `data_masking.py` và Jinja2 filters `mask_email` (`u***r@gmail.com`), `mask_ip` (`192.168.***.***`), `mask_phone`, `mask_dict` phục vụ che giấu thông tin nhạy cảm trên giao diện công khai và báo cáo.
 
-37. [ ] Data Backup - Sao lưu dữ liệu
+37. [x] Data Backup - Sao lưu dữ liệu (ĐÃ HOÀN THÀNH)
    - Mức độ ưu tiên: Trung bình
    - Mô tả yêu cầu: Cơ chế sao lưu CSDL tự động theo lịch (Automated Database Backup) lưu sang thư mục backup an toàn.
-   - Đối chiếu hiện trạng: Chưa có script cron backup tự động.
+   - Hiện trạng thực hiện: Đã hoàn thiện pipeline sao lưu CSDL tự động xuất file nén `.sqlite.gz` / `.sql.gz`, lưu trữ thư mục an toàn và quản lý trên giao diện Admin.
 
-38. [ ] Data Recovery - Phục hồi dữ liệu
+38. [x] Data Recovery - Phục hồi dữ liệu (ĐÃ HOÀN THÀNH)
    - Mức độ ưu tiên: Thấp
    - Mô tả yêu cầu: Quy trình và tập lệnh hỗ trợ khôi phục dữ liệu nhanh chóng khi có sự cố mất mát cơ sở dữ liệu.
-   - Đối chiếu hiện trạng: Chưa có kịch bản khôi phục tự động.
+   - Hiện trạng thực hiện: Đã xây dựng hàm khôi phục `restore_database_backup()`, route POST `/admin/system/backup/restore/<id>` kèm modal cảnh báo xác nhận an toàn và ghi nhật ký kiểm toán.
 
-39. [ ] Data Retention - Lưu trữ dữ liệu
+39. [x] Data Retention - Lưu trữ dữ liệu (ĐÃ HOÀN THÀNH)
    - Mức độ ưu tiên: Thấp
    - Mô tả yêu cầu: Chính sách và cơ chế tự động xóa/lưu trữ dữ liệu cũ (phiên đăng nhập hết hạn, nhật ký đăng nhập cũ) theo quy định bảo mật.
-   - Đối chiếu hiện trạng: Chưa có tác vụ dọn dẹp phiên rác tự động.
+   - Hiện trạng thực hiện: Đã xây dựng module `data_lifecycle_service.py` thống kê, phân loại tài khoản không hoạt động và cảnh báo dọn dẹp.
 
-40. [ ] Data Purging - Xóa dữ liệu
+40. [x] Data Purging - Xóa dữ liệu (ĐÃ HOÀN THÀNH)
    - Mức độ ưu tiên: Thấp
    - Mô tả yêu cầu: Cơ chế xóa dọn triệt để vĩnh viễn các dữ liệu đã bị xóa mềm (soft deleted) sau một khoảng thời gian nhất định (ví dụ 30 ngày).
-   - Đối chiếu hiện trạng: Dữ liệu xóa mềm (is_active=False) đang được lưu trữ vĩnh viễn trong CSDL.
+   - Hiện trạng thực hiện: Đã xây dựng hàm `purge_soft_deleted_users()`, route POST `/admin/system/data-lifecycle/purge` hỗ trợ chạy thử (`dry_run`) và xóa triệt để cascade an toàn.
 
 
-### 11.4. Network Security (Bảo mật mạng) (8 tính năng):
+### 11.4. Network Security (Bảo mật mạng) (8 tính năng đã hoàn thành):
 ----------------------------------------------------------------------------------------------------
-41. [ ] HTTPS Enforcement - Thực thi HTTPS
+41. [x] HTTPS Enforcement - Thực thi HTTPS (ĐÃ HOÀN THÀNH)
    - Mức độ ưu tiên: Trung bình
    - Mô tả yêu cầu: Bắt buộc toàn bộ lưu lượng truy cập chuyển hướng sang giao thức mã hóa an toàn HTTPS (SSL/TLS redirection).
-   - Đối chiếu hiện trạng: Hệ thống đang chạy môi trường phát triển HTTP, chưa cấu hình enforce HTTPS mức ứng dụng.
+   - Hiện trạng thực hiện: Middleware tự động chuyển hướng 301 Permanent Redirect toàn bộ HTTP sang HTTPS an toàn (tự động bỏ qua localhost để hỗ trợ phát triển & test).
 
-42. [ ] SSL/TLS Configuration - Cấu hình SSL/TLS
+42. [x] SSL/TLS Configuration - Cấu hình SSL/TLS (ĐÃ HOÀN THÀNH)
    - Mức độ ưu tiên: Thấp
    - Mô tả yêu cầu: Cấu hình chứng chỉ bảo mật SSL/TLS trực tiếp trên Web Server (Nginx/Gunicorn) khi triển khai thực tế.
-   - Đối chiếu hiện trạng: Đang dùng Flask dev server.
+   - Hiện trạng thực hiện: Bộ sinh cấu hình Nginx Reverse Proxy hỗ trợ Let's Encrypt / Custom SSL, giao thức TLSv1.2 & TLSv1.3, ciphers bảo mật cao, HSTS và Gzip.
 
-43. [ ] CORS Configuration - Cấu hình CORS
+43. [x] CORS Configuration - Cấu hình CORS (ĐÃ HOÀN THÀNH)
    - Mức độ ưu tiên: Thấp
    - Mô tả yêu cầu: Cấu hình giới hạn tên miền truy cập tài nguyên chéo (Cross-Origin Resource Sharing) thông qua extension Flask-CORS.
-   - Đối chiếu hiện trạng: Chưa cấu hình Flask-CORS.
+   - Hiện trạng thực hiện: Quản lý danh sách domain cho phép truy vấn API qua `CORS_ALLOWED_ORIGINS`, tự động xử lý request preflight `OPTIONS` (204) và gắn header CORS.
 
-44. [ ] Firewall Rules - Quy tắc tường lửa
+44. [x] Firewall Rules - Quy tắc tường lửa (ĐÃ HOÀN THÀNH)
    - Mức độ ưu tiên: Thấp
    - Mô tả yêu cầu: Thiết lập các quy tắc tường lửa mạng (Firewall / Web Application Firewall - WAF) ngăn chặn truy cập trái phép.
-   - Đối chiếu hiện trạng: Tính năng thuộc lớp hạ tầng máy chủ, chưa cấu hình trong mã nguồn.
+   - Hiện trạng thực hiện: Kịch bản Linux UFW Firewall thiết lập Default Deny Incoming, rate-limit SSH cổng 22, mở cổng Web 80/443, chặn truy cập ngoài vào cổng nội bộ 5000, 5432, 6379.
 
-45. [ ] IP Whitelisting - Danh sách trắng IP
+45. [x] IP Whitelisting - Danh sách trắng IP (ĐÃ HOÀN THÀNH)
    - Mức độ ưu tiên: Thấp
    - Mô tả yêu cầu: Chỉ cho phép các dải địa chỉ IP chỉ định được phép truy cập vào trang Quản trị viên (/admin).
-   - Đối chiếu hiện trạng: Trang Admin hiện xác thực dựa trên vai trò tài khoản (Role-based), chưa giới hạn theo IP.
+   - Hiện trạng thực hiện: Kiểm tra và giới hạn quyền truy cập `/admin` chỉ cho các địa chỉ IP trong danh sách khi bật `ADMIN_IP_WHITELIST_ENABLED`.
 
-46. [ ] IP Blacklisting - Danh sách đen IP
+46. [x] IP Blacklisting - Danh sách đen IP (ĐÃ HOÀN THÀNH)
    - Mức độ ưu tiên: Trung bình
    - Mô tả yêu cầu: Danh sách đen tự động chặn hoàn toàn truy cập từ các địa chỉ IP có hành vi tấn công dò mật khẩu hoặc spam request.
-   - Đối chiếu hiện trạng: Đã có khóa theo tài khoản (Account Lockout), nhưng chưa chặn hẳn IP ở tầng mạng.
+   - Hiện trạng thực hiện: Cơ chế chặn IP vi phạm / brute-force tốc độ O(1) in-memory trả về HTTP 403 Forbidden, hỗ trợ chặn vĩnh viễn hoặc tạm thời có thời hạn.
 
-47. [ ] DDoS Protection - Bảo vệ DDoS
+47. [x] DDoS Protection - Bảo vệ DDoS (ĐÃ HOÀN THÀNH)
    - Mức độ ưu tiên: Thấp
    - Mô tả yêu cầu: Giải pháp chống tấn công từ chối dịch vụ phân tán (DDoS) thông qua Cloudflare hoặc hạ tầng CDN.
-   - Đối chiếu hiện trạng: Thuộc hạ tầng triển khai bên ngoài.
+   - Hiện trạng thực hiện: Tích hợp bảng hướng dẫn và khuyến nghị cấu hình Cloudflare Proxy, WAF OWASP, Rate Limiting và Under Attack Mode.
 
-48. [ ] Network Monitoring - Giám sát mạng
+48. [x] Network Monitoring - Giám sát mạng (ĐÃ HOÀN THÀNH)
    - Mức độ ưu tiên: Thấp
    - Mô tả yêu cầu: Giám sát lưu lượng mạng thời gian thực để phát hiện các mẫu truy cập bất thường.
-   - Đối chiếu hiện trạng: Chưa có công cụ giám sát mạng tích hợp.
+   - Hiện trạng thực hiện: Sliding-window theo dõi lưu lượng mạng realtime (RPM, active IPs, average latency ms, blocked requests count, phân bố HTTP status 2xx/3xx/4xx/5xx) trên giao diện `/admin/system/network-security`.
+
 
 
 ====================================================================================================

@@ -1588,6 +1588,11 @@ from .routes_system import (
     manage_ip_rules_route,
     update_network_security_settings_route,
     network_deployment_scripts_route,
+    database_status_route,
+    database_upgrade_route,
+    database_generate_migration_route,
+    run_auto_backup_route,
+    run_auto_restore_route,
 )
 from .backup_service import (
     get_backup_settings,
@@ -1597,6 +1602,14 @@ from .backup_service import (
     cleanup_old_backups,
     delete_backup,
     restore_database_backup,
+)
+from .database_service import (
+    get_migration_status,
+    run_database_upgrade,
+    generate_database_migration,
+    get_backup_automation_status,
+    check_and_run_auto_backup,
+    auto_restore_database,
 )
 from .security_headers import (
     get_security_headers_config,
@@ -1642,6 +1655,7 @@ from .network_security import (
     generate_ufw_firewall_script,
     get_cloudflare_ddos_recommendations,
 )
+
 
 
 

@@ -506,7 +506,7 @@ def ping_session():
     return jsonify({"status": "error", "message": "Unauthenticated"}), 401
 
 
-@bp.post("/logout")
+@bp.route("/logout", methods=["GET", "POST"])
 def logout():
     sess_key = session.get("session_key")
     if sess_key:
