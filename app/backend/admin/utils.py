@@ -27,21 +27,42 @@ def is_role_active(expires_at):
     return expires_at > datetime.now(timezone.utc)
 
 
-def has_permission(user, permission_name):
-    if not user or not user.is_authenticated:
-        return False
-    if user.is_admin:
-        return True
+def get_user_permissions(user, force_refresh=False):
+    """
+    Tính toán và trả về toàn bộ quyền hạn (bao gồm kế thừa từ vai trò cha) của User.
+    Sử dụng In-memory Permission Caching (TTL 15-30 phút) để tối ưu hiệu năng.
+    """
+    if not user or not getattr(user, 'is_authenticated', False):
+        return set()
+    if getattr(user, 'is_admin', False):
+        return {"*"}
+
+    from .permission_cache import get_cached_user_permissions, set_cached_user_permissions
+
+    if not force_refresh:
+        cached = get_cached_user_permissions(user.id)
+        if cached is not None:
+            return cached
 
     user_roles = UserRole.query.filter_by(user_id=user.id).all()
     active_roles = [ur.role for ur in user_roles if ur.role and is_role_active(ur.expires_at)]
 
+    effective_perms = set()
     for role in active_roles:
-        role_perms = get_role_permissions_recursive(role)
-        if permission_name in role_perms or "*" in role_perms:
-            return True
+        effective_perms.update(get_role_permissions_recursive(role))
 
-    return False
+    set_cached_user_permissions(user.id, effective_perms)
+    return effective_perms
+
+
+def has_permission(user, permission_name):
+    if not user or not getattr(user, 'is_authenticated', False):
+        return False
+    if getattr(user, 'is_admin', False):
+        return True
+
+    perms = get_user_permissions(user)
+    return permission_name in perms or "*" in perms
 
 
 def permission_required(permission_name):

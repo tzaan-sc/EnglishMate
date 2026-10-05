@@ -267,3 +267,33 @@ class DatabaseBackup(db.Model):
             return f"{round(bytes_val / (1024 * 1024), 2)} MB"
         else:
             return f"{round(bytes_val / (1024 * 1024 * 1024), 2)} GB"
+
+
+# ---------------------------------------------------------------------------
+# AUTOMATIC PERMISSION CACHE INVALIDATION HOOKS (MỤC 11.2)
+# ---------------------------------------------------------------------------
+from sqlalchemy import event
+
+
+def _on_user_role_change(mapper, connection, target):
+    from .permission_cache import invalidate_permission_cache
+    if hasattr(target, "user_id") and target.user_id:
+        invalidate_permission_cache(target.user_id)
+
+
+def _on_role_perm_change(mapper, connection, target):
+    from .permission_cache import invalidate_permission_cache
+    invalidate_permission_cache()
+
+
+event.listen(UserRole, "after_insert", _on_user_role_change)
+event.listen(UserRole, "after_update", _on_user_role_change)
+event.listen(UserRole, "after_delete", _on_user_role_change)
+
+event.listen(RolePermission, "after_insert", _on_role_perm_change)
+event.listen(RolePermission, "after_update", _on_role_perm_change)
+event.listen(RolePermission, "after_delete", _on_role_perm_change)
+
+event.listen(Role, "after_update", _on_role_perm_change)
+event.listen(Role, "after_delete", _on_role_perm_change)
+

@@ -450,5 +450,52 @@ def update_security_headers_route():
     return redirect(url_for("admin.dashboard"))
 
 
+# ---------------------------------------------------------------------------
+# PERMISSION CACHE MANAGEMENT ROUTES (MỤC 11.2)
+# ---------------------------------------------------------------------------
+from .permission_cache import get_permission_cache_stats, invalidate_permission_cache
+
+
+@bp.get("/system/permission-cache/stats")
+@bp.get("/system/permissions/cache-stats")
+@admin_required
+def get_permission_cache_stats_route():
+    """Lấy thông tin thống kê trạng thái bộ nhớ đệm quyền hạn người dùng."""
+    stats = get_permission_cache_stats()
+    return jsonify({"success": True, "stats": stats})
+
+
+@bp.post("/system/permission-cache/clear")
+@bp.post("/system/permissions/clear-cache")
+@admin_required
+def clear_permission_cache_route():
+    """Xóa toàn bộ hoặc một phần bộ nhớ đệm quyền hạn người dùng."""
+    data = request.get_json(silent=True) or request.form
+    target_user_id = data.get("user_id")
+    
+    user_id = None
+    if target_user_id is not None and str(target_user_id).isdigit():
+        user_id = int(target_user_id)
+
+    cleared_count = invalidate_permission_cache(user_id=user_id)
+    
+    target_desc = f"cho User #{user_id}" if user_id else "cho tất cả người dùng"
+    log_audit_action(
+        user_id=current_user.id,
+        action="CLEAR_PERMISSION_CACHE",
+        target_type="SYSTEM_CACHE",
+        target_id=str(user_id) if user_id else None,
+        details=f"Xóa bộ nhớ đệm quyền hạn {target_desc} ({cleared_count} bản ghi)"
+    )
+
+    msg = f"Đã xóa bộ nhớ đệm quyền hạn {target_desc} ({cleared_count} bản ghi)."
+    if request.is_json:
+        return jsonify({"success": True, "cleared_count": cleared_count, "message": msg})
+
+    flash(msg, "success")
+    return redirect(url_for("admin.users", tab="roles"))
+
+
+
 
 

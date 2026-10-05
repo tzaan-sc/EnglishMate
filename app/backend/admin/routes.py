@@ -14,7 +14,14 @@ from . import bp
 from .forms import ConfirmForm, LessonForm, VocabularyForm
 from .importer import parse_and_validate_excel, parse_and_validate_file, commit_import_records, CONTENT_SCHEMAS
 from .models import AuditLog, Permission, Role, RolePermission, UserRole, SystemSetting, ImportHistory
-from .utils import log_audit_action, permission_required, has_permission, admin_required
+from .utils import log_audit_action, permission_required, has_permission, admin_required, get_user_permissions
+from .permission_cache import (
+    get_permission_cache_ttl,
+    get_cached_user_permissions,
+    set_cached_user_permissions,
+    invalidate_permission_cache,
+    get_permission_cache_stats,
+)
 
 
 
@@ -415,6 +422,7 @@ def user_toggle_role(user_id):
     else:
         user.role = "USER" if user.role == "ADMIN" else "ADMIN"
         db.session.commit()
+        invalidate_permission_cache(user.id)
         log_audit_action(current_user.id, "TOGGLE_ROLE", "User", user.id, f"Đổi vai trò {user.username} thành {user.role}")
         flash(f"Đã chuyển vai trò tài khoản {user.username} thành {user.role}.", "success")
     return redirect(url_for("admin.users", tab="users"))
@@ -448,6 +456,7 @@ def roles():
                     db.session.add(rp)
             db.session.commit()
 
+            invalidate_permission_cache()
             log_audit_action(current_user.id, "CREATE_ROLE", "Role", role.id, f"Khởi tạo vai trò tùy chỉnh '{role_name}'")
             flash(f"Đã khởi tạo vai trò tùy chỉnh '{role_name}' thành công.", "success")
         return redirect(url_for("admin.users", tab="roles"))
@@ -479,6 +488,7 @@ def role_edit(role_id):
             db.session.add(rp)
 
     db.session.commit()
+    invalidate_permission_cache()
     log_audit_action(current_user.id, "UPDATE_ROLE", "Role", role.id, f"Cập nhật vai trò '{role.name}'")
     flash(f"Đã cập nhật quyền hạn cho vai trò '{role.name}'.", "success")
     return redirect(url_for("admin.users", tab="roles"))
@@ -497,6 +507,7 @@ def role_delete(role_id):
         role_name = role.name
         db.session.delete(role)
         db.session.commit()
+        invalidate_permission_cache()
         log_audit_action(current_user.id, "DELETE_ROLE", "Role", role_id, f"Xóa vai trò '{role_name}'")
         flash(f"Đã xóa vai trò '{role_name}'.", "info")
     return redirect(url_for("admin.users", tab="roles"))
@@ -527,6 +538,7 @@ def user_assign_role(user_id):
 
     user.role = role.name
     db.session.commit()
+    invalidate_permission_cache(user.id)
 
     expiry_msg = f" (Hết hạn: {expires_at.strftime('%d/%m/%Y')})" if expires_at else " (Vĩnh viễn)"
     log_audit_action(current_user.id, "ASSIGN_ROLE", "User", user.id, f"Gán vai trò '{role.name}' cho {user.username}{expiry_msg}")
@@ -1559,6 +1571,8 @@ from .routes_system import (
     cleanup_backups_route,
     get_security_headers_route,
     update_security_headers_route,
+    get_permission_cache_stats_route,
+    clear_permission_cache_route,
 )
 from .backup_service import (
     get_backup_settings,
@@ -1572,6 +1586,13 @@ from .security_headers import (
     get_security_headers_config,
     save_security_headers_config,
     apply_security_headers,
+)
+from .permission_cache import (
+    get_permission_cache_ttl,
+    get_cached_user_permissions,
+    set_cached_user_permissions,
+    invalidate_permission_cache,
+    get_permission_cache_stats,
 )
 
 
