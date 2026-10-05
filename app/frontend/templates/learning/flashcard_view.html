@@ -274,14 +274,20 @@
 
             <!-- Controls -->
             <div class="d-flex justify-content-center gap-4 mt-4" id="studyControls">
-                <button class="btn btn-light border rounded-3 px-4 py-3 fw-bold text-secondary shadow-xs d-flex align-items-center gap-2 transition-hover" onclick="markCard(false)" title="Chưa nhớ (Phím Trái / 1)" style="min-width: 160px; font-size: 0.95rem;">
+                <button class="btn btn-light border rounded-3 px-4 py-3 fw-bold text-secondary shadow-xs d-flex align-items-center gap-2 transition-hover" onclick="markCard(false)" title="Chưa nhớ (Phím Trái / 1 / Vuốt Trái)" style="min-width: 160px; font-size: 0.95rem;">
                     <i class="ph-bold ph-arrow-counter-clockwise text-warning fs-5"></i>
                     <span>Chưa nhớ (← / 1)</span>
                 </button>
-                <button class="btn btn-primary rounded-3 px-4 py-3 fw-bold shadow-sm d-flex align-items-center gap-2 transition-hover" onclick="markCard(true)" title="Đã thuộc (Phím Phải / 2)" style="min-width: 160px; font-size: 0.95rem;">
+                <button class="btn btn-primary rounded-3 px-4 py-3 fw-bold shadow-sm d-flex align-items-center gap-2 transition-hover" onclick="markCard(true)" title="Đã thuộc (Phím Phải / 2 / Vuốt Phải)" style="min-width: 160px; font-size: 0.95rem;">
                     <i class="ph-bold ph-check-circle fs-5"></i>
                     <span>Đã thuộc (→ / 2)</span>
                 </button>
+            </div>
+
+            <!-- Touch Gesture Instruction Bar -->
+            <div class="text-center text-muted small mt-3 fw-medium d-inline-flex align-items-center justify-content-center gap-2 w-100 p-2 rounded-pill bg-light border shadow-2xs" style="font-size: 0.78rem;">
+                <i class="ph-bold ph-hand-swipe text-primary fs-5"></i>
+                <span>👈 Vuốt trái: Cần học lại &bull; Chạm: Lật mặt &bull; 👉 Vuốt phải: Đã thuộc</span>
             </div>
         </div>
     </div>
@@ -431,6 +437,7 @@
     document.addEventListener('DOMContentLoaded', () => {
         applySettings(false);
         setupHotkeys();
+        setupSwipeGestures();
     });
 
     function applySettings(restart = true) {
@@ -689,6 +696,59 @@
                     }
                     break;
             }
+        });
+    }
+
+    // --- TOUCH & SWIPE GESTURES CONTROLLER ---
+    function setupSwipeGestures() {
+        if (!elContainer || !elInner) return;
+
+        let touchStartX = 0;
+        let touchStartY = 0;
+        let currentTouchX = 0;
+        let isSwiping = false;
+
+        elContainer.addEventListener('touchstart', (e) => {
+            if (e.touches.length !== 1 || (elSummary && elSummary.style.display === 'block')) return;
+            touchStartX = e.touches[0].clientX;
+            touchStartY = e.touches[0].clientY;
+            currentTouchX = touchStartX;
+            isSwiping = true;
+            elInner.style.transition = 'none';
+        }, { passive: true });
+
+        elContainer.addEventListener('touchmove', (e) => {
+            if (!isSwiping || e.touches.length !== 1) return;
+            currentTouchX = e.touches[0].clientX;
+            const deltaX = currentTouchX - touchStartX;
+            const deltaY = e.touches[0].clientY - touchStartY;
+
+            if (Math.abs(deltaX) > Math.abs(deltaY)) {
+                const rotation = deltaX * 0.05;
+                elInner.style.transform = `translateX(${deltaX}px) rotate(${rotation}deg)`;
+            }
+        }, { passive: true });
+
+        elContainer.addEventListener('touchend', () => {
+            if (!isSwiping) return;
+            isSwiping = false;
+            elInner.style.transition = 'transform 0.4s cubic-bezier(0.4, 0, 0.2, 1)';
+
+            const deltaX = currentTouchX - touchStartX;
+
+            if (deltaX > 75) {
+                markCard(true); // Swipe Right -> Known
+            } else if (deltaX < -75) {
+                markCard(false); // Swipe Left -> Learning
+            } else {
+                if (state.isFlipped) {
+                    elInner.style.transform = 'rotateX(180deg)';
+                } else {
+                    elInner.style.transform = 'none';
+                }
+            }
+            touchStartX = 0;
+            currentTouchX = 0;
         });
     }
 

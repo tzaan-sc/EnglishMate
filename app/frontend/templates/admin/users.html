@@ -78,8 +78,8 @@
           </form>
         </div>
 
-        <!-- Table -->
-        <div class="table-responsive border rounded-3 overflow-hidden">
+        <!-- Desktop Table (Show on screens >= md) -->
+        <div class="table-responsive border rounded-3 overflow-hidden d-none d-md-block mb-3">
           <table class="table table-hover align-middle mb-0" style="font-size: 0.88rem;">
             <thead class="table-light">
               <tr>
@@ -213,6 +213,61 @@
               {% endfor %}
             </tbody>
           </table>
+        </div>
+
+        <!-- Mobile Responsive Card View (Show on screens < md) -->
+        <div class="d-md-none d-flex flex-column gap-3 mb-3">
+          {% for u in users %}
+          <div class="card-modern p-3.5 border rounded-4 shadow-2xs bg-white">
+            <div class="d-flex align-items-center justify-content-between mb-2">
+              <div class="d-flex align-items-center gap-2.5">
+                <div class="rounded-circle bg-primary-subtle text-primary fw-bold d-inline-flex align-items-center justify-content-center flex-shrink-0" style="width: 38px; height: 38px; font-size: 0.95rem;">
+                  {{ u.username[0].upper() }}
+                </div>
+                <div>
+                  <h6 class="fw-bold text-dark mb-0">{{ u.username }}</h6>
+                  <span class="text-muted font-monospace small">ID: #{{ u.id }}</span>
+                </div>
+              </div>
+              <div>
+                {% if u.is_active %}
+                <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-2.5 py-1 small fw-semibold">Hoạt động</span>
+                {% else %}
+                <span class="badge bg-danger-subtle text-danger border border-danger-subtle rounded-pill px-2.5 py-1 small fw-semibold">Đã khóa</span>
+                {% endif %}
+              </div>
+            </div>
+
+            <div class="bg-light p-2.5 rounded-3 mb-3 small text-secondary">
+              <div class="d-flex justify-content-between mb-1">
+                <span>Email:</span>
+                <span class="fw-bold text-dark text-truncate ms-2" style="max-width: 190px;">{{ u.email }}</span>
+              </div>
+              <div class="d-flex justify-content-between mb-1">
+                <span>Streak:</span>
+                <span class="fw-bold text-danger">🔥 {{ u.current_streak or 0 }} ngày</span>
+              </div>
+              <div class="d-flex justify-content-between align-items-center">
+                <span>Vai trò:</span>
+                <div>
+                  {% if u.is_admin %}
+                  <span class="badge bg-danger-subtle text-danger border rounded-pill px-2 py-0.5 small fw-bold">ADMIN</span>
+                  {% else %}
+                  <span class="badge bg-secondary-subtle text-secondary border rounded-pill px-2 py-0.5 small fw-semibold">USER</span>
+                  {% endif %}
+                </div>
+              </div>
+            </div>
+
+            <div class="d-flex justify-content-end gap-1.5 pt-2 border-top">
+              {% if u.id != current_user.id %}
+              <button type="button" class="btn btn-sm btn-outline-primary rounded-pill px-3 py-1 fw-semibold small" data-bs-toggle="modal" data-bs-target="#assignRoleModal{{ u.id }}">
+                <i class="ph-bold ph-user-gear me-1"></i> Gán vai trò
+              </button>
+              {% endif %}
+            </div>
+          </div>
+          {% endfor %}
         </div>
       </div>
     </div>

@@ -1,0 +1,73 @@
+Used tool: manage_task
+
+Dưới đây là bản **đánh giá chi tiết toàn bộ hệ thống EnglishMate** dựa trên 6 tiêu chí UX/UI tiêu chuẩn, kèm theo các **hạn chế cụ thể và giải pháp cần thay đổi**:
+
+---
+
+## 📊 1. Bảng điểm đánh giá tổng quan hệ thống
+
+| Tiêu chí | Điểm hiện tại | Nhận xét chung |
+| :--- | :---: | :--- |
+| **1. Phản hồi tức thì & Tốc độ** | `7.5 / 10` | Đã có Toast/Modal tốt ở các trang mới, nhưng các trang cũ vẫn còn reload trang truyền thống khi submit form. |
+| **2. Phân cấp thị giác & Typography** | `8.0 / 10` | Design tokens trong `app.css` sạch sẽ, bố cục card hiện đại. Một số trang nội dung bài học còn dồn quá nhiều chữ. |
+| **3. Điều hướng & Kiến trúc thông tin** | `8.5 / 10` | Sidebar và Breadcrumb rất rõ ràng. Cần bổ sung thanh tìm kiếm nhanh toàn trang (Global Quick Search / Command Palette `Ctrl+K`). |
+| **4. Responsive & Mobile-First** | `7.0 / 10` | Màn hình lớn (Desktop) hiển thị rất đẹp, nhưng một số bảng dữ liệu Admin và giao diện làm bài thi dài chưa tối ưu thao tác vuốt chạm trên Mobile. |
+| **5. Ngăn ngừa lỗi & An toàn** | `7.5 / 10` | Đã có session warning, lockout, confirm modal. Cần bổ sung auto-save khi học viên soạn bài viết dài (Writing). |
+| **6. Gamification & Động lực học** | `8.5 / 10` | Chuỗi Streak, Daily Goal, Confetti ăn mừng rất tốt. Cần bổ sung hiển thị tiến độ bài học theo dạng lộ trình trực quan (Learning Road/Tree). |
+
+---
+
+## 🔍 2. Chi tiết các hạn chế cần thay đổi theo từng phân hệ
+
+### A. Phân hệ Học tập & Bài học (Learning & Lessons)
+* **Hạn chế 1 (Luyện viết Writing & Ghi âm Speaking):** Khi học viên làm bài viết dài hoặc ghi âm, nếu vô tình ấn nhầm F5 hoặc chuyển trang thì bài viết bị mất toàn bộ.
+  * 👉 **Cần thay đổi:** Bổ sung cơ chế **Auto-save bản nháp vào LocalStorage/Draft API** mỗi 15 giây và cảnh báo `beforeunload` khi rời trang.
+* **Hạn chế 2 (Trình phát âm thanh Listening):** Thanh phát audio bài nghe còn đơn điệu, chưa có nút tua nhanh/chậm tốc độ phát ($0.75x, 1.0x, 1.25x$) và lùi lại 5 giây.
+  * 👉 **Cần thay đổi:** Nâng cấp custom audio player có chỉnh tốc độ phát và nút lặp lại câu (Loop sentence).
+* **Hạn chế 3 (Danh sách bài học dài):** Danh sách hàng chục bài học đang xếp dọc theo danh sách phẳng (flat list), khiến học viên khó hình dung lộ trình.
+  * 👉 **Cần thay đổi:** Thiết kế dạng **Lộ trình học (Learning Path / Timeline)** có các mốc Checkpoint, sao đánh giá và mở khóa từng bài.
+
+---
+
+### B. Phân hệ Từ vựng & Flashcards (Vocabulary & SRS)
+* **Hạn chế 1 (Thao tác lật thẻ Flashcard trên Mobile):** Hiện tại chủ yếu bấm nút, chưa hỗ trợ cử chỉ vuốt ngón tay (Swipe left: Chưa thuộc / Swipe right: Đã nhớ).
+  * 👉 **Cần thay đổi:** Bổ sung thư viện Touch Gesture (`Hammer.js` hoặc custom touch events) để học viên lướt thẻ mượt như app di động (Tinder/Anki).
+* **Hạn chế 2 (Phím tắt ôn tập trên Desktop):** Chưa có hướng dẫn phím tắt trực quan trên màn hình ôn từ (`Space` để lật, `1` - Khó, `2` - Bình thường, `3` - Dễ).
+  * 👉 **Cần thay đổi:** Thêm badge phím tắt nhỏ `[Space]`, `[1]`, `[2]`, `[3]` ngay góc các nút bấm.
+
+---
+
+### C. Phân hệ Đề thi & Luyện thi (Exams & Quizzes)
+* **Hạn chế 1 (Làm bài thi TOEIC 200 câu):** Màn hình cuộn quá dài. Nếu học viên muốn nhảy nhanh đến câu 85 thì phải cuộn rất nhiều.
+  * 👉 **Cần thay đổi:** Bổ sung **Bảng lưới câu hỏi cố định (Question Palette Grid 1-200)** bên phải màn hình: hiển thị màu câu đã làm (xanh), câu chưa làm (xám), câu gắn cờ xem lại (vàng).
+* **Hạn chế 2 (Đồng hồ đếm ngược thi thử):** Đồng hồ đếm ngược trên mobile chiếm diện tích đầu trang.
+  * 👉 **Cần thay đổi:** Cho phép thu nhỏ đồng hồ thành dạng thanh tiến độ mỏng dính trên đỉnh màn hình (Sticky header).
+
+---
+
+### D. Phân hệ Quản trị Admin (Admin Management)
+* **Hạn chế 1 (Bảng dữ liệu Data Tables):** Trang danh sách người dùng, bài học, nhật ký Audit Log khi xem trên điện thoại bị tràn ngang (Horizontal overflow).
+  * 👉 **Cần thay đổi:** Áp dụng chế độ Responsive Card View trên mobile (tự động chuyển từng dòng của Table thành 1 Card tóm tắt khi màn hình $< 768px$).
+* **Hạn chế 2 (Bộ lọc Filter & Tìm kiếm):** Một số trang quản trị cần bấm nút "Lọc" mới tải lại trang.
+  * 👉 **Cần thay đổi:** Áp dụng Debounce search (tự lọc sau 300ms người dùng dừng gõ phím) qua Fetch/AJAX mà không giật trang.
+
+---
+
+### E. Tính nhất quán giao diện toàn trang (Global UX)
+* **Hạn chế 1 (Chuyển đổi hoàn toàn Font Awesome / Phosphor sang SVG):** Hệ thống vừa tạo bộ 56 file SVG chuẩn, cần tiếp tục thay thế dần các thẻ `<i>` cũ còn sót lại ở các trang phụ để đạt 100% SVG đồng bộ.
+* **Hạn chế 2 (Trạng thái rỗng - Empty States):** Khi học viên chưa có lịch sử làm bài hoặc chưa lưu từ vựng nào, màn hình chỉ hiện bảng trống hoặc dòng chữ ngắn.
+  * 👉 **Cần thay đổi:** Thêm minh họa SVG đẹp mắt kèm nút CTA dẫn đến bài học ngay.
+
+---
+
+## 🎯 3. Lộ trình cải tiến đề xuất theo thứ tự ưu tiên
+
+1. **Ưu tiên 1 (High Priority - Trải nghiệm học & thi cốt lõi):**
+   - Thêm **Question Palette Grid (1 - 200 câu)** cho trang thi TOEIC/Quiz.
+   - Thêm **Auto-save bản nháp** cho bài viết Writing & chỉnh tốc độ audio Listening.
+2. **Ưu tiên 2 (Medium Priority - Trải nghiệm di động & ôn từ vựng):**
+   - Hỗ trợ **Swipe Gesture** cho Flashcards trên mobile + Phím tắt bàn phím trên Desktop.
+   - Responsive Card View cho các bảng Data Table của Admin trên Mobile.
+3. **Ưu tiên 3 (Low Priority - Tiện ích mở rộng & thẩm mỹ):**
+   - Bổ sung Global Command Palette (`Ctrl + K` để tìm nhanh bài học/tính năng).
+   - Chuẩn hóa toàn bộ Empty States với hình minh họa SVG sinh động.
