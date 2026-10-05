@@ -299,8 +299,8 @@
     </form>
   </div>
 
-  <!-- ZONE 4: LESSONS GRID CARDS -->
-  <div class="d-flex justify-content-between align-items-center mb-3">
+  <!-- ZONE 4: LESSONS GRID & PATH CARDS -->
+  <div class="d-flex flex-column flex-sm-row justify-content-between align-items-sm-center gap-2 mb-3">
     <div>
       <h5 class="fw-bold text-dark mb-0 d-flex align-items-center gap-2">
         <span>Danh mục Bài học</span>
@@ -310,13 +310,25 @@
       </h5>
       <small class="text-muted">Hiển thị các bài học theo bộ lọc đã chọn</small>
     </div>
-    <span class="badge bg-primary-subtle text-primary rounded-pill px-3 py-1.5 small fw-bold">
-      Tìm thấy {{ lessons|length }} bài học
-    </span>
+
+    <div class="d-flex align-items-center gap-2 flex-wrap">
+      <!-- View Mode Segmented Control: Grid vs Learning Path -->
+      <div class="btn-group btn-group-sm p-0.5 bg-light rounded-pill border shadow-2xs" role="group" aria-label="View mode">
+        <button type="button" class="btn btn-sm rounded-pill px-3 py-1 fw-bold text-nowrap transition-all btn-primary text-white shadow-xs" id="btnViewGrid" onclick="switchLessonViewMode('grid')">
+          <i class="ph-bold ph-squares-four me-1"></i> Lưới bài học
+        </button>
+        <button type="button" class="btn btn-sm rounded-pill px-3 py-1 fw-bold text-nowrap transition-all btn-light text-secondary border-0" id="btnViewPath" onclick="switchLessonViewMode('path')">
+          <i class="ph-bold ph-git-fork me-1"></i> Lộ trình học (Timeline)
+        </button>
+      </div>
+      <span class="badge bg-primary-subtle text-primary rounded-pill px-3 py-1.5 small fw-bold">
+        {{ lessons|length }} bài học
+      </span>
+    </div>
   </div>
 
   {% if lessons|length > 0 %}
-  <div class="row g-4 mb-5">
+  <div class="row g-4 mb-5" id="lessonsGridView">
     {% for lesson in lessons %}
     {% set is_done = lesson.id in done %}
 
@@ -801,8 +813,65 @@
         </a>
       </div>
     </div>
+  <!-- LEARNING PATH / TIMELINE ROADMAP VIEW -->
+  <div id="lessonsPathView" class="d-none mb-5">
+    <div class="card-modern p-4 p-md-5 border rounded-4 bg-white position-relative shadow-2xs">
+      <div class="text-center mb-4">
+        <span class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill px-3 py-1 fw-bold small">
+          🗺️ Lộ Trình Học Tập Theo Trình Độ CEFR
+        </span>
+        <h4 class="fw-bold text-dark mt-2 mb-1">Hành Trình Chinh Phục Kỹ Năng Tiếng Anh</h4>
+        <p class="text-secondary small mb-0">Các bài học được sắp xếp theo từng mốc cấp độ từ cơ bản đến thành thạo</p>
+      </div>
+
+      <div class="learning-path-timeline position-relative px-2 px-md-4">
+        {% set levels = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'] %}
+        {% for lvl in levels %}
+          {% set lvl_lessons = lessons|selectattr('level', 'equalto', lvl)|list %}
+          {% if lvl_lessons %}
+          <div class="timeline-level-section mb-4">
+            <div class="d-flex align-items-center gap-2 mb-3 pb-2 border-bottom border-2" style="border-color: var(--primary-subtle) !important;">
+              <div class="rounded-circle bg-primary text-white fw-bold d-inline-flex align-items-center justify-content-center shadow-xs" style="width: 38px; height: 38px; font-size: 0.95rem;">
+                {{ lvl }}
+              </div>
+              <div>
+                <h6 class="fw-bold text-dark mb-0">Mốc Cấp Độ {{ lvl }}</h6>
+                <span class="text-muted small" style="font-size: 0.78rem;">{{ lvl_lessons|length }} bài học thuộc mốc này</span>
+              </div>
+            </div>
+
+            <div class="row g-3">
+              {% for l in lvl_lessons %}
+              {% set l_done = l.id in done %}
+              <div class="col-12 col-md-6 col-lg-4">
+                <div class="card p-3.5 rounded-4 border h-100 position-relative transition-hover {{ 'bg-success-subtle border-success-subtle' if l_done else 'bg-white' }}">
+                  <div class="d-flex align-items-center justify-content-between mb-2">
+                    <span class="badge {{ 'bg-success text-white' if l_done else 'bg-primary-subtle text-primary border' }} rounded-pill px-2.5 py-0.5 fw-bold" style="font-size: 0.72rem;">
+                      {{ '✓ Đã hoàn thành' if l_done else '⚡ Đang chờ học' }}
+                    </span>
+                    <span class="text-warning small fw-bold">
+                      {{ '★★★' if l_done else '★☆☆' }}
+                    </span>
+                  </div>
+                  <h6 class="fw-bold text-dark mb-1 text-truncate">{{ l.title }}</h6>
+                  <p class="text-secondary small mb-3 line-clamp-2" style="font-size: 0.8rem; line-height: 1.5;">{{ l.short_description }}</p>
+
+                  <div class="d-flex align-items-center justify-content-between pt-2 border-top">
+                    <span class="text-muted small" style="font-size: 0.75rem;">+20 XP</span>
+                    <a href="{{ l.url }}" class="btn btn-sm {{ 'btn-success' if l_done else 'btn-primary' }} rounded-pill px-3 fw-bold" style="font-size: 0.78rem;">
+                      {{ 'Ôn lại' if l_done else 'Vào học' }}
+                    </a>
+                  </div>
+                </div>
+              </div>
+              {% endfor %}
+            </div>
+          </div>
+          {% endif %}
+        {% endfor %}
+      </div>
+    </div>
   </div>
-</div>
 
 <!-- ========================================== -->
 <!-- 7. FLOATING MINI-DOCK AUDIO PLAYER         -->
@@ -851,8 +920,42 @@
 </div>
 
 <script>
+  // Lesson View Mode Switcher (Grid vs Path)
+  window.switchLessonViewMode = function(mode) {
+    const gridView = document.getElementById("lessonsGridView");
+    const pathView = document.getElementById("lessonsPathView");
+    const btnGrid = document.getElementById("btnViewGrid");
+    const btnPath = document.getElementById("btnViewPath");
+
+    if (!gridView || !pathView) return;
+
+    if (mode === "path") {
+      gridView.classList.add("d-none");
+      pathView.classList.remove("d-none");
+      if (btnGrid && btnPath) {
+        btnGrid.className = "btn btn-sm rounded-pill px-3 py-1 fw-bold text-nowrap transition-all btn-light text-secondary border-0";
+        btnPath.className = "btn btn-sm rounded-pill px-3 py-1 fw-bold text-nowrap transition-all btn-primary text-white shadow-xs";
+      }
+      try { localStorage.setItem("lesson_view_mode", "path"); } catch(e){}
+    } else {
+      pathView.classList.add("d-none");
+      gridView.classList.remove("d-none");
+      if (btnGrid && btnPath) {
+        btnGrid.className = "btn btn-sm rounded-pill px-3 py-1 fw-bold text-nowrap transition-all btn-primary text-white shadow-xs";
+        btnPath.className = "btn btn-sm rounded-pill px-3 py-1 fw-bold text-nowrap transition-all btn-light text-secondary border-0";
+      }
+      try { localStorage.setItem("lesson_view_mode", "grid"); } catch(e){}
+    }
+  };
+
 document.addEventListener("DOMContentLoaded", function() {
   const csrfToken = "{{ csrf_token() }}";
+
+  // Restore saved view mode preference
+  try {
+    const savedMode = localStorage.getItem("lesson_view_mode");
+    if (savedMode === "path") window.switchLessonViewMode("path");
+  } catch(e){}
 
   // Favorite toggle AJAX
   document.querySelectorAll(".btn-fav-toggle").forEach(btn => {
