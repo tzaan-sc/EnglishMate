@@ -432,11 +432,15 @@ MODULE 10. ADMIN SYSTEM (HỆ THỐNG QUẢN TRỊ) — 7 TÍNH NĂNG CHƯA LÀM
 - Mức độ ưu tiên: Trung bình (Medium)
 
 
-[ ] 10.5. Performance Settings - Cài đặt thông số hiệu năng (Mục 10.7)
-- Hiện trạng: Chưa có.
-- Phần còn thiếu chưa làm:
-  Chưa có màn hình quản trị xem và cấu hình số lượng bản ghi hiển thị trên mỗi trang phân trang (`PAGE_SIZE`), độ dài thời gian cache.
+[x] 10.5. Performance Settings - Cài đặt thông số hiệu năng (Mục 10.7)
+- Hiện trạng: Đã hoàn thiện trang quản trị `/admin/system/performance` (alias `/admin/performance`).
+- Giải pháp kỹ thuật đã làm:
+  + Lưu các thông số `DEFAULT_PAGE_SIZE`, `ADMIN_AUDIT_LOG_PAGE_SIZE`, `ADMIN_IMPORT_HISTORY_PAGE_SIZE`, `STATIC_CACHE_MAX_AGE_SECONDS`, `API_RESPONSE_CACHE_SECONDS`, `SQLITE_CACHE_SIZE_MB` vào bảng `SystemConfig`.
+  + Tích hợp dynamic page size vào các hàm phân trang bảng Audit Logs, Import History và các bảng dữ liệu quản trị.
+  + Tích hợp dynamic Cache-Control max-age header cho static assets trong `after_request` middleware.
+  + Xây dựng giao diện Admin trực quan với thanh trượt slider, stepper +/- controls, presets khuyến nghị, single/bulk save AJAX và tính năng khôi phục mặc định ban đầu.
 - Mức độ ưu tiên: Thấp (Low)
+
 
 [ ] 10.6. Backup Settings - Cài đặt sao lưu CSDL tự động (Mục 10.7)
 - Hiện trạng trong EnglishMate_Features.txt:

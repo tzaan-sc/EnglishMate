@@ -185,3 +185,103 @@ def reset_all_system_limits():
     flash(res["message"], "info")
     return redirect(url_for("admin.system_limits"))
 
+
+# ---------------------------------------------------------------------------
+# PERFORMANCE SETTINGS & CACHE CONFIGURATION ROUTES
+# ---------------------------------------------------------------------------
+from .performance_settings import (
+    get_all_performance_settings,
+    get_grouped_performance_settings,
+    set_performance_setting,
+    bulk_update_performance_settings,
+    reset_performance_settings,
+    PERFORMANCE_SETTINGS_METADATA,
+    PERFORMANCE_CATEGORIES,
+)
+
+
+@bp.get("/system/performance")
+@bp.get("/performance")
+@admin_required
+def performance_settings():
+    """Trang giao diện quản trị cấu hình thông số hiệu năng, phân trang và bộ nhớ đệm (Performance Settings)."""
+    settings = get_all_performance_settings()
+    grouped_settings = get_grouped_performance_settings()
+    total_settings = len(settings)
+    customized_count = sum(1 for s in settings if s["is_customized"])
+
+    return render_template(
+        "admin/performance_settings.html",
+        settings=settings,
+        grouped_settings=grouped_settings,
+        total_settings=total_settings,
+        customized_count=customized_count,
+    )
+
+
+@bp.post("/system/performance")
+@admin_required
+def update_performance_settings():
+    """Cập nhật các thông số hiệu năng qua Form hoặc AJAX."""
+    data = request.get_json(silent=True) or request.form.to_dict()
+
+    settings_to_update = {}
+    for key in PERFORMANCE_SETTINGS_METADATA:
+        if key in data:
+            settings_to_update[key] = data[key]
+
+    is_all_success, success_msgs, error_msgs = bulk_update_performance_settings(
+        settings_to_update,
+        admin_id=current_user.id
+    )
+
+    if request.is_json:
+        return jsonify({
+            "success": is_all_success,
+            "success_count": len(success_msgs),
+            "error_count": len(error_msgs),
+            "success_messages": success_msgs,
+            "error_messages": error_msgs,
+            "message": "Cập nhật thông số hiệu năng thành công." if is_all_success else "Có lỗi xảy ra khi cập nhật hiệu năng.",
+        })
+
+    if error_msgs:
+        for err in error_msgs:
+            flash(err, "danger")
+    if success_msgs:
+        flash(f"Đã cập nhật thành công {len(success_msgs)} thông số hiệu năng!", "success")
+
+    return redirect(url_for("admin.performance_settings"))
+
+
+@bp.post("/system/performance/<setting_key>")
+@admin_required
+def update_single_performance_setting(setting_key):
+    """Cập nhật một thông số hiệu năng đơn lẻ qua AJAX."""
+    data = request.get_json(silent=True) or request.form
+    val = data.get("value")
+
+    res = set_performance_setting(setting_key, val, admin_id=current_user.id)
+    if request.is_json:
+        return jsonify(res)
+
+    if res["success"]:
+        flash(res["message"], "success")
+    else:
+        flash(res.get("error", "Lỗi không xác định"), "danger")
+
+    return redirect(url_for("admin.performance_settings"))
+
+
+@bp.post("/system/performance/reset")
+@admin_required
+def reset_all_performance_settings():
+    """Khôi phục toàn bộ các thông số hiệu năng về mặc định."""
+    res = reset_performance_settings(admin_id=current_user.id)
+    if request.is_json:
+        return jsonify(res)
+
+    flash(res["message"], "info")
+    return redirect(url_for("admin.performance_settings"))
+
+

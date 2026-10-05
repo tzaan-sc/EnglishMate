@@ -255,11 +255,17 @@ def create_app(config_object=Config):
 
     @app.after_request
     def set_performance_headers(response):
-        """Thiết lập Cache-Control cho file tĩnh để tăng tốc độ tải trang phía client."""
+        """Thiết lập Cache-Control cho file tĩnh để tăng tốc độ tải trang phía client dựa trên cấu hình hiệu năng."""
         from flask import request
         if request.path.startswith("/static/"):
-            response.headers.setdefault("Cache-Control", "public, max-age=86400")
+            try:
+                from .backend.admin.models import SystemConfig
+                max_age = SystemConfig.get_int_config("STATIC_CACHE_MAX_AGE_SECONDS", default=86400)
+            except Exception:
+                max_age = 86400
+            response.headers["Cache-Control"] = f"public, max-age={max_age if max_age is not None else 86400}"
         return response
+
 
     @app.cli.command("goal-reminders-check")
     def run_goal_reminders_cli():

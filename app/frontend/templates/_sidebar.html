@@ -56,12 +56,19 @@
                     <span>Quản lý Tính năng</span>
                 </a>
             </li>
-            <li class="nav-item mb-2">
+            <li class="nav-item">
                 <a class="nav-link-modern {% if request.path.startswith('/admin/system/limits') or request.path.startswith('/admin/limits') %}active{% endif %}" href="{{ url_for('admin.system_limits') }}" title="Giới hạn hệ thống">
                     <i class="ph ph-sliders-horizontal text-primary"></i>
                     <span>Giới hạn hệ thống</span>
                 </a>
             </li>
+            <li class="nav-item mb-2">
+                <a class="nav-link-modern {% if request.path.startswith('/admin/system/performance') or request.path.startswith('/admin/performance') %}active{% endif %}" href="{{ url_for('admin.performance_settings') }}" title="Cấu hình Hiệu năng">
+                    <i class="ph ph-gauge text-info"></i>
+                    <span>Cấu hình Hiệu năng</span>
+                </a>
+            </li>
+
 
 
             <!-- SEPARATOR -->

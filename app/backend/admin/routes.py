@@ -542,7 +542,10 @@ def audit_logs():
     date_from_str = request.args.get("date_from", "").strip()
     date_to_str = request.args.get("date_to", "").strip()
     page = request.args.get("page", 1, type=int)
-    per_page = 20
+    from .performance_settings import get_effective_page_size
+    per_page = get_effective_page_size("ADMIN_AUDIT_LOG_PAGE_SIZE", default=20, custom_arg=request.args.get("per_page"))
+
+
 
     query = AuditLog.query
     if search:
@@ -1332,7 +1335,10 @@ def import_hub():
         "exams_count": Exam.query.count()
     }
     page = request.args.get("page", 1, type=int)
-    history_pagination = ImportHistory.query.order_by(ImportHistory.created_at.desc()).paginate(page=page, per_page=15, error_out=False)
+    from .performance_settings import get_effective_page_size
+    per_page = get_effective_page_size("ADMIN_IMPORT_HISTORY_PAGE_SIZE", default=15, custom_arg=request.args.get("per_page"))
+    history_pagination = ImportHistory.query.order_by(ImportHistory.created_at.desc()).paginate(page=page, per_page=per_page, error_out=False)
+
 
     return render_template(
         "admin/import_hub.html",
@@ -1541,7 +1547,12 @@ from .routes_system import (
     update_system_limits,
     update_single_system_limit,
     reset_all_system_limits,
+    performance_settings,
+    update_performance_settings,
+    update_single_performance_setting,
+    reset_all_performance_settings,
 )
+
 
 
 
