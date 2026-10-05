@@ -366,21 +366,130 @@ document.addEventListener("DOMContentLoaded", function() {
     });
   });
 
-  // Audio player constraints
+  // Custom Audio Player Enhancements for Exam Audios
   const audios = document.querySelectorAll('.exam-audio');
-  audios.forEach(audio => {
-    let start = parseFloat(audio.getAttribute('data-start'));
-    let end = parseFloat(audio.getAttribute('data-end'));
+  audios.forEach((audio, idx) => {
+    let start = parseFloat(audio.getAttribute('data-start')) || 0;
+    let end = parseFloat(audio.getAttribute('data-end')) || 0;
     
-    if (start > 0) {
-      audio.currentTime = start;
+    if (start > 0) audio.currentTime = start;
+
+    // Build custom player UI wrapper
+    const wrapper = document.createElement('div');
+    wrapper.className = 'custom-audio-player-wrapper p-3 rounded-4 bg-white border shadow-2xs mb-2';
+    
+    const container = document.createElement('div');
+    container.className = 'd-flex flex-column flex-sm-row align-items-sm-center justify-content-between gap-2.5';
+    
+    container.innerHTML = `
+      <div class="d-flex align-items-center gap-2">
+        <button type="button" class="btn btn-primary rounded-circle p-0 d-flex align-items-center justify-content-center btn-exam-play" style="width: 40px; height: 40px;" title="Phát / Tạm dừng">
+          <i class="ph-fill ph-play text-white fs-5 icon-play"></i>
+        </button>
+        <button type="button" class="btn btn-sm btn-light border rounded-circle p-0 d-flex align-items-center justify-content-center btn-exam-rewind" style="width: 32px; height: 32px;" title="Lùi 5 giây">
+          <i class="ph-bold ph-arrow-counter-clockwise text-secondary"></i>
+        </button>
+        <button type="button" class="btn btn-sm btn-light border rounded-circle p-0 d-flex align-items-center justify-content-center btn-exam-forward" style="width: 32px; height: 32px;" title="Tiến 5 giây">
+          <i class="ph-bold ph-arrow-clockwise text-secondary"></i>
+        </button>
+        <span class="small fw-semibold text-muted font-monospace time-display" style="font-size: 0.8rem;">00:00 / 00:00</span>
+      </div>
+
+      <div class="flex-grow-1 mx-sm-2">
+        <input type="range" class="form-range exam-seekbar" min="0" max="100" value="0" step="1">
+      </div>
+
+      <div class="d-flex align-items-center gap-1.5 justify-content-end flex-wrap">
+        <button type="button" class="btn btn-sm btn-light border rounded-pill px-2.5 py-0.5 fw-bold text-secondary btn-exam-speed" style="font-size: 0.76rem;" title="Tốc độ phát">1.0x</button>
+        <button type="button" class="btn btn-sm btn-light border rounded-pill px-2.5 py-0.5 fw-semibold text-secondary btn-exam-loop" style="font-size: 0.76rem;" title="Lặp đoạn âm thanh"><i class="ph-bold ph-repeat me-1"></i>Lặp</button>
+      </div>
+    `;
+
+    audio.parentNode.insertBefore(wrapper, audio);
+    wrapper.appendChild(container);
+    wrapper.appendChild(audio);
+    audio.classList.add('d-none');
+
+    const playBtn = container.querySelector('.btn-exam-play');
+    const playIcon = container.querySelector('.icon-play');
+    const rewindBtn = container.querySelector('.btn-exam-rewind');
+    const forwardBtn = container.querySelector('.btn-exam-forward');
+    const timeDisplay = container.querySelector('.time-display');
+    const seekbar = container.querySelector('.exam-seekbar');
+    const speedBtn = container.querySelector('.btn-exam-speed');
+    const loopBtn = container.querySelector('.btn-exam-loop');
+
+    function fmt(s) {
+      if (isNaN(s)) return "00:00";
+      const m = Math.floor(s / 60);
+      const sec = Math.floor(s % 60);
+      return `${m.toString().padStart(2, '0')}:${sec.toString().padStart(2, '0')}`;
     }
-    
-    audio.addEventListener('timeupdate', function() {
-      if (end > 0 && this.currentTime >= end) {
-        this.pause();
-        this.currentTime = start > 0 ? start : 0; // Reset
+
+    playBtn.addEventListener('click', () => {
+      if (audio.paused) {
+        audio.play();
+        playIcon.className = 'ph-fill ph-pause text-white fs-5 icon-play';
+      } else {
+        audio.pause();
+        playIcon.className = 'ph-fill ph-play text-white fs-5 icon-play';
       }
+    });
+
+    rewindBtn.addEventListener('click', () => {
+      audio.currentTime = Math.max(start, audio.currentTime - 5);
+    });
+
+    forwardBtn.addEventListener('click', () => {
+      const maxT = (end > 0) ? end : (audio.duration || 9999);
+      audio.currentTime = Math.min(maxT, audio.currentTime + 5);
+    });
+
+    const speeds = [0.8, 1.0, 1.2, 1.5];
+    let spdIdx = 1;
+    speedBtn.addEventListener('click', () => {
+      spdIdx = (spdIdx + 1) % speeds.length;
+      audio.playbackRate = speeds[spdIdx];
+      speedBtn.innerText = `${speeds[spdIdx]}x`;
+    });
+
+    let isLoop = false;
+    loopBtn.addEventListener('click', () => {
+      isLoop = !isLoop;
+      audio.loop = isLoop;
+      if (isLoop) {
+        loopBtn.className = 'btn btn-sm btn-primary border rounded-pill px-2.5 py-0.5 fw-bold text-white shadow-2xs btn-exam-loop';
+      } else {
+        loopBtn.className = 'btn btn-sm btn-light border rounded-pill px-2.5 py-0.5 fw-semibold text-secondary btn-exam-loop';
+      }
+    });
+
+    seekbar.addEventListener('input', () => {
+      if (audio.duration) {
+        audio.currentTime = (seekbar.value / 100) * audio.duration;
+      }
+    });
+
+    audio.addEventListener('timeupdate', function() {
+      const dur = (end > 0) ? (end - start) : (this.duration || 0);
+      const cur = (start > 0) ? Math.max(0, this.currentTime - start) : this.currentTime;
+      timeDisplay.innerText = `${fmt(cur)} / ${fmt(dur)}`;
+      if (dur > 0) seekbar.value = Math.min(100, Math.round((cur / dur) * 100));
+
+      if (end > 0 && this.currentTime >= end) {
+        if (!isLoop) {
+          this.pause();
+          playIcon.className = 'ph-fill ph-play text-white fs-5 icon-play';
+          this.currentTime = start;
+        } else {
+          this.currentTime = start;
+          this.play();
+        }
+      }
+    });
+
+    audio.addEventListener('ended', () => {
+      playIcon.className = 'ph-fill ph-play text-white fs-5 icon-play';
     });
   });
 

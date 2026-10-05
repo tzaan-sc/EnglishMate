@@ -529,9 +529,9 @@ document.addEventListener("DOMContentLoaded", function() {
     });
   }
 
-  // Rate Toggle
-  const studioRates = [1.0, 1.25, 1.5, 0.75];
-  let sRateIdx = 0;
+  // Rate Toggle (0.5x -> 0.75x -> 1.0x -> 1.25x -> 1.5x -> 1.75x -> 2.0x)
+  const studioRates = [0.5, 0.75, 1.0, 1.25, 1.5, 1.75, 2.0];
+  let sRateIdx = 2; // Default 1.0x
   if (studioRateBtn) {
     studioRateBtn.addEventListener("click", function() {
       sRateIdx = (sRateIdx + 1) % studioRates.length;
@@ -539,6 +539,37 @@ document.addEventListener("DOMContentLoaded", function() {
       this.innerText = `${studioRate}x`;
       if (studioAudio) {
         studioAudio.playbackRate = studioRate;
+      }
+    });
+  }
+
+  // Audio Loop Mode Toggle (off -> all -> sentence -> off)
+  const studioLoopBtn = document.getElementById("studioLoopBtn");
+  const studioLoopIcon = document.getElementById("studioLoopIcon");
+  const studioLoopText = document.getElementById("studioLoopText");
+  const loopModes = ["off", "all", "sentence"];
+  let loopModeIdx = 0;
+
+  if (studioLoopBtn) {
+    studioLoopBtn.addEventListener("click", function() {
+      loopModeIdx = (loopModeIdx + 1) % loopModes.length;
+      const currentLoopMode = loopModes[loopModeIdx];
+
+      if (currentLoopMode === "all") {
+        if (studioAudio) studioAudio.loop = true;
+        this.className = "btn btn-sm btn-primary border rounded-pill px-2.5 py-1 text-white shadow-2xs d-inline-flex align-items-center gap-1";
+        if (studioLoopIcon) studioLoopIcon.className = "ph-bold ph-repeat";
+        if (studioLoopText) studioLoopText.innerText = "Lặp toàn bài";
+      } else if (currentLoopMode === "sentence") {
+        if (studioAudio) studioAudio.loop = false;
+        this.className = "btn btn-sm btn-warning text-dark border rounded-pill px-2.5 py-1 fw-bold shadow-2xs d-inline-flex align-items-center gap-1";
+        if (studioLoopIcon) studioLoopIcon.className = "ph-bold ph-repeat-once";
+        if (studioLoopText) studioLoopText.innerText = "Lặp câu hiện tại";
+      } else {
+        if (studioAudio) studioAudio.loop = false;
+        this.className = "btn btn-sm btn-light border rounded-pill px-2.5 py-1 fw-semibold text-secondary d-inline-flex align-items-center gap-1";
+        if (studioLoopIcon) studioLoopIcon.className = "ph-bold ph-repeat";
+        if (studioLoopText) studioLoopText.innerText = "Lặp: Tắt";
       }
     });
   }
