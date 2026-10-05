@@ -45,6 +45,40 @@
       </div>
       {% endif %}
     </div>
+  <!-- STICKY COMPACT EXAM HEADER BAR -->
+<div class="exam-sticky-top-bar position-sticky bg-white border border-light-subtle shadow-2xs py-2 px-3 mb-3.5 z-3 rounded-4 d-flex align-items-center justify-content-between gap-2" id="examStickyBar" style="top: 10px; z-index: 1020;">
+  <div class="d-flex align-items-center gap-2 overflow-hidden">
+    <span class="badge bg-navy text-white rounded-pill px-3 py-1.5 fw-bold text-nowrap d-inline-flex align-items-center gap-1.5 shadow-2xs" style="font-size: 0.88rem;">
+      <i class="ph-bold ph-timer text-warning fs-6"></i>
+      <span id="stickyTimerDisplay" class="font-monospace">--:--</span>
+    </span>
+    <span class="text-dark fw-bold small d-none d-sm-inline text-truncate" style="max-width: 260px; font-size: 0.85rem;" title="{{ exam.title }}">
+      {{ exam.title }}
+    </span>
+  </div>
+
+  <!-- Sticky Answer Progress Bar -->
+  <div class="flex-grow-1 mx-2 mx-md-4 d-none d-md-block" style="max-width: 280px;">
+    <div class="d-flex justify-content-between align-items-center small mb-1" style="font-size: 0.74rem;">
+      <span class="text-muted fw-semibold">Tiến độ trả lời</span>
+      <span class="fw-bold text-primary" id="stickyProgressText">0 / {{ questions|length }} câu</span>
+    </div>
+    <div class="progress" style="height: 5px;">
+      <div class="progress-bar bg-success transition-all" role="progressbar" id="stickyProgressBar" style="width: 0%;"></div>
+    </div>
+  </div>
+
+  <div class="d-flex align-items-center gap-2 flex-shrink-0">
+    {% if mode == 'real' and current_user.exam_allow_pause %}
+    <button type="button" class="btn btn-sm btn-outline-warning text-dark-emphasis rounded-pill px-2.5 py-1 fw-semibold small d-inline-flex align-items-center gap-1" id="stickyBtnPause">
+      <i class="ph-bold ph-pause"></i>
+      <span class="d-none d-sm-inline">Tạm dừng</span>
+    </button>
+    {% endif %}
+    <button type="submit" form="exam-form" class="btn btn-sm btn-success rounded-pill px-3.5 py-1.5 fw-bold text-white shadow-2xs d-inline-flex align-items-center gap-1.5" style="font-size: 0.84rem;">
+      <i class="ph-bold ph-paper-plane-tilt"></i>
+      <span>Nộp bài</span>
+    </button>
   </div>
 </div>
 
@@ -344,13 +378,17 @@ document.addEventListener("DOMContentLoaded", function() {
   const pauseModal = new bootstrap.Modal(document.getElementById("pauseModal"));
   const formContainer = document.getElementById("exam-form");
   const btnPause = document.getElementById("btnPause");
+  const stickyBtnPause = document.getElementById("stickyBtnPause");
   const btnResume = document.getElementById("btnResume");
 
-  btnPause.addEventListener("click", function() {
+  const doPause = function() {
     isPaused = true;
     formContainer.classList.add("blurred");
     pauseModal.show();
-  });
+  };
+
+  if (btnPause) btnPause.addEventListener("click", doPause);
+  if (stickyBtnPause) stickyBtnPause.addEventListener("click", doPause);
 
   btnResume.addEventListener("click", function() {
     isPaused = false;
@@ -474,10 +512,15 @@ document.addEventListener("DOMContentLoaded", function() {
     if (countBookmarkedEl) countBookmarkedEl.innerText = bookmarkedCount;
     if (paletteProgressEl) paletteProgressEl.innerText = `${doneCount} / ${totalQuestionsCount} câu`;
     if (mobileAnsweredTextEl) mobileAnsweredTextEl.innerText = `${doneCount}/${totalQuestionsCount}`;
-    if (paletteProgressBarEl) {
-      const pct = Math.round((doneCount / totalQuestionsCount) * 100);
-      paletteProgressBarEl.style.width = `${pct}%`;
-    }
+    
+    const pct = totalQuestionsCount > 0 ? Math.round((doneCount / totalQuestionsCount) * 100) : 0;
+    if (paletteProgressBarEl) paletteProgressBarEl.style.width = `${pct}%`;
+
+    // Sync Sticky Compact Bar
+    const stickyProgressText = document.getElementById('stickyProgressText');
+    const stickyProgressBar = document.getElementById('stickyProgressBar');
+    if (stickyProgressText) stickyProgressText.innerText = `${doneCount} / ${totalQuestionsCount} câu`;
+    if (stickyProgressBar) stickyProgressBar.style.width = `${pct}%`;
   }
 
   // Bookmark button click handler
@@ -712,7 +755,10 @@ document.addEventListener("DOMContentLoaded", function() {
     } else {
       let m = Math.floor(timeLeft / 60);
       let s = timeLeft % 60;
-      timerDisplay.innerHTML = `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+      const timeStr = `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+      timerDisplay.innerHTML = timeStr;
+      const stickyTimerDisplay = document.getElementById('stickyTimerDisplay');
+      if (stickyTimerDisplay) stickyTimerDisplay.innerText = timeStr;
       
       // Play 10s tick countdown sound
       if (timeLeft <= 10 && timeLeft > 0) {
