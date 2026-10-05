@@ -476,14 +476,27 @@ MODULE 11. SECURITY SYSTEM (HỆ THỐNG BẢO MẬT) — 15 TÍNH NĂNG CHƯA L
 - Mức độ ưu tiên: Cao (High)
 
 
-[ ] 11.2. Permission Caching - Cache quyền hạn người dùng (Mục 11.2)
-- Chưa làm: Mỗi lần kiểm tra `@permission_required`, hệ thống lại truy vấn CSDL bảng `RolePermission`.
-- Giải pháp: Cache kết quả quyền của user vào bộ nhớ đệm (In-memory/Redis) với thời gian 15-30 phút.
+[x] 11.2. Permission Caching - Cache quyền hạn người dùng (Mục 11.2)
+- Hiện trạng: Đã hoàn thiện hệ thống bộ nhớ đệm In-memory Permission Caching với TTL 15-30 phút và cơ chế tự động xóa bộ nhớ đệm (Invalidation) an toàn.
+- Giải pháp kỹ thuật đã làm:
+  + Xây dựng module `app/backend/admin/permission_cache.py` quản lý cấu trúc in-memory cache, TTL cấu hình động qua SystemConfig (mặc định 900s / 15 phút), thống kê dung lượng cache và các hàm truy xuất/xóa cache.
+  + Tối ưu `get_user_permissions(user)` và `has_permission(user, perm)` trong `utils.py` để lấy quyền từ cache, giải quyết hoàn toàn vấn đề truy vấn lặp CSDL (N+1 query) ở các endpoint gắn `@permission_required`.
+  + Tự động Invalidate cache thông qua SQLAlchemy Event Listeners (`UserRole`, `RolePermission`, `Role`) ngay khi có thay đổi vai trò hoặc quyền hạn người dùng.
+  + Thêm Admin API endpoints `/admin/system/permission-cache/stats` và `/admin/system/permission-cache/clear` để quản trị viên giám sát và làm mới cache chủ động.
+  + Viết trọn bộ kiểm thử `tests/test_permission_cache.py` (7/7 passed).
 - Mức độ ưu tiên: Trung bình (Medium)
 
-[ ] 11.3. Data Masking - Che giấu dữ liệu nhạy cảm (Mục 11.3)
-- Chưa làm: Chưa có hàm che giấu email (`u***r@gmail.com`) hoặc ẩn địa chỉ IP trên các màn hình hiển thị công khai hoặc xuất báo cáo.
+
+[x] 11.3. Data Masking - Che giấu dữ liệu nhạy cảm (Mục 11.3)
+- Hiện trạng: Đã hoàn thiện toàn diện bộ công cụ và middleware Data Masking để che giấu email, IP address, số điện thoại và các dữ liệu payload nhạy cảm.
+- Giải pháp kỹ thuật đã làm:
+  + Xây dựng module `app/backend/admin/data_masking.py` cung cấp các thuật toán chuẩn: `mask_email` (ví dụ `u***r@gmail.com`), `mask_ip_address` (IPv4 `192.168.***.***` theo các cấp độ low/medium/high, IPv6 `2001:db8:****:****`), `mask_phone` (ví dụ `0912***678`), `mask_text`, `mask_sensitive_dict` (đệ quy che giấu token, password, api_key, credit card).
+  + Đăng ký trực tiếp các Jinja2 template filters trong Flask App: `{{ email | mask_email }}`, `{{ ip | mask_ip }}`, `{{ phone | mask_phone }}`, `{{ text | mask_text }}`.
+  + Tích hợp tùy chọn che giấu dữ liệu `mask=1` vào luồng xuất báo cáo Audit Logs (`/admin/audit-logs/export`).
+  + Cung cấp Admin REST API `/admin/system/data-masking/preview` và `/admin/system/data-masking/mask` phục vụ kiểm tra và che giấu dữ liệu tự động.
+  + Viết trọn bộ kiểm thử `tests/test_data_masking.py` (8/8 passed).
 - Mức độ ưu tiên: Trung bình (Medium)
+
 
 [ ] 11.4 - 11.7. Data Backup, Recovery, Retention, Purging (Mục 11.3)
 - Chưa làm:

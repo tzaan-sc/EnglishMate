@@ -496,6 +496,57 @@ def clear_permission_cache_route():
     return redirect(url_for("admin.users", tab="roles"))
 
 
+# ---------------------------------------------------------------------------
+# DATA MASKING & SENSITIVE DATA PROTECTION ROUTES (MỤC 11.3)
+# ---------------------------------------------------------------------------
+from .data_masking import (
+    mask_email,
+    mask_ip_address,
+    mask_phone,
+    mask_text,
+    mask_sensitive_dict,
+    is_data_masking_enabled,
+)
+
+
+@bp.get("/system/data-masking/preview")
+@bp.get("/system/masking/preview")
+@admin_required
+def preview_data_masking_route():
+    """Trả về bản xem trước dữ liệu mẫu sau khi áp dụng các bộ lọc che giấu dữ liệu."""
+    sample_email = request.args.get("email", "student.english@example.com")
+    sample_ip = request.args.get("ip", "192.168.1.105")
+    sample_phone = request.args.get("phone", "0912345678")
+
+    return jsonify({
+        "success": True,
+        "is_masking_enabled": is_data_masking_enabled(),
+        "original": {
+            "email": sample_email,
+            "ip": sample_ip,
+            "phone": sample_phone,
+        },
+        "masked": {
+            "email": mask_email(sample_email),
+            "ip_medium": mask_ip_address(sample_ip, mask_level="medium"),
+            "ip_low": mask_ip_address(sample_ip, mask_level="low"),
+            "ip_high": mask_ip_address(sample_ip, mask_level="high"),
+            "phone": mask_phone(sample_phone),
+        }
+    })
+
+
+@bp.post("/system/data-masking/mask")
+@bp.post("/system/masking/mask")
+@admin_required
+def mask_payload_route():
+    """API tiện ích che giấu các trường nhạy cảm trong Dictionary/JSON payload."""
+    data = request.get_json(silent=True) or request.form.to_dict()
+    masked = mask_sensitive_dict(data)
+    return jsonify({"success": True, "masked_data": masked})
+
+
+
 
 
 

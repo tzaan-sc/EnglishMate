@@ -680,10 +680,14 @@ def audit_logs_export():
     writer = csv.writer(si)
     writer.writerow(["Mã Log", "Thời gian (UTC+7)", "Người thực hiện", "Hành động (Action)", "Đối tượng (Target)", "Chi tiết thao tác", "Địa chỉ IP"])
 
+    should_mask = request.args.get("mask", request.args.get("masked", "")).lower() in ("1", "true", "yes")
+    from .data_masking import mask_ip_address
+
     for log in logs:
         time_str = log.created_at_vn.strftime('%Y-%m-%d %H:%M:%S') if log.created_at_vn else ''
         username = log.user.username if log.user else 'Hệ thống'
         target_str = f"{log.target_type or ''} #{log.target_id or ''}".strip()
+        ip_val = mask_ip_address(log.ip_address) if should_mask else (log.ip_address or '127.0.0.1')
         writer.writerow([
             log.id,
             time_str,
@@ -691,7 +695,7 @@ def audit_logs_export():
             log.action,
             target_str,
             log.details or '',
-            log.ip_address or '127.0.0.1'
+            ip_val
         ])
 
     output = si.getvalue()
@@ -1573,6 +1577,8 @@ from .routes_system import (
     update_security_headers_route,
     get_permission_cache_stats_route,
     clear_permission_cache_route,
+    preview_data_masking_route,
+    mask_payload_route,
 )
 from .backup_service import (
     get_backup_settings,
@@ -1593,6 +1599,14 @@ from .permission_cache import (
     set_cached_user_permissions,
     invalidate_permission_cache,
     get_permission_cache_stats,
+)
+from .data_masking import (
+    mask_email,
+    mask_ip_address,
+    mask_phone,
+    mask_text,
+    mask_sensitive_dict,
+    is_data_masking_enabled,
 )
 
 

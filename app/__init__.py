@@ -257,8 +257,28 @@ def create_app(config_object=Config):
                 g._cached_admin_notif_data = None
         return {"admin_notif_data": g._cached_admin_notif_data}
 
+    # Jinja2 Data Masking Template Filters (Mục 11.3)
+    from .backend.admin.data_masking import mask_email, mask_ip_address, mask_phone, mask_text
+
+    @app.template_filter("mask_email")
+    def _filter_mask_email(val):
+        return mask_email(val)
+
+    @app.template_filter("mask_ip")
+    def _filter_mask_ip(val, level="medium"):
+        return mask_ip_address(val, mask_level=level)
+
+    @app.template_filter("mask_phone")
+    def _filter_mask_phone(val):
+        return mask_phone(val)
+
+    @app.template_filter("mask_text")
+    def _filter_mask_text(val, visible_start=2, visible_end=2):
+        return mask_text(val, visible_start=visible_start, visible_end=visible_end)
+
     @app.after_request
     def set_performance_and_security_headers(response):
+
         """Thiết lập Cache-Control và HTTP Security Headers bảo vệ an toàn toàn diện hệ thống."""
         from flask import request
         if request.path.startswith("/static/"):
