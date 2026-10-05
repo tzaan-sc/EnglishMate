@@ -546,6 +546,79 @@ def mask_payload_route():
     return jsonify({"success": True, "masked_data": masked})
 
 
+# ---------------------------------------------------------------------------
+# DATA RECOVERY, RETENTION & PURGING ROUTES (MỤC 11.4 - 11.7)
+# ---------------------------------------------------------------------------
+from .backup_service import restore_database_backup
+from .data_lifecycle_service import (
+    get_inactive_users_stats,
+    purge_soft_deleted_users,
+    run_data_lifecycle_maintenance_job,
+)
+
+
+@bp.post("/system/backup/restore/<int:backup_id>")
+@bp.post("/backup/restore/<int:backup_id>")
+@admin_required
+def restore_backup_route(backup_id):
+    """Kịch bản khôi phục CSDL an toàn từ một bản sao lưu (Data Recovery)."""
+    res = restore_database_backup(backup_id=backup_id, admin_id=current_user.id)
+
+    if request.is_json:
+        return jsonify(res)
+
+    if res["success"]:
+        flash(res["message"], "success")
+    else:
+        flash(res.get("error", "Lỗi trong quá trình khôi phục CSDL."), "danger")
+
+    return redirect(url_for("admin.backup_settings"))
+
+
+@bp.get("/system/data-lifecycle/stats")
+@bp.get("/system/retention/stats")
+@admin_required
+def data_lifecycle_stats_route():
+    """Lấy số liệu thống kê tài khoản không hoạt động và tài khoản chờ dọn dẹp."""
+    days = request.args.get("days", type=int)
+    stats = get_inactive_users_stats(days=days)
+    return jsonify({"success": True, "stats": stats})
+
+
+@bp.post("/system/data-lifecycle/purge")
+@bp.post("/system/retention/purge")
+@admin_required
+def purge_soft_deleted_users_route():
+    """Dọn dẹp vĩnh viễn (Hard Purge) các tài khoản soft-delete đã quá hạn."""
+    data = request.get_json(silent=True) or request.form
+    days = data.get("days")
+    dry_run = data.get("dry_run", False)
+    if isinstance(dry_run, str):
+        dry_run = dry_run.lower() in ("true", "1", "yes")
+
+    if days is not None and str(days).isdigit():
+        days = int(days)
+    else:
+        days = None
+
+    res = purge_soft_deleted_users(days=days, dry_run=dry_run, admin_id=current_user.id)
+
+    if request.is_json:
+        return jsonify(res)
+
+    flash(res["message"], "success" if res["success"] else "danger")
+    return redirect(url_for("admin.users", tab="users"))
+
+
+@bp.post("/system/data-lifecycle/maintenance")
+@admin_required
+def run_data_maintenance_route():
+    """Chạy tổng thể quy trình bảo trì vòng đời dữ liệu hệ thống."""
+    res = run_data_lifecycle_maintenance_job(admin_id=current_user.id)
+    return jsonify(res)
+
+
+
 
 
 

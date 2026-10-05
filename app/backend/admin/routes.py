@@ -1579,6 +1579,10 @@ from .routes_system import (
     clear_permission_cache_route,
     preview_data_masking_route,
     mask_payload_route,
+    restore_backup_route,
+    data_lifecycle_stats_route,
+    purge_soft_deleted_users_route,
+    run_data_maintenance_route,
 )
 from .backup_service import (
     get_backup_settings,
@@ -1587,6 +1591,7 @@ from .backup_service import (
     create_database_backup,
     cleanup_old_backups,
     delete_backup,
+    restore_database_backup,
 )
 from .security_headers import (
     get_security_headers_config,
@@ -1608,6 +1613,12 @@ from .data_masking import (
     mask_sensitive_dict,
     is_data_masking_enabled,
 )
+from .data_lifecycle_service import (
+    get_inactive_users_stats,
+    purge_soft_deleted_users,
+    run_data_lifecycle_maintenance_job,
+)
+
 
 
 

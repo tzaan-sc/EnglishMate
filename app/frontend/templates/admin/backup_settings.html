@@ -268,6 +268,9 @@
                 </td>
                 <td class="text-end pe-3">
                   <div class="d-inline-flex gap-1.5">
+                    <button type="button" class="btn btn-sm btn-light border text-warning rounded-2 px-2 py-1" onclick="confirmRestoreBackup({{ b.id }}, '{{ b.filename }}')" title="Khôi phục CSDL từ bản này">
+                      <i class="ph-bold ph-arrow-counter-clockwise"></i>
+                    </button>
                     <a href="{{ url_for('admin.download_backup_route', backup_id=b.id) }}" class="btn btn-sm btn-light border text-primary rounded-2 px-2 py-1" title="Tải về máy tính">
                       <i class="ph-bold ph-download-simple"></i>
                     </a>
@@ -297,6 +300,9 @@
                 </div>
               </div>
               <div class="d-flex gap-1">
+                <button type="button" class="btn btn-sm btn-light border text-warning p-1.5 rounded-2" onclick="confirmRestoreBackup({{ b.id }}, '{{ b.filename }}')" title="Khôi phục">
+                  <i class="ph-bold ph-arrow-counter-clockwise"></i>
+                </button>
                 <a href="{{ url_for('admin.download_backup_route', backup_id=b.id) }}" class="btn btn-sm btn-light border text-primary p-1.5 rounded-2" title="Tải về">
                   <i class="ph-bold ph-download-simple"></i>
                 </a>
@@ -430,6 +436,45 @@
   </div>
 </div>
 
+<!-- MODAL: RESTORE BACKUP CONFIRM -->
+<div class="modal fade" id="restoreBackupModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered" style="max-width: 480px;">
+    <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
+      <div class="modal-header bg-warning text-dark p-4 pb-3 border-0">
+        <div class="d-flex align-items-center gap-2.5">
+          <div class="rounded-circle bg-white text-warning p-2 d-flex align-items-center justify-content-center" style="width: 36px; height: 36px;">
+            <i class="ph-bold ph-arrow-counter-clockwise fs-5"></i>
+          </div>
+          <div>
+            <h5 class="modal-title fw-bold text-dark mb-0">Khôi phục Cơ sở dữ liệu (Data Recovery)</h5>
+            <small class="text-dark-50">Khôi phục trạng thái CSDL từ bản sao lưu</small>
+          </div>
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <form method="post" id="restoreBackupForm" action="">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <div class="modal-body p-4 bg-white">
+          <p class="text-secondary small mb-3">
+            Bạn đang chuẩn bị khôi phục toàn bộ CSDL từ file: <strong id="restoreBackupFilenameText" class="font-monospace text-warning-emphasis d-block mt-1"></strong>
+          </p>
+          <div class="p-3 bg-light rounded-3 border small text-muted mb-0">
+            <strong class="text-dark d-block mb-1"><i class="ph-bold ph-shield-check text-success me-1"></i> Cơ chế Bảo vệ An toàn Dữ liệu:</strong>
+            Hệ thống sẽ tự động tạo thêm một <strong>bản sao lưu an toàn (Safety Pre-restore Backup)</strong> trước khi tiến hành khôi phục.
+          </div>
+        </div>
+        <div class="modal-footer border-0 p-3 pt-0 bg-white d-flex justify-content-end gap-2">
+          <button type="button" class="btn btn-light border rounded-3 px-3 py-2 fw-semibold" data-bs-dismiss="modal">Hủy</button>
+          <button type="submit" class="btn btn-warning rounded-3 px-4 py-2 fw-bold text-dark d-inline-flex align-items-center gap-1.5">
+            <i class="ph-bold ph-arrow-counter-clockwise"></i>
+            <span>Tiến hành Khôi phục</span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
 <script>
 // Search Debounce (250ms) for backups
 document.addEventListener("DOMContentLoaded", () => {
@@ -451,6 +496,14 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 });
 
+// Restore confirmation modal handler
+function confirmRestoreBackup(backupId, filename) {
+  const modal = new bootstrap.Modal(document.getElementById("restoreBackupModal"));
+  document.getElementById("restoreBackupFilenameText").innerText = filename;
+  document.getElementById("restoreBackupForm").action = `/admin/system/backup/restore/${backupId}`;
+  modal.show();
+}
+
 // Delete confirmation modal handler
 function confirmDeleteBackup(backupId, filename) {
   const modal = new bootstrap.Modal(document.getElementById("deleteBackupModal"));
@@ -458,6 +511,7 @@ function confirmDeleteBackup(backupId, filename) {
   document.getElementById("deleteBackupForm").action = `/admin/system/backup/delete/${backupId}`;
   modal.show();
 }
+
 
 // AJAX save settings
 async function saveBackupSettings(e) {

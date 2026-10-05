@@ -490,13 +490,17 @@ MODULE 11. SECURITY SYSTEM (HỆ THỐNG BẢO MẬT) — 15 TÍNH NĂNG CHƯA L
 - Mức độ ưu tiên: Trung bình (Medium)
 
 
-[ ] 11.4 - 11.7. Data Backup, Recovery, Retention, Purging (Mục 11.3)
-- Chưa làm:
-  + `Data Backup`: Script sao lưu CSDL định kỳ tự động.
-  + `Data Recovery`: Kịch bản và lệnh khôi phục CSDL an toàn từ backup.
-  + `Data Retention`: Chính sách tự động lưu trữ dữ liệu người dùng không hoạt động.
-  + `Data Purging`: Cron job tự động dọn sạch các bản ghi soft-delete (`is_active=False`) đã quá hạn 180 ngày.
+[x] 11.4 - 11.7. Data Backup, Recovery, Retention, Purging (Mục 11.3)
+- Hiện trạng: Đã hoàn thiện toàn diện hệ thống Sao lưu CSDL (Backup), Kịch bản khôi phục dữ liệu an toàn (Recovery), Chính sách lưu trữ dữ liệu (Retention) và Dọn dẹp vĩnh viễn bản ghi hết hạn (Purging).
+- Giải pháp kỹ thuật đã làm:
+  + `Data Backup`: Xây dựng module `backup_service.py` hỗ trợ sao lưu toàn diện SQLite & PostgreSQL sang file `.sqlite.gz` / `.sql.gz` với chính sách retention count tự động. Bổ sung CLI command `flask backup-db --type=DAILY`.
+  + `Data Recovery`: Xây dựng kịch bản khôi phục CSDL an toàn `restore_database_backup` với cơ chế tự động tạo bản sao lưu an toàn (Safety Pre-restore Backup) trước khi khôi phục, hỗ trợ giải nén, phục hồi nhị phân SQLite hoặc thực thi SQL Script an toàn, bổ sung CLI `flask restore-db --id=<ID>` và endpoint `/admin/system/backup/restore/<id>`.
+  + `Data Retention`: Xây dựng module `data_lifecycle_service.py` với hàm `get_inactive_users_stats` và chính sách nhận diện tài khoản không hoạt động (`INACTIVE_USER_RETENTION_DAYS`, mặc định 365 ngày).
+  + `Data Purging`: Xây dựng hàm `purge_soft_deleted_users` hỗ trợ chế độ kiểm tra trước (Dry-run) và dọn dẹp vĩnh viễn (Hard purge) các tài khoản soft-delete (`is_active=False`) quá hạn 180 ngày. Cung cấp CLI `flask purge-inactive-users --days=180 --dry-run` và `flask data-maintenance`.
+  + Giao diện Admin: Bổ sung nút bấm "Khôi phục" trực quan trên bảng sao lưu CSDL với Modal xác nhận an toàn tại `backup_settings.html`.
+  + Bộ kiểm thử: `tests/test_data_lifecycle_and_recovery.py` (5/5 passed), nâng tổng số test bảo mật & backup lên 37/37 passed.
 - Mức độ ưu tiên: Cao (High)
+
 
 [ ] 11.8 - 11.15. Network Security (Mục 11.4) — 8 tính năng:
 - Các mục chưa triển khai:

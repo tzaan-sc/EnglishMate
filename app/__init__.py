@@ -333,6 +333,37 @@ def create_app(config_object=Config):
         else:
             click.echo(f"[ERROR] {res.get('message')}")
 
+    @app.cli.command("restore-db")
+    @click.option("--id", "backup_id", required=True, type=int, help="Mã ID của bản sao lưu CSDL cần khôi phục.")
+    def run_restore_db_cli(backup_id):
+        """Khôi phục CSDL an toàn từ bản sao lưu chỉ định."""
+        from .backend.admin.backup_service import restore_database_backup
+        res = restore_database_backup(backup_id=backup_id)
+        if res.get("success"):
+            click.echo(f"[SUCCESS] {res['message']} (Bản sao lưu an toàn tự động: {res.get('safety_backup')})")
+        else:
+            click.echo(f"[ERROR] {res.get('message')}")
+
+    @app.cli.command("purge-inactive-users")
+    @click.option("--days", default=180, type=int, help="Số ngày soft-deleted / không hoạt động để dọn dẹp vĩnh viễn.")
+    @click.option("--dry-run", is_flag=True, default=False, help="Chế độ kiểm tra, không xóa thật.")
+    def run_purge_inactive_users_cli(days, dry_run):
+        """Dọn dẹp vĩnh viễn các tài khoản soft-delete đã quá hạn."""
+        from .backend.admin.data_lifecycle_service import purge_soft_deleted_users
+        res = purge_soft_deleted_users(days=days, dry_run=dry_run)
+        if res.get("dry_run"):
+            click.echo(f"[DRY RUN] {res['message']}")
+        else:
+            click.echo(f"[SUCCESS] {res['message']}")
+
+    @app.cli.command("data-maintenance")
+    def run_data_maintenance_cli():
+        """Chạy tổng thể quy trình bảo trì vòng đời dữ liệu (Data Lifecycle Maintenance)."""
+        from .backend.admin.data_lifecycle_service import run_data_lifecycle_maintenance_job
+        res = run_data_lifecycle_maintenance_job()
+        click.echo(f"[SUCCESS] {res['message']}")
+
+
     @app.errorhandler(403)
     def forbidden(_error):
         return render_template("errors/403.html"), 403

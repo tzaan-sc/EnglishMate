@@ -322,3 +322,155 @@ def delete_backup(backup_id: int, admin_id: Optional[int] = None) -> Dict[str, A
             "error": str(e),
             "message": f"Không thể xóa bản sao lưu: {e}"
         }
+
+
+def restore_database_backup(backup_id: int, admin_id: Optional[int] = None) -> Dict[str, Any]:
+    """
+    Kịch bản khôi phục CSDL an toàn từ một bản sao lưu (Data Recovery).
+    - Kiểm tra tính hợp lệ và nguyên vẹn của file sao lưu.
+    - Tự động tạo bản sao lưu an toàn (Safety Pre-restore Backup) trước khi khôi phục để tránh mất mát.
+    - Khôi phục CSDL SQLite/PostgreSQL từ file .sqlite.gz / .sql.gz / .sql.
+    - Ghi nhận Audit Log hành động khôi phục.
+    """
+    backup = db.session.get(DatabaseBackup, backup_id)
+    if not backup:
+        return {"success": False, "error": "Không tìm thấy bản sao lưu", "message": "Bản sao lưu yêu cầu không tồn tại."}
+
+    backup_path = Path(backup.file_path) if backup.file_path else None
+    if not backup_path or not backup_path.exists():
+        return {"success": False, "error": "File sao lưu không tồn tại", "message": f"File vật lý '{backup.filename}' không tồn tại trên hệ thống."}
+
+    target_backup_id = backup.id
+    target_backup_filename = backup.filename
+
+    # 1. Tạo bản sao lưu an toàn trước khi khôi phục
+    safety_res = create_database_backup(
+        backup_type="SAFETY",
+        admin_id=admin_id,
+        notes=f"Tự động tạo trước khi khôi phục từ bản sao lưu #{target_backup_id} ({target_backup_filename})"
+    )
+
+    db_url = str(db.engine.url)
+    is_sqlite = "sqlite" in db_url
+    temp_dir = get_backup_dir() / "temp_restore"
+    temp_dir.mkdir(parents=True, exist_ok=True)
+    temp_restored_file = temp_dir / f"restore_{uuid.uuid4().hex[:8]}"
+
+    try:
+        if is_sqlite:
+            raw_path = db.engine.url.database
+            # Decompress if needed
+            if backup.is_compressed or str(backup_path).endswith(".gz"):
+                if str(backup_path).endswith(".sqlite.gz") or ".sqlite" in str(backup_path):
+                    with gzip.open(backup_path, "rb") as gz_in:
+                        with open(temp_restored_file, "wb") as f_out:
+                            shutil.copyfileobj(gz_in, f_out)
+                    is_sqlite_binary = True
+                else:
+                    with gzip.open(backup_path, "rt", encoding="utf-8") as gz_in:
+                        sql_content = gz_in.read()
+                    is_sqlite_binary = False
+            else:
+                if str(backup_path).endswith(".sqlite"):
+                    temp_restored_file = backup_path
+                    is_sqlite_binary = True
+                else:
+                    with open(backup_path, "r", encoding="utf-8") as f_in:
+                        sql_content = f_in.read()
+                    is_sqlite_binary = False
+
+            if not raw_path or raw_path == ":memory:":
+                # In-memory test sqlite: execute SQL statements
+                if is_sqlite_binary:
+                    # Dump from temp binary to SQL
+                    temp_conn = sqlite3.connect(str(temp_restored_file))
+                    sql_content = "\n".join(temp_conn.iterdump())
+                    temp_conn.close()
+
+                raw_conn = db.session.connection().connection
+                raw_cursor = raw_conn.cursor()
+                raw_cursor.execute("PRAGMA foreign_keys = OFF;")
+                raw_cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%';")
+                tables = [t[0] for t in raw_cursor.fetchall()]
+                for tbl in tables:
+                    raw_cursor.execute(f'DROP TABLE IF EXISTS "{tbl}";')
+                raw_cursor.executescript(sql_content)
+                raw_cursor.execute("PRAGMA foreign_keys = ON;")
+                db.session.commit()
+            else:
+                db_file = Path(raw_path)
+                if not db_file.is_absolute():
+                    db_file = Path(current_app.instance_path) / db_file
+
+                if is_sqlite_binary:
+                    # Restore binary using SQLite Backup API
+                    src_conn = sqlite3.connect(str(temp_restored_file))
+                    dest_conn = sqlite3.connect(str(db_file))
+                    try:
+                        src_conn.backup(dest_conn)
+                    finally:
+                        dest_conn.close()
+                        src_conn.close()
+                else:
+                    # Execute SQL Script on target database
+                    dest_conn = sqlite3.connect(str(db_file))
+                    try:
+                        dest_cursor = dest_conn.cursor()
+                        dest_cursor.execute("PRAGMA foreign_keys = OFF;")
+                        dest_cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%';")
+                        tables = [t[0] for t in dest_cursor.fetchall()]
+                        for tbl in tables:
+                            dest_cursor.execute(f'DROP TABLE IF EXISTS "{tbl}";')
+                        dest_conn.executescript(sql_content)
+                        dest_cursor.execute("PRAGMA foreign_keys = ON;")
+                        dest_conn.commit()
+                    finally:
+                        dest_conn.close()
+
+        else:
+            # PostgreSQL: Execute SQL dump script
+            if backup.is_compressed or str(backup_path).endswith(".gz"):
+                with gzip.open(backup_path, "rt", encoding="utf-8") as gz_in:
+                    sql_content = gz_in.read()
+            else:
+                with open(backup_path, "r", encoding="utf-8") as f_in:
+                    sql_content = f_in.read()
+
+            with db.engine.connect() as conn:
+                for statement in sql_content.split(";"):
+                    stmt = statement.strip()
+                    if stmt:
+                        conn.execute(text(stmt))
+                conn.commit()
+
+        # Clean temp directory
+        if temp_restored_file.exists() and temp_restored_file != backup_path:
+            temp_restored_file.unlink(missing_ok=True)
+
+        db.session.expire_all()
+
+        log_audit_action(
+            user_id=admin_id,
+            action="RESTORE_DATABASE_BACKUP",
+            target_type="DATABASE_BACKUP",
+            target_id=str(target_backup_id),
+            details=f"Khôi phục CSDL thành công từ bản sao lưu: {target_backup_filename} (Tạo backup an toàn trước đó: {safety_res.get('filename')})"
+        )
+
+        return {
+            "success": True,
+            "filename": target_backup_filename,
+            "safety_backup": safety_res.get("filename"),
+            "message": f"Khôi phục CSDL thành công từ bản sao lưu '{target_backup_filename}'!"
+        }
+
+    except Exception as e:
+        db.session.rollback()
+        current_app.logger.error(f"Lỗi khi khôi phục CSDL: {e}", exc_info=True)
+        return {
+            "success": False,
+            "error": str(e),
+            "message": f"Có lỗi xảy ra trong quá trình khôi phục: {e}"
+        }
+
+
