@@ -8,7 +8,7 @@ from sqlalchemy.engine import Engine
 import sqlite3
 
 from .config import Config
-from .extensions import csrf, db, login_manager, migrate
+from .extensions import cors, csrf, db, limiter, login_manager, migrate, swagger
 
 
 @event.listens_for(Engine, "connect")
@@ -43,6 +43,16 @@ def create_app(config_object=Config):
 
     db.init_app(app)
     migrate.init_app(app, db, render_as_batch=True)
+    limiter.init_app(app)
+    cors.init_app(
+        app,
+        resources={
+            r"/api/*": {"origins": getattr(config_object, "CORS_ALLOWED_ORIGINS", "*") or "*"},
+            r"/static/*": {"origins": "*"},
+        },
+        supports_credentials=True,
+    )
+    swagger.init_app(app)
     login_manager.init_app(app)
     csrf.init_app(app)
     login_manager.login_view = "auth.login"
@@ -60,12 +70,17 @@ def create_app(config_object=Config):
     from .backend.learning import bp as learning_bp
     from .backend.admin import bp as admin_bp
     from .backend.exams import bp as exams_bp
+    from .backend.api import api_v1_bp
 
     app.register_blueprint(main_bp)
     app.register_blueprint(auth_bp)
     app.register_blueprint(learning_bp)
     app.register_blueprint(admin_bp)
     app.register_blueprint(exams_bp)
+    app.register_blueprint(api_v1_bp)
+
+    # Exempt REST API endpoints from CSRF form requirement
+    csrf.exempt(api_v1_bp)
 
     with app.app_context():
         try:
@@ -491,6 +506,24 @@ def create_app(config_object=Config):
         msg = SystemSetting.get_setting("MAINTENANCE_MESSAGE", "Hệ thống EnglishMate đang được bảo trì định kỳ.")
         est = SystemSetting.get_setting("MAINTENANCE_ESTIMATED_END", "")
         return render_template("errors/maintenance.html", message=msg, estimated_end=est), 503
+
+    @app.errorhandler(429)
+    def ratelimit_error(e):
+        from flask import jsonify, request
+        if request.path.startswith("/api/") or request.is_json:
+            return jsonify({
+                "success": False,
+                "error": "Too Many Requests",
+                "message": f"Bạn đã gửi quá nhiều yêu cầu: {e.description}",
+                "retry_after": getattr(e, "retry_after", 60),
+            }), 429
+        return render_template("errors/429.html", error=e), 429
+
+    @app.route("/apidocs")
+    @app.route("/api/docs")
+    def api_docs_redirect():
+        from flask import redirect
+        return redirect("/api/v1/docs")
 
     @app.route("/_dev_live_reload_check")
     def dev_live_reload_check():

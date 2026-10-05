@@ -531,11 +531,11 @@ MODULE 12. SYSTEM FEATURES (TÍNH NĂNG HỆ THỐNG) — 46 TÍNH NĂNG CHƯA L
 - [x] `Backup Automation`: Tự động hóa tác vụ sao lưu CSDL định kỳ theo lịch trình (Hàng ngày / Hàng tuần) qua `database_service.py`, CLI command `flask auto-backup-db` và Admin endpoint `/admin/system/database/auto-backup`, tự động dọn dẹp bản sao lưu cũ theo chính sách retention. (Ưu tiên: Cao)
 - [x] `Restore Automation`: Kịch bản và lệnh khôi phục CSDL an toàn (Data Recovery) qua `auto_restore_database()`, CLI command `flask auto-restore-db` và Admin endpoint `/admin/system/database/auto-restore`, tự động tạo Safety Backup snapshot trước khi khôi phục để bảo vệ dữ liệu. (Ưu tiên: Trung bình)
 
-12.2. API Features (4 tính năng chưa làm):
-- [ ] `Rate Limiting`: Chưa cài đặt `Flask-Limiter` để giới hạn số lượt gọi API/phút chống spam API. (Ưu tiên: Cao)
-- [ ] `API Versioning`: Chưa chuẩn hóa các route API theo tiền tố phiên bản `/api/v1/...`. (Ưu tiên: Trung bình)
-- [ ] `Documentation`: Chưa tích hợp Swagger/OpenAPI (qua `flasgger`) tạo trang tài liệu API tự động. (Ưu tiên: Trung bình)
-- [ ] `CORS Support`: Chưa bật CORS cho các endpoint public. (Ưu tiên: Trung bình)
+12.2. API Features (4 tính năng - ĐÃ HOÀN THÀNH 4/4):
+- [x] `Rate Limiting`: Cài đặt và kích hoạt `Flask-Limiter` giới hạn số lượt gọi API (mặc định 60 lượt/phút, 200 lượt/ngày) với key theo IP người dùng (`get_remote_address`) và trang lỗi chuẩn 429 Too Many Requests (JSON/HTML). (Ưu tiên: Cao)
+- [x] `API Versioning`: Chuẩn hóa toàn bộ REST API theo kiến trúc Blueprint phiên bản `/api/v1/...` (`routes_meta.py`, `routes_lessons.py`, `routes_vocab.py`, `routes_quizzes.py`, `routes_stats.py`). (Ưu tiên: Trung bình)
+- [x] `Documentation`: Tích hợp `Flasgger` (OpenAPI 2.0 / Swagger UI) tự động sinh trang tài liệu tương tác tại `/api/v1/docs` và spec JSON tại `/api/v1/apispec.json`. (Ưu tiên: Trung bình)
+- [x] `CORS Support`: Tích hợp `Flask-CORS` mở quyền truy cập nguồn gốc chéo cho toàn bộ endpoint `/api/*` và `/static/*`, hỗ trợ Preflight OPTIONS request cho ứng dụng client ngoài. (Ưu tiên: Trung bình)
 
 12.3. File Management (4 tính năng chưa làm):
 - [ ] `File Compression`: Chưa tự động nén giảm dung lượng file ảnh upload. (Ưu tiên: Trung bình)

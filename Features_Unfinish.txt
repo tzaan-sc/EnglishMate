@@ -422,27 +422,28 @@ MODULE: 12. SYSTEM FEATURES (TÍNH NĂNG HỆ THỐNG) (46 tính năng chưa là
    - Đối chiếu hiện trạng: Chưa có kịch bản restore tự động.
 
 
-### 12.2. API Features (Tính năng API) (4 tính năng):
+### 12.2. API Features (Tính năng API) (4 tính năng - ĐÃ HOÀN THÀNH 4/4):
 ----------------------------------------------------------------------------------------------------
-52. [ ] Rate Limiting - Giới hạn tốc độ
+52. [x] Rate Limiting - Giới hạn tốc độ
    - Mức độ ưu tiên: Trung bình
    - Mô tả yêu cầu: Giới hạn tần suất gọi API (Rate Limiting) trên toàn bộ endpoints (ví dụ tối đa 60 request/phút) bằng Flask-Limiter.
-   - Đối chiếu hiện trạng: Đã có giới hạn 5 lần đăng nhập sai ở form Login, nhưng các endpoint API chung chưa có rate limiter.
+   - Đối chiếu hiện trạng: Đã tích hợp Flask-Limiter, cấu hình default limits (60/min, 200/day) và custom 429 Too Many Requests response handler cho API/Web.
 
-53. [ ] API Versioning - Phiên bản API
+53. [x] API Versioning - Phiên bản API
    - Mức độ ưu tiên: Trung bình
    - Mô tả yêu cầu: Quy chuẩn phiên bản cho toàn bộ API backend có tiền tố rõ ràng (ví dụ: /api/v1/lessons, /api/v1/vocabulary).
-   - Đối chiếu hiện trạng: Các endpoint AJAX đang nằm rải rác trong các route chính (/vocabulary/..., /quizzes/...).
+   - Đối chiếu hiện trạng: Đã quy chuẩn toàn bộ REST API theo Blueprint api_v1 (/api/v1/meta, /api/v1/lessons, /api/v1/vocabulary, /api/v1/quizzes, /api/v1/stats).
 
-54. [ ] Documentation - Tài liệu
+54. [x] Documentation - Tài liệu
    - Mức độ ưu tiên: Thấp
    - Mô tả yêu cầu: Tài liệu API tương tác tự động sinh ra chuẩn OpenAPI / Swagger UI.
-   - Đối chiếu hiện trạng: Chưa tích hợp Flasgger / Swagger UI.
+   - Đối chiếu hiện trạng: Đã tích hợp Flasgger / Swagger UI tại /api/v1/docs và /api/v1/apispec.json với đầy đủ schemas, parameters và interactive test console.
 
-55. [ ] CORS Support - Hỗ trợ CORS
+55. [x] CORS Support - Hỗ trợ CORS
    - Mức độ ưu tiên: Thấp
    - Mô tả yêu cầu: Hỗ trợ chia sẻ tài nguyên nguồn gốc chéo cho các ứng dụng client khác (mobile app, SPA).
-   - Đối chiếu hiện trạng: Hiện tại ứng dụng là giao diện render Jinja2 phía server.
+   - Đối chiếu hiện trạng: Đã tích hợp Flask-CORS trên toàn bộ tiền tố /api/* và /static/*, hỗ trợ preflight OPTIONS request và cấu hình linh hoạt qua config.
+
 
 
 ### 12.3. File Management (Quản lý file) (4 tính năng):

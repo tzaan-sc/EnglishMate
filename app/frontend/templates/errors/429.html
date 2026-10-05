@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block title %}Quá nhiều yêu cầu · EnglishMate{% endblock %}
+{% block content %}
+<section class="error-page">
+    <div>
+        <span>429</span>
+        <h1>Bạn đang gửi yêu cầu quá nhanh!</h1>
+        <p>Hệ thống đã tạm thời giới hạn tần suất truy cập để bảo vệ chất lượng dịch vụ. Vui lòng thử lại sau giây lát.</p>
+        <a class="btn btn-primary" href="{{ url_for('main.index') }}">Về trang chủ</a>
+    </div>
+</section>
+{% endblock %}
