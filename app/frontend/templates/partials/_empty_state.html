@@ -1,0 +1,47 @@
+{#
+  Reusable Standardized Empty State Component
+  Usage:
+  {% with 
+      icon="ph-books",
+      title="Chưa có bài học nào",
+      message="Bạn chưa hoàn thành bài học nào trong danh mục này.",
+      cta_url=url_for('learning.lessons'),
+      cta_text="Khám phá lộ trình học",
+      cta_icon="ph-arrow-right"
+  %}
+    {% include "partials/_empty_state.html" %}
+  {% endwith %}
+#}
+<div class="empty-state-card text-center py-5 px-4 my-3 rounded-4 border bg-white shadow-2xs">
+  <div class="empty-state-icon-wrapper mb-3 d-inline-flex align-items-center justify-content-center rounded-circle bg-light position-relative" style="width: 72px; height: 72px;">
+    <div class="position-absolute w-100 h-100 rounded-circle bg-primary-subtle opacity-50 pulse-ring"></div>
+    <i class="ph-bold {{ icon or 'ph-tray' }} text-primary position-relative" style="font-size: 2rem;"></i>
+  </div>
+  
+  <h5 class="fw-bold text-dark mb-1.5" style="letter-spacing: -0.01em;">{{ title or 'Chưa có dữ liệu' }}</h5>
+  <p class="text-secondary small mb-4 mx-auto" style="max-width: 420px; font-size: 0.88rem; line-height: 1.5;">
+    {{ message or 'Hiện tại chưa có dữ liệu nào được ghi nhận ở mục này.' }}
+  </p>
+  
+  {% if cta_url %}
+  <a href="{{ cta_url }}" class="btn btn-primary rounded-pill px-4 py-2 fw-bold shadow-xs d-inline-flex align-items-center gap-2" style="font-size: 0.88rem;">
+    <span>{{ cta_text or 'Bắt đầu ngay' }}</span>
+    <i class="ph-bold {{ cta_icon or 'ph-arrow-right' }}"></i>
+  </a>
+  {% endif %}
+</div>
+
+<style>
+@keyframes pulseRing {
+  0% { transform: scale(0.95); opacity: 0.6; }
+  50% { transform: scale(1.15); opacity: 0.2; }
+  100% { transform: scale(0.95); opacity: 0.6; }
+}
+.pulse-ring {
+  animation: pulseRing 3s ease-in-out infinite;
+}
+.empty-state-card {
+  border: 1px dashed var(--line, #e2e8f0) !important;
+  background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+}
+</style>

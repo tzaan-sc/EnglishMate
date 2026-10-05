@@ -248,9 +248,17 @@
           </tr>
           {% else %}
           <tr>
-            <td colspan="8" class="text-center py-5 text-muted">
-              <span class="fs-1 d-block mb-2">📜</span>
-              Chưa có bản ghi lịch sử kiểm tra nào phù hợp với bộ lọc.
+            <td colspan="8" class="p-0 border-0">
+              {% with 
+                  icon="ph-certificate",
+                  title="Chưa có lịch sử làm bài kiểm tra",
+                  message="Bạn chưa có bài thi thử TOEIC hoặc Quiz nào phù hợp với bộ lọc hiện tại. Hãy thử một bài thi mới để đánh giá năng lực!",
+                  cta_url=url_for('exams.exam_list'),
+                  cta_text="Làm bài thi thử ngay",
+                  cta_icon="ph-arrow-right"
+              %}
+                {% include "partials/_empty_state.html" %}
+              {% endwith %}
             </td>
           </tr>
           {% endfor %}

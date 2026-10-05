@@ -48,10 +48,21 @@
           <a class="navbar-brand d-flex align-items-center gap-2 text-decoration-none" href="{{ url_for('admin.dashboard') if current_user.is_authenticated and current_user.is_admin else url_for('main.dashboard') }}">
             <span class="brand-mark">E</span><span>English<span class="brand-accent">Mate</span></span>
           </a>
+
+          <!-- Global Quick Search / Command Palette (Ctrl + K) Button -->
+          <button type="button" class="btn btn-light bg-light-subtle border d-none d-sm-inline-flex align-items-center gap-2 text-muted px-3 py-1.5 rounded-pill ms-2 shadow-2xs hover-border-primary" data-bs-toggle="modal" data-bs-target="#commandPaletteModal" style="font-size: 0.8rem; cursor: pointer;" title="Tìm nhanh bài học, từ vựng (Ctrl + K)">
+            <i class="ph ph-magnifying-glass text-primary"></i>
+            <span>Tìm kiếm...</span>
+            <kbd class="bg-white text-muted border px-1.5 py-0.5 rounded shadow-2xs font-monospace ms-1" style="font-size: 0.68rem;">Ctrl K</kbd>
+          </button>
         </div>
 
         <!-- Right Controls: Streak, Level, Notifications, Pro Upgrade -->
         <div class="d-flex align-items-center gap-2">
+          <!-- Mobile Quick Search Icon -->
+          <button type="button" class="topbar-icon-btn d-sm-none" data-bs-toggle="modal" data-bs-target="#commandPaletteModal" title="Tìm kiếm">
+            <i class="ph ph-magnifying-glass" style="font-size: 1.1rem;"></i>
+          </button>
           {% if not current_user.is_admin %}
           <!-- 1. Level pill (Students only) -->
           <a href="{{ url_for('learning.gamification_hub') }}" class="topbar-pill topbar-pill--level text-decoration-none" title="Cấp độ {{ current_user.get_level() }} ({{ current_user.xp }} XP)">
@@ -361,6 +372,7 @@
   </div>
 
   {% include "_session_warning_modal.html" %}
+  {% include "partials/_command_palette.html" %}
   {% if current_user.is_authenticated and not current_user.is_admin %}
   {% include "_streak_modal.html" %}
   {% include "_goal_reminder_modal.html" %}

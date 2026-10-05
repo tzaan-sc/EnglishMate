@@ -1,0 +1,269 @@
+<!-- Global Command Palette Modal (Ctrl + K) -->
+<div class="modal fade" id="commandPaletteModal" tabindex="-1" aria-labelledby="commandPaletteModalLabel" aria-hidden="true" style="backdrop-filter: blur(4px);">
+  <div class="modal-dialog modal-dialog-centered" style="max-width: 640px; margin-top: -5vh;">
+    <div class="modal-content border-0 shadow-xl rounded-4 overflow-hidden" style="background: rgba(255, 255, 255, 0.98); border: 1px solid rgba(0,0,0,0.08) !important;">
+      
+      <!-- Search Input Header -->
+      <div class="p-3 border-bottom d-flex align-items-center gap-2.5 bg-white position-relative">
+        <i class="ph-bold ph-magnifying-glass fs-5 text-primary"></i>
+        <input type="text" id="commandPaletteInput" class="form-control border-0 shadow-none px-1 py-1 fs-6 text-dark" 
+               placeholder="Tìm bài học, từ vựng, ngữ pháp, đề thi hoặc tính năng..." autocomplete="off" spellcheck="false">
+        <div id="commandPaletteSpinner" class="spinner-border spinner-border-sm text-primary d-none" role="status">
+          <span class="visually-hidden">Đang tìm...</span>
+        </div>
+        <button type="button" class="btn btn-sm btn-light border-0 text-muted p-1 rounded-2" data-bs-dismiss="modal" title="Đóng (Esc)">
+          <span class="badge bg-light text-secondary border px-1.5 py-1" style="font-size: 0.72rem;">ESC</span>
+        </button>
+      </div>
+
+      <!-- Search Results / Suggestions Body -->
+      <div class="modal-body p-0 overflow-auto" id="commandPaletteResults" style="max-height: 420px; min-height: 120px;">
+        
+        <!-- Default Suggestions when empty -->
+        <div id="commandPaletteDefault" class="p-3">
+          <div class="text-uppercase text-muted fw-bold mb-2" style="font-size: 0.72rem; letter-spacing: 0.05em;">Lối tắt phổ biến</div>
+          <div class="d-flex flex-column gap-1">
+            <a href="{{ url_for('learning.lessons') }}" class="cmd-item d-flex align-items-center justify-content-between p-2.5 rounded-3 text-decoration-none text-dark hover-bg-light transition-all">
+              <div class="d-flex align-items-center gap-2.5">
+                <div class="cmd-icon-box rounded-3 bg-primary-subtle text-primary d-flex align-items-center justify-content-center" style="width: 32px; height: 32px;">
+                  <i class="ph-bold ph-graduation-cap"></i>
+                </div>
+                <div>
+                  <div class="fw-semibold small">Danh sách bài học</div>
+                  <div class="text-muted" style="font-size: 0.75rem;">Lộ trình 4 kỹ năng & CEFR</div>
+                </div>
+              </div>
+              <span class="badge bg-light text-muted border" style="font-size: 0.7rem;">Bài học</span>
+            </a>
+
+            <a href="{{ url_for('learning.vocabulary') }}" class="cmd-item d-flex align-items-center justify-content-between p-2.5 rounded-3 text-decoration-none text-dark hover-bg-light transition-all">
+              <div class="d-flex align-items-center gap-2.5">
+                <div class="cmd-icon-box rounded-3 bg-success-subtle text-success d-flex align-items-center justify-content-center" style="width: 32px; height: 32px;">
+                  <i class="ph-bold ph-cards"></i>
+                </div>
+                <div>
+                  <div class="fw-semibold small">Ôn tập từ vựng SRS</div>
+                  <div class="text-muted" style="font-size: 0.75rem;">Flashcards lặp lại ngắt quãng</div>
+                </div>
+              </div>
+              <span class="badge bg-light text-muted border" style="font-size: 0.7rem;">Từ vựng</span>
+            </a>
+
+            <a href="{{ url_for('exams.exam_list') }}" class="cmd-item d-flex align-items-center justify-content-between p-2.5 rounded-3 text-decoration-none text-dark hover-bg-light transition-all">
+              <div class="d-flex align-items-center gap-2.5">
+                <div class="cmd-icon-box rounded-3 bg-warning-subtle text-warning d-flex align-items-center justify-content-center" style="width: 32px; height: 32px;">
+                  <i class="ph-bold ph-certificate"></i>
+                </div>
+                <div>
+                  <div class="fw-semibold small">Luyện thi TOEIC & Quiz</div>
+                  <div class="text-muted" style="font-size: 0.75rem;">Đề thi thử 100-200 câu với bảng câu hỏi</div>
+                </div>
+              </div>
+              <span class="badge bg-light text-muted border" style="font-size: 0.7rem;">Luyện thi</span>
+            </a>
+
+            <a href="{{ url_for('learning.game_lobby') }}" class="cmd-item d-flex align-items-center justify-content-between p-2.5 rounded-3 text-decoration-none text-dark hover-bg-light transition-all">
+              <div class="d-flex align-items-center gap-2.5">
+                <div class="cmd-icon-box rounded-3 bg-purple-subtle text-purple d-flex align-items-center justify-content-center" style="width: 32px; height: 32px;">
+                  <i class="ph-bold ph-game-controller"></i>
+                </div>
+                <div>
+                  <div class="fw-semibold small">Đấu trường trò chơi từ vựng</div>
+                  <div class="text-muted" style="font-size: 0.75rem;">Word Match, Speed Quiz & Vocab Blast</div>
+                </div>
+              </div>
+              <span class="badge bg-light text-muted border" style="font-size: 0.7rem;">Mini-game</span>
+            </a>
+          </div>
+        </div>
+
+        <!-- Dynamic Results Container -->
+        <div id="commandPaletteDynamic" class="p-3 d-none">
+          <div id="cmdResultsList" class="d-flex flex-column gap-1"></div>
+        </div>
+
+        <!-- No Results Found -->
+        <div id="commandPaletteEmpty" class="text-center py-5 px-3 d-none">
+          <div class="rounded-circle bg-light d-inline-flex align-items-center justify-content-center p-3 text-muted mb-2">
+            <i class="ph ph-magnifying-glass fs-3"></i>
+          </div>
+          <div class="fw-semibold text-dark small mb-1">Không tìm thấy kết quả phù hợp</div>
+          <div class="text-muted small" style="font-size: 0.78rem;">Hãy thử tìm bằng từ khóa bài học, từ vựng hoặc chủ đề ngữ pháp khác.</div>
+        </div>
+
+      </div>
+
+      <!-- Footer Keyboard Shortcut Guide -->
+      <div class="modal-footer py-2 px-3 bg-light border-top d-flex justify-content-between align-items-center" style="font-size: 0.75rem;">
+        <div class="d-flex align-items-center gap-3 text-muted">
+          <span><kbd class="bg-white text-dark border shadow-2xs px-1.5 py-0.5 rounded">↑</kbd> <kbd class="bg-white text-dark border shadow-2xs px-1.5 py-0.5 rounded">↓</kbd> Di chuyển</span>
+          <span><kbd class="bg-white text-dark border shadow-2xs px-1.5 py-0.5 rounded">↵</kbd> Chọn</span>
+          <span><kbd class="bg-white text-dark border shadow-2xs px-1.5 py-0.5 rounded">Esc</kbd> Đóng</span>
+        </div>
+        <span class="text-muted">EnglishMate Quick Search</span>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<style>
+.cmd-item {
+  transition: all 0.15s ease;
+  border: 1px solid transparent;
+}
+.cmd-item:hover, .cmd-item.active {
+  background-color: #f1f5f9;
+  border-color: #e2e8f0;
+  transform: translateX(2px);
+}
+.cmd-item.active {
+  background-color: #e0e7ff !important;
+  border-color: #c7d2fe !important;
+}
+</style>
+
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+  const modalEl = document.getElementById("commandPaletteModal");
+  if (!modalEl) return;
+
+  const inputEl = document.getElementById("commandPaletteInput");
+  const spinnerEl = document.getElementById("commandPaletteSpinner");
+  const defaultContainer = document.getElementById("commandPaletteDefault");
+  const dynamicContainer = document.getElementById("commandPaletteDynamic");
+  const resultsList = document.getElementById("cmdResultsList");
+  const emptyContainer = document.getElementById("commandPaletteEmpty");
+
+  let searchTimeout = null;
+  let activeIndex = -1;
+
+  // Global Keyboard shortcut: Ctrl + K or Cmd + K or '/'
+  document.addEventListener("keydown", function(e) {
+    const isMac = navigator.platform.toUpperCase().indexOf('MAC') >= 0;
+    const isCmdK = (isMac ? e.metaKey : e.ctrlKey) && (e.key === 'k' || e.key === 'K');
+    const isSlash = e.key === '/' && !['INPUT', 'TEXTAREA', 'SELECT'].includes(document.activeElement?.tagName);
+
+    if (isCmdK || isSlash) {
+      e.preventDefault();
+      const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+      modal.show();
+    }
+  });
+
+  // Focus input on modal open
+  modalEl.addEventListener("shown.bs.modal", function() {
+    inputEl.focus();
+    inputEl.select();
+  });
+
+  // Input listener with 200ms debounce
+  inputEl.addEventListener("input", function() {
+    const query = inputEl.value.trim();
+    clearTimeout(searchTimeout);
+    activeIndex = -1;
+
+    if (query.length < 2) {
+      defaultContainer.classList.remove("d-none");
+      dynamicContainer.classList.add("d-none");
+      emptyContainer.classList.add("d-none");
+      spinnerEl.classList.add("d-none");
+      return;
+    }
+
+    spinnerEl.classList.remove("d-none");
+    searchTimeout = setTimeout(async () => {
+      try {
+        const res = await fetch(`/api/quick-search?q=${encodeURIComponent(query)}`);
+        const data = await res.json();
+        spinnerEl.classList.add("d-none");
+
+        if (!data.results || data.results.length === 0) {
+          defaultContainer.classList.add("d-none");
+          dynamicContainer.classList.add("d-none");
+          emptyContainer.classList.remove("d-none");
+        } else {
+          emptyContainer.classList.add("d-none");
+          defaultContainer.classList.add("d-none");
+          dynamicContainer.classList.remove("d-none");
+          renderResults(data.results);
+        }
+      } catch (err) {
+        console.error("Command Palette search error:", err);
+        spinnerEl.classList.add("d-none");
+      }
+    }, 200);
+  });
+
+  function renderResults(results) {
+    resultsList.innerHTML = "";
+    results.forEach((item, idx) => {
+      const a = document.createElement("a");
+      a.href = item.url;
+      a.className = `cmd-item d-flex align-items-center justify-content-between p-2.5 rounded-3 text-decoration-none text-dark hover-bg-light transition-all ${idx === 0 ? 'active' : ''}`;
+      a.dataset.index = idx;
+
+      const iconClass = item.icon || 'ph-magnifying-glass';
+      const badgeClass = item.category === 'Bài học' ? 'bg-primary-subtle text-primary' :
+                         item.category === 'Từ vựng' ? 'bg-success-subtle text-success' :
+                         item.category === 'Ngữ pháp' ? 'bg-purple-subtle text-purple' :
+                         item.category === 'Đề thi' ? 'bg-warning-subtle text-warning' : 'bg-light text-muted border';
+
+      a.innerHTML = `
+        <div class="d-flex align-items-center gap-2.5 overflow-hidden me-2">
+          <div class="cmd-icon-box rounded-3 ${badgeClass} d-flex align-items-center justify-content-center flex-shrink-0" style="width: 32px; height: 32px; font-size: 1rem;">
+            <i class="ph-bold ${iconClass}"></i>
+          </div>
+          <div class="overflow-hidden">
+            <div class="fw-semibold small text-truncate">${escapeHtml(item.title)}</div>
+            ${item.subtitle ? `<div class="text-muted text-truncate" style="font-size: 0.75rem;">${escapeHtml(item.subtitle)}</div>` : ''}
+          </div>
+        </div>
+        <span class="badge ${badgeClass} rounded-pill px-2 py-0.5 flex-shrink-0" style="font-size: 0.7rem;">${escapeHtml(item.badge || item.category)}</span>
+      `;
+      resultsList.appendChild(a);
+    });
+    activeIndex = 0;
+  }
+
+  function escapeHtml(text) {
+    if (!text) return "";
+    return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+  }
+
+  // Keyboard navigation within results
+  inputEl.addEventListener("keydown", function(e) {
+    const items = dynamicContainer.classList.contains("d-none") 
+      ? defaultContainer.querySelectorAll(".cmd-item")
+      : dynamicContainer.querySelectorAll(".cmd-item");
+
+    if (items.length === 0) return;
+
+    if (e.key === "ArrowDown") {
+      e.preventDefault();
+      activeIndex = (activeIndex + 1) % items.length;
+      updateActiveItem(items);
+    } else if (e.key === "ArrowUp") {
+      e.preventDefault();
+      activeIndex = (activeIndex - 1 + items.length) % items.length;
+      updateActiveItem(items);
+    } else if (e.key === "Enter") {
+      if (activeIndex >= 0 && items[activeIndex]) {
+        e.preventDefault();
+        window.location.href = items[activeIndex].getAttribute("href");
+      }
+    }
+  });
+
+  function updateActiveItem(items) {
+    items.forEach((item, idx) => {
+      if (idx === activeIndex) {
+        item.classList.add("active");
+        item.scrollIntoView({ block: "nearest", behavior: "smooth" });
+      } else {
+        item.classList.remove("active");
+      }
+    });
+  }
+});
+</script>

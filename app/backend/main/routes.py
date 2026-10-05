@@ -3,7 +3,7 @@ import uuid
 from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
 
-from flask import current_app, flash, redirect, render_template, request, session, url_for
+from flask import current_app, flash, jsonify, redirect, render_template, request, session, url_for
 from flask_login import current_user, login_required, logout_user
 from sqlalchemy import func
 
@@ -569,4 +569,94 @@ def revoke_all_sessions_route():
     db.session.commit()
     flash(f"Đã đăng xuất khỏi {count} thiết bị khác.", "success")
     return redirect(url_for("main.profile"))
+
+
+@bp.get("/api/quick-search")
+def quick_search_api():
+    q = request.args.get("q", "").strip()
+    if not q or len(q) < 2:
+        return jsonify({"results": []})
+
+    term = f"%{q}%"
+    results = []
+
+    # 1. Navigation shortcuts
+    shortcuts = [
+        {"title": "Trang chủ (Dashboard)", "subtitle": "Tổng quan tiến độ học tập và chuỗi streak", "category": "Điều hướng", "url": url_for("main.dashboard") if current_user.is_authenticated and not getattr(current_user, 'is_admin', False) else (url_for("admin.dashboard") if current_user.is_authenticated else url_for("main.index")), "icon": "ph-house", "badge": "Chính"},
+        {"title": "Danh sách bài học (Lessons)", "subtitle": "Khóa học 4 kỹ năng Nghe, Đọc, Viết, Ngữ pháp", "category": "Điều hướng", "url": url_for("learning.lessons"), "icon": "ph-graduation-cap", "badge": "Học tập"},
+        {"title": "Luyện từ vựng SRS (Flashcards)", "subtitle": "Ôn tập thẻ ghi nhớ ngắt quãng thông minh", "category": "Điều hướng", "url": url_for("learning.vocabulary"), "icon": "ph-cards", "badge": "Từ vựng"},
+        {"title": "Đấu trường từ vựng (Mini-Games)", "subtitle": "Trò chơi ghép từ, trắc nghiệm và thử thách từ", "category": "Điều hướng", "url": url_for("learning.game_lobby"), "icon": "ph-game-controller", "badge": "Trò chơi"},
+        {"title": "Luyện thi thử TOEIC & Đề thi", "subtitle": "Làm bài thi trắc nghiệm TOEIC 100-200 câu", "category": "Điều hướng", "url": url_for("exams.exam_list"), "icon": "ph-certificate", "badge": "Luyện thi"},
+        {"title": "Luyện nói IELTS Speaking AI", "subtitle": "Mô phỏng thi nói với chấm điểm phát âm AI", "category": "Điều hướng", "url": url_for("exams.ielts_speaking_list"), "icon": "ph-microphone", "badge": "Luyện nói"},
+        {"title": "Bảng xếp hạng & Danh hiệu", "subtitle": "Đua top tuần, mở khóa huy hiệu và đổi quà", "category": "Điều hướng", "url": url_for("learning.gamification_hub"), "icon": "ph-trophy", "badge": "Xếp hạng"},
+        {"title": "Hồ sơ cá nhân & Cài đặt", "subtitle": "Quản lý tài khoản, mật khẩu và phiên đăng nhập", "category": "Điều hướng", "url": url_for("main.profile"), "icon": "ph-user-circle", "badge": "Tài khoản"},
+    ]
+    for s in shortcuts:
+        if q.lower() in s["title"].lower() or q.lower() in s["subtitle"].lower() or q.lower() in s["badge"].lower():
+            results.append(s)
+
+    # 2. Lessons
+    lessons = Lesson.query.filter(
+        Lesson.is_active.is_(True),
+        (Lesson.title.ilike(term) | Lesson.description.ilike(term) | Lesson.skill.ilike(term))
+    ).limit(5).all()
+    for l in lessons:
+        results.append({
+            "title": l.title,
+            "subtitle": f"{l.skill or 'Tổng hợp'} • Cấp độ {l.level or 'A1'}",
+            "category": "Bài học",
+            "url": url_for("learning.lesson_detail", lesson_id=l.id),
+            "icon": "ph-book-open",
+            "badge": l.level or "Bài học"
+        })
+
+    # 3. Vocabulary
+    vocabs = Vocabulary.query.filter(
+        (Vocabulary.word.ilike(term) | Vocabulary.meaning_vi.ilike(term))
+    ).limit(5).all()
+    for v in vocabs:
+        results.append({
+            "title": v.word,
+            "subtitle": f"{v.phonetic or ''} - {v.meaning_vi}",
+            "category": "Từ vựng",
+            "url": url_for("learning.study_vocabulary") + f"?word={v.id}",
+            "icon": "ph-translate",
+            "badge": v.cefr_level or "Từ vựng"
+        })
+
+    # 4. Grammar topics
+    grammars = GrammarTopic.query.filter(
+        GrammarTopic.title.ilike(term) | GrammarTopic.description.ilike(term)
+    ).limit(4).all()
+    for g in grammars:
+        results.append({
+            "title": g.title,
+            "subtitle": (g.description[:60] + "...") if g.description and len(g.description) > 60 else (g.description or ""),
+            "category": "Ngữ pháp",
+            "url": url_for("learning.grammar_topic", topic_id=g.id),
+            "icon": "ph-books",
+            "badge": g.level or "Ngữ pháp"
+        })
+
+    # 5. Exams
+    try:
+        from app.backend.exams.models import Exam
+        exams = Exam.query.filter(
+            Exam.is_published.is_(True),
+            Exam.title.ilike(term)
+        ).limit(3).all()
+        for e in exams:
+            results.append({
+                "title": e.title,
+                "subtitle": f"{e.category} • {e.duration_minutes} phút",
+                "category": "Đề thi",
+                "url": url_for("exams.exam_detail", exam_id=e.id),
+                "icon": "ph-file-text",
+                "badge": e.category or "Đề thi"
+            })
+    except Exception:
+        pass
+
+    return jsonify({"results": results})
+
 

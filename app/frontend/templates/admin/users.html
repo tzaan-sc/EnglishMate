@@ -492,6 +492,7 @@
 
 <script>
 document.addEventListener("DOMContentLoaded", () => {
+    // Template perms
     document.querySelectorAll(".btn-apply-template").forEach(btn => {
         btn.addEventListener("click", () => {
             const targetPerms = btn.getAttribute("data-perms").split(",");
@@ -501,6 +502,30 @@ document.addEventListener("DOMContentLoaded", () => {
             });
         });
     });
+
+    // Real-time Debounced Search (300ms) for Table Rows & Mobile Cards
+    const searchInput = document.querySelector('input[name="q"]');
+    if (searchInput) {
+        let debounceTimer = null;
+        searchInput.addEventListener("input", (e) => {
+            clearTimeout(debounceTimer);
+            debounceTimer = setTimeout(() => {
+                const query = e.target.value.toLowerCase().trim();
+                const tableRows = document.querySelectorAll("tbody tr");
+                const mobileCards = document.querySelectorAll(".d-md-none .card-modern");
+
+                tableRows.forEach(row => {
+                    const text = row.textContent.toLowerCase();
+                    row.style.display = text.includes(query) ? "" : "none";
+                });
+
+                mobileCards.forEach(card => {
+                    const text = card.textContent.toLowerCase();
+                    card.style.display = text.includes(query) ? "" : "none";
+                });
+            }, 250);
+        });
+    }
 });
 </script>
 {% endblock %}
