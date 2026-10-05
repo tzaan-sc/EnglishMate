@@ -1,0 +1,555 @@
+{% extends "base.html" %}
+{% block title %}An ninh Mạng & Tường lửa (Network Security & Firewall) · EnglishMate Admin{% endblock %}
+
+{% block content %}
+<div class="container-fluid max-w-7xl py-4">
+
+  <!-- Breadcrumb Navigation -->
+  <nav class="app-breadcrumb mb-3" aria-label="breadcrumb">
+    <ol class="breadcrumb mb-0 align-items-center flex-wrap">
+      <li class="breadcrumb-item">
+        <a href="{{ url_for('admin.dashboard') }}" class="d-inline-flex align-items-center gap-1">
+          <i class="ph-bold ph-shield-check"></i>
+          <span>Quản trị Hệ thống</span>
+        </a>
+      </li>
+      <li class="breadcrumb-item active" aria-current="page">
+        <span>An ninh Mạng & Tường lửa (Network Security)</span>
+      </li>
+    </ol>
+  </nav>
+
+  <!-- Page Header -->
+  <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
+    <div class="d-flex align-items-center gap-3">
+      <div class="rounded-3 bg-primary-subtle text-primary border border-primary-subtle d-inline-flex align-items-center justify-content-center flex-shrink-0" style="width: 48px; height: 48px; font-size: 1.45rem;">
+        <i class="ph-bold ph-globe-hemisphere-west"></i>
+      </div>
+      <div>
+        <h3 class="fw-bold text-dark mb-0.5" style="letter-spacing: -0.01em;">An ninh Mạng & Tường lửa (Network Security)</h3>
+        <p class="text-secondary small mb-0">Giám sát lưu lượng mạng thời gian thực, quản lý IP Blacklist/Whitelist, cấu hình HTTPS, CORS và triển khai Nginx/UFW/Cloudflare</p>
+      </div>
+    </div>
+    <div class="d-flex align-items-center gap-2 flex-wrap">
+      <button type="button" class="btn btn-outline-secondary fw-semibold px-3 py-2 rounded-3 shadow-2xs d-inline-flex align-items-center gap-1.5" onclick="refreshNetworkStats()">
+        <i class="ph-bold ph-arrows-clockwise fs-5"></i>
+        <span>Làm mới chỉ số</span>
+      </button>
+      <button type="button" class="btn btn-danger fw-bold px-3.5 py-2 rounded-3 shadow-xs d-inline-flex align-items-center gap-1.5" data-bs-toggle="modal" data-bs-target="#addBlacklistModal">
+        <i class="ph-bold ph-prohibit fs-5"></i>
+        <span>Chặn IP (Blacklist)</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Real-Time Metrics Overview -->
+  <div class="row g-3 mb-4">
+    <div class="col-12 col-sm-6 col-lg-3">
+      <div class="card-modern p-3.5 h-100 d-flex align-items-center gap-3 border shadow-2xs">
+        <div class="rounded-circle bg-primary-subtle text-primary d-inline-flex align-items-center justify-content-center flex-shrink-0" style="width: 46px; height: 46px;">
+          <i class="ph-bold ph-activity fs-4"></i>
+        </div>
+        <div>
+          <span class="text-secondary small fw-semibold d-block">Lưu lượng hiện tại (RPM)</span>
+          <h4 class="fw-bold text-dark mb-0" id="metricRpm">{{ stats.requests_per_minute }} <small class="text-muted fs-6 fw-normal">req/phút</small></h4>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-12 col-sm-6 col-lg-3">
+      <div class="card-modern p-3.5 h-100 d-flex align-items-center gap-3 border shadow-2xs">
+        <div class="rounded-circle bg-success-subtle text-success d-inline-flex align-items-center justify-content-center flex-shrink-0" style="width: 46px; height: 46px;">
+          <i class="ph-bold ph-users-three fs-4"></i>
+        </div>
+        <div>
+          <span class="text-secondary small fw-semibold d-block">IP hoạt động (10 phút)</span>
+          <h4 class="fw-bold text-dark mb-0" id="metricActiveIps">{{ stats.active_ips_10m }} <small class="text-muted fs-6 fw-normal">IPs</small></h4>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-12 col-sm-6 col-lg-3">
+      <div class="card-modern p-3.5 h-100 d-flex align-items-center gap-3 border shadow-2xs">
+        <div class="rounded-circle bg-danger-subtle text-danger d-inline-flex align-items-center justify-content-center flex-shrink-0" style="width: 46px; height: 46px;">
+          <i class="ph-bold ph-shield-warning fs-4"></i>
+        </div>
+        <div>
+          <span class="text-secondary small fw-semibold d-block">Yêu cầu bị chặn (Blocked)</span>
+          <h4 class="fw-bold text-danger mb-0" id="metricBlocked">{{ stats.blocked_requests_total }}</h4>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-12 col-sm-6 col-lg-3">
+      <div class="card-modern p-3.5 h-100 d-flex align-items-center gap-3 border shadow-2xs">
+        <div class="rounded-circle bg-info-subtle text-info d-inline-flex align-items-center justify-content-center flex-shrink-0" style="width: 46px; height: 46px;">
+          <i class="ph-bold ph-gauge fs-4"></i>
+        </div>
+        <div>
+          <span class="text-secondary small fw-semibold d-block">Độ trễ TB (Latency)</span>
+          <h4 class="fw-bold text-dark mb-0" id="metricLatency">{{ stats.average_latency_ms }} <small class="text-muted fs-6 fw-normal">ms</small></h4>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Navigation Tabs -->
+  <ul class="nav nav-pills mb-4 gap-2 border-bottom pb-3" id="networkSecurityTabs" role="tablist">
+    <li class="nav-item" role="presentation">
+      <button class="nav-link active fw-bold px-3 py-2 d-inline-flex align-items-center gap-2" id="ip-rules-tab" data-bs-toggle="pill" data-bs-target="#ip-rules-pane" type="button" role="tab">
+        <i class="ph-bold ph-shield-slash"></i>
+        <span>Quy tắc IP (Blacklist & Whitelist)</span>
+      </button>
+    </li>
+    <li class="nav-item" role="presentation">
+      <button class="nav-link fw-bold px-3 py-2 d-inline-flex align-items-center gap-2" id="protocol-settings-tab" data-bs-toggle="pill" data-bs-target="#protocol-settings-pane" type="button" role="tab">
+        <i class="ph-bold ph-lock-key"></i>
+        <span>HTTPS & CORS Settings</span>
+      </button>
+    </li>
+    <li class="nav-item" role="presentation">
+      <button class="nav-link fw-bold px-3 py-2 d-inline-flex align-items-center gap-2" id="traffic-monitoring-tab" data-bs-toggle="pill" data-bs-target="#traffic-monitoring-pane" type="button" role="tab">
+        <i class="ph-bold ph-chart-line-up"></i>
+        <span>Giám sát Lưu lượng (Monitoring)</span>
+      </button>
+    </li>
+    <li class="nav-item" role="presentation">
+      <button class="nav-link fw-bold px-3 py-2 d-inline-flex align-items-center gap-2" id="production-scripts-tab" data-bs-toggle="pill" data-bs-target="#production-scripts-pane" type="button" role="tab">
+        <i class="ph-bold ph-terminal-window"></i>
+        <span>Cấu hình Máy chủ (Nginx, UFW, Cloudflare)</span>
+      </button>
+    </li>
+  </ul>
+
+  <!-- Tab Contents -->
+  <div class="tab-content" id="networkSecurityTabsContent">
+
+    <!-- TAB 1: IP RULES (BLACKLIST & WHITELIST) -->
+    <div class="tab-pane fade show active" id="ip-rules-pane" role="tabpanel">
+      <div class="row g-4">
+        <!-- IP Blacklist Table -->
+        <div class="col-12 col-lg-6">
+          <div class="card-modern p-4 h-100 border shadow-2xs">
+            <div class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom">
+              <div>
+                <h5 class="fw-bold text-danger mb-0.5 d-inline-flex align-items-center gap-1.5">
+                  <i class="ph-bold ph-prohibit"></i>
+                  <span>Danh sách IP bị chặn (IP Blacklist)</span>
+                </h5>
+                <span class="text-muted small">Tự động chặn các yêu cầu tấn công hoặc truy cập bất thường</span>
+              </div>
+              <button class="btn btn-sm btn-danger rounded-3 px-2.5 py-1.5 fw-semibold" data-bs-toggle="modal" data-bs-target="#addBlacklistModal">
+                <i class="ph-bold ph-plus"></i> Thêm IP
+              </button>
+            </div>
+
+            {% if blacklisted_ips %}
+            <div class="table-responsive border rounded-3 overflow-hidden">
+              <table class="table table-hover align-middle mb-0 small">
+                <thead class="table-light">
+                  <tr>
+                    <th class="py-2.5 ps-3">Địa chỉ IP</th>
+                    <th class="py-2.5">Lý do</th>
+                    <th class="py-2.5 text-center">Thời hạn</th>
+                    <th class="py-2.5 text-end pe-3">Thao tác</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for ip_str, info in blacklisted_ips.items() %}
+                  <tr>
+                    <td class="ps-3 font-monospace fw-bold text-danger">{{ ip_str }}</td>
+                    <td class="text-secondary">{{ info.reason or 'Chặn thủ công' }}</td>
+                    <td class="text-center">{{ info.expires_at_str or 'Vĩnh viễn' }}</td>
+                    <td class="text-end pe-3">
+                      <button type="button" class="btn btn-sm btn-light border text-success p-1 rounded-2" onclick="removeIpRule('remove_blacklist', '{{ ip_str }}')" title="Bỏ chặn IP">
+                        <i class="ph-bold ph-check"></i>
+                      </button>
+                    </td>
+                  </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+            {% else %}
+            <div class="p-4 bg-light rounded-3 text-center border text-muted small">
+              <i class="ph-bold ph-shield-check fs-2 text-success d-block mb-1"></i>
+              Hiện tại không có địa chỉ IP nào nằm trong danh sách chặn.
+            </div>
+            {% endif %}
+          </div>
+        </div>
+
+        <!-- Admin IP Whitelist Table -->
+        <div class="col-12 col-lg-6">
+          <div class="card-modern p-4 h-100 border shadow-2xs">
+            <div class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom">
+              <div>
+                <h5 class="fw-bold text-success mb-0.5 d-inline-flex align-items-center gap-1.5">
+                  <i class="ph-bold ph-shield-plus"></i>
+                  <span>Admin IP Whitelist</span>
+                </h5>
+                <span class="text-muted small">Chỉ cho phép các IP chỉ định được truy cập trang Quản trị</span>
+              </div>
+              <button class="btn btn-sm btn-success rounded-3 px-2.5 py-1.5 fw-semibold" data-bs-toggle="modal" data-bs-target="#addWhitelistModal">
+                <i class="ph-bold ph-plus"></i> Thêm IP
+              </button>
+            </div>
+
+            {% if whitelisted_ips %}
+            <div class="table-responsive border rounded-3 overflow-hidden">
+              <table class="table table-hover align-middle mb-0 small">
+                <thead class="table-light">
+                  <tr>
+                    <th class="py-2.5 ps-3">Địa chỉ IP được phép</th>
+                    <th class="py-2.5 text-end pe-3">Thao tác</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for ip_str in whitelisted_ips %}
+                  <tr>
+                    <td class="ps-3 font-monospace fw-bold text-success">{{ ip_str }}</td>
+                    <td class="text-end pe-3">
+                      <button type="button" class="btn btn-sm btn-light border text-danger p-1 rounded-2" onclick="removeIpRule('remove_whitelist', '{{ ip_str }}')" title="Gỡ khỏi Whitelist">
+                        <i class="ph-bold ph-trash"></i>
+                      </button>
+                    </td>
+                  </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+            {% else %}
+            <div class="p-4 bg-light rounded-3 text-center border text-muted small">
+              <i class="ph-bold ph-info fs-2 text-secondary d-block mb-1"></i>
+              Admin IP Whitelist đang ở chế độ Mở (Cho phép tất cả IP hợp lệ có tài khoản Quản trị).
+            </div>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 2: PROTOCOL SETTINGS (HTTPS & CORS) -->
+    <div class="tab-pane fade" id="protocol-settings-pane" role="tabpanel">
+      <div class="row justify-content-center">
+        <div class="col-12 col-lg-8">
+          <div class="card-modern p-4 border shadow-2xs">
+            <h5 class="fw-bold text-dark mb-3 pb-2 border-bottom d-inline-flex align-items-center gap-2">
+              <i class="ph-bold ph-lock-key text-primary"></i>
+              <span>Cấu hình Giao thức Truyền tải & CORS Policy</span>
+            </h5>
+
+            <form id="networkSettingsForm" onsubmit="saveNetworkSettings(event)">
+              <!-- HTTPS Enforcement Switch -->
+              <div class="form-check form-switch mb-4 p-3 bg-light rounded-3 border d-flex justify-content-between align-items-center">
+                <div class="pe-3">
+                  <label class="form-check-label fw-bold text-dark small d-block mb-0.5" for="httpsSwitch">
+                    Bắt buộc chuyển hướng HTTPS (HTTPS Enforcement)
+                  </label>
+                  <span class="text-muted small" style="font-size: 0.76rem;">
+                    Tự động chuyển toàn bộ yêu cầu HTTP sang HTTPS (Mã 301 Permanent Redirect). Bỏ qua trên môi trường Localhost để tiện phát triển.
+                  </span>
+                </div>
+                <input class="form-check-input ms-0" type="checkbox" role="switch" id="httpsSwitch" name="HTTPS_ENFORCEMENT_ENABLED" {% if stats.is_https_enforced %}checked{% endif %} style="width: 2.6em; height: 1.35em;">
+              </div>
+
+              <!-- CORS Allowed Origins Input -->
+              <div class="mb-4">
+                <label class="form-label fw-bold text-dark small mb-1" for="corsOriginsInput">
+                  Danh sách Domain cho phép CORS (CORS Allowed Origins)
+                </label>
+                <input type="text" class="form-control rounded-3 font-monospace small" id="corsOriginsInput" name="CORS_ALLOWED_ORIGINS" value="{{ stats.cors_origins|join(', ') }}" placeholder="*, https://englishmate.vn, https://app.englishmate.vn">
+                <span class="text-muted small d-block mt-1" style="font-size: 0.75rem;">
+                  Nhập dấu <code>*</code> để cho phép tất cả các nguồn, hoặc danh sách các domain ngăn cách bởi dấu phẩy.
+                </span>
+              </div>
+
+              <button type="submit" class="btn btn-primary px-4 py-2 fw-bold rounded-3 shadow-xs d-inline-flex align-items-center gap-2" id="btnSaveNetworkSettings">
+                <i class="ph-bold ph-floppy-disk"></i>
+                <span>Lưu cấu hình giao thức</span>
+              </button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 3: REAL-TIME TRAFFIC MONITORING -->
+    <div class="tab-pane fade" id="traffic-monitoring-pane" role="tabpanel">
+      <div class="row g-4">
+        <!-- Status Distribution -->
+        <div class="col-12 col-lg-5">
+          <div class="card-modern p-4 h-100 border shadow-2xs">
+            <h5 class="fw-bold text-dark mb-3 pb-2 border-bottom d-inline-flex align-items-center gap-2">
+              <i class="ph-bold ph-chart-pie-slice text-primary"></i>
+              <span>Phân bố Mã phản hồi HTTP (10 phút gần nhất)</span>
+            </h5>
+            <div class="d-flex flex-column gap-2.5">
+              <div class="d-flex justify-content-between align-items-center p-2.5 rounded-3 bg-success-subtle text-success border border-success-subtle">
+                <span class="fw-semibold small">Thành công (2xx Success)</span>
+                <span class="badge bg-success text-white fw-bold fs-6">{{ stats.status_distribution['2xx'] }}</span>
+              </div>
+              <div class="d-flex justify-content-between align-items-center p-2.5 rounded-3 bg-info-subtle text-info border border-info-subtle">
+                <span class="fw-semibold small">Chuyển hướng (3xx Redirect)</span>
+                <span class="badge bg-info text-white fw-bold fs-6">{{ stats.status_distribution['3xx'] }}</span>
+              </div>
+              <div class="d-flex justify-content-between align-items-center p-2.5 rounded-3 bg-warning-subtle text-warning border border-warning-subtle">
+                <span class="fw-semibold small">Lỗi Client (4xx Client Error)</span>
+                <span class="badge bg-warning text-dark fw-bold fs-6">{{ stats.status_distribution['4xx'] }}</span>
+              </div>
+              <div class="d-flex justify-content-between align-items-center p-2.5 rounded-3 bg-danger-subtle text-danger border border-danger-subtle">
+                <span class="fw-semibold small">Lỗi Server (5xx Server Error)</span>
+                <span class="badge bg-danger text-white fw-bold fs-6">{{ stats.status_distribution['5xx'] }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Top Client IPs -->
+        <div class="col-12 col-lg-7">
+          <div class="card-modern p-4 h-100 border shadow-2xs">
+            <h5 class="fw-bold text-dark mb-3 pb-2 border-bottom d-inline-flex align-items-center gap-2">
+              <i class="ph-bold ph-users text-primary"></i>
+              <span>Top Địa chỉ IP truy cập nhiều nhất</span>
+            </h5>
+            {% if stats.top_client_ips %}
+            <div class="table-responsive border rounded-3 overflow-hidden">
+              <table class="table table-hover align-middle mb-0 small">
+                <thead class="table-light">
+                  <tr>
+                    <th class="py-2.5 ps-3">Địa chỉ IP</th>
+                    <th class="py-2.5 text-center">Số lượng Requests</th>
+                    <th class="py-2.5 text-end pe-3">Hành động</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for item in stats.top_client_ips %}
+                  <tr>
+                    <td class="ps-3 font-monospace fw-semibold text-dark">{{ item.ip }}</td>
+                    <td class="text-center fw-bold">{{ item.count }}</td>
+                    <td class="text-end pe-3">
+                      <button type="button" class="btn btn-sm btn-outline-danger px-2 py-0.5 rounded-2" onclick="quickBlockIp('{{ item.ip }}')" title="Chặn IP này">
+                        <i class="ph-bold ph-prohibit"></i> Chặn
+                      </button>
+                    </td>
+                  </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+            {% else %}
+            <div class="p-4 bg-light rounded-3 text-center border text-muted small">
+              Chưa có dữ liệu lưu lượng truy cập trong 10 phút qua.
+            </div>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 4: PRODUCTION SERVER CONFIGURATION TEMPLATES -->
+    <div class="tab-pane fade" id="production-scripts-pane" role="tabpanel">
+      <div class="row g-4">
+        <!-- Nginx Configuration -->
+        <div class="col-12 col-lg-6">
+          <div class="card-modern p-4 border shadow-2xs h-100">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <h6 class="fw-bold text-dark mb-0 d-inline-flex align-items-center gap-1.5">
+                <i class="ph-bold ph-globe text-primary"></i>
+                <span>Nginx Reverse Proxy & SSL TLS 1.3 Config</span>
+              </h6>
+              <button class="btn btn-sm btn-light border px-2 py-1 text-primary" onclick="navigator.clipboard.writeText(document.getElementById('nginxCodeBox').innerText); alert('Đã sao chép cấu hình Nginx!');">
+                <i class="ph-bold ph-copy"></i> Copy
+              </button>
+            </div>
+            <pre class="bg-dark text-light p-3 rounded-3 font-monospace small mb-0" id="nginxCodeBox" style="max-height: 380px; overflow-y: auto; font-size: 0.74rem;">{{ nginx_config }}</pre>
+          </div>
+        </div>
+
+        <!-- UFW Firewall Script -->
+        <div class="col-12 col-lg-6">
+          <div class="card-modern p-4 border shadow-2xs h-100">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <h6 class="fw-bold text-dark mb-0 d-inline-flex align-items-center gap-1.5">
+                <i class="ph-bold ph-shield text-danger"></i>
+                <span>Linux Server Firewall Script (UFW)</span>
+              </h6>
+              <button class="btn btn-sm btn-light border px-2 py-1 text-primary" onclick="navigator.clipboard.writeText(document.getElementById('ufwCodeBox').innerText); alert('Đã sao chép kịch bản UFW!');">
+                <i class="ph-bold ph-copy"></i> Copy
+              </button>
+            </div>
+            <pre class="bg-dark text-light p-3 rounded-3 font-monospace small mb-0" id="ufwCodeBox" style="max-height: 380px; overflow-y: auto; font-size: 0.74rem;">{{ ufw_script }}</pre>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+</div>
+
+<!-- MODAL: ADD BLACKLIST IP -->
+<div class="modal fade" id="addBlacklistModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered" style="max-width: 440px;">
+    <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
+      <div class="modal-header bg-danger text-white p-4 pb-3 border-0">
+        <h5 class="modal-title fw-bold text-white mb-0 d-inline-flex align-items-center gap-2">
+          <i class="ph-bold ph-prohibit"></i>
+          <span>Thêm IP vào Blacklist</span>
+        </h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <form onsubmit="submitIpRule(event, 'add_blacklist')">
+        <div class="modal-body p-4 bg-white">
+          <div class="mb-3">
+            <label class="form-label fw-semibold text-dark small mb-1">Địa chỉ IP cần chặn</label>
+            <input type="text" class="form-control rounded-3 font-monospace" id="blacklistIpInput" required placeholder="VD: 203.0.113.45">
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-semibold text-dark small mb-1">Lý do chặn</label>
+            <input type="text" class="form-control rounded-3" id="blacklistReasonInput" placeholder="VD: Tấn công Brute force, Bot quét cổng...">
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-semibold text-dark small mb-1">Thời hạn chặn (Phút)</label>
+            <input type="number" class="form-control rounded-3" id="blacklistDurationInput" placeholder="Để trống nếu chặn vĩnh viễn" min="1">
+          </div>
+        </div>
+        <div class="modal-footer border-0 p-3 pt-0 bg-white d-flex justify-content-end gap-2">
+          <button type="button" class="btn btn-light border rounded-3 px-3" data-bs-dismiss="modal">Hủy</button>
+          <button type="submit" class="btn btn-danger rounded-3 px-4 fw-bold">Chặn ngay</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: ADD WHITELIST IP -->
+<div class="modal fade" id="addWhitelistModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered" style="max-width: 440px;">
+    <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
+      <div class="modal-header bg-success text-white p-4 pb-3 border-0">
+        <h5 class="modal-title fw-bold text-white mb-0 d-inline-flex align-items-center gap-2">
+          <i class="ph-bold ph-shield-plus"></i>
+          <span>Thêm IP vào Admin Whitelist</span>
+        </h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <form onsubmit="submitIpRule(event, 'add_whitelist')">
+        <div class="modal-body p-4 bg-white">
+          <div class="mb-3">
+            <label class="form-label fw-semibold text-dark small mb-1">Địa chỉ IP được phép</label>
+            <input type="text" class="form-control rounded-3 font-monospace" id="whitelistIpInput" required placeholder="VD: 14.161.25.80">
+          </div>
+          <div class="p-3 bg-light rounded-3 border small text-muted">
+            Khi bật Admin Whitelist, chỉ các IP trong danh sách này mới có thể đăng nhập vào trang Quản trị.
+          </div>
+        </div>
+        <div class="modal-footer border-0 p-3 pt-0 bg-white d-flex justify-content-end gap-2">
+          <button type="button" class="btn btn-light border rounded-3 px-3" data-bs-dismiss="modal">Hủy</button>
+          <button type="submit" class="btn btn-success rounded-3 px-4 fw-bold">Thêm IP</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+async function refreshNetworkStats() {
+  try {
+    const res = await fetch("{{ url_for('admin.network_security_stats_route') }}");
+    const json = await res.json();
+    if (json.success) {
+      document.getElementById('metricRpm').innerHTML = json.stats.requests_per_minute + ' <small class="text-muted fs-6 fw-normal">req/phút</small>';
+      document.getElementById('metricActiveIps').innerHTML = json.stats.active_ips_10m + ' <small class="text-muted fs-6 fw-normal">IPs</small>';
+      document.getElementById('metricBlocked').innerText = json.stats.blocked_requests_total;
+      document.getElementById('metricLatency').innerHTML = json.stats.average_latency_ms + ' <small class="text-muted fs-6 fw-normal">ms</small>';
+    }
+  } catch (e) {
+    console.error("Failed to refresh stats", e);
+  }
+}
+
+async function submitIpRule(e, action) {
+  e.preventDefault();
+  let ip = "", reason = "", duration = "";
+  if (action === "add_blacklist") {
+    ip = document.getElementById("blacklistIpInput").value.trim();
+    reason = document.getElementById("blacklistReasonInput").value.trim();
+    duration = document.getElementById("blacklistDurationInput").value.trim();
+  } else {
+    ip = document.getElementById("whitelistIpInput").value.trim();
+  }
+
+  const res = await fetch("{{ url_for('admin.manage_ip_rules_route') }}", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "X-CSRFToken": "{{ csrf_token() }}"
+    },
+    body: JSON.stringify({ action: action, ip: ip, reason: reason, duration_minutes: duration })
+  });
+  const json = await res.json();
+  if (json.success) {
+    alert("✓ " + json.message);
+    window.location.reload();
+  } else {
+    alert("Lỗi: " + (json.error || "Không thể thực hiện"));
+  }
+}
+
+async function removeIpRule(action, ip) {
+  if (!confirm(`Xác nhận gỡ bỏ IP ${ip}?`)) return;
+  const res = await fetch("{{ url_for('admin.manage_ip_rules_route') }}", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "X-CSRFToken": "{{ csrf_token() }}"
+    },
+    body: JSON.stringify({ action: action, ip: ip })
+  });
+  const json = await res.json();
+  if (json.success) {
+    alert("✓ " + json.message);
+    window.location.reload();
+  }
+}
+
+function quickBlockIp(ip) {
+  document.getElementById("blacklistIpInput").value = ip;
+  new bootstrap.Modal(document.getElementById("addBlacklistModal")).show();
+}
+
+async function saveNetworkSettings(e) {
+  e.preventDefault();
+  const btn = document.getElementById("btnSaveNetworkSettings");
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Đang lưu...';
+
+  const data = {
+    HTTPS_ENFORCEMENT_ENABLED: document.getElementById("httpsSwitch").checked,
+    CORS_ALLOWED_ORIGINS: document.getElementById("corsOriginsInput").value.trim()
+  };
+
+  try {
+    const res = await fetch("{{ url_for('admin.update_network_security_settings_route') }}", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-CSRFToken": "{{ csrf_token() }}"
+      },
+      body: JSON.stringify(data)
+    });
+    const json = await res.json();
+    if (json.success) {
+      alert("✓ " + json.message);
+      window.location.reload();
+    }
+  } catch (err) {
+    alert("Có lỗi xảy ra khi lưu cấu hình.");
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '<i class="ph-bold ph-floppy-disk"></i> <span>Lưu cấu hình giao thức</span>';
+  }
+}
+</script>
+{% endblock %}

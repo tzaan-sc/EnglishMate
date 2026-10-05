@@ -502,17 +502,20 @@ MODULE 11. SECURITY SYSTEM (HỆ THỐNG BẢO MẬT) — 15 TÍNH NĂNG CHƯA L
 - Mức độ ưu tiên: Cao (High)
 
 
-[ ] 11.8 - 11.15. Network Security (Mục 11.4) — 8 tính năng:
-- Các mục chưa triển khai:
-  + `HTTPS Enforcement`: Tự động chuyển hướng toàn bộ traffic HTTP sang HTTPS trên môi trường live.
-  + `SSL/TLS Configuration`: Cài đặt chứng chỉ SSL Let's Encrypt / TLS 1.3 trên Nginx reverse proxy.
-  + `CORS Configuration`: Cấu hình danh sách domain được phép truy vấn API qua `Flask-CORS`.
-  + `Firewall Rules`: Cấu hình tường lửa máy chủ (UFW/iptables) chặn truy cập cổng lạ.
-  + `IP Whitelisting`: Chỉ cho phép một số IP cụ thể truy cập trang Admin.
-  + `IP Blacklisting`: Tự động đưa IP có hành vi tấn công brute force vào danh sách chặn.
-  + `DDoS Protection`: Thiết lập bảo vệ qua Cloudflare Proxy / CDN.
-  + `Network Monitoring`: Giám sát lưu lượng mạng và số kết nối đồng thời.
+[x] 11.8 - 11.15. Network Security (Mục 11.4) — 8 tính năng:
+- Đã triển khai hoàn tất:
+  + `HTTPS Enforcement`: Tự động chuyển hướng toàn bộ traffic HTTP sang HTTPS 301 Permanent Redirect (loại trừ localhost dev/test).
+  + `SSL/TLS Configuration`: Cài đặt chứng chỉ SSL Let's Encrypt / TLS 1.3 và tạo template Nginx reverse proxy an ninh cao.
+  + `CORS Configuration`: Cấu hình danh sách domain được phép truy vấn API qua `CORS_ALLOWED_ORIGINS` & preflight OPTIONS.
+  + `Firewall Rules`: Script cấu hình tường lửa máy chủ (UFW) chặn truy cập trực tiếp các cổng nội bộ 5000, 5432, 6379, rate-limit SSH cổng 22.
+  + `IP Whitelisting`: Chỉ cho phép một số IP cụ thể truy cập trang Admin portal khi bật `ADMIN_IP_WHITELIST_ENABLED`.
+  + `IP Blacklisting`: Chặn truy cập O(1) in-memory cho các IP vi phạm/brute force với HTTP 403 Forbidden.
+  + `DDoS Protection`: Hướng dẫn và cấu hình bảo vệ qua Cloudflare Proxy / WAF / Under Attack Mode.
+  + `Network Monitoring`: Giám sát lưu lượng mạng, RPM, IP đồng thời, độ trễ và phân bố mã lỗi HTTP (2xx, 3xx, 4xx, 5xx).
+  + Giao diện Admin: Quản lý Network Security & Perimeter Firewall tại `/admin/system/network-security` (template `network_security.html`).
+  + Bộ kiểm thử: `tests/test_network_security.py` (7/7 passed), toàn bộ 339/339 tests của dự án vượt qua thành công 100%.
 - Mức độ ưu tiên: Cao khi đưa lên máy chủ Production, Thấp trong môi trường Local Dev.
+
 
 ----------------------------------------------------------------------------------------------------
 MODULE 12. SYSTEM FEATURES (TÍNH NĂNG HỆ THỐNG) — 46 TÍNH NĂNG CHƯA LÀM

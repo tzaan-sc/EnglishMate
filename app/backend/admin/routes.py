@@ -1583,6 +1583,11 @@ from .routes_system import (
     data_lifecycle_stats_route,
     purge_soft_deleted_users_route,
     run_data_maintenance_route,
+    network_security,
+    network_security_stats_route,
+    manage_ip_rules_route,
+    update_network_security_settings_route,
+    network_deployment_scripts_route,
 )
 from .backup_service import (
     get_backup_settings,
@@ -1618,6 +1623,26 @@ from .data_lifecycle_service import (
     purge_soft_deleted_users,
     run_data_lifecycle_maintenance_job,
 )
+from .network_security import (
+    get_client_ip,
+    is_ip_blacklisted,
+    is_admin_ip_allowed,
+    add_ip_blacklist,
+    remove_ip_blacklist,
+    add_admin_ip_whitelist,
+    remove_admin_ip_whitelist,
+    is_https_enforced,
+    handle_https_enforcement,
+    get_cors_allowed_origins,
+    apply_cors_headers,
+    record_network_traffic,
+    record_blocked_request,
+    get_network_monitoring_stats,
+    generate_nginx_ssl_config,
+    generate_ufw_firewall_script,
+    get_cloudflare_ddos_recommendations,
+)
+
 
 
 

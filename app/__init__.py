@@ -147,7 +147,47 @@ def create_app(config_object=Config):
             pass
 
     @app.before_request
+    def check_network_security_and_ip_filtering():
+        """Kiểm tra IP Blacklist, Admin IP Whitelist và Bắt buộc HTTPS (Mục 11.8 - 11.15)."""
+        import time
+        from flask import request, render_template, g
+        g._req_start_time = time.time()
+
+        from .backend.admin.network_security import (
+            get_client_ip,
+            is_ip_blacklisted,
+            is_admin_ip_allowed,
+            handle_https_enforcement,
+            record_blocked_request,
+        )
+
+        client_ip = get_client_ip(request)
+
+        # Handle CORS Preflight OPTIONS requests
+        if request.method == "OPTIONS":
+            from flask import Response
+            from .backend.admin.network_security import apply_cors_headers
+            res = Response("", status=204)
+            return apply_cors_headers(res, req=request)
+
+        # 1. IP Blacklist check
+        if is_ip_blacklisted(client_ip):
+            record_blocked_request()
+            return render_template("errors/403.html"), 403
+
+        # 2. Admin IP Whitelist check
+        if request.path.startswith("/admin") and not is_admin_ip_allowed(client_ip):
+            record_blocked_request()
+            return render_template("errors/403.html"), 403
+
+        # 3. HTTPS Enforcement
+        https_redirect = handle_https_enforcement(request)
+        if https_redirect:
+            return https_redirect
+
+    @app.before_request
     def check_maintenance_mode():
+
         """
         Intercepts incoming requests during System Maintenance Mode.
         - Allows Admin users (current_user.is_admin) to bypass and access the entire system.
@@ -295,7 +335,26 @@ def create_app(config_object=Config):
         except Exception:
             pass
 
+        try:
+            import time
+            from flask import g
+            from .backend.admin.network_security import apply_cors_headers, record_network_traffic, get_client_ip
+            response = apply_cors_headers(response, req=request)
+
+            start_t = getattr(g, "_req_start_time", None)
+            duration = ((time.time() - start_t) * 1000) if start_t else 0.0
+            record_network_traffic(
+                path=request.path,
+                ip=get_client_ip(request),
+                method=request.method,
+                status_code=response.status_code,
+                duration_ms=duration
+            )
+        except Exception:
+            pass
+
         return response
+
 
 
 

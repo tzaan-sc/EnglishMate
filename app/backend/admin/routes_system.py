@@ -618,6 +618,147 @@ def run_data_maintenance_route():
     return jsonify(res)
 
 
+# ---------------------------------------------------------------------------
+# NETWORK SECURITY & FIREWALL MANAGEMENT ROUTES (MỤC 11.8 - 11.15)
+# ---------------------------------------------------------------------------
+from .models import SystemConfig
+from .network_security import (
+    get_network_monitoring_stats,
+    add_ip_blacklist,
+    remove_ip_blacklist,
+    add_admin_ip_whitelist,
+    remove_admin_ip_whitelist,
+    generate_nginx_ssl_config,
+    generate_ufw_firewall_script,
+    get_cloudflare_ddos_recommendations,
+    get_cors_allowed_origins,
+    is_https_enforced,
+    _BLACKLISTED_IPS,
+    _ADMIN_WHITELISTED_IPS,
+)
+
+
+
+@bp.get("/system/network-security")
+@bp.get("/network-security")
+@admin_required
+def network_security():
+    """Trang giao diện quản trị An ninh mạng, Tường lửa, HTTPS, CORS và Giám sát lưu lượng (Network Security)."""
+    stats = get_network_monitoring_stats()
+    nginx_config = generate_nginx_ssl_config()
+    ufw_script = generate_ufw_firewall_script()
+    cloudflare_info = get_cloudflare_ddos_recommendations()
+
+    return render_template(
+        "admin/network_security.html",
+        stats=stats,
+        blacklisted_ips=_BLACKLISTED_IPS,
+        whitelisted_ips=_ADMIN_WHITELISTED_IPS,
+        nginx_config=nginx_config,
+        ufw_script=ufw_script,
+        cloudflare_info=cloudflare_info,
+    )
+
+
+@bp.get("/system/network-security/stats")
+@bp.get("/network-security/stats")
+@admin_required
+def network_security_stats_route():
+    """API lấy thông số giám sát lưu lượng mạng và kết nối thời gian thực."""
+    stats = get_network_monitoring_stats()
+    return jsonify({"success": True, "stats": stats})
+
+
+@bp.post("/system/network-security/ip-rules")
+@bp.post("/network-security/ip-rules")
+@admin_required
+def manage_ip_rules_route():
+    """Thêm hoặc gỡ bỏ quy tắc IP Blacklist / Whitelist."""
+    data = request.get_json(silent=True) or request.form
+    action = data.get("action", "").strip().lower()
+    list_type = data.get("list_type", "").strip().lower()
+    if list_type and action in ("add", "remove"):
+        action = f"{action}_{list_type}"
+
+    ip = data.get("ip", "").strip()
+    reason = data.get("reason", "Quản trị viên cấu hình")
+    duration = data.get("duration_minutes")
+    duration_minutes = int(duration) if duration and str(duration).isdigit() else None
+
+    if not ip:
+        return jsonify({"success": False, "error": "Vui lòng nhập địa chỉ IP hợp lệ."}), 400
+
+    if action == "add_blacklist":
+        res = add_ip_blacklist(ip, reason=reason, duration_minutes=duration_minutes, admin_id=current_user.id)
+    elif action == "remove_blacklist":
+        res = remove_ip_blacklist(ip, admin_id=current_user.id)
+    elif action == "add_whitelist":
+        res = add_admin_ip_whitelist(ip, admin_id=current_user.id)
+    elif action == "remove_whitelist":
+        res = remove_admin_ip_whitelist(ip, admin_id=current_user.id)
+    else:
+        return jsonify({"success": False, "error": "Hành động không hợp lệ."}), 400
+
+    if request.is_json:
+        return jsonify(res)
+
+    flash(res.get("message", "Đã cập nhật quy tắc IP thành công."), "success" if res.get("success") else "danger")
+    return redirect(url_for("admin.network_security"))
+
+
+@bp.post("/system/network-security/settings")
+@bp.post("/network-security/settings")
+@admin_required
+def update_network_security_settings_route():
+    """Cập nhật cấu hình Bắt buộc HTTPS, CORS và Admin IP Whitelist."""
+    data = request.get_json(silent=True) or request.form.to_dict()
+
+    https_val = data.get("HTTPS_ENFORCEMENT_ENABLED", data.get("https_enforcement"))
+    if https_val is not None:
+        is_https = https_val if isinstance(https_val, bool) else str(https_val).lower() in ("true", "1", "on", "yes")
+        SystemConfig.set_feature_status("HTTPS_ENFORCEMENT_ENABLED", is_https, description="Tự động chuyển hướng HTTP sang HTTPS", category="NETWORK")
+
+    admin_wl_val = data.get("ADMIN_IP_WHITELIST_ENABLED", data.get("admin_ip_whitelist_enabled"))
+    if admin_wl_val is not None:
+        is_wl = admin_wl_val if isinstance(admin_wl_val, bool) else str(admin_wl_val).lower() in ("true", "1", "on", "yes")
+        SystemConfig.set_feature_status("ADMIN_IP_WHITELIST_ENABLED", is_wl, description="Kích hoạt kiểm tra Admin IP Whitelist", category="NETWORK")
+
+    cors_val = data.get("CORS_ALLOWED_ORIGINS", data.get("cors_origins"))
+    if cors_val is not None:
+        origins = str(cors_val).strip()
+        SystemConfig.set_config("CORS_ALLOWED_ORIGINS", origins, description="Danh sách domain được phép gọi API (CORS)", category="NETWORK")
+
+    log_audit_action(
+        user_id=current_user.id,
+        action="UPDATE_NETWORK_SETTINGS",
+        target_type="SYSTEM_CONFIG",
+        details=f"Cập nhật cấu hình an ninh mạng: {data}"
+    )
+
+    if request.is_json:
+        return jsonify({"success": True, "message": "Đã lưu cài đặt an ninh mạng thành công!"})
+
+    flash("Đã lưu cài đặt an ninh mạng thành công!", "success")
+    return redirect(url_for("admin.network_security"))
+
+
+
+@bp.get("/system/network-security/deployment-scripts")
+@admin_required
+def network_deployment_scripts_route():
+    """Trả về các file cấu hình máy chủ Nginx, UFW Firewall và Cloudflare WAF."""
+    domain = request.args.get("domain", "englishmate.vn")
+    port = request.args.get("port", 5000, type=int)
+
+    return jsonify({
+        "success": True,
+        "nginx_ssl_config": generate_nginx_ssl_config(domain=domain, app_port=port),
+        "ufw_firewall_script": generate_ufw_firewall_script(),
+        "cloudflare_ddos_guide": get_cloudflare_ddos_recommendations(),
+    })
+
+
+
 
 
 
