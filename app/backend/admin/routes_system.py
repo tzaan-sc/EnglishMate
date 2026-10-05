@@ -422,4 +422,33 @@ def cleanup_backups_route():
     return redirect(url_for("admin.backup_settings"))
 
 
+# ---------------------------------------------------------------------------
+# HTTP SECURITY HEADERS CONFIGURATION ROUTES
+# ---------------------------------------------------------------------------
+from .security_headers import get_security_headers_config, save_security_headers_config
+
+
+@bp.get("/system/security-headers")
+@bp.get("/security-headers")
+@admin_required
+def get_security_headers_route():
+    """Lấy thông tin cấu hình HTTP Security Headers hiện tại."""
+    cfg = get_security_headers_config()
+    return jsonify({"success": True, "config": cfg})
+
+
+@bp.post("/system/security-headers")
+@bp.post("/security-headers")
+@admin_required
+def update_security_headers_route():
+    """Cập nhật các thông số bảo vệ HTTP Security Headers."""
+    data = request.get_json(silent=True) or request.form.to_dict()
+    res = save_security_headers_config(data, admin_id=current_user.id)
+    if request.is_json:
+        return jsonify(res)
+    flash(res["message"], "success")
+    return redirect(url_for("admin.dashboard"))
+
+
+
 

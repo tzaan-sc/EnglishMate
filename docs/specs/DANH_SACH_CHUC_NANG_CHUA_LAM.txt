@@ -460,9 +460,12 @@ MODULE 10. ADMIN SYSTEM (HỆ THỐNG QUẢN TRỊ) — 7 TÍNH NĂNG CHƯA LÀM
 MODULE 11. SECURITY SYSTEM (HỆ THỐNG BẢO MẬT) — 15 TÍNH NĂNG CHƯA LÀM
 ----------------------------------------------------------------------------------------------------
 
-[ ] 11.1. Secure Headers - Cấu hình HTTP Security Headers (Mục 11.1)
-- Chưa làm: Chưa có middleware thiết lập các header bảo vệ chuẩn quốc tế (HSTS, Content-Security-Policy, X-Frame-Options, X-Content-Type-Options).
-- Giải pháp: Cài đặt và kích hoạt thư viện `Flask-Talisman`.
+[x] 11.1. Secure Headers - Cấu hình HTTP Security Headers (Mục 11.1)
+- Hiện trạng: Đã hoàn thiện middleware thiết lập bộ HTTP Security Headers chuẩn an ninh quốc tế.
+- Giải pháp kỹ thuật đã làm:
+  + Xây dựng module `security_headers.py` và tích hợp middleware `after_request` tự động gắn các headers: `X-Content-Type-Options: nosniff`, `X-Frame-Options: SAMEORIGIN`, `X-XSS-Protection: 1; mode=block`, `Referrer-Policy: strict-origin-when-cross-origin`, `Permissions-Policy: geolocation=(), camera=(), microphone=(self)` (bảo toàn micro cho Speaking/IELTS), `Content-Security-Policy (CSP)` (bảo vệ XSS/injection, hỗ trợ đầy đủ CDN Bootstrap, Google Fonts, Phosphor Icons), `Strict-Transport-Security (HSTS)` cho kết nối an toàn.
+  + Cung cấp API quản trị cấu hình `/admin/system/security-headers` cho phép Admin kiểm tra, tùy biến hoặc tạm thời bật/tắt linh hoạt.
+  + Viết trọn bộ kiểm thử `tests/test_secure_headers.py` (5/5 passed).
 - Mức độ ưu tiên: Cao (High)
 
 [ ] 11.2. Permission Caching - Cache quyền hạn người dùng (Mục 11.2)

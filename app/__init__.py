@@ -258,8 +258,8 @@ def create_app(config_object=Config):
         return {"admin_notif_data": g._cached_admin_notif_data}
 
     @app.after_request
-    def set_performance_headers(response):
-        """Thiết lập Cache-Control cho file tĩnh để tăng tốc độ tải trang phía client dựa trên cấu hình hiệu năng."""
+    def set_performance_and_security_headers(response):
+        """Thiết lập Cache-Control và HTTP Security Headers bảo vệ an toàn toàn diện hệ thống."""
         from flask import request
         if request.path.startswith("/static/"):
             try:
@@ -268,7 +268,15 @@ def create_app(config_object=Config):
             except Exception:
                 max_age = 86400
             response.headers["Cache-Control"] = f"public, max-age={max_age if max_age is not None else 86400}"
+
+        try:
+            from .backend.admin.security_headers import apply_security_headers
+            response = apply_security_headers(response, req=request)
+        except Exception:
+            pass
+
         return response
+
 
 
     @app.cli.command("goal-reminders-check")

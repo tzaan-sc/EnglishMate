@@ -1557,6 +1557,8 @@ from .routes_system import (
     download_backup_route,
     delete_backup_route,
     cleanup_backups_route,
+    get_security_headers_route,
+    update_security_headers_route,
 )
 from .backup_service import (
     get_backup_settings,
@@ -1565,6 +1567,11 @@ from .backup_service import (
     create_database_backup,
     cleanup_old_backups,
     delete_backup,
+)
+from .security_headers import (
+    get_security_headers_config,
+    save_security_headers_config,
+    apply_security_headers,
 )
 
 
