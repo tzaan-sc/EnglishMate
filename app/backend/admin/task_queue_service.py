@@ -66,16 +66,10 @@ def _handle_clean_expired_tokens(params: dict) -> dict:
 
 @register_task_handler("system_cache_warming")
 def _handle_system_cache_warming(params: dict) -> dict:
-    """Nạp trước dữ liệu tĩnh bảng xếp hạng và bài học vào bộ nhớ."""
-    from app.backend.learning.models import Topic, Vocabulary
-    topics_count = Topic.query.count() if hasattr(Topic, "query") else 0
-    vocab_count = Vocabulary.query.count() if hasattr(Vocabulary, "query") else 0
-    return {
-        "status": "CACHE_WARMED",
-        "cached_topics": topics_count,
-        "cached_vocab": vocab_count,
-        "timestamp": datetime.now(timezone.utc).isoformat()
-    }
+    """Nạp trước dữ liệu tĩnh bảng xếp hạng, từ vựng và ngữ pháp vào bộ nhớ Cache."""
+    from .cache_service import warm_up_cache
+    res = warm_up_cache()
+    return res
 
 
 @register_task_handler("email_queue_sync")

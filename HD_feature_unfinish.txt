@@ -559,11 +559,17 @@ MODULE 12. SYSTEM FEATURES (TÍNH NĂNG HỆ THỐNG) — 46 TÍNH NĂNG CHƯA L
 - [x] `Resource Management`: Giám sát mức tiêu thụ RAM tiến trình (MB) trước/sau mỗi job, tự động kích hoạt Garbage Collection (`gc.collect()`) và kiểm soát thời gian ngắt Execution Timeout. (Ưu tiên: Thấp)
 - [x] `Performance Monitoring`: Đo lường chính xác thời gian thực thi từng job (Duration ms), tỷ lệ thành công, thống kê hiệu năng theo từng loại tác vụ và Dashboard quản trị trực quan. (Ưu tiên: Thấp)
 
-12.6. Caching System (10 tính năng chưa làm - Toàn bộ module Cache):
-- [ ] `Response Caching`, `Data Caching`, `Query Caching`, `Cache Invalidation`, `Cache Management`, `Cache Statistics`, `Cache Warming`, `Distributed Caching`, `Cache Security`, `Cache Optimization`:
-  + Hiện trạng: Toàn bộ hệ thống hiện đang truy vấn trực tiếp CSDL mà chưa qua tầng Cache đệm nào.
-  + Giải pháp: Cài đặt `Flask-Caching` kết hợp Redis để cache kết quả các trang có dữ liệu tĩnh lớn như Bảng xếp hạng, Danh mục từ vựng, Sổ tay ngữ pháp giúp tăng tốc độ tải trang lên gấp 5-10 lần.
-  + Mức độ ưu tiên: Cao (High)
+12.6. Caching System (10/10 tính năng hoàn thành):
+- [x] `Response Caching`: Lưu trữ toàn bộ phản hồi HTTP (HTML/JSON) kèm header `X-Cache: HIT/MISS` và ETag qua decorator `@cached_response`. (Ưu tiên: Cao)
+- [x] `Data Caching`: Bộ nhớ đệm dữ liệu Python qua decorator `@cached_data` và các hàm `cache_get`, `cache_set`, `cache_has`, `cache_delete`. (Ưu tiên: Cao)
+- [x] `Query Caching`: Cơ chế băm SHA-256 an toàn bộ lọc truy vấn CSDL và cache kết quả thông qua hàm `cache_query`. (Ưu tiên: Cao)
+- [x] `Cache Invalidation`: Vô hiệu hóa bộ nhớ đệm thông minh theo Namespace hoặc Key (`invalidate_cache`, `invalidate_namespace`, `invalidate_leaderboard_cache`, `invalidate_vocab_cache`, `invalidate_grammar_cache`, `invalidate_lesson_cache`, `invalidate_exam_cache`). (Ưu tiên: Cao)
+- [x] `Cache Management`: Giao diện Admin (`/admin/system/cache`) quản trị chi tiết từng Key, Size, TTL, Hit Count, hỗ trợ duyệt, xóa Key, xóa phân vùng hoặc làm sạch toàn bộ cache (Flush All). (Ưu tiên: Cao)
+- [x] `Cache Statistics`: Giám sát thời gian thực tỷ lệ Hit Rate %, Hits, Misses, số lượng Active Keys và ước tính dung lượng RAM tiêu thụ. (Ưu tiên: Trung bình)
+- [x] `Cache Warming`: Công cụ nạp trước dữ liệu tĩnh (`warm_up_cache`) vào bộ nhớ đệm (Bảng xếp hạng, Danh mục từ vựng, Ngữ pháp, Đề thi) tích hợp Cron job & CLI `flask warm-cache`. (Ưu tiên: Cao)
+- [x] `Distributed Caching`: Hỗ trợ kiến trúc Redis phân tán với cơ chế Fallback tự động sang `SimpleCache` (In-Memory LRU) khi Redis offline mà không làm gián đoạn hệ thống. (Ưu tiên: Cao)
+- [x] `Cache Security`: Phân lập phân vùng theo tiền tố chuẩn hóa `englishmate:v1:{namespace}:{key}`, lọc ký tự an toàn và cô lập dữ liệu người dùng. (Ưu tiên: Trung bình)
+- [x] `Cache Optimization`: Tự động nén payload bằng thuật toán Zlib khi kích thước vượt ngưỡng 1KB (tiết kiệm đến 70% RAM), điều chỉnh TTL thích ứng theo tính biến động của dữ liệu. (Ưu tiên: Trung bình)
 
 12.7. Error Handling (2 tính năng chưa làm):
 - [ ] `Error Analysis`: Chưa có công cụ gom nhóm và phân tích tần suất lỗi hệ thống. (Ưu tiên: Thấp)

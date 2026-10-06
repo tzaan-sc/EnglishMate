@@ -8,7 +8,7 @@ from sqlalchemy.engine import Engine
 import sqlite3
 
 from .config import Config
-from .extensions import cors, csrf, db, limiter, login_manager, migrate, swagger
+from .extensions import cors, csrf, db, limiter, login_manager, migrate, swagger, cache
 
 
 @event.listens_for(Engine, "connect")
@@ -43,6 +43,8 @@ def create_app(config_object=Config):
 
     db.init_app(app)
     migrate.init_app(app, db, render_as_batch=True)
+    from .backend.admin.cache_service import cache_service
+    cache_service.init_app(app)
     limiter.init_app(app)
     cors.init_app(
         app,
@@ -490,6 +492,26 @@ def create_app(config_object=Config):
         from .backend.admin.data_lifecycle_service import run_data_lifecycle_maintenance_job
         res = run_data_lifecycle_maintenance_job()
         click.echo(f"[SUCCESS] {res['message']}")
+
+    @app.cli.command("warm-cache")
+    def run_warm_cache_cli():
+        """Nạp trước dữ liệu tĩnh bảng xếp hạng, danh mục từ vựng, ngữ pháp vào bộ nhớ Cache."""
+        from .backend.admin.cache_service import warm_up_cache
+        res = warm_up_cache()
+        if res.get("success"):
+            click.echo(f"[SUCCESS] Đã nạp trước {res.get('warmed_items_count')} mục vào Cache trong {res.get('duration_ms')}ms.")
+        else:
+            click.echo(f"[ERROR] Lỗi khi nạp cache: {res.get('error')}")
+
+    @app.cli.command("flush-cache")
+    def run_flush_cache_cli():
+        """Làm sạch toàn bộ dữ liệu Cache trong hệ thống."""
+        from .backend.admin.cache_service import cache_service
+        ok = cache_service.flush_all()
+        if ok:
+            click.echo("[SUCCESS] Đã xóa toàn bộ bộ nhớ Cache.")
+        else:
+            click.echo("[ERROR] Không thể làm sạch Cache.")
 
 
     @app.errorhandler(403)

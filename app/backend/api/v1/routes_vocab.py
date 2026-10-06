@@ -3,9 +3,11 @@ from flask import jsonify, request
 from . import bp
 from app.extensions import db
 from app.backend.learning.models import Vocabulary
+from app.backend.admin.cache_service import cached_response
 
 
 @bp.get("/vocabulary")
+@cached_response(timeout=300, namespace="vocab")
 def api_get_vocabulary():
     """
     Lấy danh sách từ vựng trong từ điển kèm phân trang, tìm kiếm và bộ lọc theo chủ đề/cấp độ.

@@ -919,16 +919,16 @@ NỀN TẢNG HỌC TIẾNG ANH TRỰC TUYẾN THÔNG MINH
 [x] - Performance Monitoring - Giám sát hiệu suất
 
 12.6. Caching System (Hệ thống cache)
-[ ] - Response Caching - Cache phản hồi
-[ ] - Data Caching - Cache dữ liệu
-[ ] - Query Caching - Cache query
-[ ] - Cache Invalidation - Hủy cache
-[ ] - Cache Management - Quản lý cache
-[ ] - Cache Statistics - Thống kê cache
-[ ] - Cache Warming - Làm nóng cache
-[ ] - Distributed Caching - Cache phân tán
-[ ] - Cache Security - Bảo mật cache
-[ ] - Cache Optimization - Tối ưu cache
+[x] - Response Caching - Cache phản hồi
+[x] - Data Caching - Cache dữ liệu
+[x] - Query Caching - Cache query
+[x] - Cache Invalidation - Hủy cache
+[x] - Cache Management - Quản lý cache
+[x] - Cache Statistics - Thống kê cache
+[x] - Cache Warming - Làm nóng cache
+[x] - Distributed Caching - Cache phân tán
+[x] - Cache Security - Bảo mật cache
+[x] - Cache Optimization - Tối ưu cache
 
 12.7. Error Handling (Xử lý lỗi)
 [x] - Error Logging - Ghi lỗi

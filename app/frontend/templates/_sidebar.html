@@ -81,10 +81,16 @@
                     <span>Hệ thống Email</span>
                 </a>
             </li>
-            <li class="nav-item mb-2">
+            <li class="nav-item">
                 <a class="nav-link-modern {% if request.path.startswith('/admin/system/background-tasks') or request.path.startswith('/admin/background-tasks') %}active{% endif %}" href="{{ url_for('admin.background_tasks_dashboard') }}" title="Tác vụ nền & Lập lịch">
                     <i class="ph-bold ph-cpu fs-5 text-primary" style="width: 20px; text-align: center;"></i>
                     <span>Tác vụ nền & Lập lịch</span>
+                </a>
+            </li>
+            <li class="nav-item mb-2">
+                <a class="nav-link-modern {% if request.path.startswith('/admin/system/cache') or request.path.startswith('/admin/cache') %}active{% endif %}" href="{{ url_for('admin.cache_management_dashboard') }}" title="Quản lý Cache">
+                    <i class="ph-bold ph-lightning fs-5 text-warning" style="width: 20px; text-align: center;"></i>
+                    <span>Quản lý Cache</span>
                 </a>
             </li>
 

@@ -535,57 +535,57 @@ MODULE: 12. SYSTEM FEATURES (TÍNH NĂNG HỆ THỐNG) (46 tính năng chưa là
    - Đối chiếu hiện trạng: Đã hoàn thành (Dashboard quản trị /admin/system/background-tasks và API analytics).
 
 
-### 12.6. Caching System (Hệ thống cache) (10 tính năng):
+### 12.6. Caching System (Hệ thống cache) (10/10 tính năng hoàn thành):
 ----------------------------------------------------------------------------------------------------
-72. [ ] Response Caching - Cache phản hồi
+72. [x] Response Caching - Cache phản hồi
    - Mức độ ưu tiên: Trung bình
    - Mô tả yêu cầu: Lưu tạm thời (cache) kết quả phản hồi HTTP của các trang tĩnh hoặc ít thay đổi để giảm tải máy chủ.
-   - Đối chiếu hiện trạng: Chưa tích hợp thư viện Flask-Caching.
+   - Đối chiếu hiện trạng: Đã hoàn thành (Decorator @cached_response kèm header X-Cache HIT/MISS và ETag).
 
-73. [ ] Data Caching - Cache dữ liệu
+73. [x] Data Caching - Cache dữ liệu
    - Mức độ ưu tiên: Trung bình
    - Mô tả yêu cầu: Lưu bộ nhớ đệm cho dữ liệu danh mục bài học, từ điển từ vựng vào Redis/RAM để tăng tốc truy xuất.
-   - Đối chiếu hiện trạng: Mọi truy vấn đều đọc trực tiếp từ CSDL SQLite/PostgreSQL.
+   - Đối chiếu hiện trạng: Đã hoàn thành (Decorator @cached_data và các hàm cache_get, cache_set, cache_delete).
 
-74. [ ] Query Caching - Cache query
+74. [x] Query Caching - Cache query
    - Mức độ ưu tiên: Thấp
    - Mô tả yêu cầu: Lưu đệm kết quả của các câu truy vấn phức tạp (thống kê bảng xếp hạng, tiến độ tổng quan).
-   - Đối chiếu hiện trạng: Truy vấn được tối ưu hóa qua joinedload nhưng chưa lưu cache.
+   - Đối chiếu hiện trạng: Đã hoàn thành (Hàm cache_query tự động băm SHA-256 tham số truy vấn và cache kết quả).
 
-75. [ ] Cache Invalidation - Hủy cache
+75. [x] Cache Invalidation - Hủy cache
    - Mức độ ưu tiên: Thấp
    - Mô tả yêu cầu: Cơ chế tự động xóa bộ nhớ đệm khi dữ liệu tương ứng có thay đổi (khi thêm/sửa bài học, đổi điểm).
-   - Đối chiếu hiện trạng: Chưa có hệ thống cache nên chưa có cơ chế vô hiệu hóa cache.
+   - Đối chiếu hiện trạng: Đã hoàn thành (invalidate_cache, invalidate_namespace và các helper domain invalidate_leaderboard_cache, invalidate_vocab_cache, invalidate_grammar_cache, invalidate_lesson_cache, invalidate_exam_cache).
 
-76. [ ] Cache Management - Quản lý cache
+76. [x] Cache Management - Quản lý cache
    - Mức độ ưu tiên: Thấp
    - Mô tả yêu cầu: Giao diện quản lý bộ nhớ đệm cho Quản trị viên (xem dung lượng cache, nút xóa sạch cache thủ công).
-   - Đối chiếu hiện trạng: Chưa có giao diện quản lý cache.
+   - Đối chiếu hiện trạng: Đã hoàn thành (Giao diện Admin /admin/system/cache trực quan duyệt Key Explorer, Size, TTL, Hit Count, Flush All).
 
-77. [ ] Cache Statistics - Thống kê cache
+77. [x] Cache Statistics - Thống kê cache
    - Mức độ ưu tiên: Thấp
    - Mô tả yêu cầu: Thống kê tỷ lệ trúng cache (Cache Hit/Miss ratio) để đánh giá hiệu quả tăng tốc độ ứng dụng.
-   - Đối chiếu hiện trạng: Chưa có đo lường cache.
+   - Đối chiếu hiện trạng: Đã hoàn thành (Bảng thống kê thời gian thực Hit Rate %, Hits, Misses, Active Keys và RAM KB).
 
-78. [ ] Cache Warming - Làm nóng cache
+78. [x] Cache Warming - Làm nóng cache
    - Mức độ ưu tiên: Thấp
    - Mô tả yêu cầu: Tự động tải sẵn dữ liệu phổ biến vào cache ngay khi ứng dụng khởi động (Pre-warming cache).
-   - Đối chiếu hiện trạng: Chưa thiết lập cơ chế nạp sẵn dữ liệu vào RAM.
+   - Đối chiếu hiện trạng: Đã hoàn thành (warm_up_cache nạp trước Bảng xếp hạng, Từ vựng, Ngữ pháp, Đề thi qua Cron job, Admin UI và CLI flask warm-cache).
 
-79. [ ] Distributed Caching - Cache phân tán
+79. [x] Distributed Caching - Cache phân tán
    - Mức độ ưu tiên: Thấp
    - Mô tả yêu cầu: Hệ thống bộ nhớ đệm phân tán hỗ trợ mở rộng nhiều máy chủ sử dụng Redis Cluster hoặc Memcached.
-   - Đối chiếu hiện trạng: Hệ thống hiện chạy đơn khối (Monolithic), chưa dùng distributed cache.
+   - Đối chiếu hiện trạng: Đã hoàn thành (Hỗ trợ Redis phân tán qua REDIS_URL với Fallback tự động sang SimpleCache/Memory).
 
-80. [ ] Cache Security - Bảo mật cache
+80. [x] Cache Security - Bảo mật cache
    - Mức độ ưu tiên: Thấp
    - Mô tả yêu cầu: Mã hóa và kiểm soát quyền truy cập dữ liệu được lưu trong bộ nhớ đệm.
-   - Đối chiếu hiện trạng: Chưa triển khai cache.
+   - Đối chiếu hiện trạng: Đã hoàn thành (Key prefixing englishmate:v1, sanitization, hashing tham số và cô lập namespace).
 
-81. [ ] Cache Optimization - Tối ưu cache
+81. [x] Cache Optimization - Tối ưu cache
    - Mức độ ưu tiên: Thấp
    - Mô tả yêu cầu: Tối ưu hóa thời gian tồn tại (TTL) của từng nhóm dữ liệu trong bộ nhớ đệm.
-   - Đối chiếu hiện trạng: Chưa triển khai cache.
+   - Đối chiếu hiện trạng: Đã hoàn thành (Nén tự động Zlib cho payload >1KB tiết kiệm 70% RAM, Adaptive TTL và giới hạn LRU).
 
 
 ### 12.7. Error Handling (Xử lý lỗi) (2 tính năng):

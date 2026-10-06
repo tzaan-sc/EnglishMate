@@ -2,9 +2,11 @@ from datetime import datetime, timezone
 from flask import jsonify, request
 from . import bp
 from app.extensions import limiter
+from app.backend.admin.cache_service import cached_response
 
 
 @bp.get("/meta")
+@cached_response(timeout=3600, namespace="meta")
 def api_meta():
     """
     Lấy thông tin siêu dữ liệu (Metadata) và phiên bản của EnglishMate REST API.

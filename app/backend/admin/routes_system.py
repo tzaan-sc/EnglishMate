@@ -1398,11 +1398,152 @@ def toggle_scheduled_job_route(job_id):
     return redirect(url_for("admin.background_tasks_dashboard"))
 
 
+# ===========================================================================
+# 12.6. CACHE MANAGEMENT & MONITORING ROUTES
+# ===========================================================================
+@bp.get("/system/cache")
+@bp.get("/cache")
+@admin_required
+def cache_management_dashboard():
+    """Giao diện quản trị bộ nhớ Cache phân tán, thống kê hiệu năng và duyệt Keys."""
+    from .cache_service import get_cache_statistics, get_cache_keys_list
+    selected_ns = request.args.get("namespace", "").strip() or None
+    stats = get_cache_statistics()
+    keys = get_cache_keys_list(limit=100, namespace=selected_ns)
+    
+    return render_template(
+        "admin/cache_management.html",
+        stats=stats,
+        keys=keys,
+        selected_namespace=selected_ns
+    )
 
 
+@bp.get("/system/cache/api/stats")
+@bp.get("/cache/api/stats")
+@admin_required
+def get_cache_stats_api():
+    """API JSON trả về thống kê realtime về Cache."""
+    from .cache_service import get_cache_statistics
+    return jsonify(get_cache_statistics())
 
 
+@bp.get("/system/cache/api/keys")
+@bp.get("/cache/api/keys")
+@admin_required
+def get_cache_keys_api():
+    """API JSON danh sách Keys trong Cache."""
+    from .cache_service import get_cache_keys_list
+    limit = request.args.get("limit", 50, type=int)
+    ns = request.args.get("namespace", "").strip() or None
+    keys = get_cache_keys_list(limit=limit, namespace=ns)
+    return jsonify({"keys": keys, "count": len(keys)})
 
 
+@bp.post("/system/cache/flush")
+@bp.post("/cache/flush")
+@admin_required
+def flush_all_cache_route():
+    """Xóa sạch toàn bộ bộ nhớ Cache hệ thống."""
+    from .cache_service import cache_service
+    success = cache_service.flush_all()
+    
+    log_audit_action(
+        user_id=current_user.id,
+        action="FLUSH_CACHE",
+        target_type="CACHE",
+        target_id="ALL",
+        details="Làm sạch toàn bộ bộ nhớ đệm Cache hệ thống"
+    )
+    
+    if request.is_json:
+        return jsonify({"success": success, "message": "Đã làm sạch toàn bộ dữ liệu Cache."})
+    flash("Đã làm sạch toàn bộ dữ liệu Cache trong hệ thống.", "success")
+    return redirect(url_for("admin.cache_management_dashboard"))
 
 
+@bp.post("/system/cache/invalidate-namespace")
+@bp.post("/cache/invalidate-namespace")
+@admin_required
+def invalidate_namespace_route():
+    """Vô hiệu hóa Cache của một Namespace cụ thể."""
+    from .cache_service import invalidate_namespace
+    data = request.get_json(silent=True) or request.form
+    namespace = data.get("namespace", "").strip()
+    
+    if not namespace:
+        if request.is_json:
+            return jsonify({"success": False, "error": "Vui lòng chỉ định Namespace cần xóa."}), 400
+        flash("Vui lòng chỉ định Namespace hợp lệ.", "warning")
+        return redirect(url_for("admin.cache_management_dashboard"))
+
+    deleted_count = invalidate_namespace(namespace)
+    log_audit_action(
+        user_id=current_user.id,
+        action="INVALIDATE_CACHE_NAMESPACE",
+        target_type="CACHE",
+        target_id=namespace,
+        details=f"Xóa {deleted_count} keys thuộc namespace '{namespace}'"
+    )
+
+    msg = f"Đã vô hiệu hóa {deleted_count} cache keys thuộc phân vùng '{namespace}'."
+    if request.is_json:
+        return jsonify({"success": True, "deleted_count": deleted_count, "message": msg})
+    flash(msg, "success")
+    return redirect(url_for("admin.cache_management_dashboard"))
+
+
+@bp.post("/system/cache/delete-key")
+@bp.post("/cache/delete-key")
+@admin_required
+def delete_cache_key_route():
+    """Xóa một Key cụ thể khỏi Cache."""
+    from .cache_service import cache_service, stats_tracker
+    data = request.get_json(silent=True) or request.form
+    key = data.get("key", "").strip()
+    namespace = data.get("namespace", "default").strip()
+
+    if not key:
+        if request.is_json:
+            return jsonify({"success": False, "error": "Thiếu thông tin Key."}), 400
+        flash("Vui lòng nhập Key hợp lệ.", "warning")
+        return redirect(url_for("admin.cache_management_dashboard"))
+
+    # Nếu key là full key dạng englishmate:v1:ns:key
+    if key in stats_tracker.key_metadata:
+        from ...extensions import cache
+        cache.delete(key)
+        stats_tracker.record_delete(key)
+        success = True
+    else:
+        success = cache_service.delete(key, namespace=namespace)
+
+    if request.is_json:
+        return jsonify({"success": success, "message": f"Đã xóa key: {key}"})
+    flash(f"Đã xóa Cache key: {key}", "info")
+    return redirect(url_for("admin.cache_management_dashboard"))
+
+
+@bp.post("/system/cache/warm")
+@bp.post("/cache/warm")
+@admin_required
+def warm_cache_route():
+    """Kích hoạt tác vụ Nạp trước Cache dữ liệu tĩnh (Cache Warming)."""
+    from .cache_service import warm_up_cache
+    res = warm_up_cache()
+    
+    log_audit_action(
+        user_id=current_user.id,
+        action="WARM_CACHE",
+        target_type="CACHE",
+        target_id="WARM_ALL",
+        details=f"Nạp trước {res.get('warmed_items_count', 0)} mục tĩnh ({res.get('duration_ms', 0)}ms)"
+    )
+
+    if request.is_json:
+        return jsonify(res)
+    if res.get("success"):
+        flash(f"Đã nạp trước {res.get('warmed_items_count')} mục tĩnh vào Cache ({res.get('duration_ms')}ms).", "success")
+    else:
+        flash(f"Lỗi khi nạp cache: {res.get('error')}", "danger")
+    return redirect(url_for("admin.cache_management_dashboard"))

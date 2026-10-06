@@ -1,0 +1,404 @@
+{% extends "base.html" %}
+
+{% block title %}Quản trị Bộ nhớ Cache & Hiệu năng - EnglishMate Admin{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Header section -->
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3">
+        <div>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-1">
+                    <li class="breadcrumb-item"><a href="{{ url_for('admin.dashboard') }}" class="text-decoration-none text-muted">Admin</a></li>
+                    <li class="breadcrumb-item"><a href="{{ url_for('admin.performance_settings') }}" class="text-decoration-none text-muted">Hệ thống</a></li>
+                    <li class="breadcrumb-item active text-primary fw-semibold" aria-current="page">Quản lý Cache</li>
+                </ol>
+            </nav>
+            <h2 class="h3 fw-bold mb-0 text-gradient-primary d-flex align-items-center gap-2">
+                <i class="ph ph-lightning text-warning"></i> Quản trị Bộ nhớ Cache Phân tán
+            </h2>
+            <p class="text-muted mb-0 small">Giám sát tỷ lệ Hit Rate, quản lý Namespace, nạp trước dữ liệu tĩnh và tối ưu hóa thời gian phản hồi.</p>
+        </div>
+        <div class="d-flex align-items-center gap-2 flex-wrap">
+            <button class="btn btn-outline-primary btn-sm rounded-pill d-flex align-items-center gap-2 shadow-sm" onclick="triggerWarmCache(this)" id="btnWarmCache">
+                <i class="ph ph-fire text-danger"></i> Nạp trước Cache (Warm)
+            </button>
+            <button class="btn btn-outline-danger btn-sm rounded-pill d-flex align-items-center gap-2 shadow-sm" data-bs-toggle="modal" data-bs-target="#flushCacheModal">
+                <i class="ph ph-trash"></i> Xóa sạch Cache (Flush All)
+            </button>
+            <a href="{{ url_for('admin.cache_management_dashboard') }}" class="btn btn-light btn-sm rounded-pill shadow-sm border" title="Làm mới">
+                <i class="ph ph-arrows-clockwise"></i>
+            </a>
+        </div>
+    </div>
+
+    <!-- Alert flash messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ category }} alert-dismissible fade show rounded-3 shadow-sm border-0 d-flex align-items-center gap-2 mb-4" role="alert">
+                    <i class="ph ph-info fs-5"></i>
+                    <div>{{ message }}</div>
+                    <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <!-- Top Statistics Cards -->
+    <div class="row g-3 mb-4">
+        <!-- Backend Status Card -->
+        <div class="col-12 col-sm-6 col-xl-3">
+            <div class="card h-100 border-0 shadow-sm rounded-4 p-3 bg-white hover-shadow transition-all">
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                    <div>
+                        <span class="text-muted small fw-medium">Backend Lưu trữ</span>
+                        <h4 class="fw-bold mb-0 mt-1 d-flex align-items-center gap-2">
+                            {{ stats.backend }}
+                        </h4>
+                    </div>
+                    <div class="rounded-circle p-2 bg-primary-subtle text-primary">
+                        <i class="ph ph-database fs-4"></i>
+                    </div>
+                </div>
+                <div class="d-flex align-items-center gap-2 mt-auto">
+                    {% if stats.status == 'ONLINE' %}
+                        <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-2 py-1 small">
+                            <i class="ph ph-check-circle me-1"></i> ONLINE
+                        </span>
+                    {% elif stats.status == 'DEGRADED_FALLBACK' %}
+                        <span class="badge bg-warning-subtle text-warning border border-warning-subtle rounded-pill px-2 py-1 small" title="Không kết nối được Redis, tự động dùng SimpleCache">
+                            <i class="ph ph-warning-circle me-1"></i> FALLBACK (Memory)
+                        </span>
+                    {% else %}
+                        <span class="badge bg-secondary-subtle text-secondary rounded-pill px-2 py-1 small">DISABLED</span>
+                    {% endif %}
+                    <span class="text-muted extra-small">Tự động nén Zlib (>1KB)</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Hit Rate Card -->
+        <div class="col-12 col-sm-6 col-xl-3">
+            <div class="card h-100 border-0 shadow-sm rounded-4 p-3 bg-white hover-shadow transition-all">
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                    <div>
+                        <span class="text-muted small fw-medium">Tỷ lệ Trúng Cache (Hit Rate)</span>
+                        <h4 class="fw-bold mb-0 mt-1 text-success">
+                            {{ stats.hit_rate_pct }}%
+                        </h4>
+                    </div>
+                    <div class="rounded-circle p-2 bg-success-subtle text-success">
+                        <i class="ph ph-chart-pie-slice fs-4"></i>
+                    </div>
+                </div>
+                <div class="w-100 bg-light rounded-pill overflow-hidden my-1" style="height: 6px;">
+                    <div class="bg-success h-100" style="width: {{ stats.hit_rate_pct }}%;"></div>
+                </div>
+                <div class="d-flex justify-content-between text-muted extra-small mt-auto">
+                    <span>Hits: <strong>{{ stats.hits }}</strong></span>
+                    <span>Misses: <strong>{{ stats.misses }}</strong></span>
+                    <span>Tổng: <strong>{{ stats.total_requests }}</strong></span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Active Keys & Memory Card -->
+        <div class="col-12 col-sm-6 col-xl-3">
+            <div class="card h-100 border-0 shadow-sm rounded-4 p-3 bg-white hover-shadow transition-all">
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                    <div>
+                        <span class="text-muted small fw-medium">Active Keys & Dung lượng</span>
+                        <h4 class="fw-bold mb-0 mt-1 text-primary">
+                            {{ stats.active_keys_count }} <span class="fs-6 fw-normal text-muted">keys</span>
+                        </h4>
+                    </div>
+                    <div class="rounded-circle p-2 bg-info-subtle text-info">
+                        <i class="ph ph-key fs-4"></i>
+                    </div>
+                </div>
+                <div class="d-flex align-items-center justify-content-between text-muted small mt-auto">
+                    <span>Bộ nhớ ước tính:</span>
+                    <span class="badge bg-light text-dark border">{{ stats.memory_used_kb }} KB</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Last Operations Card -->
+        <div class="col-12 col-sm-6 col-xl-3">
+            <div class="card h-100 border-0 shadow-sm rounded-4 p-3 bg-white hover-shadow transition-all">
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                    <div>
+                        <span class="text-muted small fw-medium">Thao tác gần nhất</span>
+                        <div class="fw-semibold small mt-1">
+                            Sets: <span class="text-primary">{{ stats.total_sets }}</span> | 
+                            Deletes: <span class="text-danger">{{ stats.total_deletes }}</span>
+                        </div>
+                    </div>
+                    <div class="rounded-circle p-2 bg-secondary-subtle text-secondary">
+                        <i class="ph ph-clock-counter-clockwise fs-4"></i>
+                    </div>
+                </div>
+                <div class="text-muted extra-small mt-auto">
+                    <div>Lần warm cuối: <strong>{{ stats.last_warmed_at.split('T')[1][:8] if stats.last_warmed_at else 'Chưa chạy' }}</strong></div>
+                    <div>Lần flush cuối: <strong>{{ stats.last_flushed_at.split('T')[1][:8] if stats.last_flushed_at else 'Chưa chạy' }}</strong></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content Area: Namespace Filter & Key Explorer -->
+    <div class="row g-4">
+        <!-- Left: Namespaces & Quick Invalidate -->
+        <div class="col-12 col-lg-4">
+            <div class="card border-0 shadow-sm rounded-4 p-4 bg-white mb-4">
+                <h5 class="fw-bold mb-3 d-flex align-items-center gap-2">
+                    <i class="ph ph-folders text-primary"></i> Phân vùng Namespace
+                </h5>
+                <p class="text-muted small mb-3">Lọc theo từng phân vùng hoặc vô hiệu hóa nhanh toàn bộ cache của một module.</p>
+                
+                <div class="list-group list-group-flush rounded-3 border">
+                    <a href="{{ url_for('admin.cache_management_dashboard') }}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center py-2.5 {% if not selected_namespace %}active fw-semibold{% endif %}">
+                        <span><i class="ph ph-grid-four me-2"></i> Tất cả phân vùng</span>
+                        <span class="badge {% if not selected_namespace %}bg-white text-primary{% else %}bg-secondary-subtle text-dark{% endif %} rounded-pill">{{ stats.active_keys_count }}</span>
+                    </a>
+                    {% set default_ns_list = ['leaderboard', 'vocab', 'grammar', 'lessons', 'exams', 'data', 'view', 'default'] %}
+                    {% for ns in default_ns_list %}
+                        {% set count = stats.namespaces.get(ns, 0) %}
+                        <div class="list-group-item list-group-item-action d-flex justify-content-between align-items-center py-2 {% if selected_namespace == ns %}active text-white fw-semibold{% endif %}">
+                            <a href="{{ url_for('admin.cache_management_dashboard', namespace=ns) }}" class="text-decoration-none {% if selected_namespace == ns %}text-white{% else %}text-dark{% endif %} flex-grow-1">
+                                <i class="ph ph-tag me-2"></i> {{ ns }}
+                            </a>
+                            <div class="d-flex align-items-center gap-2">
+                                <span class="badge {% if selected_namespace == ns %}bg-white text-primary{% else %}bg-light text-muted border{% endif %} rounded-pill">{{ count }}</span>
+                                <button class="btn btn-outline-danger btn-sm p-1 rounded-circle border-0" title="Xóa cache {{ ns }}" onclick="invalidateNamespace('{{ ns }}')">
+                                    <i class="ph ph-trash extra-small"></i>
+                                </button>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+
+                <!-- Custom Invalidate Form -->
+                <div class="mt-4 pt-3 border-top">
+                    <label class="form-label small fw-semibold text-muted">Vô hiệu hóa Namespace tùy chỉnh</label>
+                    <form method="POST" action="{{ url_for('admin.invalidate_namespace_route') }}" class="d-flex gap-2">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <input type="text" name="namespace" class="form-control form-control-sm rounded-pill" placeholder="Tên namespace..." required>
+                        <button type="submit" class="btn btn-danger btn-sm rounded-pill px-3">Xóa</button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Optimization Tips Card -->
+            <div class="card border-0 shadow-sm rounded-4 p-4 bg-light">
+                <h6 class="fw-bold mb-2 text-dark d-flex align-items-center gap-2">
+                    <i class="ph ph-lightbulb text-warning"></i> Cơ chế Tối ưu hóa Cache
+                </h6>
+                <ul class="text-muted extra-small ps-3 mb-0 lh-lg">
+                    <li><strong>Zlib Compression:</strong> Dữ liệu lớn hơn 1024 bytes tự động được nén mức độ 6, tiết kiệm đến 70% RAM.</li>
+                    <li><strong>Adaptive TTL:</strong> Bảng xếp hạng 5m, Sổ tay ngữ pháp 1h, Danh mục từ vựng 24h.</li>
+                    <li><strong>Auto-Fallback:</strong> Tự động chuyển đổi mượt mà giữa Redis và SimpleCache mà không gây crash trang.</li>
+                    <li><strong>Query Hash:</strong> SHA-256 băm an toàn bộ lọc truy vấn CSDL.</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Right: Keys Explorer Table -->
+        <div class="col-12 col-lg-8">
+            <div class="card border-0 shadow-sm rounded-4 bg-white overflow-hidden">
+                <div class="card-header bg-white border-bottom p-3 d-flex flex-column flex-sm-row justify-content-between align-items-sm-center gap-2">
+                    <div class="d-flex align-items-center gap-2">
+                        <h5 class="fw-bold mb-0">Trình duyệt Keys (Key Explorer)</h5>
+                        {% if selected_namespace %}
+                            <span class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill">
+                                {{ selected_namespace }}
+                            </span>
+                        {% endif %}
+                    </div>
+                    <div class="d-flex align-items-center gap-2">
+                        <input type="text" id="tableSearch" class="form-control form-control-sm rounded-pill" placeholder="Tìm kiếm key..." style="max-width: 200px;" onkeyup="filterKeyTable()">
+                        <span class="badge bg-light text-muted border rounded-pill">{{ keys|length }} items</span>
+                    </div>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0" id="keysTable">
+                        <thead class="table-light extra-small text-muted text-uppercase">
+                            <tr>
+                                <th style="min-width: 220px;">Cache Key</th>
+                                <th>Namespace</th>
+                                <th>Size & Nén</th>
+                                <th>Hits</th>
+                                <th>TTL còn lại</th>
+                                <th class="text-end pe-3">Hành động</th>
+                            </tr>
+                        </thead>
+                        <tbody class="small">
+                            {% for k in keys %}
+                                <tr>
+                                    <td>
+                                        <div class="d-flex align-items-center gap-2">
+                                            <i class="ph ph-key text-muted extra-small"></i>
+                                            <span class="fw-medium font-monospace extra-small text-break" title="{{ k.key }}">{{ k.key }}</span>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-light text-dark border rounded-pill extra-small">{{ k.namespace }}</span>
+                                    </td>
+                                    <td>
+                                        <div class="d-flex align-items-center gap-1">
+                                            <span>{{ k.size_bytes }} B</span>
+                                            {% if k.is_compressed %}
+                                                <span class="badge bg-info-subtle text-info border border-info-subtle rounded-pill extra-small" title="Đã nén Zlib">
+                                                    <i class="ph ph-file-zip"></i> Zlib
+                                                </span>
+                                            {% endif %}
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span class="fw-bold text-success">{{ k.hits }}</span>
+                                    </td>
+                                    <td>
+                                        {% if k.ttl_remaining > 0 %}
+                                            <span class="badge bg-warning-subtle text-warning border border-warning-subtle rounded-pill extra-small">
+                                                <i class="ph ph-timer me-1"></i> {{ k.ttl_remaining }}s
+                                            </span>
+                                        {% else %}
+                                            <span class="badge bg-secondary-subtle text-secondary rounded-pill extra-small">Hết hạn</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="text-end pe-3">
+                                        <form method="POST" action="{{ url_for('admin.delete_cache_key_route') }}" class="d-inline" onsubmit="return confirm('Bạn có chắc chắn muốn xóa Cache Key này?');">
+                                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                            <input type="hidden" name="key" value="{{ k.key }}">
+                                            <button type="submit" class="btn btn-outline-danger btn-sm p-1 rounded-circle border-0" title="Xóa Key">
+                                                <i class="ph ph-trash"></i>
+                                            </button>
+                                        </form>
+                                    </td>
+                                </tr>
+                            {% else %}
+                                <tr>
+                                    <td colspan="6" class="text-center py-5 text-muted">
+                                        <div class="d-flex flex-column align-items-center gap-2">
+                                            <i class="ph ph-empty fs-2 text-muted"></i>
+                                            <span class="fw-medium">Chưa có Cache Key nào được lưu trữ trong phân vùng này.</span>
+                                            <button class="btn btn-primary btn-sm rounded-pill mt-2" onclick="triggerWarmCache(this)">
+                                                <i class="ph ph-fire me-1"></i> Nạp trước Cache ngay
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: Flush All Confirmation -->
+<div class="modal fade" id="flushCacheModal" tabindex="-1" aria-labelledby="flushCacheModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow rounded-4 overflow-hidden">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title fw-bold d-flex align-items-center gap-2" id="flushCacheModalLabel">
+                    <i class="ph ph-warning-circle"></i> Xác nhận Xóa sạch Cache
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4 text-center">
+                <div class="rounded-circle bg-danger-subtle text-danger p-3 d-inline-flex mb-3">
+                    <i class="ph ph-trash fs-1"></i>
+                </div>
+                <h5 class="fw-bold mb-2">Bạn có chắc chắn muốn làm sạch toàn bộ Cache?</h5>
+                <p class="text-muted small mb-0">Hành động này sẽ giải phóng tất cả các khóa bộ nhớ đệm (Bảng xếp hạng, Từ vựng, Ngữ pháp, Views). Các yêu cầu tiếp theo sẽ truy vấn trực tiếp vào Cơ sở dữ liệu cho đến khi Cache được tái tạo.</p>
+            </div>
+            <div class="modal-footer bg-light border-0 p-3">
+                <button type="button" class="btn btn-secondary rounded-pill px-4 btn-sm" data-bs-dismiss="modal">Hủy</button>
+                <form method="POST" action="{{ url_for('admin.flush_all_cache_route') }}">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <button type="submit" class="btn btn-danger rounded-pill px-4 btn-sm fw-semibold">Xác nhận Xóa Hết</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function filterKeyTable() {
+    const input = document.getElementById('tableSearch');
+    const filter = input.value.toLowerCase();
+    const table = document.getElementById('keysTable');
+    const tr = table.getElementsByTagName('tr');
+
+    for (let i = 1; i < tr.length; i++) {
+        const td = tr[i].getElementsByTagName('td')[0];
+        if (td) {
+            const txtValue = td.textContent || td.innerText;
+            if (txtValue.toLowerCase().indexOf(filter) > -1) {
+                tr[i].style.display = "";
+            } else {
+                tr[i].style.display = "none";
+            }
+        }
+    }
+}
+
+function invalidateNamespace(namespace) {
+    if (!confirm(`Bạn có chắc muốn xóa tất cả cache thuộc namespace '${namespace}'?`)) {
+        return;
+    }
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = "{{ url_for('admin.invalidate_namespace_route') }}";
+    
+    const csrfInput = document.createElement('input');
+    csrfInput.type = 'hidden';
+    csrfInput.name = 'csrf_token';
+    csrfInput.value = "{{ csrf_token() }}";
+    form.appendChild(csrfInput);
+
+    const nsInput = document.createElement('input');
+    nsInput.type = 'hidden';
+    nsInput.name = 'namespace';
+    nsInput.value = namespace;
+    form.appendChild(nsInput);
+
+    document.body.appendChild(form);
+    form.submit();
+}
+
+function triggerWarmCache(btn) {
+    const origHtml = btn.innerHTML;
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1" role="status"></span> Đang nạp...';
+
+    fetch("{{ url_for('admin.warm_cache_route') }}", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            "X-CSRFToken": "{{ csrf_token() }}"
+        }
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.success) {
+            alert(`✅ Nạp trước thành công ${data.warmed_items_count} mục trong ${data.duration_ms}ms!`);
+            window.location.reload();
+        } else {
+            alert(`❌ Lỗi nạp cache: ${data.error || 'Không xác định'}`);
+            btn.disabled = false;
+            btn.innerHTML = origHtml;
+        }
+    })
+    .catch(err => {
+        alert("❌ Lỗi kết nối máy chủ: " + err);
+        btn.disabled = false;
+        btn.innerHTML = origHtml;
+    });
+}
+</script>
+{% endblock %}
