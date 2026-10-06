@@ -575,11 +575,11 @@ MODULE 12. SYSTEM FEATURES (TÍNH NĂNG HỆ THỐNG) — 46 TÍNH NĂNG CHƯA L
 - [x] `Error Analysis`: Công cụ tự động gom nhóm lỗi theo Fingerprint (Exception Type + Location), phân tích tần suất xuất hiện, tỷ lệ theo mã HTTP (5xx, 4xx), phân tích theo route và biểu đồ xu hướng 7 ngày trên Dashboard Quản trị. (Ưu tiên: Thấp)
 - [x] `Error Monitoring`: Tích hợp Sentry SDK và Local Error Tracker, tự động bắt lỗi HTTP 500 & ngoại lệ unhandled, thu thập đầy đủ ngữ cảnh (Traceback, Route, Method, User ID, IP, User Agent, Params), hỗ trợ mô phỏng lỗi test và xử lý sự cố. (Ưu tiên: Cao)
 
-12.8. Performance Optimization (4 tính năng chưa làm):
-- [ ] `Lazy Loading`: Chưa áp dụng lazy loading `loading="lazy"` cho toàn bộ hình ảnh bài học/từ vựng. (Ưu tiên: Cao)
-- [ ] `Compression`: Chưa kích hoạt nén Gzip/Brotli cho các file CSS/JS. (Ưu tiên: Trung bình)
-- [ ] `Load Balancing`: Chưa cấu hình cân bằng tải đa tiến trình Gunicorn. (Ưu tiên: Cao khi deploy)
-- [ ] `Performance Monitoring`: Chưa có công cụ APM đo thời gian phản hồi của từng route. (Ưu tiên: Thấp)
+12.8. Performance Optimization (4/4 tính năng hoàn thành):
+- [x] `Lazy Loading`: Áp dụng chuẩn tải lười `loading="lazy"` và giải mã bất đồng bộ `decoding="async"` cho toàn bộ ảnh đại diện, ảnh bài học, từ vựng và flashcard giúp giảm thiểu băng thông tải trang ban đầu. (Ưu tiên: Cao)
+- [x] `Compression`: Kích hoạt nén HTTP Gzip và Brotli tự động thông qua `Flask-Compress` cho các file HTML, CSS, JS, JSON, XML, SVG với ngưỡng nén tối ưu `COMPRESS_MIN_SIZE = 500`. (Ưu tiên: Trung bình)
+- [x] `Load Balancing`: Cấu hình cân bằng tải đa tiến trình Gunicorn chuẩn production `gunicorn.conf.py` (công thức tính toán động `(2 * CPU) + 1` workers, threads, tái tạo worker định kỳ chống rò rỉ RAM `max_requests = 1000`) và file cấu hình Nginx Upstream Load Balancer `deployment/nginx_load_balancer.conf` (thuật toán `least_conn`, healthcheck, SSL termination, failover). (Ưu tiên: Cao khi deploy)
+- [x] `Performance Monitoring`: Tích hợp bộ máy giám sát APM (Application Performance Monitoring) đo lường chính xác thời gian phản hồi (ms) từng route, phân vị độ trễ p50/p90/p95/p99, thông lượng request/phút (RPM), xếp hạng top 15 Endpoint chậm nhất, phân bố mã phản hồi HTTP, xuất báo cáo JSON và giao diện trực quan Admin (`/admin/system/apm`). (Ưu tiên: Thấp)
 
 12.9. Monitoring & Logging (5 tính năng chưa làm):
 - [ ] `Performance Logging`: Chưa ghi log các câu truy vấn CSDL chạy chậm (> 500ms). (Ưu tiên: Trung bình)

@@ -1673,6 +1673,16 @@ from .routes_system import (
     delete_cache_key_route,
     warm_cache_route,
 )
+from .routes_apm import (
+    system_apm,
+    apm_metrics_api,
+    apm_reset_metrics,
+    apm_export_report,
+)
+from .apm_service import (
+    apm_monitor,
+    init_apm,
+)
 
 
 

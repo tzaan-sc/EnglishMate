@@ -93,10 +93,16 @@
                     <span>Quản lý Cache</span>
                 </a>
             </li>
-            <li class="nav-item mb-2">
+            <li class="nav-item">
                 <a class="nav-link-modern {% if request.path.startswith('/admin/system/errors') or request.path.startswith('/admin/errors') %}active{% endif %}" href="{{ url_for('admin.error_analysis_dashboard') }}" title="Giám sát & Phân tích Lỗi">
                     <i class="ph-bold ph-bug fs-5 text-danger" style="width: 20px; text-align: center;"></i>
                     <span>Giám sát & Phân tích Lỗi</span>
+                </a>
+            </li>
+            <li class="nav-item mb-2">
+                <a class="nav-link-modern {% if request.path.startswith('/admin/system/apm') or request.path.startswith('/admin/apm') %}active{% endif %}" href="{{ url_for('admin.system_apm') }}" title="Giám sát Hiệu năng (APM)">
+                    <i class="ph-bold ph-chart-line-up fs-5 text-success" style="width: 20px; text-align: center;"></i>
+                    <span>Giám sát APM & Tải</span>
                 </a>
             </li>
 
@@ -227,7 +233,7 @@
             <a href="{{ url_for('main.profile') }}" class="d-flex align-items-center gap-3 text-truncate text-decoration-none" title="Xem hồ sơ cá nhân">
                 <div class="profile-avatar-circle flex-shrink-0">
                     {% if current_user.avatar and current_user.avatar != 'default_avatar.png' %}
-                    <img src="{{ url_for('static', filename='uploads/avatars/' + current_user.avatar) }}" class="w-100 h-100 rounded-circle object-fit-cover" alt="Avatar">
+                    <img src="{{ url_for('static', filename='uploads/avatars/' + current_user.avatar) }}" class="w-100 h-100 rounded-circle object-fit-cover" alt="Avatar" loading="lazy" decoding="async">
                     {% else %}
                     {{ current_user.username[0].upper() }}
                     {% endif %}

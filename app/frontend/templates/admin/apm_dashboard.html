@@ -1,0 +1,673 @@
+{% extends "base.html" %}
+
+{% block title %}Giám sát Hiệu năng (APM) - EnglishMate Admin{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-3 px-md-4 py-4">
+  <!-- Breadcrumb & Header -->
+  <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
+    <div>
+      <nav aria-label="breadcrumb">
+        <ol class="breadcrumb mb-1 small">
+          <li class="breadcrumb-item"><a href="{{ url_for('admin.dashboard') }}" class="text-decoration-none text-muted">Admin</a></li>
+          <li class="breadcrumb-item"><a href="{{ url_for('admin.performance_settings') }}" class="text-decoration-none text-muted">Hệ thống</a></li>
+          <li class="breadcrumb-item active text-primary fw-semibold" aria-current="page">Giám sát Hiệu năng (APM)</li>
+        </ol>
+      </nav>
+      <h2 class="h3 fw-bold text-dark mb-0 d-flex align-items-center gap-2">
+        <i class="ph-bold ph-chart-line-up text-primary"></i>
+        Giám sát Hiệu năng Ứng dụng (APM)
+      </h2>
+      <p class="text-muted small mb-0">Đo lường thời gian phản hồi từng route, phân vị độ trễ p95/p99, thông lượng request và giám sát tài nguyên máy chủ.</p>
+    </div>
+
+    <!-- Actions -->
+    <div class="d-flex flex-wrap align-items-center gap-2">
+      <!-- Auto Refresh Switcher -->
+      <div class="btn-group shadow-xs">
+        <button type="button" class="btn btn-sm btn-outline-secondary dropdown-toggle d-flex align-items-center gap-1.5" data-bs-toggle="dropdown" aria-expanded="false" id="refreshDropdownBtn">
+          <i class="ph-bold ph-arrows-clockwise text-primary" id="refreshIcon"></i>
+          <span id="refreshLabel">Tự động làm mới: 10s</span>
+        </button>
+        <ul class="dropdown-menu dropdown-menu-end shadow-sm border" style="font-size: 0.85rem;">
+          <li><a class="dropdown-item" href="#" onclick="setAutoRefresh(0, 'Tắt')">Tắt tự động</a></li>
+          <li><a class="dropdown-item active" href="#" onclick="setAutoRefresh(5, '5s')">Mỗi 5 giây</a></li>
+          <li><a class="dropdown-item" href="#" onclick="setAutoRefresh(10, '10s')">Mỗi 10 giây</a></li>
+          <li><a class="dropdown-item" href="#" onclick="setAutoRefresh(30, '30s')">Mỗi 30 giây</a></li>
+        </ul>
+      </div>
+
+      <button class="btn btn-sm btn-outline-primary shadow-xs d-flex align-items-center gap-1.5" onclick="fetchAPMMetrics(true)">
+        <i class="ph-bold ph-arrow-clockwise"></i> Làm mới ngay
+      </button>
+
+      <a href="{{ url_for('admin.apm_export_report') }}" class="btn btn-sm btn-outline-secondary shadow-xs d-flex align-items-center gap-1.5" title="Xuất báo cáo JSON">
+        <i class="ph-bold ph-download-simple"></i> Xuất báo cáo
+      </a>
+
+      <button class="btn btn-sm btn-outline-danger shadow-xs d-flex align-items-center gap-1.5" data-bs-toggle="modal" data-bs-target="#resetMetricsModal">
+        <i class="ph-bold ph-trash"></i> Đặt lại số liệu
+      </button>
+    </div>
+  </div>
+
+  <!-- Realtime Server & Concurrency Alert Banner -->
+  <div class="card border-0 shadow-xs rounded-4 mb-4" style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); color: #f8fafc;">
+    <div class="card-body p-3 p-md-4">
+      <div class="row g-3 align-items-center">
+        <div class="col-lg-7">
+          <div class="d-flex align-items-center gap-2 mb-1">
+            <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-2.5 py-1 fw-bold d-flex align-items-center gap-1">
+              <span class="spinner-grow spinner-grow-sm text-success" style="width: 0.5rem; height: 0.5rem;" role="status"></span>
+              APM Live Engine Active
+            </span>
+            <span class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill px-2.5 py-1 fw-medium">
+              Gzip / Brotli Compression: Bật
+            </span>
+            <span class="badge bg-info-subtle text-info border border-info-subtle rounded-pill px-2.5 py-1 fw-medium">
+              Gunicorn Load Balancer Ready
+            </span>
+          </div>
+          <p class="small text-slate-300 mb-0 opacity-85">
+            Thời gian hoạt động (Uptime): <strong class="text-white" id="val-uptime">{{ summary.uptime_formatted }}</strong> &bull;
+            Tổng endpoint được phân tích: <strong class="text-white" id="val-endpoints-count">{{ summary.tracked_endpoints_count }}</strong> routes &bull;
+            Ngưỡng cảnh báo request chậm: <strong class="text-warning">&ge; 500ms</strong>
+          </p>
+        </div>
+        <div class="col-lg-5 text-lg-end">
+          <div class="d-inline-flex flex-wrap gap-2 justify-content-lg-end">
+            <a href="{{ url_for('admin.performance_settings') }}" class="btn btn-sm btn-outline-light d-flex align-items-center gap-1" style="font-size: 0.8rem;">
+              <i class="ph-bold ph-sliders"></i> Cấu hình Hiệu năng
+            </a>
+            <a href="{{ url_for('admin.cache_management_dashboard') }}" class="btn btn-sm btn-outline-light d-flex align-items-center gap-1" style="font-size: 0.8rem;">
+              <i class="ph-bold ph-lightning"></i> Bộ nhớ đệm Cache
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- METRIC CARDS ROW -->
+  <div class="row g-3 mb-4">
+    <!-- Card 1: Average Latency -->
+    <div class="col-sm-6 col-xl-3">
+      <div class="card border-0 shadow-xs rounded-4 h-100 p-3 bg-white">
+        <div class="d-flex justify-content-between align-items-start mb-2">
+          <span class="text-muted small fw-medium">Độ trễ trung bình</span>
+          <span class="p-2 rounded-3 bg-primary-subtle text-primary">
+            <i class="ph-bold ph-timer fs-5"></i>
+          </span>
+        </div>
+        <div class="d-flex align-items-baseline gap-2 mb-1">
+          <h3 class="fw-bold mb-0 text-dark" id="val-avg-latency">{{ summary.avg_latency_ms }}</h3>
+          <span class="text-muted small">ms</span>
+        </div>
+        <div class="d-flex align-items-center gap-2">
+          <span class="badge rounded-pill {% if summary.avg_latency_ms < 100 %}bg-success-subtle text-success{% elif summary.avg_latency_ms < 300 %}bg-warning-subtle text-warning{% else %}bg-danger-subtle text-danger{% endif %} px-2 py-0.5" style="font-size: 0.72rem;" id="badge-latency-status">
+            {% if summary.avg_latency_ms < 100 %}Rất nhanh (<100ms){% elif summary.avg_latency_ms < 300 %}Ổn định (<300ms){% else %}Cần tối ưu{% endif %}
+          </span>
+          <small class="text-muted" style="font-size: 0.75rem;">Min: <span id="val-min-latency">{{ summary.min_latency_ms }}</span>ms</small>
+        </div>
+      </div>
+    </div>
+
+    <!-- Card 2: p95 & p99 Latency -->
+    <div class="col-sm-6 col-xl-3">
+      <div class="card border-0 shadow-xs rounded-4 h-100 p-3 bg-white">
+        <div class="d-flex justify-content-between align-items-start mb-2">
+          <span class="text-muted small fw-medium">Phân vị p95 / p99</span>
+          <span class="p-2 rounded-3 bg-info-subtle text-info">
+            <i class="ph-bold ph-trend-up fs-5"></i>
+          </span>
+        </div>
+        <div class="d-flex align-items-baseline gap-2 mb-1">
+          <h3 class="fw-bold mb-0 text-dark" id="val-p95-latency">{{ summary.p95_latency_ms }}</h3>
+          <span class="text-muted small">ms (p95)</span>
+        </div>
+        <div class="d-flex align-items-center justify-content-between">
+          <span class="text-muted small" style="font-size: 0.76rem;">p50: <strong id="val-p50-latency">{{ summary.p50_latency_ms }}</strong>ms</span>
+          <span class="text-muted small" style="font-size: 0.76rem;">p99: <strong id="val-p99-latency">{{ summary.p99_latency_ms }}</strong>ms</span>
+          <span class="text-muted small" style="font-size: 0.76rem;">Max: <strong id="val-max-latency">{{ summary.max_latency_ms }}</strong>ms</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Card 3: Total Requests & RPM -->
+    <div class="col-sm-6 col-xl-3">
+      <div class="card border-0 shadow-xs rounded-4 h-100 p-3 bg-white">
+        <div class="d-flex justify-content-between align-items-start mb-2">
+          <span class="text-muted small fw-medium">Tổng Requests & Tải</span>
+          <span class="p-2 rounded-3 bg-success-subtle text-success">
+            <i class="ph-bold ph-activity fs-5"></i>
+          </span>
+        </div>
+        <div class="d-flex align-items-baseline gap-2 mb-1">
+          <h3 class="fw-bold mb-0 text-dark" id="val-total-reqs">{{ summary.total_requests }}</h3>
+          <span class="text-muted small">reqs</span>
+        </div>
+        <div class="d-flex align-items-center gap-2">
+          <span class="badge bg-primary-subtle text-primary rounded-pill px-2 py-0.5" style="font-size: 0.72rem;">
+            <strong id="val-current-rpm">{{ summary.current_rpm }}</strong> RPM
+          </span>
+          <small class="text-muted" style="font-size: 0.75rem;">Yêu cầu / phút</small>
+        </div>
+      </div>
+    </div>
+
+    <!-- Card 4: Error Rate & Health -->
+    <div class="col-sm-6 col-xl-3">
+      <div class="card border-0 shadow-xs rounded-4 h-100 p-3 bg-white">
+        <div class="d-flex justify-content-between align-items-start mb-2">
+          <span class="text-muted small fw-medium">Tỷ lệ Lỗi (Error Rate)</span>
+          <span class="p-2 rounded-3 bg-danger-subtle text-danger">
+            <i class="ph-bold ph-warning-circle fs-5"></i>
+          </span>
+        </div>
+        <div class="d-flex align-items-baseline gap-2 mb-1">
+          <h3 class="fw-bold mb-0 text-dark" id="val-error-rate">{{ summary.error_rate_pct }}%</h3>
+          <span class="text-muted small">(<span id="val-total-errors">{{ summary.total_errors }}</span> lỗi)</span>
+        </div>
+        <div class="progress" style="height: 6px;">
+          <div class="progress-bar bg-success" role="progressbar" style="width: {{ 100 - summary.error_rate_pct }}%;" id="bar-success-rate"></div>
+          <div class="progress-bar bg-danger" role="progressbar" style="width: {{ summary.error_rate_pct }}%;" id="bar-error-rate"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SYSTEM RESOURCE & STATUS CODE ROW -->
+  <div class="row g-3 mb-4">
+    <!-- Server Hardware Resources -->
+    <div class="col-lg-6">
+      <div class="card border-0 shadow-xs rounded-4 h-100 p-3 p-md-4 bg-white">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <h6 class="fw-bold mb-0 text-dark d-flex align-items-center gap-2">
+            <i class="ph-bold ph-cpu text-primary"></i>
+            Tài nguyên Máy chủ & Bộ nhớ (Server Resources)
+          </h6>
+          <span class="badge bg-light text-secondary border" style="font-size: 0.75rem;">
+            Luồng: <strong id="val-threads">{{ summary.system.thread_count }}</strong> threads
+          </span>
+        </div>
+
+        <!-- CPU Gauge -->
+        <div class="mb-3">
+          <div class="d-flex justify-content-between align-items-center small mb-1">
+            <span class="text-muted">Mức sử dụng CPU</span>
+            <strong class="text-dark"><span id="val-cpu-pct">{{ summary.system.cpu_percent }}</span>%</strong>
+          </div>
+          <div class="progress rounded-pill" style="height: 8px;">
+            <div class="progress-bar {% if summary.system.cpu_percent > 80 %}bg-danger{% elif summary.system.cpu_percent > 50 %}bg-warning{% else %}bg-primary{% endif %}" role="progressbar" style="width: {{ summary.system.cpu_percent }}%;" id="bar-cpu"></div>
+          </div>
+        </div>
+
+        <!-- Process Memory -->
+        <div class="mb-3">
+          <div class="d-flex justify-content-between align-items-center small mb-1">
+            <span class="text-muted">RAM tiến trình ứng dụng (App RSS)</span>
+            <strong class="text-dark"><span id="val-app-mem">{{ summary.system.memory_used_mb }}</span> MB</strong>
+          </div>
+          <div class="progress rounded-pill" style="height: 8px;">
+            <div class="progress-bar bg-info" role="progressbar" style="width: {{ (summary.system.memory_used_mb / (summary.system.memory_total_mb or 1) * 100)|round(1) }}%;" id="bar-app-mem"></div>
+          </div>
+        </div>
+
+        <!-- System Total Memory -->
+        <div>
+          <div class="d-flex justify-content-between align-items-center small mb-1">
+            <span class="text-muted">RAM toàn máy chủ (System RAM)</span>
+            <strong class="text-dark"><span id="val-sys-mem-pct">{{ summary.system.memory_percent }}</span>% (<span id="val-sys-mem-mb">{{ summary.system.system_memory_used_mb or 0 }}</span> / <span id="val-sys-mem-total">{{ summary.system.memory_total_mb }}</span> MB)</strong>
+          </div>
+          <div class="progress rounded-pill" style="height: 8px;">
+            <div class="progress-bar {% if summary.system.memory_percent > 85 %}bg-danger{% elif summary.system.memory_percent > 65 %}bg-warning{% else %}bg-success{% endif %}" role="progressbar" style="width: {{ summary.system.memory_percent }}%;" id="bar-sys-mem"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Status Codes Distribution -->
+    <div class="col-lg-6">
+      <div class="card border-0 shadow-xs rounded-4 h-100 p-3 p-md-4 bg-white">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <h6 class="fw-bold mb-0 text-dark d-flex align-items-center gap-2">
+            <i class="ph-bold ph-chart-pie-slice text-primary"></i>
+            Phân bố Mã phản hồi HTTP (Status Codes)
+          </h6>
+          <span class="badge bg-light text-secondary border" style="font-size: 0.75rem;">
+            Chậm (>500ms): <strong id="val-slow-count" class="text-warning">{{ summary.slow_requests_count }}</strong>
+          </span>
+        </div>
+
+        <div class="row g-2 mb-3">
+          <div class="col-6 col-sm-3">
+            <div class="p-2.5 rounded-3 bg-success-subtle text-center border border-success-subtle">
+              <small class="text-success fw-bold d-block" style="font-size: 0.75rem;">2xx Success</small>
+              <h5 class="fw-bold mb-0 text-success" id="val-code-2xx">{{ summary.status_codes.get('2xx', 0) }}</h5>
+            </div>
+          </div>
+          <div class="col-6 col-sm-3">
+            <div class="p-2.5 rounded-3 bg-info-subtle text-center border border-info-subtle">
+              <small class="text-info fw-bold d-block" style="font-size: 0.75rem;">3xx Redirect</small>
+              <h5 class="fw-bold mb-0 text-info" id="val-code-3xx">{{ summary.status_codes.get('3xx', 0) }}</h5>
+            </div>
+          </div>
+          <div class="col-6 col-sm-3">
+            <div class="p-2.5 rounded-3 bg-warning-subtle text-center border border-warning-subtle">
+              <small class="text-warning fw-bold d-block" style="font-size: 0.75rem;">4xx Client Err</small>
+              <h5 class="fw-bold mb-0 text-warning" id="val-code-4xx">{{ summary.status_codes.get('4xx', 0) }}</h5>
+            </div>
+          </div>
+          <div class="col-6 col-sm-3">
+            <div class="p-2.5 rounded-3 bg-danger-subtle text-center border border-danger-subtle">
+              <small class="text-danger fw-bold d-block" style="font-size: 0.75rem;">5xx Server Err</small>
+              <h5 class="fw-bold mb-0 text-danger" id="val-code-5xx">{{ summary.status_codes.get('5xx', 0) }}</h5>
+            </div>
+          </div>
+        </div>
+
+        <!-- Latency Percentiles Visual Scale -->
+        <div class="p-3 rounded-3 bg-light border">
+          <small class="text-muted fw-bold d-block mb-2" style="font-size: 0.75rem;">THANG ĐỘ TRỄ TỔNG THỂ (LATENCY TIERS):</small>
+          <div class="d-flex justify-content-between align-items-center small">
+            <span><strong>p50 (Median):</strong> <span id="text-p50">{{ summary.p50_latency_ms }}</span>ms</span>
+            <span><strong>p90:</strong> <span id="text-p90">{{ summary.p90_latency_ms }}</span>ms</span>
+            <span><strong>p95:</strong> <span id="text-p95" class="text-primary">{{ summary.p95_latency_ms }}</span>ms</span>
+            <span><strong>p99:</strong> <span id="text-p99" class="text-danger">{{ summary.p99_latency_ms }}</span>ms</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TABLE: TOP SLOWEST ENDPOINTS -->
+  <div class="card border-0 shadow-xs rounded-4 mb-4 bg-white">
+    <div class="card-header bg-transparent border-0 pt-3 px-3 px-md-4 pb-2 d-flex flex-column flex-sm-row justify-content-between align-items-sm-center gap-2">
+      <div>
+        <h5 class="fw-bold mb-0 text-dark d-flex align-items-center gap-2">
+          <i class="ph-bold ph-hourglass-high text-warning"></i>
+          Xếp hạng các Endpoint có độ trễ cao nhất (Slowest Endpoints)
+        </h5>
+        <small class="text-muted">Danh sách các API/Route cần chú ý tối ưu hóa CSDL, thêm cache hoặc giảm N+1 queries.</small>
+      </div>
+      <span class="badge bg-light text-muted border px-2.5 py-1" style="font-size: 0.75rem;">Sắp xếp theo thời gian phản hồi TB</span>
+    </div>
+
+    <div class="table-responsive">
+      <table class="table table-hover align-middle mb-0" style="font-size: 0.88rem;">
+        <thead class="table-light text-muted small">
+          <tr>
+            <th class="ps-3 ps-md-4">Tên Endpoint / Tuyến</th>
+            <th>Phương thức</th>
+            <th class="text-center">Số lượt gọi</th>
+            <th>Độ trễ TB</th>
+            <th>p95</th>
+            <th>Min / Max</th>
+            <th class="text-center">Lỗi</th>
+            <th class="pe-3 pe-md-4 text-end">Mức độ trễ</th>
+          </tr>
+        </thead>
+        <tbody id="tbody-slow-endpoints">
+          {% if slow_endpoints %}
+            {% for ep in slow_endpoints %}
+            <tr>
+              <td class="ps-3 ps-md-4">
+                <div class="fw-semibold text-dark text-truncate" style="max-width: 280px;" title="{{ ep.endpoint }}">
+                  {{ ep.endpoint }}
+                </div>
+                <small class="text-muted font-monospace" style="font-size: 0.75rem;">{{ ep.sample_path }}</small>
+              </td>
+              <td>
+                {% for m in ep.methods %}
+                <span class="badge bg-light text-dark border font-monospace" style="font-size: 0.7rem;">{{ m }}</span>
+                {% endfor %}
+              </td>
+              <td class="text-center fw-medium">{{ ep.count }}</td>
+              <td>
+                <span class="fw-bold {% if ep.avg_ms < 100 %}text-success{% elif ep.avg_ms < 400 %}text-warning{% else %}text-danger{% endif %}">
+                  {{ ep.avg_ms }} ms
+                </span>
+              </td>
+              <td>
+                <span class="text-muted small">{{ ep.p95_ms }} ms</span>
+              </td>
+              <td>
+                <small class="text-muted">{{ ep.min_ms }}ms / <span class="text-danger">{{ ep.max_ms }}ms</span></small>
+              </td>
+              <td class="text-center">
+                {% if ep.errors > 0 %}
+                <span class="badge bg-danger-subtle text-danger rounded-pill px-2 py-0.5" style="font-size: 0.72rem;">{{ ep.errors }} ({{ ep.error_rate_pct }}%)</span>
+                {% else %}
+                <span class="text-muted small">0</span>
+                {% endif %}
+              </td>
+              <td class="pe-3 pe-md-4 text-end">
+                <div class="progress rounded-pill ms-auto" style="width: 80px; height: 6px;">
+                  <div class="progress-bar {% if ep.avg_ms < 100 %}bg-success{% elif ep.avg_ms < 400 %}bg-warning{% else %}bg-danger{% endif %}" role="progressbar" style="width: {{ [100, (ep.avg_ms / 5)|int]|min }}%;"></div>
+                </div>
+              </td>
+            </tr>
+            {% endfor %}
+          {% else %}
+            <tr>
+              <td colspan="8" class="text-center py-4 text-muted">
+                <i class="ph-bold ph-check-circle fs-3 text-success d-block mb-1"></i>
+                Chưa ghi nhận dữ liệu request nào trong phiên làm việc.
+              </td>
+            </tr>
+          {% endif %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- RECENT SLOW REQUESTS & RECENT LOGS TABS -->
+  <div class="card border-0 shadow-xs rounded-4 bg-white">
+    <div class="card-header bg-transparent border-0 pt-3 px-3 px-md-4 pb-0">
+      <ul class="nav nav-tabs card-header-tabs" id="apmLogTabs" role="tablist">
+        <li class="nav-item" role="presentation">
+          <button class="nav-link active fw-semibold small d-flex align-items-center gap-1.5" id="slow-log-tab" data-bs-toggle="tab" data-bs-target="#slow-log-pane" type="button" role="tab">
+            <i class="ph-bold ph-warning text-warning"></i>
+            Các Request Chậm Gần Đây (&ge; 500ms)
+            <span class="badge bg-warning-subtle text-warning rounded-pill px-1.5 py-0.5" style="font-size: 0.7rem;" id="tab-badge-slow">{{ recent_slow|length }}</span>
+          </button>
+        </li>
+        <li class="nav-item" role="presentation">
+          <button class="nav-link fw-semibold small d-flex align-items-center gap-1.5" id="all-log-tab" data-bs-toggle="tab" data-bs-target="#all-log-pane" type="button" role="tab">
+            <i class="ph-bold ph-list-dashes text-primary"></i>
+            Dòng sự kiện Request gần nhất
+          </button>
+        </li>
+      </ul>
+    </div>
+
+    <div class="card-body p-0">
+      <div class="tab-content" id="apmLogTabsContent">
+        <!-- Slow Log Pane -->
+        <div class="tab-pane fade show active" id="slow-log-pane" role="tabpanel">
+          <div class="table-responsive" style="max-height: 420px;">
+            <table class="table table-hover align-middle mb-0" style="font-size: 0.85rem;">
+              <thead class="table-light text-muted small sticky-top">
+                <tr>
+                  <th class="ps-3 ps-md-4">Thời gian</th>
+                  <th>Phương thức</th>
+                  <th>Đường dẫn (Path)</th>
+                  <th>Mã HTTP</th>
+                  <th>Thời gian xử lý</th>
+                  <th class="pe-3 pe-md-4 text-end">IP</th>
+                </tr>
+              </thead>
+              <tbody id="tbody-slow-requests">
+                {% if recent_slow %}
+                  {% for req in recent_slow %}
+                  <tr>
+                    <td class="ps-3 ps-md-4 text-muted small font-monospace">{{ req.timestamp }}</td>
+                    <td><span class="badge bg-light text-dark border font-monospace">{{ req.method }}</span></td>
+                    <td class="font-monospace text-truncate" style="max-width: 320px;" title="{{ req.path }}">{{ req.path }}</td>
+                    <td>
+                      <span class="badge {% if req.status_code < 300 %}bg-success-subtle text-success{% elif req.status_code < 400 %}bg-info-subtle text-info{% elif req.status_code < 500 %}bg-warning-subtle text-warning{% else %}bg-danger-subtle text-danger{% endif %} rounded-pill px-2 py-0.5" style="font-size: 0.72rem;">
+                        {{ req.status_code }}
+                      </span>
+                    </td>
+                    <td>
+                      <span class="badge bg-warning-subtle text-danger fw-bold border border-warning-subtle px-2 py-0.5" style="font-size: 0.75rem;">
+                        {{ req.duration_ms }} ms
+                      </span>
+                    </td>
+                    <td class="pe-3 pe-md-4 text-end font-monospace text-muted small">{{ req.client_ip }}</td>
+                  </tr>
+                  {% endfor %}
+                {% else %}
+                  <tr>
+                    <td colspan="6" class="text-center py-4 text-muted">
+                      <i class="ph-bold ph-shield-check fs-3 text-success d-block mb-1"></i>
+                      Không có request nào vượt quá ngưỡng 500ms. Hệ thống đang chạy mượt mà!
+                    </td>
+                  </tr>
+                {% endif %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- All Requests Pane -->
+        <div class="tab-pane fade" id="all-log-pane" role="tabpanel">
+          <div class="table-responsive" style="max-height: 420px;">
+            <table class="table table-hover align-middle mb-0" style="font-size: 0.85rem;">
+              <thead class="table-light text-muted small sticky-top">
+                <tr>
+                  <th class="ps-3 ps-md-4">Thời gian</th>
+                  <th>Phương thức</th>
+                  <th>Đường dẫn (Path)</th>
+                  <th>Mã HTTP</th>
+                  <th>Thời gian xử lý</th>
+                  <th class="pe-3 pe-md-4 text-end">IP</th>
+                </tr>
+              </thead>
+              <tbody id="tbody-recent-requests">
+                {% if recent_requests %}
+                  {% for req in recent_requests %}
+                  <tr>
+                    <td class="ps-3 ps-md-4 text-muted small font-monospace">{{ req.timestamp }}</td>
+                    <td><span class="badge bg-light text-dark border font-monospace">{{ req.method }}</span></td>
+                    <td class="font-monospace text-truncate" style="max-width: 320px;" title="{{ req.path }}">{{ req.path }}</td>
+                    <td>
+                      <span class="badge {% if req.status_code < 300 %}bg-success-subtle text-success{% elif req.status_code < 400 %}bg-info-subtle text-info{% elif req.status_code < 500 %}bg-warning-subtle text-warning{% else %}bg-danger-subtle text-danger{% endif %} rounded-pill px-2 py-0.5" style="font-size: 0.72rem;">
+                        {{ req.status_code }}
+                      </span>
+                    </td>
+                    <td>
+                      <span class="{% if req.duration_ms < 100 %}text-success{% elif req.duration_ms < 400 %}text-warning{% else %}text-danger fw-bold{% endif %}">
+                        {{ req.duration_ms }} ms
+                      </span>
+                    </td>
+                    <td class="pe-3 pe-md-4 text-end font-monospace text-muted small">{{ req.client_ip }}</td>
+                  </tr>
+                  {% endfor %}
+                {% else %}
+                  <tr>
+                    <td colspan="6" class="text-center py-4 text-muted">Chưa có request nào.</td>
+                  </tr>
+                {% endif %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Reset Metrics Confirmation -->
+<div class="modal fade" id="resetMetricsModal" tabindex="-1" aria-labelledby="resetMetricsModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content border-0 shadow-lg rounded-4">
+      <div class="modal-header border-0 pb-0">
+        <h5 class="modal-title fw-bold text-dark d-flex align-items-center gap-2" id="resetMetricsModalLabel">
+          <i class="ph-bold ph-warning text-danger"></i> Đặt lại số liệu APM
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body py-3">
+        <p class="text-muted mb-0">Hành động này sẽ xóa toàn bộ số liệu độ trễ, bảng xếp hạng endpoint chậm và bộ đếm RPM hiện tại. Bạn có chắc chắn muốn thực hiện?</p>
+      </div>
+      <div class="modal-footer border-0 pt-0">
+        <button type="button" class="btn btn-sm btn-light border" data-bs-dismiss="modal">Hủy</button>
+        <form method="POST" action="{{ url_for('admin.apm_reset_metrics') }}">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <button type="submit" class="btn btn-sm btn-danger shadow-xs">Xác nhận đặt lại</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+let autoRefreshTimer = null;
+let currentRefreshInterval = 10; // seconds
+
+function setAutoRefresh(seconds, label) {
+  currentRefreshInterval = seconds;
+  document.getElementById("refreshLabel").innerText = seconds > 0 ? "Tự động làm mới: " + label : "Tự động: Tắt";
+  
+  if (autoRefreshTimer) {
+    clearInterval(autoRefreshTimer);
+    autoRefreshTimer = null;
+  }
+  
+  if (seconds > 0) {
+    autoRefreshTimer = setInterval(() => {
+      fetchAPMMetrics(false);
+    }, seconds * 1000);
+  }
+}
+
+async function fetchAPMMetrics(showFeedback = false) {
+  const icon = document.getElementById("refreshIcon");
+  if (icon) icon.classList.add("ph-spin");
+
+  try {
+    const res = await fetch("{{ url_for('admin.apm_metrics_api') }}", {
+      headers: { "X-Requested-With": "XMLHttpRequest" }
+    });
+    if (!res.ok) throw new Error("Network error");
+    const data = await res.json();
+    if (data.success) {
+      updateAPMUI(data);
+    }
+  } catch (err) {
+    console.warn("Lỗi cập nhật APM:", err);
+  } finally {
+    if (icon) {
+      setTimeout(() => icon.classList.remove("ph-spin"), 600);
+    }
+  }
+}
+
+function updateAPMUI(data) {
+  const s = data.summary;
+  if (!s) return;
+
+  // KPIs
+  document.getElementById("val-uptime").innerText = s.uptime_formatted || "0s";
+  document.getElementById("val-endpoints-count").innerText = s.tracked_endpoints_count || "0";
+  document.getElementById("val-avg-latency").innerText = s.avg_latency_ms;
+  document.getElementById("val-min-latency").innerText = s.min_latency_ms;
+  document.getElementById("val-max-latency").innerText = s.max_latency_ms;
+  document.getElementById("val-p50-latency").innerText = s.p50_latency_ms;
+  document.getElementById("val-p95-latency").innerText = s.p95_latency_ms;
+  document.getElementById("val-p99-latency").innerText = s.p99_latency_ms;
+  document.getElementById("val-total-reqs").innerText = s.total_requests;
+  document.getElementById("val-current-rpm").innerText = s.current_rpm;
+  document.getElementById("val-error-rate").innerText = s.error_rate_pct + "%";
+  document.getElementById("val-total-errors").innerText = s.total_errors;
+
+  // Latency Status Badge
+  const badge = document.getElementById("badge-latency-status");
+  if (badge) {
+    if (s.avg_latency_ms < 100) {
+      badge.className = "badge rounded-pill bg-success-subtle text-success px-2 py-0.5";
+      badge.innerText = "Rất nhanh (<100ms)";
+    } else if (s.avg_latency_ms < 300) {
+      badge.className = "badge rounded-pill bg-warning-subtle text-warning px-2 py-0.5";
+      badge.innerText = "Ổn định (<300ms)";
+    } else {
+      badge.className = "badge rounded-pill bg-danger-subtle text-danger px-2 py-0.5";
+      badge.innerText = "Cần tối ưu";
+    }
+  }
+
+  // Progress bars
+  document.getElementById("bar-success-rate").style.width = (100 - s.error_rate_pct) + "%";
+  document.getElementById("bar-error-rate").style.width = s.error_rate_pct + "%";
+
+  // System Hardware
+  if (s.system) {
+    document.getElementById("val-threads").innerText = s.system.thread_count;
+    document.getElementById("val-cpu-pct").innerText = s.system.cpu_percent;
+    document.getElementById("bar-cpu").style.width = s.system.cpu_percent + "%";
+    document.getElementById("val-app-mem").innerText = s.system.memory_used_mb;
+    document.getElementById("bar-app-mem").style.width = Math.min(100, (s.system.memory_used_mb / (s.system.memory_total_mb || 1) * 100)) + "%";
+    document.getElementById("val-sys-mem-pct").innerText = s.system.memory_percent;
+    document.getElementById("val-sys-mem-mb").innerText = s.system.system_memory_used_mb || 0;
+    document.getElementById("val-sys-mem-total").innerText = s.system.memory_total_mb;
+    document.getElementById("bar-sys-mem").style.width = s.system.memory_percent + "%";
+  }
+
+  // Status Codes
+  if (s.status_codes) {
+    document.getElementById("val-code-2xx").innerText = s.status_codes["2xx"] || 0;
+    document.getElementById("val-code-3xx").innerText = s.status_codes["3xx"] || 0;
+    document.getElementById("val-code-4xx").innerText = s.status_codes["4xx"] || 0;
+    document.getElementById("val-code-5xx").innerText = s.status_codes["5xx"] || 0;
+  }
+  document.getElementById("val-slow-count").innerText = s.slow_requests_count || 0;
+  document.getElementById("tab-badge-slow").innerText = data.recent_slow ? data.recent_slow.length : 0;
+
+  // Latency percentiles text
+  document.getElementById("text-p50").innerText = s.p50_latency_ms;
+  document.getElementById("text-p90").innerText = s.p90_latency_ms;
+  document.getElementById("text-p95").innerText = s.p95_latency_ms;
+  document.getElementById("text-p99").innerText = s.p99_latency_ms;
+
+  // Update Slowest Endpoints Table
+  if (data.slow_endpoints) {
+    const tbody = document.getElementById("tbody-slow-endpoints");
+    if (data.slow_endpoints.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="8" class="text-center py-4 text-muted"><i class="ph-bold ph-check-circle fs-3 text-success d-block mb-1"></i>Chưa ghi nhận dữ liệu request nào trong phiên làm việc.</td></tr>`;
+    } else {
+      tbody.innerHTML = data.slow_endpoints.map(ep => {
+        const colorCls = ep.avg_ms < 100 ? "text-success" : (ep.avg_ms < 400 ? "text-warning" : "text-danger");
+        const barCls = ep.avg_ms < 100 ? "bg-success" : (ep.avg_ms < 400 ? "bg-warning" : "bg-danger");
+        const methodBadges = ep.methods.map(m => `<span class="badge bg-light text-dark border font-monospace" style="font-size: 0.7rem;">${m}</span>`).join(" ");
+        const errBadge = ep.errors > 0 ? `<span class="badge bg-danger-subtle text-danger rounded-pill px-2 py-0.5" style="font-size: 0.72rem;">${ep.errors} (${ep.error_rate_pct}%)</span>` : `<span class="text-muted small">0</span>`;
+        const barWidth = Math.min(100, Math.max(5, parseInt(ep.avg_ms / 5)));
+
+        return `<tr>
+          <td class="ps-3 ps-md-4">
+            <div class="fw-semibold text-dark text-truncate" style="max-width: 280px;" title="${ep.endpoint}">${ep.endpoint}</div>
+            <small class="text-muted font-monospace" style="font-size: 0.75rem;">${ep.sample_path}</small>
+          </td>
+          <td>${methodBadges}</td>
+          <td class="text-center fw-medium">${ep.count}</td>
+          <td><span class="fw-bold ${colorCls}">${ep.avg_ms} ms</span></td>
+          <td><span class="text-muted small">${ep.p95_ms} ms</span></td>
+          <td><small class="text-muted">${ep.min_ms}ms / <span class="text-danger">${ep.max_ms}ms</span></small></td>
+          <td class="text-center">${errBadge}</td>
+          <td class="pe-3 pe-md-4 text-end">
+            <div class="progress rounded-pill ms-auto" style="width: 80px; height: 6px;">
+              <div class="progress-bar ${barCls}" role="progressbar" style="width: ${barWidth}%;"></div>
+            </div>
+          </td>
+        </tr>`;
+      }).join("");
+    }
+  }
+
+  // Update Slow Requests Log Table
+  if (data.recent_slow) {
+    const tbodySlow = document.getElementById("tbody-slow-requests");
+    if (data.recent_slow.length === 0) {
+      tbodySlow.innerHTML = `<tr><td colspan="6" class="text-center py-4 text-muted"><i class="ph-bold ph-shield-check fs-3 text-success d-block mb-1"></i>Không có request nào vượt quá ngưỡng 500ms. Hệ thống đang chạy mượt mà!</td></tr>`;
+    } else {
+      tbodySlow.innerHTML = data.recent_slow.map(req => {
+        const statusBadge = req.status_code < 300 ? "bg-success-subtle text-success" : (req.status_code < 400 ? "bg-info-subtle text-info" : (req.status_code < 500 ? "bg-warning-subtle text-warning" : "bg-danger-subtle text-danger"));
+        return `<tr>
+          <td class="ps-3 ps-md-4 text-muted small font-monospace">${req.timestamp}</td>
+          <td><span class="badge bg-light text-dark border font-monospace">${req.method}</span></td>
+          <td class="font-monospace text-truncate" style="max-width: 320px;" title="${req.path}">${req.path}</td>
+          <td><span class="badge ${statusBadge} rounded-pill px-2 py-0.5" style="font-size: 0.72rem;">${req.status_code}</span></td>
+          <td><span class="badge bg-warning-subtle text-danger fw-bold border border-warning-subtle px-2 py-0.5" style="font-size: 0.75rem;">${req.duration_ms} ms</span></td>
+          <td class="pe-3 pe-md-4 text-end font-monospace text-muted small">${req.client_ip}</td>
+        </tr>`;
+      }).join("");
+    }
+  }
+}
+
+// Start auto-refresh on page load
+document.addEventListener("DOMContentLoaded", () => {
+  setAutoRefresh(10, "10s");
+});
+</script>
+{% endblock %}

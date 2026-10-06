@@ -8,7 +8,7 @@ from sqlalchemy.engine import Engine
 import sqlite3
 
 from .config import Config
-from .extensions import cors, csrf, db, limiter, login_manager, migrate, swagger, cache
+from .extensions import cors, csrf, db, limiter, login_manager, migrate, swagger, cache, compress
 
 
 @event.listens_for(Engine, "connect")
@@ -43,10 +43,13 @@ def create_app(config_object=Config):
 
     db.init_app(app)
     migrate.init_app(app, db, render_as_batch=True)
+    compress.init_app(app)
     from .backend.admin.cache_service import cache_service
     cache_service.init_app(app)
     from .backend.admin.error_monitoring_service import init_error_monitoring
     init_error_monitoring(app)
+    from .backend.admin.apm_service import init_apm
+    init_apm(app)
     limiter.init_app(app)
     cors.init_app(
         app,

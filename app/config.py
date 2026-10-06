@@ -58,6 +58,20 @@ class Config:
     RATELIMIT_HEADERS_ENABLED = True
     CORS_ALLOWED_ORIGINS = os.getenv("CORS_ALLOWED_ORIGINS", "*")
 
+    # Compression (Gzip / Brotli)
+    COMPRESS_MIMETYPES = [
+        "text/html",
+        "text/css",
+        "text/xml",
+        "text/plain",
+        "application/json",
+        "application/javascript",
+        "application/x-javascript",
+        "image/svg+xml",
+    ]
+    COMPRESS_MIN_SIZE = 500
+    COMPRESS_LEVEL = 6
+
 
 class TestConfig(Config):
     TESTING = True

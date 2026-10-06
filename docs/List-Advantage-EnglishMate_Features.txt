@@ -947,12 +947,12 @@ NỀN TẢNG HỌC TIẾNG ANH TRỰC TUYẾN THÔNG MINH
 [x] - Database Optimization - Tối ưu database
 [x] - Query Optimization - Tối ưu query
 [x] - Asset Optimization - Tối ưu tài sản
-[ ] - Lazy Loading - Lazy loading
+[x] - Lazy Loading - Lazy loading
 [x] - Pagination - Phân trang
-[ ] - Compression - Nén
+[x] - Compression - Nén
 [x] - CDN Integration - Tích hợp CDN
-[ ] - Load Balancing - Cân bằng tải
-[ ] - Performance Monitoring - Giám sát hiệu suất
+[x] - Load Balancing - Cân bằng tải
+[x] - Performance Monitoring - Giám sát hiệu suất
 
 12.9. Monitoring & Logging (Giám sát & ghi log)
 [x] - Application Logging - Ghi log ứng dụng
