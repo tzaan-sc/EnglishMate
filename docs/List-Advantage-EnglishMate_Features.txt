@@ -887,12 +887,12 @@ NỀN TẢNG HỌC TIẾNG ANH TRỰC TUYẾN THÔNG MINH
 [x] - File Validation - Kiểm tra file
 [x] - File Storage - Lưu trữ file
 [x] - File Deletion - Xóa file
-[ ] - File Compression - Nén file
-[ ] - Image Processing - Xử lý ảnh
-[ ] - Audio Processing - Xử lý audio
+[x] - File Compression - Nén file
+[x] - Image Processing - Xử lý ảnh
+[x] - Audio Processing - Xử lý audio
 [x] - File Security - Bảo mật file
 [x] - File Organization - Tổ chức file
-[ ] - File Backup - Sao lưu file
+[x] - File Backup - Sao lưu file
 
 12.4. Email System (Hệ thống email)
 [x] - SMTP Configuration - Cấu hình SMTP

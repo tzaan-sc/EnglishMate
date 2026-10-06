@@ -412,12 +412,14 @@ def edit_profile_info():
                 flash(f"Dung lượng ảnh đại diện vượt quá giới hạn cho phép ({max_avatar_mb}MB).", "danger")
                 return redirect(url_for("main.profile"))
 
-            ext = os.path.splitext(file.filename)[1].lower()
-            filename = f"avatar_{current_user.id}_{uuid.uuid4().hex[:8]}{ext}"
+            from app.utils.media_processor import process_avatar_image
             upload_folder = Path(current_app.static_folder) / "uploads" / "avatars"
-            upload_folder.mkdir(parents=True, exist_ok=True)
-            file_path = upload_folder / filename
-            file.save(file_path)
+            filename, file_path, proc_res = process_avatar_image(
+                file_storage_or_data=file,
+                user_id=current_user.id,
+                upload_folder=upload_folder,
+                target_size=300
+            )
             current_user.avatar = filename
 
         db.session.commit()

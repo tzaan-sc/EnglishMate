@@ -298,22 +298,32 @@ from .backup_service import (
     cleanup_old_backups,
     delete_backup,
 )
+from .file_backup_service import (
+    get_uploads_stats,
+    get_cloud_storage_settings,
+    save_cloud_storage_settings,
+    backup_uploads_to_cloud,
+    create_uploads_archive,
+)
+from ...utils.media_processor import compress_image, normalize_audio_volume, crop_and_resize_square
 
 
 @bp.get("/system/backup")
 @bp.get("/backup")
 @admin_required
 def backup_settings():
-    """Trang giao diện quản trị Cài đặt và Quản lý sao lưu CSDL (Database Backup Settings)."""
+    """Trang giao diện quản trị Cài đặt và Quản lý sao lưu CSDL & File Uploads (Backup Settings)."""
     backups = DatabaseBackup.query.order_by(DatabaseBackup.created_at.desc()).all()
     stats = get_backup_stats()
     settings = get_backup_settings()
+    uploads_stats = get_uploads_stats()
 
     return render_template(
         "admin/backup_settings.html",
         backups=backups,
         stats=stats,
-        settings=settings
+        settings=settings,
+        uploads_stats=uploads_stats
     )
 
 
@@ -420,6 +430,123 @@ def cleanup_backups_route():
 
     flash(msg, "info")
     return redirect(url_for("admin.backup_settings"))
+
+
+@bp.post("/system/backup/uploads")
+@bp.post("/backup/uploads")
+@admin_required
+def backup_uploads_route():
+    """Sao lưu thư mục static/uploads/ lên Cloud Storage (S3 / Cloudinary / Local Zip)."""
+    data = request.get_json(silent=True) or request.form
+    provider = data.get("provider", "LOCAL").strip().upper()
+    notes = data.get("notes")
+
+    res = backup_uploads_to_cloud(
+        provider=provider,
+        admin_id=current_user.id,
+        notes=notes
+    )
+
+    if request.is_json:
+        return jsonify(res)
+
+    if res.get("success"):
+        flash(res["message"], "success")
+    else:
+        flash(res.get("error", "Lỗi sao lưu thư mục uploads."), "danger")
+
+    return redirect(url_for("admin.backup_settings"))
+
+
+@bp.get("/system/backup/uploads/stats")
+@bp.get("/backup/uploads/stats")
+@admin_required
+def get_uploads_stats_route():
+    """Lấy số liệu thống kê chi tiết thư mục static/uploads/ và trạng thái cloud."""
+    stats = get_uploads_stats()
+    return jsonify({"success": True, "stats": stats})
+
+
+@bp.post("/system/backup/cloud-settings")
+@bp.post("/backup/cloud-settings")
+@admin_required
+def update_cloud_settings_route():
+    """Cập nhật các thông số kết nối Cloud Storage (AWS S3, Cloudinary)."""
+    data = request.get_json(silent=True) or request.form.to_dict()
+    res = save_cloud_storage_settings(data, admin_id=current_user.id)
+
+    if request.is_json:
+        return jsonify(res)
+
+    flash(res["message"], "success")
+    return redirect(url_for("admin.backup_settings"))
+
+
+@bp.post("/system/media/compress-image")
+@bp.post("/media/compress-image")
+@admin_required
+def compress_image_api():
+    """API nén ảnh theo yêu cầu với Pillow."""
+    file = request.files.get("image")
+    if not file:
+        return jsonify({"success": False, "error": "Vui lòng chọn file ảnh cần nén."}), 400
+
+    quality = request.form.get("quality", type=int) or 85
+    max_w = request.form.get("max_width", type=int) or 1920
+    max_h = request.form.get("max_height", type=int) or 1920
+    fmt = request.form.get("format") or None
+
+    try:
+        res = compress_image(
+            input_source=file,
+            max_width=max_w,
+            max_height=max_h,
+            quality=quality,
+            output_format=fmt
+        )
+        return jsonify({
+            "success": True,
+            "original_size": res["original_size"],
+            "compressed_size": res["compressed_size"],
+            "saved_bytes": res["saved_bytes"],
+            "reduction_percent": res["reduction_percent"],
+            "width": res["width"],
+            "height": res["height"],
+            "format": res["format"]
+        })
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
+
+
+@bp.post("/system/media/normalize-audio")
+@bp.post("/media/normalize-audio")
+@admin_required
+def normalize_audio_api():
+    """API chuẩn hóa âm lượng file audio."""
+    file = request.files.get("audio")
+    if not file:
+        return jsonify({"success": False, "error": "Vui lòng chọn file âm thanh cần chuẩn hóa."}), 400
+
+    target_dbfs = request.form.get("target_dbfs", type=float) or -3.0
+
+    try:
+        res = normalize_audio_volume(
+            input_audio=file,
+            target_dbfs=target_dbfs
+        )
+        return jsonify({
+            "success": True,
+            "engine": res["engine"],
+            "original_max_dbfs": res["original_max_dbfs"],
+            "target_dbfs": res["target_dbfs"],
+            "gain_applied_db": res["gain_applied_db"],
+            "duration_seconds": res["duration_seconds"],
+            "channels": res["channels"],
+            "sample_rate": res["sample_rate"],
+            "output_size": res["output_size"]
+        })
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
 
 
 # ---------------------------------------------------------------------------

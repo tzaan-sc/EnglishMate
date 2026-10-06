@@ -537,11 +537,11 @@ MODULE 12. SYSTEM FEATURES (TÍNH NĂNG HỆ THỐNG) — 46 TÍNH NĂNG CHƯA L
 - [x] `Documentation`: Tích hợp `Flasgger` (OpenAPI 2.0 / Swagger UI) tự động sinh trang tài liệu tương tác tại `/api/v1/docs` và spec JSON tại `/api/v1/apispec.json`. (Ưu tiên: Trung bình)
 - [x] `CORS Support`: Tích hợp `Flask-CORS` mở quyền truy cập nguồn gốc chéo cho toàn bộ endpoint `/api/*` và `/static/*`, hỗ trợ Preflight OPTIONS request cho ứng dụng client ngoài. (Ưu tiên: Trung bình)
 
-12.3. File Management (4 tính năng chưa làm):
-- [ ] `File Compression`: Chưa tự động nén giảm dung lượng file ảnh upload. (Ưu tiên: Trung bình)
-- [ ] `Image Processing`: Chưa dùng thư viện `Pillow` để crop/resize ảnh đại diện về tỷ lệ vuông chuẩn 300x300. (Ưu tiên: Trung bình)
-- [ ] `Audio Processing`: Chưa có module xử lý chuẩn hóa âm lượng audio. (Ưu tiên: Thấp)
-- [ ] `File Backup`: Chưa sao lưu thư mục `static/uploads/` lên Cloud Storage (S3 / Cloudinary). (Ưu tiên: Cao)
+12.3. File Management (4/4 tính năng hoàn thành):
+- [x] `File Compression`: Tự động nén và tối ưu hóa dung lượng file ảnh upload với Pillow (JPEG/WebP/PNG, chất lượng nén, giới hạn kích thước tối đa và tự động xóa EXIF thừa). (Ưu tiên: Trung bình)
+- [x] `Image Processing`: Dùng thư viện `Pillow` để crop vuông 1:1 chính giữa (Center Crop) và resize ảnh đại diện người dùng về kích thước chuẩn 300x300 không méo hình. (Ưu tiên: Trung bình)
+- [x] `Audio Processing`: Module xử lý chuẩn hóa âm lượng audio (`normalize_audio_volume`) cân chỉnh biên độ âm thanh đạt mức peak dBFS tiêu chuẩn (hỗ trợ Pydub & Pure Python WAV). (Ưu tiên: Thấp)
+- [x] `File Backup`: Đóng gói nén ZIP thư mục `static/uploads/` và sao lưu an toàn lên Cloud Storage (AWS S3 / Cloudinary / Local Archive) kèm giao diện quản trị Admin. (Ưu tiên: Cao)
 
 12.4. Email System (6 tính năng chưa làm):
 - [ ] `Email Queue`: Hiện tại gửi email bằng `smtplib` đồng bộ, nếu mạng chậm sẽ gây đơ trang web. Cần hàng đợi gửi mail bất đồng bộ. (Ưu tiên: Cao)

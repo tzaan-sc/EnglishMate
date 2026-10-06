@@ -446,27 +446,27 @@ MODULE: 12. SYSTEM FEATURES (TÍNH NĂNG HỆ THỐNG) (46 tính năng chưa là
 
 
 
-### 12.3. File Management (Quản lý file) (4 tính năng):
+### 12.3. File Management (Quản lý file) (4/4 tính năng hoàn thành):
 ----------------------------------------------------------------------------------------------------
-56. [ ] File Compression - Nén file
+56. [x] File Compression - Nén file
    - Mức độ ưu tiên: Thấp
    - Mô tả yêu cầu: Tự động nén ảnh đại diện (Avatar) và các tệp tải lên để tiết kiệm dung lượng lưu trữ.
-   - Đối chiếu hiện trạng: Ảnh avatar được lưu nguyên vẹn định dạng người dùng tải lên sau khi kiểm tra đuôi file và kích thước.
+   - Đối chiếu hiện trạng: Đã tích hợp media_processor.py tự động nén ảnh với Pillow (JPEG/WebP/PNG), loại bỏ EXIF và giảm dung lượng đĩa.
 
-57. [ ] Image Processing - Xử lý ảnh
+57. [x] Image Processing - Xử lý ảnh
    - Mức độ ưu tiên: Trung bình
-   - Mô tả yêu cầu: Tự động cắt ảnh (crop vuông), resize về kích thước chuẩn (200x200px) bằng thư viện Pillow trước khi lưu vào static/uploads.
-   - Đối chiếu hiện trạng: Chưa tích hợp xử lý ảnh Pillow ở backend.
+   - Mô tả yêu cầu: Tự động cắt ảnh (crop vuông 1:1 chính giữa), resize về kích thước chuẩn (300x300px) bằng thư viện Pillow trước khi lưu vào static/uploads.
+   - Đối chiếu hiện trạng: Đã tích hợp hàm crop_and_resize_square và process_avatar_image chuẩn hóa ảnh avatar 300x300 không méo hình.
 
-58. [ ] Audio Processing - Xử lý audio
+58. [x] Audio Processing - Xử lý audio
    - Mức độ ưu tiên: Thấp
    - Mô tả yêu cầu: Xử lý tệp âm thanh (cắt ghép, chuẩn hóa âm lượng, nén bitrate audio) cho bài học nghe.
-   - Đối chiếu hiện trạng: Các file mp3 bài nghe được đọc trực tiếp từ thư mục tĩnh.
+   - Đối chiếu hiện trạng: Đã tích hợp module normalize_audio_volume chuẩn hóa biên độ âm lượng đỉnh (dBFS) hỗ trợ Pydub & Pure Python WAV.
 
-59. [ ] File Backup - Sao lưu file
+59. [x] File Backup - Sao lưu file
    - Mức độ ưu tiên: Thấp
-   - Mô tả yêu cầu: Tự động đồng bộ các file người dùng tải lên (ảnh đại diện, tài liệu) lên dịch vụ lưu trữ đám mây (AWS S3 / Google Cloud Storage).
-   - Đối chiếu hiện trạng: Toàn bộ file upload đang lưu cục bộ trong app/static/uploads/.
+   - Mô tả yêu cầu: Tự động đồng bộ các file người dùng tải lên (ảnh đại diện, tài liệu) lên dịch vụ lưu trữ đám mây (AWS S3 / Cloudinary).
+   - Đối chiếu hiện trạng: Đã tích hợp file_backup_service.py đóng gói nén ZIP thư mục uploads và sao lưu lên AWS S3 / Cloudinary / Local Archive.
 
 
 ### 12.4. Email System (Hệ thống email) (6 tính năng):

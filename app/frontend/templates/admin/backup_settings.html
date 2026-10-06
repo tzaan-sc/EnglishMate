@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% block title %}Cài đặt Sao lưu CSDL (Database Backup Settings) · EnglishMate Admin{% endblock %}
+{% block title %}Cài đặt Sao lưu Hệ thống & Cloud Storage · EnglishMate Admin{% endblock %}
 
 {% block content %}
 <div class="container-fluid max-w-7xl py-4">
@@ -14,7 +14,7 @@
         </a>
       </li>
       <li class="breadcrumb-item active" aria-current="page">
-        <span>Sao lưu CSDL (Database Backup)</span>
+        <span>Sao lưu & Quản lý File</span>
       </li>
     </ol>
   </nav>
@@ -27,13 +27,17 @@
       </div>
       <div>
         <h3 class="fw-bold text-dark mb-0.5" style="letter-spacing: -0.01em;">Cài đặt Sao lưu CSDL (Database Backup)</h3>
-        <p class="text-secondary small mb-0">Quản lý các bản sao lưu an toàn của cơ sở dữ liệu, tải về máy tính và cấu hình tần suất tự động sao lưu</p>
+        <p class="text-secondary small mb-0">Quản lý các bản sao lưu an toàn của cơ sở dữ liệu, đồng bộ File Uploads lên Cloud Storage (S3/Cloudinary) và xử lý media</p>
       </div>
     </div>
     <div class="d-flex align-items-center gap-2 flex-wrap">
       <button type="button" class="btn btn-outline-secondary fw-semibold px-3 py-2 rounded-3 shadow-2xs d-inline-flex align-items-center gap-1.5" data-bs-toggle="modal" data-bs-target="#cleanupModal" title="Dọn dẹp bản sao lưu cũ quá hạn">
         <i class="ph-bold ph-broom fs-5"></i>
         <span>Dọn dẹp cũ</span>
+      </button>
+      <button type="button" class="btn btn-outline-primary fw-bold px-3 py-2 rounded-3 shadow-2xs d-inline-flex align-items-center gap-1.5" data-bs-toggle="modal" data-bs-target="#backupUploadsModal">
+        <i class="ph-bold ph-cloud-arrow-up fs-5"></i>
+        <span>Sao lưu Uploads Cloud</span>
       </button>
       <button type="button" class="btn btn-success fw-bold px-3.5 py-2 rounded-3 shadow-xs d-inline-flex align-items-center gap-1.5" data-bs-toggle="modal" data-bs-target="#backupNowModal" id="btnBackupNow">
         <i class="ph-bold ph-cloud-arrow-down fs-5"></i>
@@ -42,306 +46,611 @@
     </div>
   </div>
 
-  <!-- Metric Overview Cards -->
-  <div class="row g-3 mb-4">
-    <div class="col-12 col-sm-6 col-lg-3">
-      <div class="card-modern p-3.5 h-100 d-flex align-items-center gap-3 border shadow-2xs">
-        <div class="rounded-circle bg-primary-subtle text-primary d-inline-flex align-items-center justify-content-center flex-shrink-0" style="width: 46px; height: 46px;">
-          <i class="ph-bold ph-files fs-4"></i>
-        </div>
-        <div>
-          <span class="text-secondary small fw-semibold d-block">Tổng số bản sao lưu</span>
-          <h4 class="fw-bold text-dark mb-0">{{ stats.total_count }}</h4>
-        </div>
-      </div>
-    </div>
+  <!-- Navigation Tabs -->
+  <ul class="nav nav-pills gap-2 mb-4 bg-white p-2 rounded-3 border shadow-2xs" id="backupTabs" role="tablist">
+    <li class="nav-item" role="presentation">
+      <button class="nav-link active fw-bold px-3.5 py-2 rounded-2 d-flex align-items-center gap-2" id="tab-database-btn" data-bs-toggle="pill" data-bs-target="#tab-database" type="button" role="tab">
+        <i class="ph-bold ph-database"></i>
+        <span>Sao lưu Cơ sở dữ liệu (Database)</span>
+      </button>
+    </li>
+    <li class="nav-item" role="presentation">
+      <button class="nav-link fw-bold px-3.5 py-2 rounded-2 d-flex align-items-center gap-2" id="tab-files-btn" data-bs-toggle="pill" data-bs-target="#tab-files" type="button" role="tab">
+        <i class="ph-bold ph-cloud-arrow-up"></i>
+        <span>Quản lý File & Cloud Storage (S3 / Cloudinary)</span>
+        <span class="badge bg-primary-subtle text-primary rounded-pill px-2 py-0.5 small">{{ uploads_stats.total_files if uploads_stats else 0 }} files</span>
+      </button>
+    </li>
+    <li class="nav-item" role="presentation">
+      <button class="nav-link fw-bold px-3.5 py-2 rounded-2 d-flex align-items-center gap-2" id="tab-media-btn" data-bs-toggle="pill" data-bs-target="#tab-media" type="button" role="tab">
+        <i class="ph-bold ph-sliders"></i>
+        <span>Công cụ Xử lý Ảnh & Audio</span>
+      </button>
+    </li>
+  </ul>
 
-    <div class="col-12 col-sm-6 col-lg-3">
-      <div class="card-modern p-3.5 h-100 d-flex align-items-center gap-3 border shadow-2xs">
-        <div class="rounded-circle bg-success-subtle text-success d-inline-flex align-items-center justify-content-center flex-shrink-0" style="width: 46px; height: 46px;">
-          <i class="ph-bold ph-hard-drives fs-4"></i>
-        </div>
-        <div>
-          <span class="text-secondary small fw-semibold d-block">Dung lượng lưu trữ</span>
-          <h4 class="fw-bold text-dark mb-0">{{ stats.total_size_display }}</h4>
-        </div>
-      </div>
-    </div>
+  <!-- Tab Contents -->
+  <div class="tab-content" id="backupTabsContent">
 
-    <div class="col-12 col-sm-6 col-lg-3">
-      <div class="card-modern p-3.5 h-100 d-flex align-items-center gap-3 border shadow-2xs">
-        <div class="rounded-circle bg-warning-subtle text-warning d-inline-flex align-items-center justify-content-center flex-shrink-0" style="width: 46px; height: 46px;">
-          <i class="ph-bold ph-clock-counter-clockwise fs-4"></i>
-        </div>
-        <div>
-          <span class="text-secondary small fw-semibold d-block">Tần suất tự động</span>
-          <h4 class="fw-bold text-dark mb-0">
-            {% if settings.BACKUP_FREQUENCY == 'DAILY' %}
-              <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-2 py-0.5" style="font-size: 0.78rem;">Hàng ngày</span>
-            {% elif settings.BACKUP_FREQUENCY == 'WEEKLY' %}
-              <span class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill px-2 py-0.5" style="font-size: 0.78rem;">Hàng tuần</span>
-            {% else %}
-              <span class="badge bg-secondary-subtle text-secondary border rounded-pill px-2 py-0.5" style="font-size: 0.78rem;">Đã tắt</span>
-            {% endif %}
-          </h4>
-        </div>
-      </div>
-    </div>
-
-    <div class="col-12 col-sm-6 col-lg-3">
-      <div class="card-modern p-3.5 h-100 d-flex align-items-center gap-3 border shadow-2xs">
-        <div class="rounded-circle bg-purple-subtle text-purple d-inline-flex align-items-center justify-content-center flex-shrink-0" style="width: 46px; height: 46px;">
-          <i class="ph-bold ph-check-circle fs-4"></i>
-        </div>
-        <div>
-          <span class="text-secondary small fw-semibold d-block">Sao lưu gần nhất</span>
-          <h4 class="fw-bold text-dark mb-0" style="font-size: 0.95rem;">
-            {% if stats.last_backup %}
-              {{ stats.last_backup.created_at_vn.strftime('%H:%M %d/%m/%Y') if stats.last_backup.created_at_vn else stats.last_backup.created_at.strftime('%H:%M %d/%m/%Y') }}
-            {% else %}
-              Chưa có
-            {% endif %}
-          </h4>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <div class="row g-4">
-    <!-- LEFT COLUMN: BACKUP CONFIGURATION FORM -->
-    <div class="col-12 col-lg-4">
-      <div class="card-modern p-4 h-100">
-        <div class="d-flex align-items-center gap-2.5 mb-3 pb-2 border-bottom">
-          <div class="rounded-circle bg-primary-subtle text-primary d-inline-flex align-items-center justify-content-center" style="width: 32px; height: 32px;">
-            <i class="ph-bold ph-gear"></i>
-          </div>
-          <h5 class="fw-bold text-dark mb-0" style="font-size: 1.05rem;">Cấu hình Tự động sao lưu</h5>
-        </div>
-
-        <form id="backupSettingsForm" onsubmit="saveBackupSettings(event)">
-          <!-- Auto Backup Switch -->
-          <div class="form-check form-switch mb-3 p-0 d-flex justify-content-between align-items-center">
+    <!-- ================================================================= -->
+    <!-- TAB 1: DATABASE BACKUP -->
+    <!-- ================================================================= -->
+    <div class="tab-pane fade show active" id="tab-database" role="tabpanel">
+      <!-- Metric Overview Cards -->
+      <div class="row g-3 mb-4">
+        <div class="col-12 col-sm-6 col-lg-3">
+          <div class="card-modern p-3.5 h-100 d-flex align-items-center gap-3 border shadow-2xs">
+            <div class="rounded-circle bg-primary-subtle text-primary d-inline-flex align-items-center justify-content-center flex-shrink-0" style="width: 46px; height: 46px;">
+              <i class="ph-bold ph-files fs-4"></i>
+            </div>
             <div>
-              <label class="form-check-label fw-bold text-dark small d-block mb-0" for="backupAutoSwitch">
-                Bật tự động sao lưu CSDL
-              </label>
-              <span class="text-muted small" style="font-size: 0.75rem;">Chạy định kỳ tự động qua tác vụ nền</span>
-            </div>
-            <input class="form-check-input ms-0" type="checkbox" role="switch" id="backupAutoSwitch" name="BACKUP_AUTO_ENABLED" {% if settings.BACKUP_AUTO_ENABLED %}checked{% endif %} style="width: 2.5em; height: 1.3em;">
-          </div>
-
-          <!-- Frequency Radio Selection -->
-          <div class="mb-3">
-            <label class="form-label fw-semibold text-dark small mb-1.5">Tần suất sao lưu</label>
-            <div class="d-flex flex-column gap-2">
-              <label class="p-2.5 rounded-3 border d-flex align-items-center justify-content-between cursor-pointer hover-bg-light transition-all">
-                <div class="d-flex align-items-center gap-2">
-                  <input type="radio" name="BACKUP_FREQUENCY" value="DAILY" class="form-check-input m-0" {% if settings.BACKUP_FREQUENCY == 'DAILY' %}checked{% endif %}>
-                  <span class="small fw-semibold text-dark">Hàng ngày (Daily)</span>
-                </div>
-                <span class="badge bg-light text-muted border" style="font-size: 0.7rem;">Mỗi đêm 00:00</span>
-              </label>
-
-              <label class="p-2.5 rounded-3 border d-flex align-items-center justify-content-between cursor-pointer hover-bg-light transition-all">
-                <div class="d-flex align-items-center gap-2">
-                  <input type="radio" name="BACKUP_FREQUENCY" value="WEEKLY" class="form-check-input m-0" {% if settings.BACKUP_FREQUENCY == 'WEEKLY' %}checked{% endif %}>
-                  <span class="small fw-semibold text-dark">Hàng tuần (Weekly)</span>
-                </div>
-                <span class="badge bg-light text-muted border" style="font-size: 0.7rem;">Chủ nhật</span>
-              </label>
-
-              <label class="p-2.5 rounded-3 border d-flex align-items-center justify-content-between cursor-pointer hover-bg-light transition-all">
-                <div class="d-flex align-items-center gap-2">
-                  <input type="radio" name="BACKUP_FREQUENCY" value="OFF" class="form-check-input m-0" {% if settings.BACKUP_FREQUENCY == 'OFF' %}checked{% endif %}>
-                  <span class="small fw-semibold text-dark">Tắt tự động (Off)</span>
-                </div>
-                <span class="badge bg-light text-muted border" style="font-size: 0.7rem;">Chỉ thủ công</span>
-              </label>
+              <span class="text-secondary small fw-semibold d-block">Tổng số bản sao lưu</span>
+              <h4 class="fw-bold text-dark mb-0">{{ stats.total_count }}</h4>
             </div>
           </div>
+        </div>
 
-          <!-- Retention Count -->
-          <div class="mb-3">
-            <label class="form-label fw-semibold text-dark small mb-1" for="retentionCountSelect">
-              Số lượng bản sao lưu giữ lại (Retention)
-            </label>
-            <select class="form-select form-select-sm rounded-3 shadow-none border" id="retentionCountSelect" name="BACKUP_RETENTION_COUNT">
-              <option value="5" {% if settings.BACKUP_RETENTION_COUNT == 5 %}selected{% endif %}>5 bản sao lưu gần nhất</option>
-              <option value="10" {% if settings.BACKUP_RETENTION_COUNT == 10 %}selected{% endif %}>10 bản sao lưu gần nhất (Khuyến nghị)</option>
-              <option value="20" {% if settings.BACKUP_RETENTION_COUNT == 20 %}selected{% endif %}>20 bản sao lưu gần nhất</option>
-              <option value="50" {% if settings.BACKUP_RETENTION_COUNT == 50 %}selected{% endif %}>50 bản sao lưu gần nhất</option>
-            </select>
-            <span class="text-muted small d-block mt-1" style="font-size: 0.74rem;">Hệ thống sẽ tự động dọn dẹp các bản sao lưu cũ vượt quá số lượng này.</span>
-          </div>
-
-          <!-- Gzip Compression Switch -->
-          <div class="form-check form-switch mb-4 p-0 d-flex justify-content-between align-items-center">
+        <div class="col-12 col-sm-6 col-lg-3">
+          <div class="card-modern p-3.5 h-100 d-flex align-items-center gap-3 border shadow-2xs">
+            <div class="rounded-circle bg-success-subtle text-success d-inline-flex align-items-center justify-content-center flex-shrink-0" style="width: 46px; height: 46px;">
+              <i class="ph-bold ph-hard-drives fs-4"></i>
+            </div>
             <div>
-              <label class="form-check-label fw-bold text-dark small d-block mb-0" for="compressionSwitch">
-                Nén dữ liệu Gzip (.gz)
-              </label>
-              <span class="text-muted small" style="font-size: 0.75rem;">Tiết kiệm tới 80% dung lượng đĩa</span>
+              <span class="text-secondary small fw-semibold d-block">Dung lượng sao lưu</span>
+              <h4 class="fw-bold text-dark mb-0">{{ stats.total_size_display }}</h4>
             </div>
-            <input class="form-check-input ms-0" type="checkbox" role="switch" id="compressionSwitch" name="BACKUP_COMPRESSION_ENABLED" {% if settings.BACKUP_COMPRESSION_ENABLED %}checked{% endif %} style="width: 2.5em; height: 1.3em;">
           </div>
+        </div>
 
-          <button type="submit" class="btn btn-primary w-100 rounded-3 py-2 fw-bold shadow-xs d-flex align-items-center justify-content-center gap-2" id="btnSaveSettings">
-            <i class="ph-bold ph-floppy-disk"></i>
-            <span>Lưu cài đặt sao lưu</span>
-          </button>
-        </form>
-
-        <!-- CLI Command Guide -->
-        <div class="mt-4 p-3 bg-light rounded-3 border" style="font-size: 0.76rem;">
-          <strong class="d-block text-dark mb-1">
-            <i class="ph-bold ph-terminal-window text-primary"></i> Lệnh dòng lệnh (Cron/CLI):
-          </strong>
-          <div class="bg-dark text-light p-2 rounded font-monospace small mb-1" style="user-select: all;">
-            flask backup-db --type=DAILY
+        <div class="col-12 col-sm-6 col-lg-3">
+          <div class="card-modern p-3.5 h-100 d-flex align-items-center gap-3 border shadow-2xs">
+            <div class="rounded-circle bg-warning-subtle text-warning d-inline-flex align-items-center justify-content-center flex-shrink-0" style="width: 46px; height: 46px;">
+              <i class="ph-bold ph-clock-counter-clockwise fs-4"></i>
+            </div>
+            <div>
+              <span class="text-secondary small fw-semibold d-block">Tần suất tự động</span>
+              <h4 class="fw-bold text-dark mb-0">
+                {% if settings.BACKUP_FREQUENCY == 'DAILY' %}
+                  <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-2 py-0.5" style="font-size: 0.78rem;">Hàng ngày</span>
+                {% elif settings.BACKUP_FREQUENCY == 'WEEKLY' %}
+                  <span class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill px-2 py-0.5" style="font-size: 0.78rem;">Hàng tuần</span>
+                {% else %}
+                  <span class="badge bg-secondary-subtle text-secondary border rounded-pill px-2 py-0.5" style="font-size: 0.78rem;">Đã tắt</span>
+                {% endif %}
+              </h4>
+            </div>
           </div>
-          <span class="text-muted">Có thể thêm vào Cron Job Linux hoặc Windows Task Scheduler để chạy tự động.</span>
+        </div>
+
+        <div class="col-12 col-sm-6 col-lg-3">
+          <div class="card-modern p-3.5 h-100 d-flex align-items-center gap-3 border shadow-2xs">
+            <div class="rounded-circle bg-purple-subtle text-purple d-inline-flex align-items-center justify-content-center flex-shrink-0" style="width: 46px; height: 46px;">
+              <i class="ph-bold ph-check-circle fs-4"></i>
+            </div>
+            <div>
+              <span class="text-secondary small fw-semibold d-block">Sao lưu gần nhất</span>
+              <h4 class="fw-bold text-dark mb-0" style="font-size: 0.95rem;">
+                {% if stats.last_backup %}
+                  {{ stats.last_backup.created_at_vn.strftime('%H:%M %d/%m/%Y') if stats.last_backup.created_at_vn else stats.last_backup.created_at.strftime('%H:%M %d/%m/%Y') }}
+                {% else %}
+                  Chưa có
+                {% endif %}
+              </h4>
+            </div>
+          </div>
         </div>
       </div>
-    </div>
 
-    <!-- RIGHT COLUMN: BACKUP LIST TABLE -->
-    <div class="col-12 col-lg-8">
-      <div class="card-modern p-4 h-100">
-        <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-3 pb-2 border-bottom">
-          <div>
-            <h5 class="fw-bold text-dark mb-0.5" style="font-size: 1.05rem;">Danh sách Bản sao lưu CSDL</h5>
-            <span class="text-secondary small">Có <strong>{{ backups|length }}</strong> file sao lưu đã được tạo</span>
-          </div>
+      <div class="row g-4">
+        <!-- LEFT COLUMN: BACKUP CONFIGURATION FORM -->
+        <div class="col-12 col-lg-4">
+          <div class="card-modern p-4 h-100">
+            <div class="d-flex align-items-center gap-2.5 mb-3 pb-2 border-bottom">
+              <div class="rounded-circle bg-primary-subtle text-primary d-inline-flex align-items-center justify-content-center" style="width: 32px; height: 32px;">
+                <i class="ph-bold ph-gear"></i>
+              </div>
+              <h5 class="fw-bold text-dark mb-0" style="font-size: 1.05rem;">Cấu hình Tự động sao lưu CSDL</h5>
+            </div>
 
-          <!-- Quick Search Filter -->
-          <div class="input-group input-group-sm" style="max-width: 240px;">
-            <span class="input-group-text bg-white border-end-0 text-muted ps-2.5">
-              <i class="ph-bold ph-magnifying-glass"></i>
-            </span>
-            <input type="text" id="backupSearchInput" class="form-control border-start-0 ps-1" placeholder="Tìm tên file...">
+            <form id="backupSettingsForm" onsubmit="saveBackupSettings(event)">
+              <!-- Auto Backup Switch -->
+              <div class="form-check form-switch mb-3 p-0 d-flex justify-content-between align-items-center">
+                <div>
+                  <label class="form-check-label fw-bold text-dark small d-block mb-0" for="backupAutoSwitch">
+                    Bật tự động sao lưu CSDL
+                  </label>
+                  <span class="text-muted small" style="font-size: 0.75rem;">Chạy định kỳ tự động qua tác vụ nền</span>
+                </div>
+                <input class="form-check-input ms-0" type="checkbox" role="switch" id="backupAutoSwitch" name="BACKUP_AUTO_ENABLED" {% if settings.BACKUP_AUTO_ENABLED %}checked{% endif %} style="width: 2.5em; height: 1.3em;">
+              </div>
+
+              <!-- Frequency Radio Selection -->
+              <div class="mb-3">
+                <label class="form-label fw-semibold text-dark small mb-1.5">Tần suất sao lưu</label>
+                <div class="d-flex flex-column gap-2">
+                  <label class="p-2.5 rounded-3 border d-flex align-items-center justify-content-between cursor-pointer hover-bg-light transition-all">
+                    <div class="d-flex align-items-center gap-2">
+                      <input type="radio" name="BACKUP_FREQUENCY" value="DAILY" class="form-check-input m-0" {% if settings.BACKUP_FREQUENCY == 'DAILY' %}checked{% endif %}>
+                      <span class="small fw-semibold text-dark">Hàng ngày (Daily)</span>
+                    </div>
+                    <span class="badge bg-light text-muted border" style="font-size: 0.7rem;">Mỗi đêm 00:00</span>
+                  </label>
+
+                  <label class="p-2.5 rounded-3 border d-flex align-items-center justify-content-between cursor-pointer hover-bg-light transition-all">
+                    <div class="d-flex align-items-center gap-2">
+                      <input type="radio" name="BACKUP_FREQUENCY" value="WEEKLY" class="form-check-input m-0" {% if settings.BACKUP_FREQUENCY == 'WEEKLY' %}checked{% endif %}>
+                      <span class="small fw-semibold text-dark">Hàng tuần (Weekly)</span>
+                    </div>
+                    <span class="badge bg-light text-muted border" style="font-size: 0.7rem;">Chủ nhật</span>
+                  </label>
+
+                  <label class="p-2.5 rounded-3 border d-flex align-items-center justify-content-between cursor-pointer hover-bg-light transition-all">
+                    <div class="d-flex align-items-center gap-2">
+                      <input type="radio" name="BACKUP_FREQUENCY" value="OFF" class="form-check-input m-0" {% if settings.BACKUP_FREQUENCY == 'OFF' %}checked{% endif %}>
+                      <span class="small fw-semibold text-dark">Tắt tự động (Off)</span>
+                    </div>
+                    <span class="badge bg-light text-muted border" style="font-size: 0.7rem;">Chỉ thủ công</span>
+                  </label>
+                </div>
+              </div>
+
+              <!-- Retention Count -->
+              <div class="mb-3">
+                <label class="form-label fw-semibold text-dark small mb-1" for="retentionCountSelect">
+                  Số lượng bản sao lưu giữ lại (Retention)
+                </label>
+                <select class="form-select form-select-sm rounded-3 shadow-none border" id="retentionCountSelect" name="BACKUP_RETENTION_COUNT">
+                  <option value="5" {% if settings.BACKUP_RETENTION_COUNT == 5 %}selected{% endif %}>5 bản sao lưu gần nhất</option>
+                  <option value="10" {% if settings.BACKUP_RETENTION_COUNT == 10 %}selected{% endif %}>10 bản sao lưu gần nhất (Khuyến nghị)</option>
+                  <option value="20" {% if settings.BACKUP_RETENTION_COUNT == 20 %}selected{% endif %}>20 bản sao lưu gần nhất</option>
+                  <option value="50" {% if settings.BACKUP_RETENTION_COUNT == 50 %}selected{% endif %}>50 bản sao lưu gần nhất</option>
+                </select>
+                <span class="text-muted small d-block mt-1" style="font-size: 0.74rem;">Hệ thống sẽ tự động dọn dẹp các bản sao lưu cũ vượt quá số lượng này.</span>
+              </div>
+
+              <!-- Gzip Compression Switch -->
+              <div class="form-check form-switch mb-4 p-0 d-flex justify-content-between align-items-center">
+                <div>
+                  <label class="form-check-label fw-bold text-dark small d-block mb-0" for="compressionSwitch">
+                    Nén dữ liệu Gzip (.gz)
+                  </label>
+                  <span class="text-muted small" style="font-size: 0.75rem;">Tiết kiệm tới 80% dung lượng đĩa</span>
+                </div>
+                <input class="form-check-input ms-0" type="checkbox" role="switch" id="compressionSwitch" name="BACKUP_COMPRESSION_ENABLED" {% if settings.BACKUP_COMPRESSION_ENABLED %}checked{% endif %} style="width: 2.5em; height: 1.3em;">
+              </div>
+
+              <button type="submit" class="btn btn-primary w-100 rounded-3 py-2 fw-bold shadow-xs d-flex align-items-center justify-content-center gap-2" id="btnSaveSettings">
+                <i class="ph-bold ph-floppy-disk"></i>
+                <span>Lưu cài đặt sao lưu</span>
+              </button>
+            </form>
           </div>
         </div>
 
-        {% if backups %}
-        <!-- Desktop Table -->
-        <div class="table-responsive border rounded-3 overflow-hidden d-none d-md-block">
-          <table class="table table-hover align-middle mb-0" id="backupsTable" style="font-size: 0.88rem;">
-            <thead class="table-light">
-              <tr>
-                <th class="py-3 ps-3">Tên file sao lưu</th>
-                <th class="py-3 text-center" style="width: 120px;">Dung lượng</th>
-                <th class="py-3 text-center" style="width: 130px;">Loại sao lưu</th>
-                <th class="py-3 text-center" style="width: 160px;">Thời gian tạo</th>
-                <th class="py-3 text-end pe-3" style="width: 140px;">Hành động</th>
-              </tr>
-            </thead>
-            <tbody>
+        <!-- RIGHT COLUMN: BACKUP LIST TABLE -->
+        <div class="col-12 col-lg-8">
+          <div class="card-modern p-4 h-100">
+            <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-3 pb-2 border-bottom">
+              <div>
+                <h5 class="fw-bold text-dark mb-0.5" style="font-size: 1.05rem;">Danh sách Bản sao lưu CSDL & Files</h5>
+                <span class="text-secondary small">Có <strong>{{ backups|length }}</strong> file sao lưu đã được tạo</span>
+              </div>
+
+              <!-- Quick Search Filter -->
+              <div class="input-group input-group-sm" style="max-width: 240px;">
+                <span class="input-group-text bg-white border-end-0 text-muted ps-2.5">
+                  <i class="ph-bold ph-magnifying-glass"></i>
+                </span>
+                <input type="text" id="backupSearchInput" class="form-control border-start-0 ps-1" placeholder="Tìm tên file...">
+              </div>
+            </div>
+
+            {% if backups %}
+            <div class="table-responsive border rounded-3 overflow-hidden d-none d-md-block">
+              <table class="table table-hover align-middle mb-0" id="backupsTable" style="font-size: 0.88rem;">
+                <thead class="table-light">
+                  <tr>
+                    <th class="py-3 ps-3">Tên file sao lưu</th>
+                    <th class="py-3 text-center" style="width: 120px;">Dung lượng</th>
+                    <th class="py-3 text-center" style="width: 150px;">Loại sao lưu</th>
+                    <th class="py-3 text-center" style="width: 160px;">Thời gian tạo</th>
+                    <th class="py-3 text-end pe-3" style="width: 140px;">Hành động</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for b in backups %}
+                  <tr class="backup-row">
+                    <td class="ps-3">
+                      <div class="d-flex align-items-center gap-2.5">
+                        <div class="rounded-3 bg-success-subtle text-success d-inline-flex align-items-center justify-content-center flex-shrink-0" style="width: 34px; height: 34px; font-size: 1.1rem;">
+                          <i class="ph-bold {% if 'UPLOADS' in b.db_type or 'zip' in b.filename %}ph-cloud-arrow-up{% elif b.is_compressed %}ph-file-archive{% else %}ph-file-sql{% endif %}"></i>
+                        </div>
+                        <div class="overflow-hidden">
+                          <span class="fw-bold text-dark d-block text-truncate font-monospace small" style="max-width: 240px;" title="{{ b.filename }}">{{ b.filename }}</span>
+                          <small class="text-muted d-block text-truncate" style="font-size: 0.72rem; max-width: 240px;">{{ b.notes or b.db_type }}</small>
+                        </div>
+                      </div>
+                    </td>
+                    <td class="text-center font-monospace small fw-semibold text-dark">
+                      {{ b.file_size_display }}
+                    </td>
+                    <td class="text-center">
+                      {% if 'UPLOADS' in b.db_type %}
+                        <span class="badge bg-info-subtle text-info border border-info-subtle rounded-pill px-2.5 py-1 font-semibold" style="font-size: 0.72rem;">{{ b.db_type }}</span>
+                      {% elif b.backup_type == 'MANUAL' %}
+                        <span class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill px-2.5 py-1 font-semibold" style="font-size: 0.72rem;">Thủ công</span>
+                      {% elif b.backup_type == 'DAILY' %}
+                        <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-2.5 py-1 font-semibold" style="font-size: 0.72rem;">Hàng ngày</span>
+                      {% elif b.backup_type == 'WEEKLY' %}
+                        <span class="badge bg-info-subtle text-info border border-info-subtle rounded-pill px-2.5 py-1 font-semibold" style="font-size: 0.72rem;">Hàng tuần</span>
+                      {% else %}
+                        <span class="badge bg-secondary-subtle text-secondary border rounded-pill px-2.5 py-1 font-semibold" style="font-size: 0.72rem;">{{ b.backup_type }}</span>
+                      {% endif %}
+                    </td>
+                    <td class="text-center small text-secondary">
+                      {{ b.created_at_vn.strftime('%H:%M %d/%m/%Y') if b.created_at_vn else b.created_at.strftime('%H:%M %d/%m/%Y') }}
+                    </td>
+                    <td class="text-end pe-3">
+                      <div class="d-inline-flex gap-1.5">
+                        {% if 'UPLOADS' not in b.db_type %}
+                        <button type="button" class="btn btn-sm btn-light border text-warning rounded-2 px-2 py-1" onclick="confirmRestoreBackup({{ b.id }}, '{{ b.filename }}')" title="Khôi phục CSDL">
+                          <i class="ph-bold ph-arrow-counter-clockwise"></i>
+                        </button>
+                        {% endif %}
+                        <a href="{{ url_for('admin.download_backup_route', backup_id=b.id) }}" class="btn btn-sm btn-light border text-primary rounded-2 px-2 py-1" title="Tải về máy">
+                          <i class="ph-bold ph-download-simple"></i>
+                        </a>
+                        <button type="button" class="btn btn-sm btn-light border text-danger rounded-2 px-2 py-1" onclick="confirmDeleteBackup({{ b.id }}, '{{ b.filename }}')" title="Xóa">
+                          <i class="ph-bold ph-trash"></i>
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+
+            <div class="d-md-none d-flex flex-column gap-2.5" id="backupsMobileCards">
               {% for b in backups %}
-              <tr class="backup-row">
-                <td class="ps-3">
-                  <div class="d-flex align-items-center gap-2.5">
-                    <div class="rounded-3 bg-success-subtle text-success d-inline-flex align-items-center justify-content-center flex-shrink-0" style="width: 34px; height: 34px; font-size: 1.1rem;">
-                      <i class="ph-bold {% if b.is_compressed %}ph-file-archive{% else %}ph-file-sql{% endif %}"></i>
+              <div class="card-modern p-3 border shadow-2xs backup-card">
+                <div class="d-flex align-items-start justify-content-between gap-2 mb-2">
+                  <div class="d-flex align-items-center gap-2">
+                    <div class="rounded-3 bg-success-subtle text-success d-inline-flex align-items-center justify-content-center flex-shrink-0" style="width: 32px; height: 32px;">
+                      <i class="ph-bold {% if 'UPLOADS' in b.db_type or 'zip' in b.filename %}ph-cloud-arrow-up{% elif b.is_compressed %}ph-file-archive{% else %}ph-file-sql{% endif %}"></i>
                     </div>
                     <div class="overflow-hidden">
-                      <span class="fw-bold text-dark d-block text-truncate font-monospace small" style="max-width: 240px;" title="{{ b.filename }}">{{ b.filename }}</span>
-                      <small class="text-muted d-block text-truncate" style="font-size: 0.72rem; max-width: 240px;">{{ b.notes or b.db_type }}</small>
+                      <span class="fw-bold text-dark font-monospace small text-truncate d-block" style="max-width: 180px;">{{ b.filename }}</span>
+                      <span class="text-muted small" style="font-size: 0.72rem;">{{ b.file_size_display }} • {{ b.backup_type }}</span>
                     </div>
                   </div>
-                </td>
-                <td class="text-center font-monospace small fw-semibold text-dark">
-                  {{ b.file_size_display }}
-                </td>
-                <td class="text-center">
-                  {% if b.backup_type == 'MANUAL' %}
-                    <span class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill px-2.5 py-1 font-semibold" style="font-size: 0.72rem;">Thủ công</span>
-                  {% elif b.backup_type == 'DAILY' %}
-                    <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-2.5 py-1 font-semibold" style="font-size: 0.72rem;">Hàng ngày</span>
-                  {% elif b.backup_type == 'WEEKLY' %}
-                    <span class="badge bg-info-subtle text-info border border-info-subtle rounded-pill px-2.5 py-1 font-semibold" style="font-size: 0.72rem;">Hàng tuần</span>
-                  {% else %}
-                    <span class="badge bg-secondary-subtle text-secondary border rounded-pill px-2.5 py-1 font-semibold" style="font-size: 0.72rem;">{{ b.backup_type }}</span>
-                  {% endif %}
-                </td>
-                <td class="text-center small text-secondary">
-                  {{ b.created_at_vn.strftime('%H:%M %d/%m/%Y') if b.created_at_vn else b.created_at.strftime('%H:%M %d/%m/%Y') }}
-                </td>
-                <td class="text-end pe-3">
-                  <div class="d-inline-flex gap-1.5">
-                    <button type="button" class="btn btn-sm btn-light border text-warning rounded-2 px-2 py-1" onclick="confirmRestoreBackup({{ b.id }}, '{{ b.filename }}')" title="Khôi phục CSDL từ bản này">
+                  <div class="d-flex gap-1">
+                    {% if 'UPLOADS' not in b.db_type %}
+                    <button type="button" class="btn btn-sm btn-light border text-warning p-1.5 rounded-2" onclick="confirmRestoreBackup({{ b.id }}, '{{ b.filename }}')" title="Khôi phục">
                       <i class="ph-bold ph-arrow-counter-clockwise"></i>
                     </button>
-                    <a href="{{ url_for('admin.download_backup_route', backup_id=b.id) }}" class="btn btn-sm btn-light border text-primary rounded-2 px-2 py-1" title="Tải về máy tính">
+                    {% endif %}
+                    <a href="{{ url_for('admin.download_backup_route', backup_id=b.id) }}" class="btn btn-sm btn-light border text-primary p-1.5 rounded-2" title="Tải về">
                       <i class="ph-bold ph-download-simple"></i>
                     </a>
-                    <button type="button" class="btn btn-sm btn-light border text-danger rounded-2 px-2 py-1" onclick="confirmDeleteBackup({{ b.id }}, '{{ b.filename }}')" title="Xóa bản sao lưu">
+                    <button type="button" class="btn btn-sm btn-light border text-danger p-1.5 rounded-2" onclick="confirmDeleteBackup({{ b.id }}, '{{ b.filename }}')" title="Xóa">
                       <i class="ph-bold ph-trash"></i>
                     </button>
                   </div>
-                </td>
-              </tr>
+                </div>
+                <div class="text-muted small d-flex justify-content-between" style="font-size: 0.74rem;">
+                  <span>{{ b.created_at_vn.strftime('%H:%M %d/%m/%Y') if b.created_at_vn else b.created_at.strftime('%H:%M %d/%m/%Y') }}</span>
+                  <span>{{ b.notes or b.db_type }}</span>
+                </div>
+              </div>
               {% endfor %}
-            </tbody>
-          </table>
-        </div>
-
-        <!-- Mobile Card View (< md) -->
-        <div class="d-md-none d-flex flex-column gap-2.5" id="backupsMobileCards">
-          {% for b in backups %}
-          <div class="card-modern p-3 border shadow-2xs backup-card">
-            <div class="d-flex align-items-start justify-content-between gap-2 mb-2">
-              <div class="d-flex align-items-center gap-2">
-                <div class="rounded-3 bg-success-subtle text-success d-inline-flex align-items-center justify-content-center flex-shrink-0" style="width: 32px; height: 32px;">
-                  <i class="ph-bold {% if b.is_compressed %}ph-file-archive{% else %}ph-file-sql{% endif %}"></i>
-                </div>
-                <div class="overflow-hidden">
-                  <span class="fw-bold text-dark font-monospace small text-truncate d-block" style="max-width: 180px;">{{ b.filename }}</span>
-                  <span class="text-muted small" style="font-size: 0.72rem;">{{ b.file_size_display }} • {{ b.backup_type }}</span>
-                </div>
-              </div>
-              <div class="d-flex gap-1">
-                <button type="button" class="btn btn-sm btn-light border text-warning p-1.5 rounded-2" onclick="confirmRestoreBackup({{ b.id }}, '{{ b.filename }}')" title="Khôi phục">
-                  <i class="ph-bold ph-arrow-counter-clockwise"></i>
-                </button>
-                <a href="{{ url_for('admin.download_backup_route', backup_id=b.id) }}" class="btn btn-sm btn-light border text-primary p-1.5 rounded-2" title="Tải về">
-                  <i class="ph-bold ph-download-simple"></i>
-                </a>
-                <button type="button" class="btn btn-sm btn-light border text-danger p-1.5 rounded-2" onclick="confirmDeleteBackup({{ b.id }}, '{{ b.filename }}')" title="Xóa">
-                  <i class="ph-bold ph-trash"></i>
-                </button>
-              </div>
             </div>
-            <div class="text-muted small d-flex justify-content-between" style="font-size: 0.74rem;">
-              <span>{{ b.created_at_vn.strftime('%H:%M %d/%m/%Y') if b.created_at_vn else b.created_at.strftime('%H:%M %d/%m/%Y') }}</span>
-              <span>{{ b.notes or b.db_type }}</span>
-            </div>
+
+            {% else %}
+            {% with 
+                icon="ph-database",
+                title="Chưa có bản sao lưu nào",
+                message="Hiện tại hệ thống chưa có bản sao lưu cơ sở dữ liệu nào. Nhấn nút bên dưới để tạo bản sao lưu an toàn ngay lập tức.",
+                cta_url="#",
+                cta_text="Tạo bản sao lưu ngay",
+                cta_icon="ph-cloud-arrow-down"
+            %}
+              <div onclick="document.getElementById('btnBackupNow').click()" style="cursor: pointer;">
+                {% include "partials/_empty_state.html" %}
+              </div>
+            {% endwith %}
+            {% endif %}
+
           </div>
-          {% endfor %}
         </div>
-
-        {% else %}
-        <!-- Standardized Empty State -->
-        {% with 
-            icon="ph-database",
-            title="Chưa có bản sao lưu nào",
-            message="Hiện tại hệ thống chưa có bản sao lưu cơ sở dữ liệu nào. Nhấn nút bên dưới để tạo bản sao lưu an toàn ngay lập tức.",
-            cta_url="#",
-            cta_text="Tạo bản sao lưu ngay",
-            cta_icon="ph-cloud-arrow-down"
-        %}
-          <div onclick="document.getElementById('btnBackupNow').click()" style="cursor: pointer;">
-            {% include "partials/_empty_state.html" %}
-          </div>
-        {% endwith %}
-        {% endif %}
-
       </div>
     </div>
+
+    <!-- ================================================================= -->
+    <!-- TAB 2: FILE MANAGEMENT & CLOUD STORAGE -->
+    <!-- ================================================================= -->
+    <div class="tab-pane fade" id="tab-files" role="tabpanel">
+      <!-- Uploads Folder Metrics -->
+      <div class="row g-3 mb-4">
+        <div class="col-12 col-sm-6 col-lg-3">
+          <div class="card-modern p-3.5 h-100 d-flex align-items-center gap-3 border shadow-2xs">
+            <div class="rounded-circle bg-primary-subtle text-primary d-inline-flex align-items-center justify-content-center flex-shrink-0" style="width: 46px; height: 46px;">
+              <i class="ph-bold ph-folder-open fs-4"></i>
+            </div>
+            <div>
+              <span class="text-secondary small fw-semibold d-block">Tổng số file static/uploads</span>
+              <h4 class="fw-bold text-dark mb-0">{{ uploads_stats.total_files if uploads_stats else 0 }}</h4>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-12 col-sm-6 col-lg-3">
+          <div class="card-modern p-3.5 h-100 d-flex align-items-center gap-3 border shadow-2xs">
+            <div class="rounded-circle bg-success-subtle text-success d-inline-flex align-items-center justify-content-center flex-shrink-0" style="width: 46px; height: 46px;">
+              <i class="ph-bold ph-hard-drive fs-4"></i>
+            </div>
+            <div>
+              <span class="text-secondary small fw-semibold d-block">Tổng dung lượng uploads</span>
+              <h4 class="fw-bold text-dark mb-0">{{ uploads_stats.total_size_display if uploads_stats else '0 B' }}</h4>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-12 col-sm-6 col-lg-3">
+          <div class="card-modern p-3.5 h-100 d-flex align-items-center gap-3 border shadow-2xs">
+            <div class="rounded-circle bg-warning-subtle text-warning d-inline-flex align-items-center justify-content-center flex-shrink-0" style="width: 46px; height: 46px;">
+              <i class="ph-bold ph-user-circle fs-4"></i>
+            </div>
+            <div>
+              <span class="text-secondary small fw-semibold d-block">Ảnh đại diện (Avatars)</span>
+              <h4 class="fw-bold text-dark mb-0">
+                {{ uploads_stats.folder_stats.avatars.files if uploads_stats else 0 }} files
+                <small class="text-muted fw-normal" style="font-size: 0.75rem;">({{ uploads_stats.folder_stats.avatars.display if uploads_stats else '0 B' }})</small>
+              </h4>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-12 col-sm-6 col-lg-3">
+          <div class="card-modern p-3.5 h-100 d-flex align-items-center gap-3 border shadow-2xs">
+            <div class="rounded-circle bg-info-subtle text-info d-inline-flex align-items-center justify-content-center flex-shrink-0" style="width: 46px; height: 46px;">
+              <i class="ph-bold ph-headphones fs-4"></i>
+            </div>
+            <div>
+              <span class="text-secondary small fw-semibold d-block">Đề thi & Audio</span>
+              <h4 class="fw-bold text-dark mb-0">
+                {{ (uploads_stats.folder_stats.exams.files + uploads_stats.folder_stats.audio.files) if uploads_stats else 0 }} files
+              </h4>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="row g-4">
+        <!-- AWS S3 CONFIGURATION -->
+        <div class="col-12 col-lg-6">
+          <div class="card-modern p-4 h-100">
+            <div class="d-flex align-items-center justify-content-between mb-3 pb-2 border-bottom">
+              <div class="d-flex align-items-center gap-2.5">
+                <div class="rounded-circle bg-warning-subtle text-warning d-inline-flex align-items-center justify-content-center" style="width: 34px; height: 34px;">
+                  <i class="ph-bold ph-amazon-logo fs-5"></i>
+                </div>
+                <div>
+                  <h5 class="fw-bold text-dark mb-0" style="font-size: 1.05rem;">Cấu hình AWS S3 Storage</h5>
+                  <span class="text-muted small">Amazon S3 / MinIO / Cloudflare R2</span>
+                </div>
+              </div>
+              <span class="badge {% if uploads_stats.cloud_settings.s3_configured %}bg-success-subtle text-success border border-success-subtle{% else %}bg-secondary-subtle text-secondary border{% endif %} rounded-pill px-2.5 py-1" style="font-size: 0.72rem;">
+                {% if uploads_stats.cloud_settings.s3_configured %}Đã cấu hình{% else %}Chưa kết nối{% endif %}
+              </span>
+            </div>
+
+            <form id="s3SettingsForm" onsubmit="saveS3Settings(event)">
+              <div class="mb-3">
+                <label class="form-label fw-semibold text-dark small mb-1">S3 Bucket Name</label>
+                <input type="text" class="form-control form-control-sm rounded-3" name="S3_BUCKET_NAME" value="{{ uploads_stats.cloud_settings.s3_bucket }}" placeholder="my-englishmate-bucket">
+              </div>
+
+              <div class="row g-2 mb-3">
+                <div class="col-6">
+                  <label class="form-label fw-semibold text-dark small mb-1">AWS Region</label>
+                  <input type="text" class="form-control form-control-sm rounded-3" name="AWS_REGION" value="{{ uploads_stats.cloud_settings.s3_region }}" placeholder="ap-southeast-1">
+                </div>
+                <div class="col-6">
+                  <label class="form-label fw-semibold text-dark small mb-1">Endpoint URL (Tùy chọn)</label>
+                  <input type="text" class="form-control form-control-sm rounded-3" name="S3_ENDPOINT_URL" value="{{ uploads_stats.cloud_settings.s3_endpoint }}" placeholder="https://r2.cloudflarestorage.com">
+                </div>
+              </div>
+
+              <div class="mb-3">
+                <label class="form-label fw-semibold text-dark small mb-1">AWS Access Key ID</label>
+                <input type="text" class="form-control form-control-sm rounded-3" name="AWS_ACCESS_KEY_ID" placeholder="AKIAIOSFODNN7EXAMPLE">
+              </div>
+
+              <div class="mb-3">
+                <label class="form-label fw-semibold text-dark small mb-1">AWS Secret Access Key</label>
+                <input type="password" class="form-control form-control-sm rounded-3" name="AWS_SECRET_ACCESS_KEY" placeholder="wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY">
+              </div>
+
+              <div class="form-check form-switch mb-3">
+                <input class="form-check-input" type="checkbox" role="switch" id="s3AutoSwitch" name="S3_BACKUP_ENABLED" {% if uploads_stats.cloud_settings.s3_enabled %}checked{% endif %}>
+                <label class="form-check-label fw-semibold text-dark small" for="s3AutoSwitch">Kích hoạt tự động đẩy bản sao lưu lên S3</label>
+              </div>
+
+              <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-warning flex-fill fw-bold rounded-3 py-2 text-dark shadow-xs">
+                  <i class="ph-bold ph-floppy-disk me-1"></i> Lưu cấu hình S3
+                </button>
+                <button type="button" class="btn btn-outline-warning fw-bold px-3 py-2 rounded-3 text-dark" onclick="triggerCloudBackup('S3')">
+                  <i class="ph-bold ph-cloud-arrow-up me-1"></i> Sao lưu S3 ngay
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+
+        <!-- CLOUDINARY CONFIGURATION -->
+        <div class="col-12 col-lg-6">
+          <div class="card-modern p-4 h-100">
+            <div class="d-flex align-items-center justify-content-between mb-3 pb-2 border-bottom">
+              <div class="d-flex align-items-center gap-2.5">
+                <div class="rounded-circle bg-primary-subtle text-primary d-inline-flex align-items-center justify-content-center" style="width: 34px; height: 34px;">
+                  <i class="ph-bold ph-cloud fs-5"></i>
+                </div>
+                <div>
+                  <h5 class="fw-bold text-dark mb-0" style="font-size: 1.05rem;">Cấu hình Cloudinary Storage</h5>
+                  <span class="text-muted small">Lưu trữ ảnh và media files đám mây</span>
+                </div>
+              </div>
+              <span class="badge {% if uploads_stats.cloud_settings.cloudinary_configured %}bg-success-subtle text-success border border-success-subtle{% else %}bg-secondary-subtle text-secondary border{% endif %} rounded-pill px-2.5 py-1" style="font-size: 0.72rem;">
+                {% if uploads_stats.cloud_settings.cloudinary_configured %}Đã cấu hình{% else %}Chưa kết nối{% endif %}
+              </span>
+            </div>
+
+            <form id="cloudinarySettingsForm" onsubmit="saveCloudinarySettings(event)">
+              <div class="mb-3">
+                <label class="form-label fw-semibold text-dark small mb-1">Cloud Name</label>
+                <input type="text" class="form-control form-control-sm rounded-3" name="CLOUDINARY_CLOUD_NAME" value="{{ uploads_stats.cloud_settings.cloudinary_cloud_name }}" placeholder="englishmate-cloud">
+              </div>
+
+              <div class="mb-3">
+                <label class="form-label fw-semibold text-dark small mb-1">API Key</label>
+                <input type="text" class="form-control form-control-sm rounded-3" name="CLOUDINARY_API_KEY" placeholder="123456789012345">
+              </div>
+
+              <div class="mb-3">
+                <label class="form-label fw-semibold text-dark small mb-1">API Secret</label>
+                <input type="password" class="form-control form-control-sm rounded-3" name="CLOUDINARY_API_SECRET" placeholder="abcdEFGHijklMNOPqrstUVWXyz0">
+              </div>
+
+              <div class="mb-3">
+                <label class="form-label fw-semibold text-dark small mb-1">Thư mục trên Cloudinary</label>
+                <input type="text" class="form-control form-control-sm rounded-3" name="CLOUDINARY_FOLDER" value="{{ uploads_stats.cloud_settings.cloudinary_folder }}" placeholder="englishmate_backups">
+              </div>
+
+              <div class="form-check form-switch mb-3">
+                <input class="form-check-input" type="checkbox" role="switch" id="cldAutoSwitch" name="CLOUDINARY_BACKUP_ENABLED" {% if uploads_stats.cloud_settings.cloudinary_enabled %}checked{% endif %}>
+                <label class="form-check-label fw-semibold text-dark small" for="cldAutoSwitch">Kích hoạt tự động đẩy bản sao lưu lên Cloudinary</label>
+              </div>
+
+              <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-primary flex-fill fw-bold rounded-3 py-2 shadow-xs">
+                  <i class="ph-bold ph-floppy-disk me-1"></i> Lưu cấu hình Cloudinary
+                </button>
+                <button type="button" class="btn btn-outline-primary fw-bold px-3 py-2 rounded-3" onclick="triggerCloudBackup('CLOUDINARY')">
+                  <i class="ph-bold ph-cloud-arrow-up me-1"></i> Sao lưu Cloudinary
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ================================================================= -->
+    <!-- TAB 3: MEDIA PROCESSING (IMAGE COMPRESSION & AUDIO NORMALIZATION) -->
+    <!-- ================================================================= -->
+    <div class="tab-pane fade" id="tab-media" role="tabpanel">
+      <div class="row g-4">
+        <!-- IMAGE COMPRESSION TEST TOOL -->
+        <div class="col-12 col-lg-6">
+          <div class="card-modern p-4 h-100">
+            <div class="d-flex align-items-center gap-2.5 mb-3 pb-2 border-bottom">
+              <div class="rounded-circle bg-success-subtle text-success d-inline-flex align-items-center justify-content-center" style="width: 34px; height: 34px;">
+                <i class="ph-bold ph-image fs-5"></i>
+              </div>
+              <div>
+                <h5 class="fw-bold text-dark mb-0" style="font-size: 1.05rem;">Công cụ Nén Ảnh (Pillow Compression)</h5>
+                <span class="text-muted small">Tự động tối ưu dung lượng, crop vuông 300x300 và xóa EXIF</span>
+              </div>
+            </div>
+
+            <form id="imageCompressForm" onsubmit="testImageCompression(event)">
+              <div class="mb-3">
+                <label class="form-label fw-semibold text-dark small mb-1">Chọn file ảnh thử nghiệm</label>
+                <input type="file" class="form-control form-control-sm rounded-3" id="compressImageInput" accept="image/*" required>
+              </div>
+
+              <div class="row g-2 mb-3">
+                <div class="col-6">
+                  <label class="form-label fw-semibold text-dark small mb-1">Chất lượng nén (Quality %)</label>
+                  <input type="number" class="form-control form-control-sm rounded-3" id="compressQuality" value="85" min="10" max="100">
+                </div>
+                <div class="col-6">
+                  <label class="form-label fw-semibold text-dark small mb-1">Kích thước tối đa (px)</label>
+                  <input type="number" class="form-control form-control-sm rounded-3" id="compressMaxDim" value="1920" min="200" max="4000">
+                </div>
+              </div>
+
+              <button type="submit" class="btn btn-success w-100 rounded-3 py-2 fw-bold shadow-xs" id="btnRunCompress">
+                <i class="ph-bold ph-arrows-in-line-horizontal me-1"></i> Thực hiện nén ảnh thử nghiệm
+              </button>
+            </form>
+
+            <div id="imageCompressResult" class="mt-3 p-3 bg-light rounded-3 border d-none">
+              <h6 class="fw-bold text-success mb-2"><i class="ph-bold ph-check-circle"></i> Kết quả nén thành công!</h6>
+              <div class="small text-secondary d-flex flex-column gap-1">
+                <div>Dung lượng gốc: <strong id="resOrigSize" class="text-dark"></strong></div>
+                <div>Dung lượng sau nén: <strong id="resCompSize" class="text-success"></strong></div>
+                <div>Tiết kiệm được: <span id="resSavedBytes" class="badge bg-success-subtle text-success"></span> (<span id="resReductionPercent"></span>)</div>
+                <div>Độ phân giải: <span id="resDimensions"></span> (Định dạng: <span id="resFormat"></span>)</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- AUDIO NORMALIZATION TEST TOOL -->
+        <div class="col-12 col-lg-6">
+          <div class="card-modern p-4 h-100">
+            <div class="d-flex align-items-center gap-2.5 mb-3 pb-2 border-bottom">
+              <div class="rounded-circle bg-info-subtle text-info d-inline-flex align-items-center justify-content-center" style="width: 34px; height: 34px;">
+                <i class="ph-bold ph-waveform fs-5"></i>
+              </div>
+              <div>
+                <h5 class="fw-bold text-dark mb-0" style="font-size: 1.05rem;">Công cụ Chuẩn hóa Âm lượng Audio</h5>
+                <span class="text-muted small">Cân chỉnh biên độ âm thanh đạt mức peak dBFS tiêu chuẩn</span>
+              </div>
+            </div>
+
+            <form id="audioNormalizeForm" onsubmit="testAudioNormalization(event)">
+              <div class="mb-3">
+                <label class="form-label fw-semibold text-dark small mb-1">Chọn file audio thử nghiệm (WAV, MP3, OGG)</label>
+                <input type="file" class="form-control form-control-sm rounded-3" id="normalizeAudioInput" accept="audio/*" required>
+              </div>
+
+              <div class="mb-3">
+                <label class="form-label fw-semibold text-dark small mb-1">Mức âm lượng mục tiêu (Target Peak dBFS)</label>
+                <select class="form-select form-select-sm rounded-3" id="normalizeTargetDbfs">
+                  <option value="-1.0">-1.0 dBFS (Tiêu chuẩn Podcast / Giọng đọc)</option>
+                  <option value="-3.0" selected>-3.0 dBFS (Tiêu chuẩn Đề thi TOEIC / Khuyến nghị)</option>
+                  <option value="-6.0">-6.0 dBFS (Âm lượng vừa phải)</option>
+                </select>
+              </div>
+
+              <button type="submit" class="btn btn-info w-100 rounded-3 py-2 fw-bold text-white shadow-xs" id="btnRunNormalize">
+                <i class="ph-bold ph-sliders-horizontal me-1"></i> Thực hiện chuẩn hóa âm lượng
+              </button>
+            </form>
+
+            <div id="audioNormalizeResult" class="mt-3 p-3 bg-light rounded-3 border d-none">
+              <h6 class="fw-bold text-info mb-2"><i class="ph-bold ph-check-circle"></i> Chuẩn hóa thành công!</h6>
+              <div class="small text-secondary d-flex flex-column gap-1">
+                <div>Engine xử lý: <strong id="resAudioEngine" class="text-dark"></strong></div>
+                <div>Đỉnh âm thanh ban đầu: <span id="resAudioOrigDbfs" class="badge bg-secondary"></span></div>
+                <div>Mục tiêu & Gain áp dụng: <span id="resAudioGain" class="badge bg-info-subtle text-info"></span></div>
+                <div>Thời lượng: <strong id="resAudioDuration"></strong> • Sample Rate: <strong id="resAudioSampleRate"></strong></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
   </div>
 
 </div>
 
-<!-- MODAL: MANUAL BACKUP NOW -->
+<!-- MODAL: MANUAL DATABASE BACKUP -->
 <div class="modal fade" id="backupNowModal" tabindex="-1" aria-labelledby="backupNowModalLabel" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered" style="max-width: 480px;">
     <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
@@ -350,33 +659,37 @@
           <div class="rounded-circle bg-white text-success p-2 d-flex align-items-center justify-content-center" style="width: 36px; height: 36px;">
             <i class="ph-bold ph-database fs-5"></i>
           </div>
-          <div>
-            <h5 class="modal-title fw-bold text-white mb-0" id="backupNowModalLabel">Tạo bản sao lưu CSDL</h5>
-            <small class="text-white-50">Xuất file sao lưu toàn bộ dữ liệu hệ thống</small>
-          </div>
+          <h5 class="modal-title fw-bold text-white mb-0" id="backupNowModalLabel">Tạo bản sao lưu CSDL</h5>
         </div>
-        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+        <button type="button" class="btn-close btn-close-white shadow-none" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
+      
       <form method="post" action="{{ url_for('admin.create_backup_route') }}" id="manualBackupForm">
         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-        <input type="hidden" name="backup_type" value="MANUAL">
-        <div class="modal-body p-4 bg-white">
+        <div class="modal-body p-4">
           <p class="text-secondary small mb-3">
-            Hệ thống sẽ thực hiện sao lưu toàn bộ các bảng người dùng, tiến trình học tập, bài học, từ vựng và nhật ký hệ thống thành file nén an toàn.
+            Hệ thống sẽ thực hiện sao lưu toàn bộ cơ sở dữ liệu hiện tại (SQLite / PostgreSQL) và nén an toàn.
           </p>
+
           <div class="mb-3">
-            <label class="form-label fw-semibold text-dark small mb-1" for="backupNotesInput">Ghi chú bản sao lưu (Tùy chọn)</label>
-            <input type="text" class="form-control rounded-3 shadow-none border" id="backupNotesInput" name="notes" placeholder="VD: Sao lưu trước khi nâng cấp phiên bản...">
+            <label class="form-label fw-semibold text-dark small mb-1">Loại bản sao lưu</label>
+            <select class="form-select form-select-sm rounded-3" name="backup_type">
+              <option value="MANUAL" selected>Thủ công (Manual)</option>
+              <option value="DAILY">Hàng ngày (Daily)</option>
+              <option value="WEEKLY">Hàng tuần (Weekly)</option>
+            </select>
           </div>
-          <div class="p-3 bg-light rounded-3 border small text-muted">
-            <i class="ph-bold ph-shield-check text-success me-1"></i> File sao lưu được nén GZIP an toàn và tự động cập nhật vào danh sách quản trị.
+
+          <div class="mb-3">
+            <label class="form-label fw-semibold text-dark small mb-1">Ghi chú (Tùy chọn)</label>
+            <input type="text" class="form-control form-control-sm rounded-3" name="notes" placeholder="Ví dụ: Sao lưu trước khi nâng cấp hệ thống...">
           </div>
         </div>
-        <div class="modal-footer border-0 p-3 pt-0 bg-white d-flex justify-content-end gap-2">
-          <button type="button" class="btn btn-light border rounded-3 px-3 py-2 fw-semibold" data-bs-dismiss="modal">Hủy</button>
-          <button type="submit" class="btn btn-success rounded-3 px-4 py-2 fw-bold d-inline-flex align-items-center gap-1.5" id="btnSubmitManualBackup">
-            <i class="ph-bold ph-cloud-arrow-down"></i>
-            <span>Bắt đầu Sao lưu</span>
+
+        <div class="modal-footer p-3 bg-light border-top d-flex justify-content-end gap-2">
+          <button type="button" class="btn btn-light rounded-3 px-3 fw-semibold small" data-bs-dismiss="modal">Hủy</button>
+          <button type="submit" class="btn btn-success rounded-3 px-4 fw-bold shadow-xs">
+            <i class="ph-bold ph-check me-1"></i> Bắt đầu sao lưu
           </button>
         </div>
       </form>
@@ -384,90 +697,160 @@
   </div>
 </div>
 
-<!-- MODAL: CLEANUP OLD BACKUPS CONFIRM -->
-<div class="modal fade" id="cleanupModal" tabindex="-1" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered" style="max-width: 440px;">
-    <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
-      <div class="modal-body p-4 text-center">
-        <div class="rounded-circle bg-warning-subtle text-warning mx-auto mb-3 d-flex align-items-center justify-content-center" style="width: 56px; height: 56px;">
-          <i class="ph-bold ph-broom fs-2"></i>
-        </div>
-        <h5 class="fw-bold text-dark mb-1">Dọn dẹp bản sao lưu cũ?</h5>
-        <p class="text-secondary small mb-4">
-          Hệ thống sẽ giữ lại <strong>{{ settings.BACKUP_RETENTION_COUNT }}</strong> bản sao lưu mới nhất và xóa vĩnh viễn các bản sao lưu cũ hơn để giải phóng dung lượng đĩa.
-        </p>
-        <form method="post" action="{{ url_for('admin.cleanup_backups_route') }}">
-          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-          <div class="d-flex justify-content-center gap-2">
-            <button type="button" class="btn btn-light border rounded-3 px-4 py-2 fw-semibold" data-bs-dismiss="modal">Hủy</button>
-            <button type="submit" class="btn btn-warning rounded-3 px-4 py-2 fw-bold text-dark">
-              Tiến hành Dọn dẹp
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- MODAL: DELETE SINGLE BACKUP CONFIRM -->
-<div class="modal fade" id="deleteBackupModal" tabindex="-1" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered" style="max-width: 440px;">
-    <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
-      <div class="modal-body p-4 text-center">
-        <div class="rounded-circle bg-danger-subtle text-danger mx-auto mb-3 d-flex align-items-center justify-content-center" style="width: 56px; height: 56px;">
-          <i class="ph-bold ph-trash fs-2"></i>
-        </div>
-        <h5 class="fw-bold text-dark mb-1">Xác nhận xóa bản sao lưu?</h5>
-        <p class="text-secondary small mb-3">
-          Bạn có chắc chắn muốn xóa file sao lưu <strong id="deleteBackupFilenameText" class="font-monospace text-danger"></strong> khỏi hệ thống?
-        </p>
-        <form method="post" id="deleteBackupForm" action="">
-          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-          <div class="d-flex justify-content-center gap-2">
-            <button type="button" class="btn btn-light border rounded-3 px-4 py-2 fw-semibold" data-bs-dismiss="modal">Hủy</button>
-            <button type="submit" class="btn btn-danger rounded-3 px-4 py-2 fw-bold">
-              Xóa vĩnh viễn
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- MODAL: RESTORE BACKUP CONFIRM -->
-<div class="modal fade" id="restoreBackupModal" tabindex="-1" aria-hidden="true">
+<!-- MODAL: BACKUP UPLOADS CLOUD -->
+<div class="modal fade" id="backupUploadsModal" tabindex="-1" aria-labelledby="backupUploadsModalLabel" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered" style="max-width: 480px;">
+    <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
+      <div class="modal-header bg-primary text-white p-4 pb-3 border-0">
+        <div class="d-flex align-items-center gap-2.5">
+          <div class="rounded-circle bg-white text-primary p-2 d-flex align-items-center justify-content-center" style="width: 36px; height: 36px;">
+            <i class="ph-bold ph-cloud-arrow-up fs-5"></i>
+          </div>
+          <h5 class="modal-title fw-bold text-white mb-0" id="backupUploadsModalLabel">Sao lưu Thư mục Uploads</h5>
+        </div>
+        <button type="button" class="btn-close btn-close-white shadow-none" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      
+      <form id="uploadsBackupModalForm" onsubmit="submitUploadsBackup(event)">
+        <div class="modal-body p-4">
+          <p class="text-secondary small mb-3">
+            Toàn bộ các file ảnh đại diện, media đề thi, âm thanh trong thư mục <code>static/uploads/</code> sẽ được đóng gói nén ZIP và tải lên đích lưu trữ.
+          </p>
+
+          <div class="mb-3">
+            <label class="form-label fw-semibold text-dark small mb-1">Đích lưu trữ (Destination)</label>
+            <select class="form-select form-select-sm rounded-3" id="uploadsProviderSelect">
+              <option value="LOCAL" selected>Nén ZIP Lưu trữ Cục bộ (Local Archive)</option>
+              <option value="S3">Amazon AWS S3 Cloud Storage</option>
+              <option value="CLOUDINARY">Cloudinary Cloud Storage</option>
+              <option value="ALL">Đồng bộ Tất cả (S3 + Cloudinary + Local)</option>
+            </select>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label fw-semibold text-dark small mb-1">Ghi chú (Tùy chọn)</label>
+            <input type="text" class="form-control form-control-sm rounded-3" id="uploadsBackupNotes" placeholder="Sao lưu định kỳ uploads...">
+          </div>
+        </div>
+
+        <div class="modal-footer p-3 bg-light border-top d-flex justify-content-end gap-2">
+          <button type="button" class="btn btn-light rounded-3 px-3 fw-semibold small" data-bs-dismiss="modal">Hủy</button>
+          <button type="submit" class="btn btn-primary rounded-3 px-4 fw-bold shadow-xs" id="btnSubmitUploadsBackup">
+            <i class="ph-bold ph-cloud-arrow-up me-1"></i> Bắt đầu sao lưu
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: CLEANUP OLD BACKUPS -->
+<div class="modal fade" id="cleanupModal" tabindex="-1" aria-labelledby="cleanupModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered" style="max-width: 440px;">
     <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
       <div class="modal-header bg-warning text-dark p-4 pb-3 border-0">
         <div class="d-flex align-items-center gap-2.5">
-          <div class="rounded-circle bg-white text-warning p-2 d-flex align-items-center justify-content-center" style="width: 36px; height: 36px;">
+          <div class="rounded-circle bg-white text-dark p-2 d-flex align-items-center justify-content-center" style="width: 36px; height: 36px;">
+            <i class="ph-bold ph-broom fs-5"></i>
+          </div>
+          <h5 class="modal-title fw-bold text-dark mb-0" id="cleanupModalLabel">Dọn dẹp bản sao lưu cũ</h5>
+        </div>
+        <button type="button" class="btn-close shadow-none" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      
+      <form method="post" action="{{ url_for('admin.cleanup_backups_route') }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <div class="modal-body p-4">
+          <p class="text-secondary small mb-2">
+            Hành động này sẽ tự động xóa các bản sao lưu cũ vượt quá số lượng lưu trữ cho phép (hiện tại: <strong>{{ settings.BACKUP_RETENTION_COUNT }}</strong> bản).
+          </p>
+          <div class="alert alert-warning small mb-0 d-flex align-items-center gap-2 border-0">
+            <i class="ph-bold ph-warning fs-5 flex-shrink-0"></i>
+            <span>Các file vật lý của bản sao lưu cũ cũng sẽ được xóa khỏi ổ đĩa máy chủ.</span>
+          </div>
+        </div>
+
+        <div class="modal-footer p-3 bg-light border-top d-flex justify-content-end gap-2">
+          <button type="button" class="btn btn-light rounded-3 px-3 fw-semibold small" data-bs-dismiss="modal">Hủy</button>
+          <button type="submit" class="btn btn-warning text-dark rounded-3 px-4 fw-bold shadow-xs">
+            <i class="ph-bold ph-broom me-1"></i> Xác nhận dọn dẹp
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: CONFIRM RESTORE BACKUP -->
+<div class="modal fade" id="restoreBackupModal" tabindex="-1" aria-labelledby="restoreBackupModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered" style="max-width: 480px;">
+    <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
+      <div class="modal-header bg-danger text-white p-4 pb-3 border-0">
+        <div class="d-flex align-items-center gap-2.5">
+          <div class="rounded-circle bg-white text-danger p-2 d-flex align-items-center justify-content-center" style="width: 36px; height: 36px;">
             <i class="ph-bold ph-arrow-counter-clockwise fs-5"></i>
           </div>
-          <div>
-            <h5 class="modal-title fw-bold text-dark mb-0">Khôi phục Cơ sở dữ liệu (Data Recovery)</h5>
-            <small class="text-dark-50">Khôi phục trạng thái CSDL từ bản sao lưu</small>
-          </div>
+          <h5 class="modal-title fw-bold text-white mb-0" id="restoreBackupModalLabel">Khôi phục CSDL từ Bản sao lưu</h5>
         </div>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        <button type="button" class="btn-close btn-close-white shadow-none" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
-      <form method="post" id="restoreBackupForm" action="">
+      
+      <form method="post" id="restoreBackupForm" action="#">
         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-        <div class="modal-body p-4 bg-white">
-          <p class="text-secondary small mb-3">
-            Bạn đang chuẩn bị khôi phục toàn bộ CSDL từ file: <strong id="restoreBackupFilenameText" class="font-monospace text-warning-emphasis d-block mt-1"></strong>
+        <div class="modal-body p-4">
+          <p class="text-secondary small mb-2">
+            Bạn đang yêu cầu khôi phục cơ sở dữ liệu từ file:
           </p>
-          <div class="p-3 bg-light rounded-3 border small text-muted mb-0">
-            <strong class="text-dark d-block mb-1"><i class="ph-bold ph-shield-check text-success me-1"></i> Cơ chế Bảo vệ An toàn Dữ liệu:</strong>
-            Hệ thống sẽ tự động tạo thêm một <strong>bản sao lưu an toàn (Safety Pre-restore Backup)</strong> trước khi tiến hành khôi phục.
+          <div class="p-2.5 bg-light rounded-3 border font-monospace small fw-bold text-dark mb-3 text-truncate" id="restoreBackupFilenameText">
+            englishmate_backup.sqlite.gz
+          </div>
+
+          <div class="alert alert-danger small mb-0 d-flex align-items-center gap-2 border-0">
+            <i class="ph-bold ph-warning-circle fs-5 flex-shrink-0"></i>
+            <div>
+              <strong>Lưu ý quan trọng:</strong> Hệ thống sẽ tự động tạo một bản sao lưu an toàn trước khi khôi phục. Dữ liệu hiện tại sẽ được ghi đè bởi bản sao lưu này.
+            </div>
           </div>
         </div>
-        <div class="modal-footer border-0 p-3 pt-0 bg-white d-flex justify-content-end gap-2">
-          <button type="button" class="btn btn-light border rounded-3 px-3 py-2 fw-semibold" data-bs-dismiss="modal">Hủy</button>
-          <button type="submit" class="btn btn-warning rounded-3 px-4 py-2 fw-bold text-dark d-inline-flex align-items-center gap-1.5">
-            <i class="ph-bold ph-arrow-counter-clockwise"></i>
-            <span>Tiến hành Khôi phục</span>
+
+        <div class="modal-footer p-3 bg-light border-top d-flex justify-content-end gap-2">
+          <button type="button" class="btn btn-light rounded-3 px-3 fw-semibold small" data-bs-dismiss="modal">Hủy</button>
+          <button type="submit" class="btn btn-danger rounded-3 px-4 fw-bold shadow-xs">
+            <i class="ph-bold ph-arrow-counter-clockwise me-1"></i> Tiến hành Khôi phục
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: CONFIRM DELETE BACKUP -->
+<div class="modal fade" id="deleteBackupModal" tabindex="-1" aria-labelledby="deleteBackupModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered" style="max-width: 440px;">
+    <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
+      <div class="modal-header bg-danger text-white p-4 pb-3 border-0">
+        <div class="d-flex align-items-center gap-2.5">
+          <div class="rounded-circle bg-white text-danger p-2 d-flex align-items-center justify-content-center" style="width: 36px; height: 36px;">
+            <i class="ph-bold ph-trash fs-5"></i>
+          </div>
+          <h5 class="modal-title fw-bold text-white mb-0" id="deleteBackupModalLabel">Xóa Bản sao lưu</h5>
+        </div>
+        <button type="button" class="btn-close btn-close-white shadow-none" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      
+      <form method="post" id="deleteBackupForm" action="#">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <div class="modal-body p-4">
+          <p class="text-secondary small mb-2">Bạn có chắc chắn muốn xóa bản sao lưu sau đây?</p>
+          <div class="p-2.5 bg-light rounded-3 border font-monospace small fw-bold text-dark mb-0 text-truncate" id="deleteBackupFilenameText">
+            englishmate_backup.sqlite.gz
+          </div>
+        </div>
+
+        <div class="modal-footer p-3 bg-light border-top d-flex justify-content-end gap-2">
+          <button type="button" class="btn btn-light rounded-3 px-3 fw-semibold small" data-bs-dismiss="modal">Hủy</button>
+          <button type="submit" class="btn btn-danger rounded-3 px-4 fw-bold shadow-xs">
+            <i class="ph-bold ph-trash me-1"></i> Xác nhận xóa
           </button>
         </div>
       </form>
@@ -476,7 +859,6 @@
 </div>
 
 <script>
-// Search Debounce (250ms) for backups
 document.addEventListener("DOMContentLoaded", () => {
   const searchInput = document.getElementById("backupSearchInput");
   if (searchInput) {
@@ -496,7 +878,6 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 });
 
-// Restore confirmation modal handler
 function confirmRestoreBackup(backupId, filename) {
   const modal = new bootstrap.Modal(document.getElementById("restoreBackupModal"));
   document.getElementById("restoreBackupFilenameText").innerText = filename;
@@ -504,7 +885,6 @@ function confirmRestoreBackup(backupId, filename) {
   modal.show();
 }
 
-// Delete confirmation modal handler
 function confirmDeleteBackup(backupId, filename) {
   const modal = new bootstrap.Modal(document.getElementById("deleteBackupModal"));
   document.getElementById("deleteBackupFilenameText").innerText = filename;
@@ -512,8 +892,6 @@ function confirmDeleteBackup(backupId, filename) {
   modal.show();
 }
 
-
-// AJAX save settings
 async function saveBackupSettings(e) {
   e.preventDefault();
   const form = document.getElementById("backupSettingsForm");
@@ -521,7 +899,6 @@ async function saveBackupSettings(e) {
   btn.disabled = true;
   btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Đang lưu...';
 
-  const formData = new FormData(form);
   const data = {
     BACKUP_AUTO_ENABLED: form.querySelector('#backupAutoSwitch').checked,
     BACKUP_FREQUENCY: form.querySelector('input[name="BACKUP_FREQUENCY"]:checked')?.value || 'DAILY',
@@ -551,6 +928,174 @@ async function saveBackupSettings(e) {
   } finally {
     btn.disabled = false;
     btn.innerHTML = '<i class="ph-bold ph-floppy-disk"></i> <span>Lưu cài đặt sao lưu</span>';
+  }
+}
+
+async function saveS3Settings(e) {
+  e.preventDefault();
+  const form = document.getElementById("s3SettingsForm");
+  const formData = new FormData(form);
+  const data = Object.fromEntries(formData.entries());
+  data.S3_BACKUP_ENABLED = form.querySelector('#s3AutoSwitch').checked;
+
+  try {
+    const res = await fetch("{{ url_for('admin.update_cloud_settings_route') }}", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "X-CSRFToken": "{{ csrf_token() }}" },
+      body: JSON.stringify(data)
+    });
+    const json = await res.json();
+    alert(json.message || "Đã lưu cài đặt AWS S3!");
+  } catch (err) {
+    alert("Lỗi kết nối khi lưu cài đặt S3.");
+  }
+}
+
+async function saveCloudinarySettings(e) {
+  e.preventDefault();
+  const form = document.getElementById("cloudinarySettingsForm");
+  const formData = new FormData(form);
+  const data = Object.fromEntries(formData.entries());
+  data.CLOUDINARY_BACKUP_ENABLED = form.querySelector('#cldAutoSwitch').checked;
+
+  try {
+    const res = await fetch("{{ url_for('admin.update_cloud_settings_route') }}", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "X-CSRFToken": "{{ csrf_token() }}" },
+      body: JSON.stringify(data)
+    });
+    const json = await res.json();
+    alert(json.message || "Đã lưu cài đặt Cloudinary!");
+  } catch (err) {
+    alert("Lỗi kết nối khi lưu cài đặt Cloudinary.");
+  }
+}
+
+async function triggerCloudBackup(provider) {
+  if (!confirm(`Bạn có chắc chắn muốn bắt đầu sao lưu uploads lên ${provider}?`)) return;
+  try {
+    const res = await fetch("{{ url_for('admin.backup_uploads_route') }}", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "X-CSRFToken": "{{ csrf_token() }}" },
+      body: JSON.stringify({ provider: provider })
+    });
+    const json = await res.json();
+    if (json.success) {
+      alert("✓ " + json.message);
+      window.location.reload();
+    } else {
+      alert("Lỗi: " + (json.error || "Không thể sao lưu"));
+    }
+  } catch (err) {
+    alert("Lỗi kết nối khi sao lưu.");
+  }
+}
+
+async function submitUploadsBackup(e) {
+  e.preventDefault();
+  const provider = document.getElementById("uploadsProviderSelect").value;
+  const notes = document.getElementById("uploadsBackupNotes").value;
+  const btn = document.getElementById("btnSubmitUploadsBackup");
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Đang nén & sao lưu...';
+
+  try {
+    const res = await fetch("{{ url_for('admin.backup_uploads_route') }}", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "X-CSRFToken": "{{ csrf_token() }}" },
+      body: JSON.stringify({ provider: provider, notes: notes })
+    });
+    const json = await res.json();
+    if (json.success) {
+      alert("✓ " + json.message);
+      window.location.reload();
+    } else {
+      alert("Lỗi: " + (json.error || "Không thể sao lưu uploads"));
+    }
+  } catch (err) {
+    alert("Lỗi kết nối.");
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '<i class="ph-bold ph-cloud-arrow-up me-1"></i> Bắt đầu sao lưu';
+  }
+}
+
+async function testImageCompression(e) {
+  e.preventDefault();
+  const fileInput = document.getElementById("compressImageInput");
+  if (!fileInput.files.length) return;
+
+  const btn = document.getElementById("btnRunCompress");
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Đang nén với Pillow...';
+
+  const formData = new FormData();
+  formData.append("image", fileInput.files[0]);
+  formData.append("quality", document.getElementById("compressQuality").value);
+  formData.append("max_width", document.getElementById("compressMaxDim").value);
+  formData.append("max_height", document.getElementById("compressMaxDim").value);
+
+  try {
+    const res = await fetch("{{ url_for('admin.compress_image_api') }}", {
+      method: "POST",
+      headers: { "X-CSRFToken": "{{ csrf_token() }}" },
+      body: formData
+    });
+    const json = await res.json();
+    if (json.success) {
+      document.getElementById("imageCompressResult").classList.remove("d-none");
+      document.getElementById("resOrigSize").innerText = (json.original_size / 1024).toFixed(1) + " KB";
+      document.getElementById("resCompSize").innerText = (json.compressed_size / 1024).toFixed(1) + " KB";
+      document.getElementById("resSavedBytes").innerText = "-" + (json.saved_bytes / 1024).toFixed(1) + " KB";
+      document.getElementById("resReductionPercent").innerText = json.reduction_percent + "%";
+      document.getElementById("resDimensions").innerText = `${json.width}x${json.height} px`;
+      document.getElementById("resFormat").innerText = json.format;
+    } else {
+      alert("Lỗi nén ảnh: " + json.error);
+    }
+  } catch (err) {
+    alert("Lỗi kết nối khi nén ảnh.");
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '<i class="ph-bold ph-arrows-in-line-horizontal me-1"></i> Thực hiện nén ảnh thử nghiệm';
+  }
+}
+
+async function testAudioNormalization(e) {
+  e.preventDefault();
+  const fileInput = document.getElementById("normalizeAudioInput");
+  if (!fileInput.files.length) return;
+
+  const btn = document.getElementById("btnRunNormalize");
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Đang chuẩn hóa âm lượng...';
+
+  const formData = new FormData();
+  formData.append("audio", fileInput.files[0]);
+  formData.append("target_dbfs", document.getElementById("normalizeTargetDbfs").value);
+
+  try {
+    const res = await fetch("{{ url_for('admin.normalize_audio_api') }}", {
+      method: "POST",
+      headers: { "X-CSRFToken": "{{ csrf_token() }}" },
+      body: formData
+    });
+    const json = await res.json();
+    if (json.success) {
+      document.getElementById("audioNormalizeResult").classList.remove("d-none");
+      document.getElementById("resAudioEngine").innerText = json.engine;
+      document.getElementById("resAudioOrigDbfs").innerText = json.original_max_dbfs + " dBFS";
+      document.getElementById("resAudioGain").innerText = `${json.gain_applied_db >= 0 ? '+' : ''}${json.gain_applied_db} dB -> ${json.target_dbfs} dBFS`;
+      document.getElementById("resAudioDuration").innerText = json.duration_seconds + "s";
+      document.getElementById("resAudioSampleRate").innerText = json.sample_rate + " Hz";
+    } else {
+      alert("Lỗi chuẩn hóa audio: " + json.error);
+    }
+  } catch (err) {
+    alert("Lỗi kết nối khi xử lý audio.");
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '<i class="ph-bold ph-sliders-horizontal me-1"></i> Thực hiện chuẩn hóa âm lượng';
   }
 }
 </script>
