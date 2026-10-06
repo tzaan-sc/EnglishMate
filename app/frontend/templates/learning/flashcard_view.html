@@ -193,7 +193,7 @@
             <!-- Progress Bar -->
             <div class="d-flex justify-content-between align-items-center mb-2 px-1 mt-2">
                 <div class="fw-bold text-dark" style="font-size: 0.95rem;">
-                    Thẻ <span id="progressText" class="font-monospace text-primary">1/{{ fset.items|length }}</span>
+                    Thẻ <span id="progressText" class="font-monospace text-primary" role="status" aria-live="polite">1/{{ fset.items|length }}</span>
                 </div>
                 <div class="d-flex gap-3 fw-bold" style="font-size: 0.9rem;">
                     <span class="d-flex align-items-center gap-1 text-warning" title="Đang học">
@@ -209,7 +209,7 @@
             </div>
 
             <!-- 3D Flashcard -->
-            <div class="flashcard-container" id="flashcardContainer" onclick="flipCard()">
+            <div class="flashcard-container" id="flashcardContainer" onclick="flipCard()" role="button" tabindex="0" aria-label="Thẻ flashcard. Nhấn Space hoặc Enter để lật thẻ; vuốt trái/phải để đánh dấu; vuốt lên/xuống để lật">
                 <div class="flashcard-inner" id="flashcardInner">
                     <!-- Mặt trước (Front) -->
                     <div class="card-front">
@@ -287,7 +287,7 @@
             <!-- Touch Gesture Instruction Bar -->
             <div class="text-center text-muted small mt-3 fw-medium d-inline-flex align-items-center justify-content-center gap-2 w-100 p-2 rounded-pill bg-light border shadow-2xs" style="font-size: 0.78rem;">
                 <i class="ph-bold ph-hand-swipe text-primary fs-5"></i>
-                <span>👈 Vuốt trái: Cần học lại &bull; Chạm: Lật mặt &bull; 👉 Vuốt phải: Đã thuộc</span>
+                <span>👈 Vuốt trái: Cần học lại &bull; Chạm hoặc vuốt lên/xuống: Lật mặt &bull; 👉 Vuốt phải: Đã thuộc</span>
             </div>
         </div>
     </div>
@@ -496,6 +496,7 @@
         
         // Remove swipe animations if any
         elInner.classList.remove('swipe-left', 'swipe-right', 'is-flipped');
+        elInner.style.transform = '';
         state.isFlipped = false;
         
         // Cập nhật nội dung mặt trước
@@ -706,6 +707,7 @@
         let touchStartX = 0;
         let touchStartY = 0;
         let currentTouchX = 0;
+        let currentTouchY = 0;
         let isSwiping = false;
 
         elContainer.addEventListener('touchstart', (e) => {
@@ -713,6 +715,7 @@
             touchStartX = e.touches[0].clientX;
             touchStartY = e.touches[0].clientY;
             currentTouchX = touchStartX;
+            currentTouchY = touchStartY;
             isSwiping = true;
             elInner.style.transition = 'none';
         }, { passive: true });
@@ -720,8 +723,9 @@
         elContainer.addEventListener('touchmove', (e) => {
             if (!isSwiping || e.touches.length !== 1) return;
             currentTouchX = e.touches[0].clientX;
+            currentTouchY = e.touches[0].clientY;
             const deltaX = currentTouchX - touchStartX;
-            const deltaY = e.touches[0].clientY - touchStartY;
+            const deltaY = currentTouchY - touchStartY;
 
             if (Math.abs(deltaX) > Math.abs(deltaY)) {
                 const rotation = deltaX * 0.05;
@@ -735,20 +739,32 @@
             elInner.style.transition = 'transform 0.4s cubic-bezier(0.4, 0, 0.2, 1)';
 
             const deltaX = currentTouchX - touchStartX;
+            const deltaY = currentTouchY - touchStartY;
 
-            if (deltaX > 75) {
+            if (deltaX > 75 && Math.abs(deltaX) > Math.abs(deltaY)) {
                 markCard(true); // Swipe Right -> Known
-            } else if (deltaX < -75) {
+            } else if (deltaX < -75 && Math.abs(deltaX) > Math.abs(deltaY)) {
                 markCard(false); // Swipe Left -> Learning
+            } else if (Math.abs(deltaY) > 60 && Math.abs(deltaY) > Math.abs(deltaX)) {
+                // Swipe Up/Down -> flip card
+                elInner.style.transform = '';
+                flipCard();
             } else {
-                if (state.isFlipped) {
-                    elInner.style.transform = 'rotateX(180deg)';
-                } else {
-                    elInner.style.transform = 'none';
-                }
+                elInner.style.transform = state.isFlipped ? 'rotateX(180deg)' : 'none';
             }
             touchStartX = 0;
             currentTouchX = 0;
+            touchStartY = 0;
+            currentTouchY = 0;
+        });
+
+        // Keyboard activation for screen reader / keyboard users
+        elContainer.addEventListener('keydown', (e) => {
+            if (e.target !== elContainer) return;
+            if (e.code === 'Enter') {
+                e.preventDefault();
+                flipCard();
+            }
         });
     }
 

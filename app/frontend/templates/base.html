@@ -19,6 +19,7 @@
   <link rel="stylesheet" href="{{ url_for('static', filename='css/app.css') }}?v=2.2">
 </head>
 <body class="{% block body_class %}{% endblock %}">
+  <a class="skip-link" href="#main-content">Nhảy thẳng vào nội dung chính</a>
   {% include "partials/_icons.html" %}
 
   {% if current_user.is_authenticated and current_user.is_admin and is_system_in_maintenance %}
@@ -240,7 +241,7 @@
         <a class="navbar-brand d-flex align-items-center gap-2" href="{{ url_for('main.index') }}">
           <span class="brand-mark">E</span><span>English<span class="brand-accent">Mate</span></span>
         </a>
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#appNav">
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#appNav" aria-controls="appNav" aria-expanded="false" aria-label="Mở/đóng menu điều hướng">
           <span class="navbar-toggler-icon"></span>
         </button>
         <div class="collapse navbar-collapse" id="appNav">
@@ -289,7 +290,7 @@
   </div>
 
   <!-- Unified Block Content Main -->
-  <main class="{% if current_user.is_authenticated %}flex-grow-1 p-3 p-lg-4{% endif %}">
+  <main id="main-content" tabindex="-1" class="{% if current_user.is_authenticated %}flex-grow-1 p-3 p-lg-4{% endif %}">
     {% block content %}{% endblock %}
   </main>
 
@@ -381,6 +382,7 @@
   <script src="https://unpkg.com/lucide@latest"></script>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
   <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/a11y.js') }}"></script>
   {% if current_user.is_authenticated and not current_user.is_admin %}
   <script src="{{ url_for('static', filename='js/vocab_notifications.js') }}"></script>
   {% endif %}

@@ -4571,3 +4571,27 @@ a:hover {
     font-weight: 700;
     color: #ffffff;
 }
+/* Accessibility: skip link */
+.skip-link {
+  position: fixed;
+  top: 0.75rem;
+  left: 0.75rem;
+  z-index: 3000;
+  padding: 0.6rem 1.1rem;
+  border-radius: 0.75rem;
+  background: var(--primary, #059669);
+  color: #fff;
+  font-weight: 700;
+  text-decoration: none;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+  transform: translateY(-200%);
+  transition: transform 0.2s ease;
+}
+.skip-link:focus {
+  transform: translateY(0);
+  color: #fff;
+  outline: 3px solid #fff;
+  outline-offset: 2px;
+}
+#main-content:focus { outline: none; }
+

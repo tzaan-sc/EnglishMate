@@ -596,13 +596,13 @@ MODULE 12. SYSTEM FEATURES (TÍNH NĂNG HỆ THỐNG) — 46 TÍNH NĂNG CHƯA L
 MODULE 13. UI/UX FEATURES (TÍNH NĂNG GIAO DIỆN) — 14 TÍNH NĂNG CHƯA LÀM
 ----------------------------------------------------------------------------------------------------
 
-13.1. Responsive Design (1 tính năng chưa làm):
-- [ ] `Gesture Support - Hỗ trợ thao tác vuốt cảm ứng`:
-  Chưa hỗ trợ thao tác vuốt màn hình (Swipe left / right) trên điện thoại để chuyển thẻ flashcard tiếp theo hoặc lật mặt thẻ. (Ưu tiên: Cao cho trải nghiệm mobile)
+13.1. Responsive Design (đã hoàn thành):
+- [x] `Gesture Support - Hỗ trợ thao tác vuốt cảm ứng`:
+  Flashcard hỗ trợ vuốt trái (cần học lại) / phải (đã thuộc) và vuốt lên/xuống hoặc chạm để lật mặt thẻ, kèm bàn phím (Space/Enter) và nhãn ARIA. (Ưu tiên: Cao cho trải nghiệm mobile)
 
-13.2. Accessibility (2 tính năng chưa làm):
-- [ ] `Screen Reader Support`: Chưa tối ưu hoàn chỉnh các nhãn ARIA cho người khiếm thị. (Ưu tiên: Thấp)
-- [ ] `Skip Links`: Chưa có link ẩn "Nhảy thẳng vào nội dung chính" ở đầu trang. (Ưu tiên: Thấp)
+13.2. Accessibility (đã hoàn thành):
+- [x] `Screen Reader Support`: Script `static/js/a11y.js` tự bổ sung ARIA (aria-hidden cho icon, aria-label cho nút chỉ có icon, nhãn landmark, role dialog cho modal, progressbar, nhãn form). (Ưu tiên: Thấp)
+- [x] `Skip Links`: Link ẩn "Nhảy thẳng vào nội dung chính" ở đầu `base.html`, hiện khi focus bằng Tab, trỏ tới `<main id="main-content">`. (Ưu tiên: Thấp)
 
 13.4. User Experience (3 tính năng chưa làm):
 - [ ] `Shortcuts - Phím tắt điều khiển`:
