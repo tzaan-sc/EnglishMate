@@ -957,13 +957,13 @@ NỀN TẢNG HỌC TIẾNG ANH TRỰC TUYẾN THÔNG MINH
 12.9. Monitoring & Logging (Giám sát & ghi log)
 [x] - Application Logging - Ghi log ứng dụng
 [x] - Error Logging - Ghi lỗi
-[ ] - Performance Logging - Ghi hiệu suất
+[x] - Performance Logging - Ghi hiệu suất
 [x] - User Activity Logging - Ghi hoạt động người dùng
 [x] - System Health Monitoring - Giám sát sức khỏe
-[ ] - Resource Monitoring - Giám sát tài nguyên
-[ ] - Alert System - Hệ thống cảnh báo
-[ ] - Log Analysis - Phân tích log
-[ ] - Log Retention - Lưu trữ log
+[x] - Resource Monitoring - Giám sát tài nguyên
+[x] - Alert System - Hệ thống cảnh báo
+[x] - Log Analysis - Phân tích log
+[x] - Log Retention - Lưu trữ log
 [x] - Log Export - Xuất log
 
 12.10. Testing System (Hệ thống kiểm thử)

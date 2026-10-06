@@ -99,10 +99,16 @@
                     <span>Giám sát & Phân tích Lỗi</span>
                 </a>
             </li>
-            <li class="nav-item mb-2">
+            <li class="nav-item">
                 <a class="nav-link-modern {% if request.path.startswith('/admin/system/apm') or request.path.startswith('/admin/apm') %}active{% endif %}" href="{{ url_for('admin.system_apm') }}" title="Giám sát Hiệu năng (APM)">
                     <i class="ph-bold ph-chart-line-up fs-5 text-success" style="width: 20px; text-align: center;"></i>
                     <span>Giám sát APM & Tải</span>
+                </a>
+            </li>
+            <li class="nav-item mb-2">
+                <a class="nav-link-modern {% if request.path.startswith('/admin/system/monitoring') or request.path.startswith('/admin/monitoring') %}active{% endif %}" href="{{ url_for('admin.system_monitoring') }}" title="Giám sát Tài nguyên & Log">
+                    <i class="ph-bold ph-activity fs-5 text-primary" style="width: 20px; text-align: center;"></i>
+                    <span>Giám sát & Nhật ký</span>
                 </a>
             </li>
 

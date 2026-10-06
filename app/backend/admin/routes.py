@@ -1683,6 +1683,31 @@ from .apm_service import (
     apm_monitor,
     init_apm,
 )
+from .routes_monitoring import (
+    system_monitoring,
+    api_system_resources,
+    api_slow_queries,
+    reset_slow_queries,
+    api_search_logs,
+    update_alert_config,
+    test_alert_notification,
+    rotate_log_route,
+    cleanup_logs_route,
+    export_filtered_logs,
+)
+from .slow_query_logger import (
+    slow_query_monitor,
+    init_slow_query_logger,
+)
+from .system_monitor_service import (
+    system_monitor,
+)
+from .alert_service import (
+    alert_service,
+)
+from .log_analysis_service import (
+    log_analysis_service,
+)
 
 
 

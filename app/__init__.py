@@ -50,6 +50,8 @@ def create_app(config_object=Config):
     init_error_monitoring(app)
     from .backend.admin.apm_service import init_apm
     init_apm(app)
+    from .backend.admin.slow_query_logger import init_slow_query_logger
+    init_slow_query_logger(app)
     limiter.init_app(app)
     cors.init_app(
         app,
@@ -525,6 +527,25 @@ def create_app(config_object=Config):
             click.echo("[SUCCESS] Đã xóa toàn bộ bộ nhớ Cache.")
         else:
             click.echo("[ERROR] Không thể làm sạch Cache.")
+
+    @app.cli.command("rotate-logs")
+    @click.option("--file", "filename", default="app.log", help="Tên file log cần xoay vòng và nén .gz.")
+    def run_rotate_logs_cli(filename):
+        """Xoay vòng và nén tệp nhật ký ứng dụng."""
+        from .backend.admin.log_analysis_service import log_analysis_service
+        res = log_analysis_service.rotate_log_file(filename)
+        if res.get("success"):
+            click.echo(f"[SUCCESS] {res.get('message')}")
+        else:
+            click.echo(f"[ERROR] {res.get('error')}")
+
+    @app.cli.command("cleanup-system-logs")
+    @click.option("--days", default=None, type=int, help="Số ngày lưu trữ tệp log nén.")
+    def run_cleanup_system_logs_cli(days):
+        """Tự động dọn dẹp các tệp nhật ký lưu trữ quá hạn."""
+        from .backend.admin.log_analysis_service import log_analysis_service
+        res = log_analysis_service.cleanup_expired_log_archives(retention_days=days)
+        click.echo(f"[SUCCESS] {res.get('message')}")
 
 
     @app.errorhandler(403)

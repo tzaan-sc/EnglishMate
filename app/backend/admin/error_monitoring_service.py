@@ -257,8 +257,28 @@ def record_system_error(
         )
         db.session.add(new_log)
         db.session.commit()
-
         logger.error(f"🚨 [Error Logged] {exc_type} on {req_route} (ID: {error_uuid})")
+
+        # 6. Tự động bắn thông báo cảnh báo qua Telegram/Discord/Slack Webhooks
+        try:
+            from .alert_service import alert_service
+            alert_service.dispatch_error_alert_async({
+                "error_id": error_uuid,
+                "fingerprint": fingerprint,
+                "exception_type": exc_type,
+                "message": exc_msg,
+                "status_code": status_code,
+                "severity": severity.upper(),
+                "route": req_route or "/",
+                "method": req_method or "GET",
+                "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                "client_ip": req_ip or "127.0.0.1",
+                "user_id": req_user_id,
+                "traceback": tb_str[:600] if tb_str else "",
+            })
+        except Exception:
+            pass
+
         return new_log
 
     except Exception as inner_err:

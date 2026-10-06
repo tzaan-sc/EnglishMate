@@ -1,0 +1,112 @@
+[2026-10-06 09:25:51] [420.0ms] SELECT * FROM vocabulary WHERE topic = 'Topic_1' AND id > 10
+[2026-10-06 09:25:51] [440.0ms] SELECT * FROM vocabulary WHERE topic = 'Topic_2' AND id > 20
+[2026-10-06 09:25:51] [460.0ms] SELECT * FROM vocabulary WHERE topic = 'Topic_0' AND id > 30
+[2026-10-06 09:25:51] [480.0ms] SELECT * FROM vocabulary WHERE topic = 'Topic_1' AND id > 40
+[2026-10-06 09:25:51] [500.0ms] SELECT * FROM vocabulary WHERE topic = 'Topic_2' AND id > 50
+[2026-10-06 09:25:51] [520.0ms] SELECT * FROM vocabulary WHERE topic = 'Topic_0' AND id > 60
+[2026-10-06 09:25:51] [540.0ms] SELECT * FROM vocabulary WHERE topic = 'Topic_1' AND id > 70
+[2026-10-06 09:25:51] [560.0ms] SELECT * FROM vocabulary WHERE topic = 'Topic_2' AND id > 80
+[2026-10-06 09:25:51] [580.0ms] SELECT * FROM vocabulary WHERE topic = 'Topic_0' AND id > 90
+[2026-10-06 09:25:51] [600.0ms] SELECT * FROM vocabulary WHERE topic = 'Topic_1' AND id > 100
+[2026-10-06 09:26:47] [420.0ms] SELECT * FROM vocabulary WHERE topic = 'Topic_1' AND id > 10
+[2026-10-06 09:26:47] [440.0ms] SELECT * FROM vocabulary WHERE topic = 'Topic_2' AND id > 20
+[2026-10-06 09:26:47] [460.0ms] SELECT * FROM vocabulary WHERE topic = 'Topic_0' AND id > 30
+[2026-10-06 09:26:47] [480.0ms] SELECT * FROM vocabulary WHERE topic = 'Topic_1' AND id > 40
+[2026-10-06 09:26:47] [500.0ms] SELECT * FROM vocabulary WHERE topic = 'Topic_2' AND id > 50
+[2026-10-06 09:26:47] [520.0ms] SELECT * FROM vocabulary WHERE topic = 'Topic_0' AND id > 60
+[2026-10-06 09:26:47] [540.0ms] SELECT * FROM vocabulary WHERE topic = 'Topic_1' AND id > 70
+[2026-10-06 09:26:47] [560.0ms] SELECT * FROM vocabulary WHERE topic = 'Topic_2' AND id > 80
+[2026-10-06 09:26:47] [580.0ms] SELECT * FROM vocabulary WHERE topic = 'Topic_0' AND id > 90
+[2026-10-06 09:26:47] [600.0ms] SELECT * FROM vocabulary WHERE topic = 'Topic_1' AND id > 100
+[2026-10-06 09:27:45] [420.0ms] SELECT * FROM vocabulary WHERE topic = 'Topic_1' AND id > 10
+[2026-10-06 09:27:45] [440.0ms] SELECT * FROM vocabulary WHERE topic = 'Topic_2' AND id > 20
+[2026-10-06 09:27:45] [460.0ms] SELECT * FROM vocabulary WHERE topic = 'Topic_0' AND id > 30
+[2026-10-06 09:27:45] [480.0ms] SELECT * FROM vocabulary WHERE topic = 'Topic_1' AND id > 40
+[2026-10-06 09:27:45] [500.0ms] SELECT * FROM vocabulary WHERE topic = 'Topic_2' AND id > 50
+[2026-10-06 09:27:45] [520.0ms] SELECT * FROM vocabulary WHERE topic = 'Topic_0' AND id > 60
+[2026-10-06 09:27:45] [540.0ms] SELECT * FROM vocabulary WHERE topic = 'Topic_1' AND id > 70
+[2026-10-06 09:27:45] [560.0ms] SELECT * FROM vocabulary WHERE topic = 'Topic_2' AND id > 80
+[2026-10-06 09:27:45] [580.0ms] SELECT * FROM vocabulary WHERE topic = 'Topic_0' AND id > 90
+[2026-10-06 09:27:45] [600.0ms] SELECT * FROM vocabulary WHERE topic = 'Topic_1' AND id > 100
+[2026-10-06 09:29:26] [420.0ms] SELECT * FROM vocabulary WHERE topic = 'Topic_1' AND id > 10
+[2026-10-06 09:29:26] [440.0ms] SELECT * FROM vocabulary WHERE topic = 'Topic_2' AND id > 20
+[2026-10-06 09:29:26] [460.0ms] SELECT * FROM vocabulary WHERE topic = 'Topic_0' AND id > 30
+[2026-10-06 09:29:26] [480.0ms] SELECT * FROM vocabulary WHERE topic = 'Topic_1' AND id > 40
+[2026-10-06 09:29:26] [500.0ms] SELECT * FROM vocabulary WHERE topic = 'Topic_2' AND id > 50
+[2026-10-06 09:29:26] [520.0ms] SELECT * FROM vocabulary WHERE topic = 'Topic_0' AND id > 60
+[2026-10-06 09:29:26] [540.0ms] SELECT * FROM vocabulary WHERE topic = 'Topic_1' AND id > 70
+[2026-10-06 09:29:26] [560.0ms] SELECT * FROM vocabulary WHERE topic = 'Topic_2' AND id > 80
+[2026-10-06 09:29:26] [580.0ms] SELECT * FROM vocabulary WHERE topic = 'Topic_0' AND id > 90
+[2026-10-06 09:29:26] [600.0ms] SELECT * FROM vocabulary WHERE topic = 'Topic_1' AND id > 100
+[2026-10-06 09:38:36] [421105.11ms] CREATE INDEX ix_user_badge_user_id ON user_badge (user_id)
+[2026-10-06 09:38:36] [421136.39ms] CREATE INDEX ix_user_badge_user_id ON user_badge (user_id)
+[2026-10-06 09:38:36] [421137.76ms] CREATE INDEX ix_user_badge_user_id ON user_badge (user_id)
+[2026-10-06 09:38:36] [421138.89ms] CREATE INDEX ix_user_badge_user_id ON user_badge (user_id)
+[2026-10-06 09:38:36] [421139.84ms] CREATE INDEX ix_user_badge_user_id ON user_badge (user_id)
+[2026-10-06 09:38:36] [421141.72ms] CREATE INDEX ix_user_badge_user_id ON user_badge (user_id)
+[2026-10-06 09:38:36] [421142.94ms] CREATE INDEX ix_user_badge_user_id ON user_badge (user_id)
+[2026-10-06 09:38:36] [421143.58ms] CREATE INDEX ix_user_badge_user_id ON user_badge (user_id)
+[2026-10-06 09:38:36] [421144.15ms] CREATE INDEX ix_user_badge_user_id ON user_badge (user_id)
+[2026-10-06 09:38:36] [421144.69ms] CREATE INDEX ix_user_badge_user_id ON user_badge (user_id)
+[2026-10-06 09:38:36] [421145.22ms] CREATE INDEX ix_user_badge_user_id ON user_badge (user_id)
+[2026-10-06 09:38:36] [421145.74ms] CREATE INDEX ix_user_badge_user_id ON user_badge (user_id)
+[2026-10-06 09:38:36] [421146.23ms] CREATE INDEX ix_user_badge_user_id ON user_badge (user_id)
+[2026-10-06 09:38:36] [421146.77ms] CREATE INDEX ix_user_badge_user_id ON user_badge (user_id)
+[2026-10-06 09:38:36] [421147.4ms] CREATE INDEX ix_user_badge_user_id ON user_badge (user_id)
+[2026-10-06 09:38:36] [421147.98ms] CREATE INDEX ix_user_badge_user_id ON user_badge (user_id)
+[2026-10-06 09:38:36] [421148.54ms] CREATE INDEX ix_user_badge_user_id ON user_badge (user_id)
+[2026-10-06 09:38:36] [421149.56ms] CREATE INDEX ix_user_badge_user_id ON user_badge (user_id)
+[2026-10-06 09:38:36] [421150.13ms] CREATE INDEX ix_user_badge_user_id ON user_badge (user_id)
+[2026-10-06 09:38:36] [421150.69ms] CREATE INDEX ix_user_badge_user_id ON user_badge (user_id)
+[2026-10-06 09:38:36] [421151.18ms] CREATE INDEX ix_user_badge_user_id ON user_badge (user_id)
+[2026-10-06 09:38:36] [421151.66ms] CREATE INDEX ix_user_badge_user_id ON user_badge (user_id)
+[2026-10-06 09:38:36] [421152.14ms] CREATE INDEX ix_user_badge_user_id ON user_badge (user_id)
+[2026-10-06 09:38:36] [421152.59ms] CREATE INDEX ix_user_badge_user_id ON user_badge (user_id)
+[2026-10-06 09:38:36] [421167.88ms] CREATE INDEX ix_user_badge_user_id ON user_badge (user_id)
+[2026-10-06 09:38:36] [421169.16ms] CREATE INDEX ix_user_badge_user_id ON user_badge (user_id)
+[2026-10-06 09:38:36] [421169.98ms] CREATE INDEX ix_user_badge_user_id ON user_badge (user_id)
+[2026-10-06 09:38:36] [421184.78ms] CREATE INDEX ix_user_badge_user_id ON user_badge (user_id)
+[2026-10-06 09:38:36] [421186.38ms] CREATE INDEX ix_user_badge_user_id ON user_badge (user_id)
+[2026-10-06 09:38:36] [421187.27ms] CREATE INDEX ix_user_badge_user_id ON user_badge (user_id)
+[2026-10-06 09:38:36] [421187.87ms] CREATE INDEX ix_user_badge_user_id ON user_badge (user_id)
+[2026-10-06 09:38:36] [421188.38ms] CREATE INDEX ix_user_badge_user_id ON user_badge (user_id)
+[2026-10-06 09:38:36] [421188.9ms] CREATE INDEX ix_user_badge_user_id ON user_badge (user_id)
+[2026-10-06 09:38:36] [421189.4ms] CREATE INDEX ix_user_badge_user_id ON user_badge (user_id)
+[2026-10-06 09:38:36] [421189.88ms] CREATE INDEX ix_user_badge_user_id ON user_badge (user_id)
+[2026-10-06 09:38:36] [421190.6ms] CREATE INDEX ix_user_badge_user_id ON user_badge (user_id)
+[2026-10-06 09:38:36] [421191.13ms] CREATE INDEX ix_user_badge_user_id ON user_badge (user_id)
+[2026-10-06 09:38:36] [421191.68ms] CREATE INDEX ix_user_badge_user_id ON user_badge (user_id)
+[2026-10-06 09:38:36] [421192.37ms] CREATE INDEX ix_user_badge_user_id ON user_badge (user_id)
+[2026-10-06 09:38:36] [421192.88ms] CREATE INDEX ix_user_badge_user_id ON user_badge (user_id)
+[2026-10-06 09:38:36] [421193.46ms] CREATE INDEX ix_user_badge_user_id ON user_badge (user_id)
+[2026-10-06 09:38:36] [421194.01ms] CREATE INDEX ix_user_badge_user_id ON user_badge (user_id)
+[2026-10-06 09:38:36] [421194.67ms] CREATE INDEX ix_user_badge_user_id ON user_badge (user_id)
+[2026-10-06 09:38:36] [421195.19ms] CREATE INDEX ix_user_badge_user_id ON user_badge (user_id)
+[2026-10-06 09:38:36] [421195.78ms] CREATE INDEX ix_user_badge_user_id ON user_badge (user_id)
+[2026-10-06 09:38:36] [421196.39ms] CREATE INDEX ix_user_badge_user_id ON user_badge (user_id)
+[2026-10-06 09:38:36] [421197.14ms] CREATE INDEX ix_user_badge_user_id ON user_badge (user_id)
+[2026-10-06 09:38:36] [421198.18ms] CREATE INDEX ix_user_badge_user_id ON user_badge (user_id)
+[2026-10-06 09:38:36] [421198.95ms] CREATE INDEX ix_user_badge_user_id ON user_badge (user_id)
+[2026-10-06 09:38:36] [421201.28ms] CREATE INDEX ix_user_badge_user_id ON user_badge (user_id)
+[2026-10-06 09:38:36] [421201.95ms] CREATE INDEX ix_user_badge_user_id ON user_badge (user_id)
+[2026-10-06 09:38:36] [421202.45ms] CREATE INDEX ix_user_badge_user_id ON user_badge (user_id)
+[2026-10-06 09:38:36] [421202.91ms] CREATE INDEX ix_user_badge_user_id ON user_badge (user_id)
+[2026-10-06 09:38:36] [421203.43ms] CREATE INDEX ix_user_badge_user_id ON user_badge (user_id)
+[2026-10-06 09:38:36] [421206.34ms] CREATE INDEX ix_user_badge_user_id ON user_badge (user_id)
+[2026-10-06 09:38:36] [421207.11ms] CREATE INDEX ix_user_badge_user_id ON user_badge (user_id)
+[2026-10-06 09:38:36] [421208.19ms] CREATE INDEX ix_user_badge_user_id ON user_badge (user_id)
+[2026-10-06 09:38:36] [421208.79ms] CREATE INDEX ix_user_badge_user_id ON user_badge (user_id)
+[2026-10-06 09:38:36] [421209.44ms] CREATE INDEX ix_user_badge_user_id ON user_badge (user_id)
+[2026-10-06 09:38:36] [421210.04ms] CREATE INDEX ix_user_badge_user_id ON user_badge (user_id)
+[2026-10-06 09:38:36] [421210.58ms] CREATE INDEX ix_user_badge_user_id ON user_badge (user_id)
+[2026-10-06 09:38:36] [421211.08ms] CREATE INDEX ix_user_badge_user_id ON user_badge (user_id)
+[2026-10-06 09:38:54] [420.0ms] SELECT * FROM vocabulary WHERE topic = 'Topic_1' AND id > 10
+[2026-10-06 09:38:54] [440.0ms] SELECT * FROM vocabulary WHERE topic = 'Topic_2' AND id > 20
+[2026-10-06 09:38:54] [460.0ms] SELECT * FROM vocabulary WHERE topic = 'Topic_0' AND id > 30
+[2026-10-06 09:38:54] [480.0ms] SELECT * FROM vocabulary WHERE topic = 'Topic_1' AND id > 40
+[2026-10-06 09:38:54] [500.0ms] SELECT * FROM vocabulary WHERE topic = 'Topic_2' AND id > 50
+[2026-10-06 09:38:54] [520.0ms] SELECT * FROM vocabulary WHERE topic = 'Topic_0' AND id > 60
+[2026-10-06 09:38:54] [540.0ms] SELECT * FROM vocabulary WHERE topic = 'Topic_1' AND id > 70
+[2026-10-06 09:38:54] [560.0ms] SELECT * FROM vocabulary WHERE topic = 'Topic_2' AND id > 80
+[2026-10-06 09:38:54] [580.0ms] SELECT * FROM vocabulary WHERE topic = 'Topic_0' AND id > 90
+[2026-10-06 09:38:54] [600.0ms] SELECT * FROM vocabulary WHERE topic = 'Topic_1' AND id > 100

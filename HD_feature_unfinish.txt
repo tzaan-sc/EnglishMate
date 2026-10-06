@@ -581,11 +581,12 @@ MODULE 12. SYSTEM FEATURES (TÍNH NĂNG HỆ THỐNG) — 46 TÍNH NĂNG CHƯA L
 - [x] `Load Balancing`: Cấu hình cân bằng tải đa tiến trình Gunicorn chuẩn production `gunicorn.conf.py` (công thức tính toán động `(2 * CPU) + 1` workers, threads, tái tạo worker định kỳ chống rò rỉ RAM `max_requests = 1000`) và file cấu hình Nginx Upstream Load Balancer `deployment/nginx_load_balancer.conf` (thuật toán `least_conn`, healthcheck, SSL termination, failover). (Ưu tiên: Cao khi deploy)
 - [x] `Performance Monitoring`: Tích hợp bộ máy giám sát APM (Application Performance Monitoring) đo lường chính xác thời gian phản hồi (ms) từng route, phân vị độ trễ p50/p90/p95/p99, thông lượng request/phút (RPM), xếp hạng top 15 Endpoint chậm nhất, phân bố mã phản hồi HTTP, xuất báo cáo JSON và giao diện trực quan Admin (`/admin/system/apm`). (Ưu tiên: Thấp)
 
-12.9. Monitoring & Logging (5 tính năng chưa làm):
-- [ ] `Performance Logging`: Chưa ghi log các câu truy vấn CSDL chạy chậm (> 500ms). (Ưu tiên: Trung bình)
-- [ ] `Resource Monitoring`: Chưa theo dõi CPU, RAM, Disk của server trên giao diện. (Ưu tiên: Thấp)
-- [ ] `Alert System`: Chưa có bot tự động bắn thông báo lỗi 500 qua Telegram/Discord/Slack. (Ưu tiên: Cao)
-- [ ] `Log Analysis` & `Log Retention`: Chưa có bộ máy lọc và dọn dẹp log tự động. (Ưu tiên: Thấp)
+12.9. Monitoring & Logging (5/5 tính năng hoàn thành):
+- [x] `Performance Logging`: Bộ lắng nghe SQLAlchemy Engine tự động ghi nhận các câu truy vấn CSDL chạy chậm (> 500ms), chuẩn hóa mẫu SQL, bóc tách tham số an toàn, lưu vào buffer và file `instance/logs/slow_queries.log`. (Ưu tiên: Trung bình)
+- [x] `Resource Monitoring`: Bảng điều khiển thời gian thực theo dõi toàn diện CPU tổng thể & từng nhân (Per-core), RAM (Used, Free, App RSS, Swap), Ổ đĩa (Used, Free, Read/Write IO), Lưu lượng mạng (Network sent/recv MB) và sức khỏe tiến trình ứng dụng. (Ưu tiên: Thấp)
+- [x] `Alert System`: Bot tự động bắn thông báo lỗi HTTP 500 và sự cố nghiêm trọng qua Telegram Bot, Discord Webhook và Slack Webhook với cơ chế Cooldown chống spam và nút gửi cảnh báo thử nghiệm. (Ưu tiên: Cao)
+- [x] `Log Analysis`: Bộ công cụ tìm kiếm, lọc log đa tiêu chí (Log Level, File nguồn, Khoảng thời gian, Từ khóa) kèm bảng phân loại phân bố lỗi và giao diện Log Terminal trực quan. (Ưu tiên: Thấp)
+- [x] `Log Retention`: Động cơ xoay vòng log, nén tự động định dạng `.gz` khi đạt giới hạn dung lượng và dọn dẹp các tệp lưu trữ quá hạn theo số ngày cấu hình tích hợp CLI `flask rotate-logs` và `flask cleanup-system-logs`. (Ưu tiên: Thấp)
 
 12.10. Testing System (2 tính năng chưa làm):
 - [ ] `End-to-End Tests`: Đã có 185 unit & integration tests pytest, nhưng chưa có bộ test giao diện người dùng E2E tự động bằng Playwright hoặc Selenium. (Ưu tiên: Trung bình)

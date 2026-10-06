@@ -1,0 +1,945 @@
+{% extends "base.html" %}
+
+{% block title %}Giám sát Hệ thống & Nhật ký - EnglishMate Admin{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-3 px-md-4 py-4">
+  <!-- Breadcrumb & Header -->
+  <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
+    <div>
+      <nav aria-label="breadcrumb">
+        <ol class="breadcrumb mb-1 small">
+          <li class="breadcrumb-item"><a href="{{ url_for('admin.dashboard') }}" class="text-decoration-none text-muted">Admin</a></li>
+          <li class="breadcrumb-item"><a href="{{ url_for('admin.performance_settings') }}" class="text-decoration-none text-muted">Hệ thống</a></li>
+          <li class="breadcrumb-item active text-primary fw-semibold" aria-current="page">Giám sát & Nhật ký</li>
+        </ol>
+      </nav>
+      <h2 class="h3 fw-bold text-dark mb-0 d-flex align-items-center gap-2">
+        <i class="ph-bold ph-activity text-primary"></i>
+        Giám sát Hệ thống & Phân tích Nhật ký (Monitoring & Logging)
+      </h2>
+      <p class="text-muted small mb-0">Theo dõi tài nguyên phần cứng, ghi log truy vấn chậm (>500ms), cấu hình bot bắn cảnh báo tự động và quản trị vòng đời log.</p>
+    </div>
+
+    <!-- Actions -->
+    <div class="d-flex flex-wrap align-items-center gap-2">
+      <!-- Auto Refresh Dropdown -->
+      <div class="btn-group shadow-xs">
+        <button type="button" class="btn btn-sm btn-outline-secondary dropdown-toggle d-flex align-items-center gap-1.5" data-bs-toggle="dropdown" aria-expanded="false" id="monRefreshDropdownBtn">
+          <i class="ph-bold ph-arrows-clockwise text-primary" id="monRefreshIcon"></i>
+          <span id="monRefreshLabel">Tự động làm mới: 10s</span>
+        </button>
+        <ul class="dropdown-menu dropdown-menu-end shadow-sm border" style="font-size: 0.85rem;">
+          <li><a class="dropdown-item" href="#" onclick="setMonAutoRefresh(0, 'Tắt')">Tắt tự động</a></li>
+          <li><a class="dropdown-item" href="#" onclick="setMonAutoRefresh(5, '5s')">Mỗi 5 giây</a></li>
+          <li><a class="dropdown-item active" href="#" onclick="setMonAutoRefresh(10, '10s')">Mỗi 10 giây</a></li>
+          <li><a class="dropdown-item" href="#" onclick="setMonAutoRefresh(30, '30s')">Mỗi 30 giây</a></li>
+        </ul>
+      </div>
+
+      <button class="btn btn-sm btn-outline-primary shadow-xs d-flex align-items-center gap-1.5" onclick="fetchLiveMonitoringMetrics(true)">
+        <i class="ph-bold ph-arrow-clockwise"></i> Làm mới ngay
+      </button>
+
+      <button class="btn btn-sm btn-outline-warning shadow-xs d-flex align-items-center gap-1.5" data-bs-toggle="modal" data-bs-target="#testAlertModal">
+        <i class="ph-bold ph-paper-plane-tilt"></i> Thử nghiệm Cảnh báo Bot
+      </button>
+    </div>
+  </div>
+
+  <!-- Status Summary Banner -->
+  <div class="card border-0 shadow-xs rounded-4 mb-4" style="background: linear-gradient(135deg, #111827 0%, #1f2937 100%); color: #f9fafb;">
+    <div class="card-body p-3 p-md-4">
+      <div class="row g-3 align-items-center">
+        <div class="col-lg-8">
+          <div class="d-flex flex-wrap align-items-center gap-2 mb-2">
+            <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-2.5 py-1 fw-bold d-flex align-items-center gap-1">
+              <span class="spinner-grow spinner-grow-sm text-success" style="width: 0.5rem; height: 0.5rem;" role="status"></span>
+              Live Resource Monitor
+            </span>
+            <span class="badge bg-warning-subtle text-warning border border-warning-subtle rounded-pill px-2.5 py-1 fw-medium">
+              Slow Query Logger (&ge; {{ slow_queries_summary.threshold_ms }}ms)
+            </span>
+            <span class="badge {% if alert_config.enabled %}bg-success-subtle text-success border border-success-subtle{% else %}bg-secondary-subtle text-muted border border-secondary-subtle{% endif %} rounded-pill px-2.5 py-1 fw-medium">
+              Bot Alerts: {% if alert_config.enabled %}Bật ({{ alert_config.channels|upper }}){% else %}Tắt{% endif %}
+            </span>
+            <span class="badge bg-info-subtle text-info border border-info-subtle rounded-pill px-2.5 py-1 fw-medium">
+              Log Retention: {{ log_overview.retention_days }} ngày
+            </span>
+          </div>
+          <p class="small text-slate-300 mb-0 opacity-85">
+            PID Ứng dụng: <strong class="text-white">{{ resources.process.pid }}</strong> &bull;
+            Luồng hoạt động: <strong class="text-white" id="val-mon-threads">{{ resources.process.threads }}</strong> &bull;
+            Uptime: <strong class="text-white" id="val-mon-uptime">{{ resources.uptime_formatted }}</strong> &bull;
+            Dung lượng tệp nhật ký: <strong class="text-white">{{ log_overview.total_size_mb }} MB</strong> ({{ log_overview.total_files_count }} tệp)
+          </p>
+        </div>
+        <div class="col-lg-4 text-lg-end">
+          <div class="d-inline-flex flex-wrap gap-2 justify-content-lg-end">
+            <a href="{{ url_for('admin.system_apm') }}" class="btn btn-sm btn-outline-light d-flex align-items-center gap-1" style="font-size: 0.8rem;">
+              <i class="ph-bold ph-chart-line-up"></i> APM Latency
+            </a>
+            <a href="{{ url_for('admin.error_analysis_dashboard') }}" class="btn btn-sm btn-outline-light d-flex align-items-center gap-1" style="font-size: 0.8rem;">
+              <i class="ph-bold ph-bug"></i> Giám sát Lỗi
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- NAVIGATION TABS -->
+  <ul class="nav nav-pills gap-2 mb-4 p-1.5 bg-white border rounded-4 shadow-xs" id="monitoringTabs" role="tablist">
+    <li class="nav-item" role="presentation">
+      <button class="nav-link active rounded-3 fw-semibold small d-flex align-items-center gap-1.5" id="tab-resources-btn" data-bs-toggle="pill" data-bs-target="#tab-resources" type="button" role="tab">
+        <i class="ph-bold ph-cpu fs-5"></i> Tài nguyên Máy chủ (Resources)
+      </button>
+    </li>
+    <li class="nav-item" role="presentation">
+      <button class="nav-link rounded-3 fw-semibold small d-flex align-items-center gap-1.5" id="tab-slow-queries-btn" data-bs-toggle="pill" data-bs-target="#tab-slow-queries" type="button" role="tab">
+        <i class="ph-bold ph-hourglass-high fs-5 text-warning"></i> Truy vấn Chậm (>500ms)
+        <span class="badge bg-warning-subtle text-warning rounded-pill px-1.5 py-0.5 ms-1" style="font-size: 0.7rem;" id="badge-slow-count">{{ slow_queries_summary.total_slow_queries }}</span>
+      </button>
+    </li>
+    <li class="nav-item" role="presentation">
+      <button class="nav-link rounded-3 fw-semibold small d-flex align-items-center gap-1.5" id="tab-alerts-btn" data-bs-toggle="pill" data-bs-target="#tab-alerts" type="button" role="tab">
+        <i class="ph-bold ph-bell-ringing fs-5 text-danger"></i> Cảnh báo Sự cố Bot (Alerts)
+      </button>
+    </li>
+    <li class="nav-item" role="presentation">
+      <button class="nav-link rounded-3 fw-semibold small d-flex align-items-center gap-1.5" id="tab-logs-btn" data-bs-toggle="pill" data-bs-target="#tab-logs" type="button" role="tab">
+        <i class="ph-bold ph-file-text fs-5 text-info"></i> Phân tích & Vòng đời Log (Log Analyzer)
+      </button>
+    </li>
+  </ul>
+
+  <!-- TAB PANES CONTENT -->
+  <div class="tab-content" id="monitoringTabsContent">
+    
+    <!-- ===================================================================== -->
+    <!-- TAB 1: RESOURCE MONITORING -->
+    <!-- ===================================================================== -->
+    <div class="tab-pane fade show active" id="tab-resources" role="tabpanel">
+      <!-- KPI Cards Row -->
+      <div class="row g-3 mb-4">
+        <!-- CPU Usage -->
+        <div class="col-sm-6 col-xl-3">
+          <div class="card border-0 shadow-xs rounded-4 h-100 p-3 bg-white">
+            <div class="d-flex justify-content-between align-items-start mb-2">
+              <span class="text-muted small fw-medium">Tổng CPU máy chủ</span>
+              <span class="p-2 rounded-3 bg-primary-subtle text-primary">
+                <i class="ph-bold ph-cpu fs-5"></i>
+              </span>
+            </div>
+            <div class="d-flex align-items-baseline gap-2 mb-1">
+              <h3 class="fw-bold mb-0 text-dark" id="mon-val-cpu">{{ resources.cpu.percent }}</h3>
+              <span class="text-muted small">%</span>
+            </div>
+            <div class="progress rounded-pill mb-2" style="height: 6px;">
+              <div class="progress-bar {% if resources.cpu.percent > 80 %}bg-danger{% elif resources.cpu.percent > 50 %}bg-warning{% else %}bg-primary{% endif %}" role="progressbar" style="width: {{ resources.cpu.percent }}%;" id="mon-bar-cpu"></div>
+            </div>
+            <small class="text-muted" style="font-size: 0.74rem;">{{ resources.cpu.cores_logical }} Logical Cores ({{ resources.cpu.cores_physical }} Physical)</small>
+          </div>
+        </div>
+
+        <!-- RAM Usage -->
+        <div class="col-sm-6 col-xl-3">
+          <div class="card border-0 shadow-xs rounded-4 h-100 p-3 bg-white">
+            <div class="d-flex justify-content-between align-items-start mb-2">
+              <span class="text-muted small fw-medium">Bộ nhớ RAM máy chủ</span>
+              <span class="p-2 rounded-3 bg-success-subtle text-success">
+                <i class="ph-bold ph-memory fs-5"></i>
+              </span>
+            </div>
+            <div class="d-flex align-items-baseline gap-2 mb-1">
+              <h3 class="fw-bold mb-0 text-dark" id="mon-val-ram">{{ resources.ram.percent }}</h3>
+              <span class="text-muted small">%</span>
+            </div>
+            <div class="progress rounded-pill mb-2" style="height: 6px;">
+              <div class="progress-bar {% if resources.ram.percent > 85 %}bg-danger{% elif resources.ram.percent > 65 %}bg-warning{% else %}bg-success{% endif %}" role="progressbar" style="width: {{ resources.ram.percent }}%;" id="mon-bar-ram"></div>
+            </div>
+            <small class="text-muted" style="font-size: 0.74rem;"><span id="mon-val-ram-used">{{ resources.ram.used_mb }}</span> / <span id="mon-val-ram-total">{{ resources.ram.total_mb }}</span> MB</small>
+          </div>
+        </div>
+
+        <!-- Disk Storage -->
+        <div class="col-sm-6 col-xl-3">
+          <div class="card border-0 shadow-xs rounded-4 h-100 p-3 bg-white">
+            <div class="d-flex justify-content-between align-items-start mb-2">
+              <span class="text-muted small fw-medium">Dung lượng Ổ cứng (Disk)</span>
+              <span class="p-2 rounded-3 bg-warning-subtle text-warning">
+                <i class="ph-bold ph-hard-drive fs-5"></i>
+              </span>
+            </div>
+            <div class="d-flex align-items-baseline gap-2 mb-1">
+              <h3 class="fw-bold mb-0 text-dark" id="mon-val-disk">{{ resources.disk.percent }}</h3>
+              <span class="text-muted small">%</span>
+            </div>
+            <div class="progress rounded-pill mb-2" style="height: 6px;">
+              <div class="progress-bar {% if resources.disk.percent > 85 %}bg-danger{% elif resources.disk.percent > 70 %}bg-warning{% else %}bg-info{% endif %}" role="progressbar" style="width: {{ resources.disk.percent }}%;" id="mon-bar-disk"></div>
+            </div>
+            <small class="text-muted" style="font-size: 0.74rem;"><span id="mon-val-disk-used">{{ resources.disk.used_gb }}</span> / <span id="mon-val-disk-total">{{ resources.disk.total_gb }}</span> GB</small>
+          </div>
+        </div>
+
+        <!-- App Process RSS -->
+        <div class="col-sm-6 col-xl-3">
+          <div class="card border-0 shadow-xs rounded-4 h-100 p-3 bg-white">
+            <div class="d-flex justify-content-between align-items-start mb-2">
+              <span class="text-muted small fw-medium">Tiến trình App (RSS)</span>
+              <span class="p-2 rounded-3 bg-info-subtle text-info">
+                <i class="ph-bold ph-gauge fs-5"></i>
+              </span>
+            </div>
+            <div class="d-flex align-items-baseline gap-2 mb-1">
+              <h3 class="fw-bold mb-0 text-dark" id="mon-val-app-rss">{{ resources.process.rss_mb }}</h3>
+              <span class="text-muted small">MB</span>
+            </div>
+            <div class="d-flex align-items-center gap-2 mb-1">
+              <span class="badge bg-light text-dark border rounded-pill px-2 py-0.5" style="font-size: 0.72rem;">PID: {{ resources.process.pid }}</span>
+              <span class="badge bg-light text-dark border rounded-pill px-2 py-0.5" style="font-size: 0.72rem;">VMS: {{ resources.process.vms_mb }} MB</span>
+            </div>
+            <small class="text-muted" style="font-size: 0.74rem;">Uptime: {{ resources.uptime_formatted }}</small>
+          </div>
+        </div>
+      </div>
+
+      <!-- Detailed Breakdown Cards -->
+      <div class="row g-3">
+        <!-- CPU Per-core chip breakdown -->
+        <div class="col-lg-6">
+          <div class="card border-0 shadow-xs rounded-4 p-3 p-md-4 bg-white h-100">
+            <h6 class="fw-bold text-dark mb-3 d-flex align-items-center gap-2">
+              <i class="ph-bold ph-cpu text-primary"></i> Phân bổ tải từng nhân CPU (Per-core Breakdown)
+            </h6>
+            <div class="row g-2" id="mon-core-chips">
+              {% for core_pct in resources.cpu.per_core %}
+              <div class="col-6 col-sm-3">
+                <div class="p-2.5 rounded-3 bg-light border text-center">
+                  <small class="text-muted fw-bold d-block" style="font-size: 0.72rem;">Core #{{ loop.index0 }}</small>
+                  <span class="fw-bold {% if core_pct > 80 %}text-danger{% elif core_pct > 50 %}text-warning{% else %}text-dark{% endif %}" style="font-size: 0.9rem;">
+                    {{ core_pct }}%
+                  </span>
+                  <div class="progress mt-1 rounded-pill" style="height: 4px;">
+                    <div class="progress-bar {% if core_pct > 80 %}bg-danger{% elif core_pct > 50 %}bg-warning{% else %}bg-primary{% endif %}" style="width: {{ core_pct }}%;"></div>
+                  </div>
+                </div>
+              </div>
+              {% endfor %}
+            </div>
+          </div>
+        </div>
+
+        <!-- Network & Disk I/O Breakdown -->
+        <div class="col-lg-6">
+          <div class="card border-0 shadow-xs rounded-4 p-3 p-md-4 bg-white h-100">
+            <h6 class="fw-bold text-dark mb-3 d-flex align-items-center gap-2">
+              <i class="ph-bold ph-arrows-left-right text-success"></i> Lưu lượng Mạng & I/O Ổ đĩa (Network & Disk I/O)
+            </h6>
+            <div class="row g-3">
+              <div class="col-sm-6">
+                <div class="p-3 rounded-3 bg-light border">
+                  <small class="text-muted fw-bold d-block mb-1" style="font-size: 0.75rem;">NETWORK TRAFFIC</small>
+                  <div class="d-flex justify-content-between small mb-1">
+                    <span class="text-muted">Đã gửi (Sent):</span>
+                    <strong class="text-dark"><span id="mon-val-net-sent">{{ resources.network.sent_mb }}</span> MB</strong>
+                  </div>
+                  <div class="d-flex justify-content-between small mb-1">
+                    <span class="text-muted">Đã nhận (Recv):</span>
+                    <strong class="text-dark"><span id="mon-val-net-recv">{{ resources.network.recv_mb }}</span> MB</strong>
+                  </div>
+                  <div class="d-flex justify-content-between small">
+                    <span class="text-muted">Gói tin (Packets):</span>
+                    <span class="text-muted font-monospace" style="font-size: 0.75rem;">{{ resources.network.packets_sent }} / {{ resources.network.packets_recv }}</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="col-sm-6">
+                <div class="p-3 rounded-3 bg-light border">
+                  <small class="text-muted fw-bold d-block mb-1" style="font-size: 0.75rem;">DISK I/O READ/WRITE</small>
+                  <div class="d-flex justify-content-between small mb-1">
+                    <span class="text-muted">Đọc (Read):</span>
+                    <strong class="text-dark"><span id="mon-val-disk-read">{{ resources.disk.read_mb }}</span> MB</strong>
+                  </div>
+                  <div class="d-flex justify-content-between small mb-1">
+                    <span class="text-muted">Ghi (Write):</span>
+                    <strong class="text-dark"><span id="mon-val-disk-write">{{ resources.disk.write_mb }}</span> MB</strong>
+                  </div>
+                  <div class="d-flex justify-content-between small">
+                    <span class="text-muted">Swap RAM:</span>
+                    <span class="text-muted font-monospace" style="font-size: 0.75rem;">{{ resources.ram.swap_used_mb }} / {{ resources.ram.swap_total_mb }} MB</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===================================================================== -->
+    <!-- TAB 2: SLOW QUERIES (PERFORMANCE LOGGING) -->
+    <!-- ===================================================================== -->
+    <div class="tab-pane fade" id="tab-slow-queries" role="tabpanel">
+      <!-- Summary Row -->
+      <div class="row g-3 mb-4">
+        <div class="col-sm-6 col-xl-3">
+          <div class="p-3 rounded-4 bg-white border shadow-xs text-center">
+            <small class="text-muted fw-bold d-block" style="font-size: 0.75rem;">TỔNG TRUY VẤN CHẬM</small>
+            <h3 class="fw-bold mb-0 text-warning">{{ slow_queries_summary.total_slow_queries }}</h3>
+          </div>
+        </div>
+        <div class="col-sm-6 col-xl-3">
+          <div class="p-3 rounded-4 bg-white border shadow-xs text-center">
+            <small class="text-muted fw-bold d-block" style="font-size: 0.75rem;">THỜI GIAN LỚN NHẤT</small>
+            <h3 class="fw-bold mb-0 text-danger">{{ slow_queries_summary.max_query_ms }} <span class="fs-6 text-muted">ms</span></h3>
+          </div>
+        </div>
+        <div class="col-sm-6 col-xl-3">
+          <div class="p-3 rounded-4 bg-white border shadow-xs text-center">
+            <small class="text-muted fw-bold d-block" style="font-size: 0.75rem;">THỜI GIAN TRUNG BÌNH</small>
+            <h3 class="fw-bold mb-0 text-primary">{{ slow_queries_summary.avg_query_ms }} <span class="fs-6 text-muted">ms</span></h3>
+          </div>
+        </div>
+        <div class="col-sm-6 col-xl-3">
+          <div class="p-3 rounded-4 bg-white border shadow-xs text-center">
+            <small class="text-muted fw-bold d-block" style="font-size: 0.75rem;">MẪU SQL KHÁC NHAU</small>
+            <h3 class="fw-bold mb-0 text-dark">{{ slow_queries_summary.distinct_slow_templates }}</h3>
+          </div>
+        </div>
+      </div>
+
+      <!-- Table: Top Slowest SQL Templates -->
+      <div class="card border-0 shadow-xs rounded-4 bg-white mb-4">
+        <div class="card-header bg-transparent border-0 pt-3 px-3 px-md-4 pb-2 d-flex justify-content-between align-items-center">
+          <div>
+            <h6 class="fw-bold mb-0 text-dark d-flex align-items-center gap-2">
+              <i class="ph-bold ph-database text-warning"></i>
+              Top các Mẫu Câu Truy vấn SQL Chậm Nhất
+            </h6>
+            <small class="text-muted">Gom nhóm câu lệnh SQL để phát hiện các truy vấn thiếu Index hoặc N+1 query.</small>
+          </div>
+          <form method="POST" action="{{ url_for('admin.reset_slow_queries') }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <button type="submit" class="btn btn-sm btn-outline-danger d-flex align-items-center gap-1" onclick="return confirm('Đặt lại toàn bộ số liệu truy vấn chậm?')">
+              <i class="ph-bold ph-trash"></i> Xóa số liệu
+            </button>
+          </form>
+        </div>
+
+        <div class="table-responsive">
+          <table class="table table-hover align-middle mb-0" style="font-size: 0.85rem;">
+            <thead class="table-light text-muted small">
+              <tr>
+                <th class="ps-3 ps-md-4">Mẫu câu lệnh SQL (Normalized)</th>
+                <th class="text-center">Số lần</th>
+                <th>Thời gian TB</th>
+                <th>Min / Max</th>
+                <th>Tổng thời gian</th>
+                <th class="pe-3 pe-md-4 text-end">Lần cuối</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% if top_slow_templates %}
+                {% for t in top_slow_templates %}
+                <tr>
+                  <td class="ps-3 ps-md-4 font-monospace text-dark" style="max-width: 380px;">
+                    <div class="text-truncate" title="{{ t.template }}">{{ t.template }}</div>
+                  </td>
+                  <td class="text-center fw-bold">{{ t.count }}</td>
+                  <td><span class="badge bg-warning-subtle text-danger fw-bold px-2 py-0.5">{{ t.avg_ms }} ms</span></td>
+                  <td><small class="text-muted">{{ t.min_ms }}ms / <span class="text-danger">{{ t.max_ms }}ms</span></small></td>
+                  <td><strong class="text-dark">{{ t.total_ms }} ms</strong></td>
+                  <td class="pe-3 pe-md-4 text-end text-muted small font-monospace">{{ t.last_seen }}</td>
+                </tr>
+                {% endfor %}
+              {% else %}
+                <tr>
+                  <td colspan="6" class="text-center py-4 text-muted">
+                    <i class="ph-bold ph-check-circle fs-3 text-success d-block mb-1"></i>
+                    Chưa ghi nhận câu truy vấn nào vượt quá ngưỡng {{ slow_queries_summary.threshold_ms }}ms.
+                  </td>
+                </tr>
+              {% endif %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Table: Recent Slow Queries Stream -->
+      <div class="card border-0 shadow-xs rounded-4 bg-white">
+        <div class="card-header bg-transparent border-0 pt-3 px-3 px-md-4 pb-2">
+          <h6 class="fw-bold mb-0 text-dark d-flex align-items-center gap-2">
+            <i class="ph-bold ph-list-dashes text-primary"></i>
+            Dòng sự kiện Truy vấn Chậm gần nhất (instance/logs/slow_queries.log)
+          </h6>
+        </div>
+        <div class="table-responsive" style="max-height: 380px;">
+          <table class="table table-hover align-middle mb-0" style="font-size: 0.83rem;">
+            <thead class="table-light text-muted small sticky-top">
+              <tr>
+                <th class="ps-3 ps-md-4">Thời gian</th>
+                <th>Thời gian thực thi</th>
+                <th>Câu lệnh SQL đầy đủ</th>
+                <th class="pe-3 pe-md-4 text-end">Tham số</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% if recent_slow_queries %}
+                {% for q in recent_slow_queries %}
+                <tr>
+                  <td class="ps-3 ps-md-4 text-muted font-monospace small" style="white-space: nowrap;">{{ q.timestamp }}</td>
+                  <td><span class="badge bg-danger-subtle text-danger fw-bold px-2 py-0.5">{{ q.duration_ms }} ms</span></td>
+                  <td class="font-monospace text-dark text-truncate" style="max-width: 480px;" title="{{ q.statement }}">{{ q.statement }}</td>
+                  <td class="pe-3 pe-md-4 text-end font-monospace text-muted small text-truncate" style="max-width: 180px;">{{ q.parameters or '{}' }}</td>
+                </tr>
+                {% endfor %}
+              {% else %}
+                <tr>
+                  <td colspan="4" class="text-center py-4 text-muted">Chưa có truy vấn chậm nào được ghi lại.</td>
+                </tr>
+              {% endif %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===================================================================== -->
+    <!-- TAB 3: ALERT SYSTEM (BOT NOTIFICATIONS) -->
+    <!-- ===================================================================== -->
+    <div class="tab-pane fade" id="tab-alerts" role="tabpanel">
+      <div class="row g-4">
+        <!-- Alert Settings Form -->
+        <div class="col-lg-8">
+          <div class="card border-0 shadow-xs rounded-4 p-3 p-md-4 bg-white">
+            <h5 class="fw-bold text-dark mb-1 d-flex align-items-center gap-2">
+              <i class="ph-bold ph-bell-ringing text-danger"></i>
+              Cấu hình Kênh Cảnh báo Sự cố Thời gian thực
+            </h5>
+            <p class="text-muted small mb-4">Tự động bắn thông báo lỗi HTTP 500 hoặc sự cố hệ thống nghiêm trọng qua Telegram Bot, Discord Webhook hoặc Slack.</p>
+
+            <form method="POST" action="{{ url_for('admin.update_alert_config') }}">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+              <!-- Main Toggle Switch -->
+              <div class="form-check form-switch p-3 bg-light rounded-3 mb-4 border d-flex justify-content-between align-items-center">
+                <div>
+                  <label class="form-check-label fw-bold text-dark" for="alertToggleEnabled">Kích hoạt Gửi Cảnh báo Tự động</label>
+                  <small class="text-muted d-block">Khi bật, mọi lỗi nghiêm trọng sẽ được chuyển tiếp tức thời tới các kênh bên dưới.</small>
+                </div>
+                <input class="form-check-input ms-0 fs-4" type="checkbox" role="switch" id="alertToggleEnabled" name="enabled" value="true" {% if alert_config.enabled %}checked{% endif %}>
+              </div>
+
+              <!-- Channel selection & Cooldown -->
+              <div class="row g-3 mb-4">
+                <div class="col-md-6">
+                  <label class="form-label small fw-bold text-muted mb-1">Kênh nhận cảnh báo (Channels)</label>
+                  <select class="form-select" name="channels">
+                    <option value="all" {% if alert_config.channels == 'all' %}selected{% endif %}>Tất cả các kênh đã cấu hình (All)</option>
+                    <option value="telegram" {% if alert_config.channels == 'telegram' %}selected{% endif %}>Chỉ Telegram</option>
+                    <option value="discord" {% if alert_config.channels == 'discord' %}selected{% endif %}>Chỉ Discord</option>
+                    <option value="slack" {% if alert_config.channels == 'slack' %}selected{% endif %}>Chỉ Slack</option>
+                  </select>
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label small fw-bold text-muted mb-1">Thời gian chờ chống spam (Cooldown)</label>
+                  <div class="input-group">
+                    <input type="number" class="form-control" name="cooldown_seconds" value="{{ alert_config.cooldown_seconds }}" min="10" max="3600">
+                    <span class="input-group-text small">giây</span>
+                  </div>
+                </div>
+              </div>
+
+              <hr class="my-4">
+
+              <!-- 1. Telegram Settings -->
+              <div class="mb-4">
+                <h6 class="fw-bold text-dark d-flex align-items-center gap-2 mb-2">
+                  <i class="ph-bold ph-telegram-logo text-primary fs-5"></i> 1. Cấu hình Telegram Bot
+                  {% if alert_config.telegram.configured %}
+                  <span class="badge bg-success-subtle text-success rounded-pill px-2 py-0.5" style="font-size: 0.7rem;">Đã cấu hình</span>
+                  {% endif %}
+                </h6>
+                <div class="row g-2">
+                  <div class="col-md-7">
+                    <label class="form-label small text-muted mb-1">Telegram Bot Token</label>
+                    <input type="password" class="form-control font-monospace" name="telegram_bot_token" value="{{ alert_config.telegram.bot_token }}" placeholder="123456789:ABCdefGHIjklMNOpqrSTUvwxYZ">
+                  </div>
+                  <div class="col-md-5">
+                    <label class="form-label small text-muted mb-1">Chat ID / Group ID</label>
+                    <input type="text" class="form-control font-monospace" name="telegram_chat_id" value="{{ alert_config.telegram.chat_id }}" placeholder="-1001234567890">
+                  </div>
+                </div>
+              </div>
+
+              <!-- 2. Discord Webhook -->
+              <div class="mb-4">
+                <h6 class="fw-bold text-dark d-flex align-items-center gap-2 mb-2">
+                  <i class="ph-bold ph-discord-logo text-primary fs-5"></i> 2. Cấu hình Discord Webhook
+                  {% if alert_config.discord.configured %}
+                  <span class="badge bg-success-subtle text-success rounded-pill px-2 py-0.5" style="font-size: 0.7rem;">Đã cấu hình</span>
+                  {% endif %}
+                </h6>
+                <label class="form-label small text-muted mb-1">Discord Webhook URL</label>
+                <input type="password" class="form-control font-monospace" name="discord_webhook_url" value="{{ alert_config.discord.webhook_url }}" placeholder="https://discord.com/api/webhooks/...">
+              </div>
+
+              <!-- 3. Slack Webhook -->
+              <div class="mb-4">
+                <h6 class="fw-bold text-dark d-flex align-items-center gap-2 mb-2">
+                  <i class="ph-bold ph-slack-logo text-warning fs-5"></i> 3. Cấu hình Slack Webhook
+                  {% if alert_config.slack.configured %}
+                  <span class="badge bg-success-subtle text-success rounded-pill px-2 py-0.5" style="font-size: 0.7rem;">Đã cấu hình</span>
+                  {% endif %}
+                </h6>
+                <label class="form-label small text-muted mb-1">Slack Incoming Webhook URL</label>
+                <input type="password" class="form-control font-monospace" name="slack_webhook_url" value="{{ alert_config.slack.webhook_url }}" placeholder="https://hooks.slack.com/services/...">
+              </div>
+
+              <div class="d-flex justify-content-end gap-2 mt-4">
+                <button type="submit" class="btn btn-primary shadow-xs px-4">
+                  <i class="ph-bold ph-floppy-disk me-1"></i> Lưu Cấu hình Cảnh báo
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+
+        <!-- Alert Help & Quick Guide -->
+        <div class="col-lg-4">
+          <div class="card border-0 shadow-xs rounded-4 p-3 p-md-4 bg-light h-100">
+            <h6 class="fw-bold text-dark mb-3 d-flex align-items-center gap-2">
+              <i class="ph-bold ph-info text-info"></i> Hướng dẫn Tích hợp Cảnh báo
+            </h6>
+
+            <div class="mb-3 small text-muted">
+              <strong class="text-dark d-block mb-1">Tạo Telegram Bot:</strong>
+              1. Nhắn tin <code>/newbot</code> cho <code>@BotFather</code> trên Telegram.<br>
+              2. Sao chép API Token dán vào ô bên trái.<br>
+              3. Thêm bot vào nhóm và lấy Chat ID thông qua <code>@userinfobot</code>.
+            </div>
+
+            <div class="mb-3 small text-muted">
+              <strong class="text-dark d-block mb-1">Tạo Discord Webhook:</strong>
+              1. Vào Server Discord &rarr; Edit Channel &rarr; Integrations.<br>
+              2. Bấm <em>Create Webhook</em> và dán URL vào ô Discord.
+            </div>
+
+            <div class="small text-muted">
+              <strong class="text-dark d-block mb-1">Cơ chế Chống Spam (Anti-Flood):</strong>
+              Hệ thống tự động gom nhóm lỗi theo <code>Fingerprint</code> và áp dụng thời gian chờ Cooldown, đảm bảo người quản trị không bị làm phiền bởi hàng trăm thông báo giống nhau.
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===================================================================== -->
+    <!-- TAB 4: LOG ANALYZER & RETENTION -->
+    <!-- ===================================================================== -->
+    <div class="tab-pane fade" id="tab-logs" role="tabpanel">
+      <!-- Storage & Retention Actions Card -->
+      <div class="card border-0 shadow-xs rounded-4 bg-white p-3 p-md-4 mb-4">
+        <div class="row g-3 align-items-center">
+          <div class="col-lg-8">
+            <h6 class="fw-bold text-dark mb-1 d-flex align-items-center gap-2">
+              <i class="ph-bold ph-archive text-primary"></i> Quản lý Vòng đời & Dung lượng Nhật ký (Log Retention & Storage)
+            </h6>
+            <p class="small text-muted mb-0">
+              Thư mục: <code class="text-dark">{{ log_overview.log_dir }}</code> &bull;
+              Tổng dung lượng: <strong>{{ log_overview.total_size_mb }} MB</strong> ({{ log_overview.active_logs_count }} tệp đang ghi, {{ log_overview.archive_logs_count }} tệp nén .gz) &bull;
+              Tự động xóa tệp nén cũ hơn <strong>{{ log_overview.retention_days }} ngày</strong>.
+            </p>
+          </div>
+          <div class="col-lg-4 text-lg-end">
+            <div class="d-inline-flex gap-2">
+              <button class="btn btn-sm btn-outline-secondary d-flex align-items-center gap-1" data-bs-toggle="modal" data-bs-target="#rotateLogModal">
+                <i class="ph-bold ph-arrows-clockwise"></i> Xoay vòng Log
+              </button>
+              <button class="btn btn-sm btn-outline-danger d-flex align-items-center gap-1" data-bs-toggle="modal" data-bs-target="#cleanupLogModal">
+                <i class="ph-bold ph-trash"></i> Dọn dẹp Log cũ
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Filter Controls Bar -->
+      <div class="card border-0 shadow-xs rounded-4 bg-white p-3 mb-3">
+        <div class="row g-2 align-items-end">
+          <div class="col-md-3">
+            <label class="form-label small fw-bold text-muted mb-1">Nguồn tệp nhật ký</label>
+            <select class="form-select form-select-sm" id="logFilterFile" onchange="searchLogs()">
+              <option value="ALL">Tất cả tệp (.log)</option>
+              {% for f in log_overview.files %}
+                {% if not f.is_compressed %}
+                <option value="{{ f.filename }}">{{ f.filename }} ({{ f.size_kb }} KB)</option>
+                {% endif %}
+              {% endfor %}
+            </select>
+          </div>
+
+          <div class="col-md-2">
+            <label class="form-label small fw-bold text-muted mb-1">Mức độ Log (Level)</label>
+            <select class="form-select form-select-sm" id="logFilterLevel" onchange="searchLogs()">
+              <option value="ALL">Tất cả (All Levels)</option>
+              <option value="ERROR">ERROR / CRITICAL</option>
+              <option value="WARNING">WARNING</option>
+              <option value="INFO">INFO</option>
+              <option value="DEBUG">DEBUG</option>
+            </select>
+          </div>
+
+          <div class="col-md-2">
+            <label class="form-label small fw-bold text-muted mb-1">Thời gian</label>
+            <select class="form-select form-select-sm" id="logFilterRange" onchange="searchLogs()">
+              <option value="all">Toàn bộ thời gian</option>
+              <option value="today">Hôm nay</option>
+              <option value="7days">7 ngày gần nhất</option>
+              <option value="30days">30 ngày gần nhất</option>
+            </select>
+          </div>
+
+          <div class="col-md-3">
+            <label class="form-label small fw-bold text-muted mb-1">Từ khóa tìm kiếm</label>
+            <input type="text" class="form-control form-select-sm" id="logFilterKeyword" placeholder="Nhập từ khóa, IP, lỗi..." onkeyup="if(event.key==='Enter') searchLogs()">
+          </div>
+
+          <div class="col-md-2 d-flex gap-1.5">
+            <button class="btn btn-sm btn-primary w-100 d-flex align-items-center justify-content-center gap-1" onclick="searchLogs()">
+              <i class="ph-bold ph-magnifying-glass"></i> Lọc Log
+            </button>
+            <button class="btn btn-sm btn-outline-secondary d-flex align-items-center justify-content-center" onclick="exportLogsFile()" title="Tải tệp log về máy">
+              <i class="ph-bold ph-download-simple"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Log Terminal Viewer -->
+      <div class="card border-0 shadow-xs rounded-4 bg-white">
+        <div class="card-header bg-transparent border-0 pt-3 px-3 px-md-4 pb-2 d-flex justify-content-between align-items-center">
+          <div class="d-flex align-items-center gap-2">
+            <span class="badge bg-light text-dark border small" id="logCountBadge">Khớp: {{ initial_logs.matching_count }} dòng</span>
+            <span class="badge bg-danger-subtle text-danger small">ERROR: <strong id="cnt-err">{{ initial_logs.level_counts.ERROR + initial_logs.level_counts.CRITICAL }}</strong></span>
+            <span class="badge bg-warning-subtle text-warning small">WARNING: <strong id="cnt-warn">{{ initial_logs.level_counts.WARNING }}</strong></span>
+            <span class="badge bg-info-subtle text-info small">INFO: <strong id="cnt-info">{{ initial_logs.level_counts.INFO }}</strong></span>
+          </div>
+        </div>
+
+        <div class="card-body p-0">
+          <div class="p-3 bg-dark rounded-bottom-4 font-monospace text-light" style="max-height: 520px; overflow-y: auto; font-size: 0.82rem; line-height: 1.6;" id="logTerminalContent">
+            {% if initial_logs.entries %}
+              {% for entry in initial_logs.entries %}
+              <div class="py-0.5 border-bottom border-secondary border-opacity-25 d-flex gap-2">
+                <span class="text-secondary" style="font-size: 0.75rem;">[{{ entry.timestamp }}]</span>
+                <span class="{% if entry.level in ('ERROR', 'CRITICAL') %}text-danger fw-bold{% elif entry.level == 'WARNING' %}text-warning{% elif entry.level == 'DEBUG' %}text-info{% else %}text-success{% endif %}">[{{ entry.level }}]</span>
+                <span class="text-light text-break flex-grow-1">{{ entry.message }}</span>
+              </div>
+              {% endfor %}
+            {% else %}
+              <div class="text-center py-4 text-secondary">Không tìm thấy dòng nhật ký nào phù hợp với bộ lọc.</div>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: TEST ALERT -->
+<div class="modal fade" id="testAlertModal" tabindex="-1" aria-labelledby="testAlertModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content border-0 shadow-lg rounded-4">
+      <div class="modal-header border-0 pb-0">
+        <h5 class="modal-title fw-bold text-dark d-flex align-items-center gap-2" id="testAlertModalLabel">
+          <i class="ph-bold ph-paper-plane-tilt text-warning"></i> Thử nghiệm Gửi Cảnh báo Bot
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body py-3">
+        <p class="text-muted small mb-3">Hệ thống sẽ gửi ngay một thông điệp thử nghiệm tới webhook đã kích hoạt để xác nhận cấu hình.</p>
+        <div class="mb-3">
+          <label class="form-label small fw-bold text-muted mb-1">Kênh nhận thử nghiệm</label>
+          <select class="form-select" id="testAlertChannel">
+            <option value="all">Tất cả các kênh</option>
+            <option value="telegram">Telegram Bot</option>
+            <option value="discord">Discord Webhook</option>
+            <option value="slack">Slack Webhook</option>
+          </select>
+        </div>
+        <div class="mb-2">
+          <label class="form-label small fw-bold text-muted mb-1">Nội dung tùy chỉnh</label>
+          <textarea class="form-control" id="testAlertMessage" rows="2" placeholder="Thông điệp kiểm tra kết nối..."></textarea>
+        </div>
+        <div id="testAlertResult" class="mt-2" style="display: none;"></div>
+      </div>
+      <div class="modal-footer border-0 pt-0">
+        <button type="button" class="btn btn-sm btn-light border" data-bs-dismiss="modal">Đóng</button>
+        <button type="button" class="btn btn-sm btn-warning shadow-xs" onclick="sendTestAlert()">
+          <i class="ph-bold ph-paper-plane-tilt"></i> Gửi Thử nghiệm Ngay
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: ROTATE LOG -->
+<div class="modal fade" id="rotateLogModal" tabindex="-1" aria-labelledby="rotateLogModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content border-0 shadow-lg rounded-4">
+      <div class="modal-header border-0 pb-0">
+        <h5 class="modal-title fw-bold text-dark d-flex align-items-center gap-2" id="rotateLogModalLabel">
+          <i class="ph-bold ph-arrows-clockwise text-primary"></i> Xoay vòng & Nén Nhật ký
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body py-3">
+        <p class="text-muted small mb-3">Tệp nhật ký hiện tại sẽ được đóng gói thành tệp nén <code>.gz</code> có đánh dấu thời gian và file gốc được làm sạch.</p>
+        <label class="form-label small fw-bold text-muted mb-1">Chọn tệp log cần xoay vòng</label>
+        <select class="form-select" id="rotateLogSelect">
+          {% for f in log_overview.files %}
+            {% if not f.is_compressed %}
+            <option value="{{ f.filename }}">{{ f.filename }} ({{ f.size_kb }} KB)</option>
+            {% endif %}
+          {% endfor %}
+        </select>
+      </div>
+      <div class="modal-footer border-0 pt-0">
+        <button type="button" class="btn btn-sm btn-light border" data-bs-dismiss="modal">Hủy</button>
+        <button type="button" class="btn btn-sm btn-primary shadow-xs" onclick="executeRotateLog()">
+          Xác nhận Xoay vòng & Nén
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: CLEANUP LOGS -->
+<div class="modal fade" id="cleanupLogModal" tabindex="-1" aria-labelledby="cleanupLogModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content border-0 shadow-lg rounded-4">
+      <div class="modal-header border-0 pb-0">
+        <h5 class="modal-title fw-bold text-dark d-flex align-items-center gap-2" id="cleanupLogModalLabel">
+          <i class="ph-bold ph-trash text-danger"></i> Dọn dẹp Nhật ký Lưu trữ Quá hạn
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body py-3">
+        <p class="text-muted small mb-3">Hành động này sẽ xóa vĩnh viễn các tệp lưu trữ log nén (<code>.gz</code>) cũ hơn số ngày chỉ định.</p>
+        <label class="form-label small fw-bold text-muted mb-1">Số ngày lưu trữ tối đa</label>
+        <input type="number" class="form-control" id="cleanupLogDays" value="{{ log_overview.retention_days }}" min="1" max="365">
+      </div>
+      <div class="modal-footer border-0 pt-0">
+        <button type="button" class="btn btn-sm btn-light border" data-bs-dismiss="modal">Hủy</button>
+        <button type="button" class="btn btn-sm btn-danger shadow-xs" onclick="executeCleanupLogs()">
+          Xác nhận Dọn dẹp
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+let monAutoRefreshTimer = null;
+let currentMonInterval = 10;
+
+function setMonAutoRefresh(seconds, label) {
+  currentMonInterval = seconds;
+  document.getElementById("monRefreshLabel").innerText = seconds > 0 ? "Tự động làm mới: " + label : "Tự động: Tắt";
+  
+  if (monAutoRefreshTimer) {
+    clearInterval(monAutoRefreshTimer);
+    monAutoRefreshTimer = null;
+  }
+  
+  if (seconds > 0) {
+    monAutoRefreshTimer = setInterval(() => {
+      fetchLiveMonitoringMetrics(false);
+    }, seconds * 1000);
+  }
+}
+
+async function fetchLiveMonitoringMetrics(showFeedback = false) {
+  const icon = document.getElementById("monRefreshIcon");
+  if (icon) icon.classList.add("ph-spin");
+
+  try {
+    const res = await fetch("{{ url_for('admin.api_system_resources') }}", {
+      headers: { "X-Requested-With": "XMLHttpRequest" }
+    });
+    if (!res.ok) throw new Error("Network error");
+    const data = await res.json();
+    if (data.success && data.metrics) {
+      updateLiveResourceUI(data.metrics);
+    }
+  } catch (err) {
+    console.warn("Lỗi cập nhật giám sát:", err);
+  } finally {
+    if (icon) {
+      setTimeout(() => icon.classList.remove("ph-spin"), 600);
+    }
+  }
+}
+
+function updateLiveResourceUI(m) {
+  document.getElementById("mon-val-cpu").innerText = m.cpu.percent;
+  document.getElementById("mon-bar-cpu").style.width = m.cpu.percent + "%";
+  document.getElementById("mon-val-ram").innerText = m.ram.percent;
+  document.getElementById("mon-bar-ram").style.width = m.ram.percent + "%";
+  document.getElementById("mon-val-ram-used").innerText = m.ram.used_mb;
+  document.getElementById("mon-val-ram-total").innerText = m.ram.total_mb;
+  document.getElementById("mon-val-disk").innerText = m.disk.percent;
+  document.getElementById("mon-bar-disk").style.width = m.disk.percent + "%";
+  document.getElementById("mon-val-disk-used").innerText = m.disk.used_gb;
+  document.getElementById("mon-val-disk-total").innerText = m.disk.total_gb;
+  document.getElementById("mon-val-app-rss").innerText = m.process.rss_mb;
+  document.getElementById("val-mon-threads").innerText = m.process.threads;
+  document.getElementById("val-mon-uptime").innerText = m.uptime_formatted;
+  document.getElementById("mon-val-net-sent").innerText = m.network.sent_mb;
+  document.getElementById("mon-val-net-recv").innerText = m.network.recv_mb;
+  document.getElementById("mon-val-disk-read").innerText = m.disk.read_mb;
+  document.getElementById("mon-val-disk-write").innerText = m.disk.write_mb;
+
+  // Update CPU core chips
+  if (m.cpu.per_core) {
+    const container = document.getElementById("mon-core-chips");
+    container.innerHTML = m.cpu.per_core.map((pct, idx) => {
+      const colorCls = pct > 80 ? "text-danger" : (pct > 50 ? "text-warning" : "text-dark");
+      const barCls = pct > 80 ? "bg-danger" : (pct > 50 ? "bg-warning" : "bg-primary");
+      return `<div class="col-6 col-sm-3">
+        <div class="p-2.5 rounded-3 bg-light border text-center">
+          <small class="text-muted fw-bold d-block" style="font-size: 0.72rem;">Core #${idx}</small>
+          <span class="fw-bold ${colorCls}" style="font-size: 0.9rem;">${pct}%</span>
+          <div class="progress mt-1 rounded-pill" style="height: 4px;">
+            <div class="progress-bar ${barCls}" style="width: ${pct}%;"></div>
+          </div>
+        </div>
+      </div>`;
+    }).join("");
+  }
+}
+
+async function searchLogs() {
+  const filename = document.getElementById("logFilterFile").value;
+  const level = document.getElementById("logFilterLevel").value;
+  const range = document.getElementById("logFilterRange").value;
+  const keyword = document.getElementById("logFilterKeyword").value;
+
+  const url = `{{ url_for('admin.api_search_logs') }}?filename=${encodeURIComponent(filename)}&level=${encodeURIComponent(level)}&date_range=${encodeURIComponent(range)}&keyword=${encodeURIComponent(keyword)}`;
+
+  try {
+    const res = await fetch(url, { headers: { "X-Requested-With": "XMLHttpRequest" } });
+    const data = await res.json();
+    if (data.success) {
+      const d = data.data;
+      document.getElementById("logCountBadge").innerText = `Khớp: ${d.matching_count} dòng`;
+      document.getElementById("cnt-err").innerText = (d.level_counts.ERROR || 0) + (d.level_counts.CRITICAL || 0);
+      document.getElementById("cnt-warn").innerText = d.level_counts.WARNING || 0;
+      document.getElementById("cnt-info").innerText = d.level_counts.INFO || 0;
+
+      const term = document.getElementById("logTerminalContent");
+      if (!d.entries || d.entries.length === 0) {
+        term.innerHTML = `<div class="text-center py-4 text-secondary">Không tìm thấy dòng nhật ký nào phù hợp với bộ lọc.</div>`;
+      } else {
+        term.innerHTML = d.entries.map(e => {
+          const lvlCls = e.level === 'ERROR' || e.level === 'CRITICAL' ? 'text-danger fw-bold' : (e.level === 'WARNING' ? 'text-warning' : (e.level === 'DEBUG' ? 'text-info' : 'text-success'));
+          return `<div class="py-0.5 border-bottom border-secondary border-opacity-25 d-flex gap-2">
+            <span class="text-secondary" style="font-size: 0.75rem;">[${e.timestamp}]</span>
+            <span class="${lvlCls}">[${e.level}]</span>
+            <span class="text-light text-break flex-grow-1">${escapeHtml(e.message)}</span>
+          </div>`;
+        }).join("");
+      }
+    }
+  } catch (err) {
+    console.error("Lỗi tìm kiếm log:", err);
+  }
+}
+
+function exportLogsFile() {
+  const filename = document.getElementById("logFilterFile").value;
+  const level = document.getElementById("logFilterLevel").value;
+  const range = document.getElementById("logFilterRange").value;
+  const keyword = document.getElementById("logFilterKeyword").value;
+  window.location.href = `{{ url_for('admin.export_filtered_logs') }}?filename=${encodeURIComponent(filename)}&level=${encodeURIComponent(level)}&date_range=${encodeURIComponent(range)}&keyword=${encodeURIComponent(keyword)}`;
+}
+
+async function sendTestAlert() {
+  const channel = document.getElementById("testAlertChannel").value;
+  const msg = document.getElementById("testAlertMessage").value;
+  const resDiv = document.getElementById("testAlertResult");
+
+  resDiv.style.display = "block";
+  resDiv.innerHTML = `<div class="spinner-border spinner-border-sm text-primary" role="status"></div> Đang gửi thông báo thử nghiệm...`;
+
+  try {
+    const res = await fetch("{{ url_for('admin.test_alert_notification') }}", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-CSRFToken": "{{ csrf_token() }}",
+      },
+      body: JSON.stringify({ channel: channel, message: msg }),
+    });
+    const data = await res.json();
+    if (data.success) {
+      resDiv.innerHTML = `<div class="alert alert-success py-2 px-3 small mb-0">Đã gửi thử nghiệm thành công! Kiểm tra tin nhắn tại kênh của bạn.</div>`;
+    } else {
+      resDiv.innerHTML = `<div class="alert alert-danger py-2 px-3 small mb-0">Lỗi gửi: ${JSON.stringify(data.results || 'Chưa cấu hình kênh')}</div>`;
+    }
+  } catch (err) {
+    resDiv.innerHTML = `<div class="alert alert-danger py-2 px-3 small mb-0">Lỗi mạng: ${err.message}</div>`;
+  }
+}
+
+async function executeRotateLog() {
+  const filename = document.getElementById("rotateLogSelect").value;
+  try {
+    const res = await fetch("{{ url_for('admin.rotate_log_route') }}", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-CSRFToken": "{{ csrf_token() }}",
+      },
+      body: JSON.stringify({ filename: filename }),
+    });
+    const data = await res.json();
+    alert(data.message || (data.success ? "Xoay vòng thành công" : data.error));
+    window.location.reload();
+  } catch (e) {
+    alert("Lỗi thực thi: " + e.message);
+  }
+}
+
+async function executeCleanupLogs() {
+  const days = document.getElementById("cleanupLogDays").value;
+  try {
+    const res = await fetch("{{ url_for('admin.cleanup_logs_route') }}", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-CSRFToken": "{{ csrf_token() }}",
+      },
+      body: JSON.stringify({ days: parseInt(days) }),
+    });
+    const data = await res.json();
+    alert(data.message || (data.success ? "Dọn dẹp thành công" : data.error));
+    window.location.reload();
+  } catch (e) {
+    alert("Lỗi thực thi: " + e.message);
+  }
+}
+
+function escapeHtml(text) {
+  const map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' };
+  return String(text).replace(/[&<>"']/g, function(m) { return map[m]; });
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+  setMonAutoRefresh(10, "10s");
+});
+</script>
+{% endblock %}
