@@ -583,9 +583,9 @@ MODULE 12. SYSTEM FEATURES (TÍNH NĂNG HỆ THỐNG) — 46 TÍNH NĂNG CHƯA L
 - [x] `Log Analysis`: Bộ công cụ tìm kiếm, lọc log đa tiêu chí (Log Level, File nguồn, Khoảng thời gian, Từ khóa) kèm bảng phân loại phân bố lỗi và giao diện Log Terminal trực quan. (Ưu tiên: Thấp)
 - [x] `Log Retention`: Động cơ xoay vòng log, nén tự động định dạng `.gz` khi đạt giới hạn dung lượng và dọn dẹp các tệp lưu trữ quá hạn theo số ngày cấu hình tích hợp CLI `flask rotate-logs` và `flask cleanup-system-logs`. (Ưu tiên: Thấp)
 
-12.10. Testing System (2 tính năng chưa làm):
-- [ ] `End-to-End Tests`: Đã có 185 unit & integration tests pytest, nhưng chưa có bộ test giao diện người dùng E2E tự động bằng Playwright hoặc Selenium. (Ưu tiên: Trung bình)
-- [ ] `Continuous Integration`: Chưa tạo file workflow `.github/workflows/ci.yml` để tự động chạy test khi push code. (Ưu tiên: Cao)
+12.10. Testing System (đã hoàn thành):
+- [x] `End-to-End Tests`: Bộ test giao diện E2E bằng Playwright tại `tests/e2e/` (đăng nhập, phân quyền admin, danh sách bài học, 404) chạy với live server + SQLite tạm; bật bằng `RUN_E2E=1 pytest tests/e2e` (cài `requirements-e2e.txt` và `playwright install chromium`). (Ưu tiên: Trung bình)
+- [x] `Continuous Integration`: Workflow `.github/workflows/ci.yml` tự động chạy pytest (Python 3.11/3.12) và E2E Playwright khi push/PR. (Ưu tiên: Cao)
 
 ----------------------------------------------------------------------------------------------------
 MODULE 13. UI/UX FEATURES (TÍNH NĂNG GIAO DIỆN) — 14 TÍNH NĂNG CHƯA LÀM
