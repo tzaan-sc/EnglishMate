@@ -937,10 +937,10 @@ NỀN TẢNG HỌC TIẾNG ANH TRỰC TUYẾN THÔNG MINH
 [x] - Custom Error Pages - Trang lỗi tùy chỉnh
 [x] - Error Notifications - Thông báo lỗi
 [x] - Error Tracking - Theo dõi lỗi
-[ ] - Error Analysis - Phân tích lỗi
+[x] - Error Analysis - Phân tích lỗi
 [x] - User-Friendly Messages - Thông báo thân thiện
 [x] - Error Prevention - Ngăn lỗi
-[ ] - Error Monitoring - Giám sát lỗi
+[x] - Error Monitoring - Giám sát lỗi
 
 12.8. Performance Optimization (Tối ưu hiệu suất)
 [x] - Code Optimization - Tối ưu code

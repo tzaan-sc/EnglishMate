@@ -87,10 +87,16 @@
                     <span>Tác vụ nền & Lập lịch</span>
                 </a>
             </li>
-            <li class="nav-item mb-2">
+            <li class="nav-item">
                 <a class="nav-link-modern {% if request.path.startswith('/admin/system/cache') or request.path.startswith('/admin/cache') %}active{% endif %}" href="{{ url_for('admin.cache_management_dashboard') }}" title="Quản lý Cache">
                     <i class="ph-bold ph-lightning fs-5 text-warning" style="width: 20px; text-align: center;"></i>
                     <span>Quản lý Cache</span>
+                </a>
+            </li>
+            <li class="nav-item mb-2">
+                <a class="nav-link-modern {% if request.path.startswith('/admin/system/errors') or request.path.startswith('/admin/errors') %}active{% endif %}" href="{{ url_for('admin.error_analysis_dashboard') }}" title="Giám sát & Phân tích Lỗi">
+                    <i class="ph-bold ph-bug fs-5 text-danger" style="width: 20px; text-align: center;"></i>
+                    <span>Giám sát & Phân tích Lỗi</span>
                 </a>
             </li>
 

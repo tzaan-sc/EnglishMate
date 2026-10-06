@@ -571,9 +571,9 @@ MODULE 12. SYSTEM FEATURES (TÍNH NĂNG HỆ THỐNG) — 46 TÍNH NĂNG CHƯA L
 - [x] `Cache Security`: Phân lập phân vùng theo tiền tố chuẩn hóa `englishmate:v1:{namespace}:{key}`, lọc ký tự an toàn và cô lập dữ liệu người dùng. (Ưu tiên: Trung bình)
 - [x] `Cache Optimization`: Tự động nén payload bằng thuật toán Zlib khi kích thước vượt ngưỡng 1KB (tiết kiệm đến 70% RAM), điều chỉnh TTL thích ứng theo tính biến động của dữ liệu. (Ưu tiên: Trung bình)
 
-12.7. Error Handling (2 tính năng chưa làm):
-- [ ] `Error Analysis`: Chưa có công cụ gom nhóm và phân tích tần suất lỗi hệ thống. (Ưu tiên: Thấp)
-- [ ] `Error Monitoring`: Chưa tích hợp công cụ cảnh báo lỗi thời gian thực như Sentry. (Ưu tiên: Cao)
+12.7. Error Handling (2/2 tính năng hoàn thành):
+- [x] `Error Analysis`: Công cụ tự động gom nhóm lỗi theo Fingerprint (Exception Type + Location), phân tích tần suất xuất hiện, tỷ lệ theo mã HTTP (5xx, 4xx), phân tích theo route và biểu đồ xu hướng 7 ngày trên Dashboard Quản trị. (Ưu tiên: Thấp)
+- [x] `Error Monitoring`: Tích hợp Sentry SDK và Local Error Tracker, tự động bắt lỗi HTTP 500 & ngoại lệ unhandled, thu thập đầy đủ ngữ cảnh (Traceback, Route, Method, User ID, IP, User Agent, Params), hỗ trợ mô phỏng lỗi test và xử lý sự cố. (Ưu tiên: Cao)
 
 12.8. Performance Optimization (4 tính năng chưa làm):
 - [ ] `Lazy Loading`: Chưa áp dụng lazy loading `loading="lazy"` cho toàn bộ hình ảnh bài học/từ vựng. (Ưu tiên: Cao)

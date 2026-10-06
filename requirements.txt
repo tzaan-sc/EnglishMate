@@ -21,3 +21,4 @@ apscheduler>=3.10.0
 psutil>=5.9.0
 Flask-Caching>=2.3.0
 redis>=5.0.0
+sentry-sdk>=2.0.0

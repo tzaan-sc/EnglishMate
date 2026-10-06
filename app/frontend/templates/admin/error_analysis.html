@@ -1,0 +1,578 @@
+{% extends "base.html" %}
+
+{% block title %}Phân tích & Giám sát Lỗi Hệ thống - EnglishMate Admin{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Header Section -->
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3">
+        <div>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-1">
+                    <li class="breadcrumb-item"><a href="{{ url_for('admin.dashboard') }}" class="text-decoration-none text-muted">Admin</a></li>
+                    <li class="breadcrumb-item"><a href="{{ url_for('admin.performance_settings') }}" class="text-decoration-none text-muted">Hệ thống</a></li>
+                    <li class="breadcrumb-item active text-danger fw-semibold" aria-current="page">Giám sát & Phân tích Lỗi</li>
+                </ol>
+            </nav>
+            <h2 class="h3 fw-bold mb-0 text-gradient-danger d-flex align-items-center gap-2">
+                <i class="ph ph-bug text-danger"></i> Phân tích & Giám sát Lỗi Hệ thống
+            </h2>
+            <p class="text-muted mb-0 small">Tự động gom nhóm lỗi (Fingerprinting), phân tích tần suất mã HTTP, giám sát thời gian thực Sentry và theo dõi Stacktrace.</p>
+        </div>
+        <div class="d-flex align-items-center gap-2 flex-wrap">
+            <button class="btn btn-outline-warning btn-sm rounded-pill d-flex align-items-center gap-2 shadow-sm" data-bs-toggle="modal" data-bs-target="#simulateErrorModal">
+                <i class="ph ph-flask"></i> Mô phỏng Lỗi Test
+            </button>
+            <form method="POST" action="{{ url_for('admin.resolve_all_errors_route') }}" class="d-inline" onsubmit="return confirm('Bạn có chắc muốn đánh dấu tất cả lỗi là ĐÃ XỬ LÝ?');">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button type="submit" class="btn btn-outline-success btn-sm rounded-pill d-flex align-items-center gap-2 shadow-sm">
+                    <i class="ph ph-check-circle"></i> Giải quyết tất cả
+                </button>
+            </form>
+            <a href="{{ url_for('admin.error_analysis_dashboard') }}" class="btn btn-light btn-sm rounded-pill shadow-sm border" title="Làm mới">
+                <i class="ph ph-arrows-clockwise"></i>
+            </a>
+        </div>
+    </div>
+
+    <!-- Alert flash messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ category }} alert-dismissible fade show rounded-3 shadow-sm border-0 d-flex align-items-center gap-2 mb-4" role="alert">
+                    <i class="ph ph-info fs-5"></i>
+                    <div>{{ message }}</div>
+                    <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <!-- Metric Overview Cards -->
+    <div class="row g-3 mb-4">
+        <!-- Total Occurrences -->
+        <div class="col-12 col-sm-6 col-xl-3">
+            <div class="card h-100 border-0 shadow-sm rounded-4 p-3 bg-white hover-shadow transition-all">
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                    <div>
+                        <span class="text-muted small fw-medium">Tổng số lần phát sinh</span>
+                        <h3 class="fw-bold mb-0 mt-1 text-danger">
+                            {{ analytics.total_occurrences }}
+                        </h3>
+                    </div>
+                    <div class="rounded-circle p-2 bg-danger-subtle text-danger">
+                        <i class="ph ph-warning fs-4"></i>
+                    </div>
+                </div>
+                <div class="d-flex align-items-center gap-2 mt-auto text-muted extra-small">
+                    <span>Trong <strong>{{ analytics.days }} ngày</strong> qua</span>
+                    <span>•</span>
+                    <span><strong>{{ analytics.unique_groups }}</strong> nhóm lỗi</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Unresolved Groups -->
+        <div class="col-12 col-sm-6 col-xl-3">
+            <div class="card h-100 border-0 shadow-sm rounded-4 p-3 bg-white hover-shadow transition-all">
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                    <div>
+                        <span class="text-muted small fw-medium">Sự cố chưa giải quyết</span>
+                        <h3 class="fw-bold mb-0 mt-1 text-warning">
+                            {{ analytics.unresolved_count }}
+                        </h3>
+                    </div>
+                    <div class="rounded-circle p-2 bg-warning-subtle text-warning">
+                        <i class="ph ph-clock-counter-clockwise fs-4"></i>
+                    </div>
+                </div>
+                <div class="d-flex align-items-center gap-2 mt-auto text-muted extra-small">
+                    <span class="text-success"><strong>{{ analytics.resolved_count }}</strong> đã giải quyết</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 24h Error Rate -->
+        <div class="col-12 col-sm-6 col-xl-3">
+            <div class="card h-100 border-0 shadow-sm rounded-4 p-3 bg-white hover-shadow transition-all">
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                    <div>
+                        <span class="text-muted small fw-medium">Lỗi trong 24 giờ qua</span>
+                        <h3 class="fw-bold mb-0 mt-1 text-primary">
+                            {{ analytics.last_24h_count }}
+                        </h3>
+                    </div>
+                    <div class="rounded-circle p-2 bg-primary-subtle text-primary">
+                        <i class="ph ph-chart-line-up fs-4"></i>
+                    </div>
+                </div>
+                <div class="d-flex align-items-center gap-2 mt-auto text-muted extra-small">
+                    <span>Tần suất thời gian thực</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sentry Status -->
+        <div class="col-12 col-sm-6 col-xl-3">
+            <div class="card h-100 border-0 shadow-sm rounded-4 p-3 bg-white hover-shadow transition-all">
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                    <div>
+                        <span class="text-muted small fw-medium">Giám sát Sentry Realtime</span>
+                        <h5 class="fw-bold mb-0 mt-1 d-flex align-items-center gap-2">
+                            {% if analytics.sentry_active %}
+                                <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill">
+                                    <i class="ph ph-check-circle me-1"></i> ACTIVE (Sentry SDK)
+                                </span>
+                            {% else %}
+                                <span class="badge bg-secondary-subtle text-secondary rounded-pill">
+                                    <i class="ph ph-shield me-1"></i> LOCAL TRACKER
+                                </span>
+                            {% endif %}
+                        </h5>
+                    </div>
+                    <div class="rounded-circle p-2 bg-info-subtle text-info">
+                        <i class="ph ph-broadcast fs-4"></i>
+                    </div>
+                </div>
+                <div class="d-flex align-items-center gap-1 text-muted extra-small mt-auto">
+                    <span>Tự động bắt HTTP 500 & Unhandled Exceptions</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Navigation Tabs -->
+    <ul class="nav nav-pills custom-pills mb-4 gap-2" id="errorTabs" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active rounded-pill px-4 py-2" id="tab-incidents-btn" data-bs-toggle="pill" data-bs-target="#tab-incidents" type="button" role="tab">
+                <i class="ph ph-list-dashes me-2"></i> Danh sách Sự cố ({{ incidents.total }})
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link rounded-pill px-4 py-2" id="tab-analytics-btn" data-bs-toggle="pill" data-bs-target="#tab-analytics" type="button" role="tab">
+                <i class="ph ph-chart-pie-slice me-2"></i> Phân tích & Xu hướng (Analytics)
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link rounded-pill px-4 py-2" id="tab-sentry-btn" data-bs-toggle="pill" data-bs-target="#tab-sentry" type="button" role="tab">
+                <i class="ph ph-gear me-2"></i> Cấu hình Giám sát & Sentry
+            </button>
+        </li>
+    </ul>
+
+    <!-- Tab Contents -->
+    <div class="tab-content" id="errorTabsContent">
+        <!-- TAB 1: INCIDENTS LIST -->
+        <div class="tab-pane fade show active" id="tab-incidents" role="tabpanel">
+            <!-- Filter Bar -->
+            <div class="card border-0 shadow-sm rounded-4 p-3 bg-white mb-4">
+                <form method="GET" action="{{ url_for('admin.error_analysis_dashboard') }}" class="row g-2 align-items-center">
+                    <div class="col-12 col-md-4">
+                        <div class="input-group input-group-sm">
+                            <span class="input-group-text bg-light border-0"><i class="ph ph-magnifying-glass"></i></span>
+                            <input type="text" name="search" class="form-control bg-light border-0" placeholder="Tìm theo thông điệp, ngoại lệ, route..." value="{{ search or '' }}">
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-2">
+                        <select name="status_code" class="form-select form-select-sm bg-light border-0">
+                            <option value="">-- Tất cả Mã HTTP --</option>
+                            <option value="500" {% if status_code == 500 %}selected{% endif %}>500 Internal Error</option>
+                            <option value="502" {% if status_code == 502 %}selected{% endif %}>502 Bad Gateway</option>
+                            <option value="503" {% if status_code == 503 %}selected{% endif %}>503 Service Unavailable</option>
+                            <option value="404" {% if status_code == 404 %}selected{% endif %}>404 Not Found</option>
+                            <option value="403" {% if status_code == 403 %}selected{% endif %}>403 Forbidden</option>
+                            <option value="400" {% if status_code == 400 %}selected{% endif %}>400 Bad Request</option>
+                        </select>
+                    </div>
+                    <div class="col-6 col-md-2">
+                        <select name="severity" class="form-select form-select-sm bg-light border-0">
+                            <option value="">-- Mức độ --</option>
+                            <option value="CRITICAL" {% if severity == 'CRITICAL' %}selected{% endif %}>CRITICAL</option>
+                            <option value="ERROR" {% if severity == 'ERROR' %}selected{% endif %}>ERROR</option>
+                            <option value="WARNING" {% if severity == 'WARNING' %}selected{% endif %}>WARNING</option>
+                        </select>
+                    </div>
+                    <div class="col-6 col-md-2">
+                        <select name="is_resolved" class="form-select form-select-sm bg-light border-0">
+                            <option value="">-- Trạng thái --</option>
+                            <option value="0" {% if is_resolved == 0 %}selected{% endif %}>Chưa xử lý (Open)</option>
+                            <option value="1" {% if is_resolved == 1 %}selected{% endif %}>Đã xử lý (Resolved)</option>
+                        </select>
+                    </div>
+                    <div class="col-6 col-md-2 d-flex gap-2">
+                        <button type="submit" class="btn btn-primary btn-sm rounded-pill w-100">Lọc</button>
+                        <a href="{{ url_for('admin.error_analysis_dashboard') }}" class="btn btn-light btn-sm rounded-pill border" title="Xóa lọc"><i class="ph ph-x"></i></a>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Incidents Table -->
+            <div class="card border-0 shadow-sm rounded-4 bg-white overflow-hidden">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light extra-small text-muted text-uppercase">
+                            <tr>
+                                <th style="min-width: 250px;">Ngoại lệ & Thông điệp</th>
+                                <th>Mã HTTP</th>
+                                <th>Đường dẫn (Route)</th>
+                                <th>Tần suất</th>
+                                <th>Lần cuối xuất hiện</th>
+                                <th>Trạng thái</th>
+                                <th class="text-end pe-3">Hành động</th>
+                            </tr>
+                        </thead>
+                        <tbody class="small">
+                            {% for item in incidents['items'] %}
+                                <tr class="{% if item.is_resolved %}opacity-75{% endif %}">
+                                    <td>
+                                        <div class="d-flex flex-column">
+                                            <div class="d-flex align-items-center gap-2 mb-1">
+                                                <span class="badge {{ item.severity_badge_class }} rounded-pill extra-small">
+                                                    {{ item.exception_type }}
+                                                </span>
+                                                <span class="text-muted extra-small font-monospace" title="Fingerprint">#{{ item.fingerprint[:8] }}</span>
+                                            </div>
+                                            <span class="fw-semibold text-dark text-break" title="{{ item.error_message }}">{{ item.short_message }}</span>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span class="badge {{ item.status_code_badge_class }} rounded-pill">{{ item.status_code }}</span>
+                                    </td>
+                                    <td>
+                                        <div class="d-flex align-items-center gap-1">
+                                            <span class="badge bg-light text-dark border extra-small">{{ item.http_method }}</span>
+                                            <span class="text-muted extra-small text-break">{{ item.route or 'N/A' }}</span>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-danger-subtle text-danger fw-bold rounded-pill">
+                                            {{ item.occurrence_count }}x
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span class="extra-small text-muted" title="{{ item.last_seen_at }}">
+                                            {{ item.last_seen_at_vn.strftime('%d/%m/%Y %H:%M') if item.last_seen_at_vn else 'N/A' }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        {% if item.is_resolved %}
+                                            <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill extra-small">
+                                                <i class="ph ph-check me-1"></i> Đã xử lý
+                                            </span>
+                                        {% else %}
+                                            <span class="badge bg-warning-subtle text-warning border border-warning-subtle rounded-pill extra-small">
+                                                <i class="ph ph-clock me-1"></i> Đang mở
+                                            </span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="text-end pe-3">
+                                        <div class="d-flex align-items-center justify-content-end gap-1">
+                                            <button class="btn btn-outline-primary btn-sm p-1.5 rounded-circle border-0" title="Xem chi tiết Stacktrace" onclick="viewErrorDetail('{{ item.error_id }}')">
+                                                <i class="ph ph-eye"></i>
+                                            </button>
+                                            {% if not item.is_resolved %}
+                                                <form method="POST" action="{{ url_for('admin.resolve_error_route', error_id=item.error_id) }}" class="d-inline">
+                                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                                    <button type="submit" class="btn btn-outline-success btn-sm p-1.5 rounded-circle border-0" title="Đánh dấu đã xử lý">
+                                                        <i class="ph ph-check"></i>
+                                                    </button>
+                                                </form>
+                                            {% endif %}
+                                        </div>
+                                    </td>
+                                </tr>
+                            {% else %}
+                                <tr>
+                                    <td colspan="7" class="text-center py-5 text-muted">
+                                        <div class="d-flex flex-column align-items-center gap-2">
+                                            <i class="ph ph-check-circle fs-1 text-success"></i>
+                                            <span class="fw-semibold">Hệ thống hoạt động trơn tru! Không có sự cố lỗi nào được ghi nhận.</span>
+                                        </div>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Pagination -->
+                {% if incidents.pages > 1 %}
+                    <div class="card-footer bg-white border-top p-3 d-flex justify-content-between align-items-center">
+                        <span class="text-muted extra-small">Trang {{ incidents.page }} / {{ incidents.pages }} (Tổng {{ incidents.total }} sự cố)</span>
+                        <ul class="pagination pagination-sm mb-0">
+                            {% if incidents.has_prev %}
+                                <li class="page-item">
+                                    <a class="page-link rounded-pill px-3 me-1" href="{{ url_for('admin.error_analysis_dashboard', page=incidents.page-1, search=search, status_code=status_code, severity=severity, is_resolved=is_resolved) }}">Trước</a>
+                                </li>
+                            {% endif %}
+                            {% if incidents.has_next %}
+                                <li class="page-item">
+                                    <a class="page-link rounded-pill px-3" href="{{ url_for('admin.error_analysis_dashboard', page=incidents.page+1, search=search, status_code=status_code, severity=severity, is_resolved=is_resolved) }}">Tiếp theo</a>
+                                </li>
+                            {% endif %}
+                        </ul>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- TAB 2: ANALYTICS & CHARTS -->
+        <div class="tab-pane fade" id="tab-analytics" role="tabpanel">
+            <div class="row g-4">
+                <!-- 7-Day Trend Card -->
+                <div class="col-12 col-lg-8">
+                    <div class="card border-0 shadow-sm rounded-4 p-4 bg-white h-100">
+                        <h5 class="fw-bold mb-3 d-flex align-items-center gap-2">
+                            <i class="ph ph-chart-bar text-primary"></i> Xu hướng Tần suất Lỗi 7 ngày qua
+                        </h5>
+                        <div class="d-flex align-items-end gap-3 justify-content-between pt-4 pb-2" style="min-height: 220px;">
+                            {% set max_count = 1 %}
+                            {% for day in analytics.daily_trend %}
+                                {% if day.count > max_count %}
+                                    {% set max_count = day.count %}
+                                {% endif %}
+                            {% endfor %}
+                            {% for day in analytics.daily_trend %}
+                                {% set height_pct = (day.count / max_count * 100)|round if max_count > 0 else 5 %}
+                                <div class="d-flex flex-column align-items-center flex-grow-1">
+                                    <span class="extra-small fw-bold text-muted mb-1">{{ day.count }}</span>
+                                    <div class="w-100 rounded-3 {% if day.count > 0 %}bg-danger{% else %}bg-light{% endif %}" style="height: {{ [height_pct, 6]|max }}px; max-width: 48px; transition: height 0.3s ease;"></div>
+                                    <span class="extra-small text-muted mt-2 fw-medium">{{ day.date }}</span>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- HTTP Status Code Breakdown -->
+                <div class="col-12 col-lg-4">
+                    <div class="card border-0 shadow-sm rounded-4 p-4 bg-white h-100">
+                        <h5 class="fw-bold mb-3 d-flex align-items-center gap-2">
+                            <i class="ph ph-pie-chart text-warning"></i> Phân bố Mã HTTP
+                        </h5>
+                        <div class="d-flex flex-column gap-3">
+                            {% for code, count in analytics.status_distribution.items() %}
+                                <div>
+                                    <div class="d-flex justify-content-between extra-small fw-semibold mb-1">
+                                        <span>HTTP {{ code }}</span>
+                                        <span class="text-danger">{{ count }} lỗi</span>
+                                    </div>
+                                    <div class="w-100 bg-light rounded-pill overflow-hidden" style="height: 6px;">
+                                        <div class="{% if code.startswith('5') %}bg-danger{% else %}bg-warning{% endif %} h-100" style="width: {{ (count / [analytics.total_occurrences, 1]|max * 100)|round }}%;"></div>
+                                    </div>
+                                </div>
+                            {% else %}
+                                <span class="text-muted small">Không có dữ liệu lỗi.</span>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Exception Types Breakdown -->
+                <div class="col-12 col-lg-6">
+                    <div class="card border-0 shadow-sm rounded-4 p-4 bg-white h-100">
+                        <h5 class="fw-bold mb-3 d-flex align-items-center gap-2">
+                            <i class="ph ph-brackets-curly text-info"></i> Top Loại Ngoại lệ (Exception Types)
+                        </h5>
+                        <div class="list-group list-group-flush">
+                            {% for exc in analytics.exception_types %}
+                                <div class="list-group-item px-0 py-2 d-flex justify-content-between align-items-center border-0">
+                                    <span class="font-monospace small text-dark"><i class="ph ph-circle me-2 text-danger extra-small"></i>{{ exc.type }}</span>
+                                    <span class="badge bg-danger-subtle text-danger rounded-pill">{{ exc.count }} lần</span>
+                                </div>
+                            {% else %}
+                                <span class="text-muted small">Chưa có ngoại lệ nào phát sinh.</span>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Top Error Routes -->
+                <div class="col-12 col-lg-6">
+                    <div class="card border-0 shadow-sm rounded-4 p-4 bg-white h-100">
+                        <h5 class="fw-bold mb-3 d-flex align-items-center gap-2">
+                            <i class="ph ph-path text-success"></i> Top Đường dẫn Phát sinh Lỗi (Routes)
+                        </h5>
+                        <div class="list-group list-group-flush">
+                            {% for r in analytics.top_routes %}
+                                <div class="list-group-item px-0 py-2 d-flex justify-content-between align-items-center border-0">
+                                    <span class="font-monospace small text-truncate" style="max-width: 320px;" title="{{ r.route }}"><i class="ph ph-globe me-2 text-primary extra-small"></i>{{ r.route }}</span>
+                                    <span class="badge bg-primary-subtle text-primary rounded-pill">{{ r.count }} lần</span>
+                                </div>
+                            {% else %}
+                                <span class="text-muted small">Không có dữ liệu route lỗi.</span>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB 3: SENTRY & CONFIG -->
+        <div class="tab-pane fade" id="tab-sentry" role="tabpanel">
+            <div class="row g-4">
+                <div class="col-12 col-lg-7">
+                    <div class="card border-0 shadow-sm rounded-4 p-4 bg-white">
+                        <h5 class="fw-bold mb-3 d-flex align-items-center gap-2">
+                            <i class="ph ph-shield-check text-success"></i> Tích hợp Giám sát Thời gian thực Sentry
+                        </h5>
+                        <p class="text-muted small">Sentry tự động bắt các ngoại lệ chưa được xử lý (Unhandled Exceptions) trên toàn bộ ứng dụng Flask và gửi thông báo cảnh báo tức thời.</p>
+                        
+                        <div class="p-3 bg-light rounded-3 mb-4">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <span class="fw-semibold small">Trạng thái SDK Sentry:</span>
+                                {% if analytics.sentry_active %}
+                                    <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill">ONLINE / KÍCH HOẠT</span>
+                                {% else %}
+                                    <span class="badge bg-secondary-subtle text-secondary rounded-pill">CHƯA CẤU HÌNH SENTRY_DSN</span>
+                                {% endif %}
+                            </div>
+                            <div class="small text-muted">
+                                Để kích hoạt, bổ sung biến môi trường <code>SENTRY_DSN=https://...</code> vào tệp <code>.env</code> máy chủ.
+                            </div>
+                        </div>
+
+                        <h6 class="fw-bold mb-2 small">Công cụ Kiểm thử Toàn trình (End-to-End Simulation)</h6>
+                        <p class="text-muted extra-small">Kích hoạt ngoại lệ mô phỏng để kiểm tra việc bắt lỗi, lưu vào bảng <code>SystemErrorLog</code> và chuyển tiếp đến Sentry.</p>
+                        <div class="d-flex gap-2 flex-wrap">
+                            <button class="btn btn-outline-danger btn-sm rounded-pill" onclick="simulateSpecificError('division_by_zero')">Lỗi Chia cho 0</button>
+                            <button class="btn btn-outline-warning btn-sm rounded-pill" onclick="simulateSpecificError('value_error')">Lỗi ValueError</button>
+                            <button class="btn btn-outline-info btn-sm rounded-pill" onclick="simulateSpecificError('key_error')">Lỗi KeyError</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-12 col-lg-5">
+                    <div class="card border-0 shadow-sm rounded-4 p-4 bg-white">
+                        <h5 class="fw-bold mb-3 d-flex align-items-center gap-2">
+                            <i class="ph ph-trash text-danger"></i> Dọn dẹp & Lưu trữ Lỗi
+                        </h5>
+                        <p class="text-muted small">Tự động dọn dẹp các sự cố lỗi cũ đã giải quyết để tối ưu hóa dung lượng CSDL.</p>
+                        <form method="POST" action="{{ url_for('admin.purge_error_logs_route') }}" onsubmit="return confirm('Bạn có chắc muốn dọn dẹp các lỗi đã giải quyết quá 30 ngày?');">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <div class="mb-3">
+                                <label class="form-label small fw-semibold text-muted">Số ngày lưu trữ (Retention Days)</label>
+                                <input type="number" name="days" class="form-control form-control-sm rounded-pill" value="30" min="7" max="365">
+                            </div>
+                            <button type="submit" class="btn btn-outline-danger btn-sm rounded-pill w-100">
+                                <i class="ph ph-trash me-1"></i> Dọn dẹp Nhật ký Lỗi Cũ
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: Error Detail & Stacktrace -->
+<div class="modal fade" id="errorDetailModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content border-0 shadow rounded-4 overflow-hidden">
+            <div class="modal-header bg-dark text-white p-3">
+                <h6 class="modal-title fw-bold d-flex align-items-center gap-2" id="errorDetailTitle">
+                    <i class="ph ph-bug"></i> Chi tiết Sự cố Lỗi
+                </h6>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-4" id="errorDetailBody">
+                <div class="text-center py-4">
+                    <div class="spinner-border text-primary" role="status"></div>
+                </div>
+            </div>
+            <div class="modal-footer bg-light border-0 p-3">
+                <button type="button" class="btn btn-secondary btn-sm rounded-pill px-4" data-bs-dismiss="modal">Đóng</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: Simulate Error -->
+<div class="modal fade" id="simulateErrorModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow rounded-4 overflow-hidden">
+            <div class="modal-header bg-warning text-dark">
+                <h5 class="modal-title fw-bold d-flex align-items-center gap-2">
+                    <i class="ph ph-flask"></i> Mô phỏng Ngoại lệ Thử nghiệm
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-4 text-center">
+                <p class="text-muted small mb-3">Hành động này sẽ cố tình kích hoạt một ngoại lệ để kiểm tra hệ thống bắt lỗi, gom nhóm Fingerprint và gửi cảnh báo Sentry.</p>
+                <div class="d-grid gap-2">
+                    <button class="btn btn-outline-danger rounded-pill" onclick="simulateSpecificError('division_by_zero')">Kích hoạt ZeroDivisionError</button>
+                    <button class="btn btn-outline-warning rounded-pill" onclick="simulateSpecificError('value_error')">Kích hoạt ValueError</button>
+                    <button class="btn btn-outline-info rounded-pill" onclick="simulateSpecificError('key_error')">Kích hoạt KeyError</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function viewErrorDetail(errorId) {
+    const modal = new bootstrap.Modal(document.getElementById('errorDetailModal'));
+    const body = document.getElementById('errorDetailBody');
+    body.innerHTML = '<div class="text-center py-4"><div class="spinner-border text-primary" role="status"></div></div>';
+    modal.show();
+
+    fetch(`/admin/system/errors/${errorId}`)
+        .then(r => r.json())
+        .then(data => {
+            if (!data.success) {
+                body.innerHTML = `<div class="alert alert-danger">${data.error}</div>`;
+                return;
+            }
+            const item = data.data;
+            body.innerHTML = `
+                <div class="mb-3">
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                        <span class="badge ${item.severity_badge_class} rounded-pill">${item.exception_type}</span>
+                        <span class="badge bg-light text-dark border">HTTP ${item.status_code}</span>
+                    </div>
+                    <h5 class="fw-bold text-danger text-break">${item.error_message}</h5>
+                    <div class="text-muted extra-small font-monospace mb-2">Fingerprint: ${item.fingerprint} | Incident ID: ${item.error_id}</div>
+                </div>
+
+                <div class="row g-2 mb-3 extra-small">
+                    <div class="col-6"><strong>Route:</strong> <code>${item.http_method} ${item.route || 'N/A'}</code></div>
+                    <div class="col-6"><strong>IP:</strong> ${item.ip_address || 'N/A'}</div>
+                    <div class="col-6"><strong>User ID:</strong> ${item.user_id ? '#' + item.user_id : 'Anonymous'}</div>
+                    <div class="col-6"><strong>Tần suất:</strong> ${item.occurrence_count} lần</div>
+                    <div class="col-6"><strong>Lần đầu:</strong> ${item.first_seen_at || 'N/A'}</div>
+                    <div class="col-6"><strong>Lần cuối:</strong> ${item.last_seen_at || 'N/A'}</div>
+                </div>
+
+                <h6 class="fw-bold small mb-1"><i class="ph ph-code"></i> Python Stacktrace</h6>
+                <pre class="bg-dark text-light p-3 rounded-3 extra-small font-monospace overflow-auto" style="max-height: 280px;"><code>${item.traceback_text || 'Không có traceback.'}</code></pre>
+            `;
+        })
+        .catch(err => {
+            body.innerHTML = `<div class="alert alert-danger">Lỗi kết nối: ${err}</div>`;
+        });
+}
+
+function simulateSpecificError(errorType) {
+    fetch("{{ url_for('admin.test_trigger_error_route') }}", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            "X-CSRFToken": "{{ csrf_token() }}"
+        },
+        body: JSON.stringify({ error_type: errorType })
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.success) {
+            alert(`✅ ${data.message} (Fingerprint: #${data.fingerprint.substring(0, 8)})`);
+            window.location.reload();
+        } else {
+            alert(`❌ Lỗi: ${data.error}`);
+        }
+    })
+    .catch(err => {
+        alert("❌ Lỗi kết nối: " + err);
+    });
+}
+</script>
+{% endblock %}

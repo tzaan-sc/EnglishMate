@@ -463,6 +463,78 @@ class BackgroundTask(db.Model):
             return {}
 
 
+# ===========================================================================
+# 12.7. ERROR LOGGING & MONITORING MODEL
+# ===========================================================================
+class SystemErrorLog(db.Model):
+    """
+    Lưu trữ và phân tích lỗi hệ thống (Error Analysis & Monitoring).
+    Gom nhóm theo Fingerprint (Exception Type + Location), theo dõi tần suất,
+    bắt lỗi Sentry và quản lý trạng thái xử lý lỗi (Resolved / Open).
+    """
+    __tablename__ = "system_error_log"
+
+    id = db.Column(db.Integer, primary_key=True)
+    error_id = db.Column(db.String(36), unique=True, nullable=False, index=True)
+    fingerprint = db.Column(db.String(64), nullable=False, index=True)
+    exception_type = db.Column(db.String(120), nullable=False, default="InternalServerError", index=True)
+    error_message = db.Column(db.Text, nullable=False)
+    status_code = db.Column(db.Integer, default=500, nullable=False, index=True)
+    severity = db.Column(db.String(20), default="ERROR", nullable=False, index=True)  # CRITICAL, ERROR, WARNING, INFO
+    route = db.Column(db.String(255), nullable=True, index=True)
+    http_method = db.Column(db.String(10), nullable=True, default="GET")
+    user_id = db.Column(db.Integer, db.ForeignKey("user.id", ondelete="SET NULL"), nullable=True, index=True)
+    ip_address = db.Column(db.String(64), nullable=True)
+    user_agent = db.Column(db.String(255), nullable=True)
+    traceback_text = db.Column(db.Text, nullable=True)
+    request_params_json = db.Column(db.Text, nullable=True)
+    is_resolved = db.Column(db.Boolean, default=False, nullable=False, index=True)
+    resolved_at = db.Column(db.DateTime(timezone=True), nullable=True)
+    resolved_by_id = db.Column(db.Integer, db.ForeignKey("user.id", ondelete="SET NULL"), nullable=True)
+    resolution_notes = db.Column(db.Text, nullable=True)
+    sentry_event_id = db.Column(db.String(64), nullable=True)
+    occurrence_count = db.Column(db.Integer, default=1, nullable=False)
+    first_seen_at = db.Column(db.DateTime(timezone=True), default=now, nullable=False)
+    last_seen_at = db.Column(db.DateTime(timezone=True), default=now, nullable=False, index=True)
+    created_at = db.Column(db.DateTime(timezone=True), default=now, nullable=False, index=True)
+
+    @property
+    def severity_badge_class(self) -> str:
+        mapping = {
+            "CRITICAL": "bg-danger text-white",
+            "ERROR": "bg-danger-subtle text-danger border border-danger-subtle",
+            "WARNING": "bg-warning-subtle text-warning border border-warning-subtle",
+            "INFO": "bg-info-subtle text-info border border-info-subtle",
+        }
+        return mapping.get(self.severity.upper(), "bg-secondary-subtle text-secondary")
+
+    @property
+    def status_code_badge_class(self) -> str:
+        if self.status_code >= 500:
+            return "bg-danger-subtle text-danger border border-danger-subtle"
+        elif self.status_code >= 400:
+            return "bg-warning-subtle text-warning border border-warning-subtle"
+        return "bg-success-subtle text-success border border-success-subtle"
+
+    @property
+    def short_message(self) -> str:
+        if not self.error_message:
+            return ""
+        return self.error_message[:120] + ("..." if len(self.error_message) > 120 else "")
+
+    @property
+    def created_at_vn(self):
+        return (self.created_at + timedelta(hours=7)) if self.created_at else None
+
+    @property
+    def last_seen_at_vn(self):
+        return (self.last_seen_at + timedelta(hours=7)) if self.last_seen_at else None
+
+    @property
+    def first_seen_at_vn(self):
+        return (self.first_seen_at + timedelta(hours=7)) if self.first_seen_at else None
+
+
 
 # ---------------------------------------------------------------------------
 # AUTOMATIC PERMISSION CACHE INVALIDATION HOOKS (MỤC 11.2)

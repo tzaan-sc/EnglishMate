@@ -45,6 +45,8 @@ def create_app(config_object=Config):
     migrate.init_app(app, db, render_as_batch=True)
     from .backend.admin.cache_service import cache_service
     cache_service.init_app(app)
+    from .backend.admin.error_monitoring_service import init_error_monitoring
+    init_error_monitoring(app)
     limiter.init_app(app)
     cors.init_app(
         app,
@@ -160,6 +162,14 @@ def create_app(config_object=Config):
                     if "database_backup" not in tables:
                         from app.backend.admin.models import DatabaseBackup
                         DatabaseBackup.__table__.create(conn)
+                        conn.commit()
+                    if "background_task" not in tables:
+                        from app.backend.admin.models import BackgroundTask
+                        BackgroundTask.__table__.create(conn)
+                        conn.commit()
+                    if "system_error_log" not in tables:
+                        from app.backend.admin.models import SystemErrorLog
+                        SystemErrorLog.__table__.create(conn)
                         conn.commit()
         except Exception:
             pass
