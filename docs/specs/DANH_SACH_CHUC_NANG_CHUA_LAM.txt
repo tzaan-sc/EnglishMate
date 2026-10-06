@@ -591,31 +591,31 @@ MODULE 12. SYSTEM FEATURES (TÍNH NĂNG HỆ THỐNG) — 46 TÍNH NĂNG CHƯA L
 MODULE 13. UI/UX FEATURES (TÍNH NĂNG GIAO DIỆN) — 14 TÍNH NĂNG CHƯA LÀM
 ----------------------------------------------------------------------------------------------------
 
-13.1. Responsive Design (1 tính năng chưa làm):
-- [ ] `Gesture Support - Hỗ trợ thao tác vuốt cảm ứng`:
-  Chưa hỗ trợ thao tác vuốt màn hình (Swipe left / right) trên điện thoại để chuyển thẻ flashcard tiếp theo hoặc lật mặt thẻ. (Ưu tiên: Cao cho trải nghiệm mobile)
+13.1. Responsive Design (đã hoàn thành):
+- [x] `Gesture Support - Hỗ trợ thao tác vuốt cảm ứng`:
+  Flashcard hỗ trợ vuốt trái (cần học lại) / phải (đã thuộc) và vuốt lên/xuống hoặc chạm để lật mặt thẻ, kèm bàn phím (Space/Enter) và nhãn ARIA. (Ưu tiên: Cao cho trải nghiệm mobile)
 
-13.2. Accessibility (2 tính năng chưa làm):
-- [ ] `Screen Reader Support`: Chưa tối ưu hoàn chỉnh các nhãn ARIA cho người khiếm thị. (Ưu tiên: Thấp)
-- [ ] `Skip Links`: Chưa có link ẩn "Nhảy thẳng vào nội dung chính" ở đầu trang. (Ưu tiên: Thấp)
+13.2. Accessibility (đã hoàn thành):
+- [x] `Screen Reader Support`: Script `static/js/a11y.js` tự bổ sung ARIA (aria-hidden cho icon, aria-label cho nút chỉ có icon, nhãn landmark, role dialog cho modal, progressbar, nhãn form). (Ưu tiên: Thấp)
+- [x] `Skip Links`: Link ẩn "Nhảy thẳng vào nội dung chính" ở đầu `base.html`, hiện khi focus bằng Tab, trỏ tới `<main id="main-content">`. (Ưu tiên: Thấp)
 
-13.4. User Experience (3 tính năng chưa làm):
-- [ ] `Shortcuts - Phím tắt điều khiển`:
-  Chưa có hệ thống phím tắt bàn phím (ví dụ: Phím Space để lật thẻ flashcard, Phím 1,2,3,4 để chọn đáp án trắc nghiệm, Phím mũi tên Trái/Phải để chuyển câu). (Ưu tiên: Cao)
-- [ ] `Onboarding - Hướng dẫn tương tác cho người mới`:
-  Chưa có tour hướng dẫn (Tour guide popover) hiển thị các bước cho học viên mới đăng ký lần đầu. (Ưu tiên: Trung bình)
-- [ ] `User Support - Kênh hỗ trợ người dùng`:
-  Chưa có mục liên hệ giải đáp thắc mắc tích hợp trên giao diện. (Ưu tiên: Trung bình)
+13.4. User Experience (đã hoàn thành):
+- [x] `Shortcuts - Phím tắt điều khiển`:
+  Hệ thống phím tắt toàn diện (phím T đổi giao diện, ? tra cứu phím tắt, / tìm kiếm, 1-4 chọn đáp án trắc nghiệm, ← / → chuyển câu, G+D/L/V/Q điều hướng nhanh, Space/Enter/Mũi tên/1/2 học Flashcard). Modal tra cứu `partials/_shortcuts_modal.html`. (Ưu tiên: Cao)
+- [x] `Onboarding - Hướng dẫn tương tác cho người mới`:
+  Tour hướng dẫn tương tác (Tour guide spotlight popover) tự động khởi chạy khi học viên đăng ký lần đầu hoặc bấm xem lại từ Menu hỗ trợ, lưu trạng thái hoàn thành vào `User.onboarding_completed`. (Ưu tiên: Trung bình)
+- [x] `User Support - Kênh hỗ trợ người dùng`:
+  Nút hỗ trợ nổi (Floating Action Button #supportFab) & Modal Trợ giúp `partials/_user_support_modal.html` tích hợp kênh Email, Telegram, FAQ, gửi form góp ý nhanh trực tiếp và kích hoạt Tour / Phím tắt. (Ưu tiên: Trung bình)
 
-13.5. Theming - Hệ thống chủ đề giao diện (8 tính năng chưa làm):
-- [ ] `Dark Mode - Chế độ tối`:
-  Toàn bộ hệ thống hiện tại chạy trên giao diện Sáng (Light Theme). Chưa thiết kế bảng màu Chế độ tối (Dark Mode) để học viên học ban đêm không bị mỏi mắt. (Ưu tiên: RẤT CAO)
-- [ ] `Theme Switching - Nút chuyển đổi giao diện`:
-  Chưa có nút icon Mặt Trời / Mặt Trăng trên thanh Header để chuyển nhanh chế độ. (Ưu tiên: RẤT CAO)
-- [ ] `Theme Persistence - Lưu trạng thái chủ đề`:
-  Cần lưu trạng thái chọn Dark/Light Mode vào `localStorage` và đồng bộ vào tài khoản `User.theme_preference`. (Ưu tiên: Cao)
-- [ ] `Custom Themes`, `Color Schemes`, `Font Options`, `Theme Preview`, `Accessibility Themes`:
-  Các tùy biến nâng cao về màu sắc chủ đạo, cỡ chữ, font chữ và độ tương phản cao. (Ưu tiên: Thấp)
+13.5. Theming - Hệ thống chủ đề giao diện (đã hoàn thành):
+- [x] `Dark Mode - Chế độ tối`:
+  Bảng màu Chế độ tối (Dark Mode) hoàn chỉnh (`[data-theme="dark"]`) áp dụng cho toàn bộ Canvas, Surface, Topbar, Sidebar, Modal, Form, Card, Table giúp học viên học ban đêm không bị mỏi mắt. (Ưu tiên: RẤT CAO)
+- [x] `Theme Switching - Nút chuyển đổi giao diện`:
+  Nút icon Mặt Trời / Mặt Trăng trên thanh Header và phím tắt T chuyển nhanh chế độ Sáng / Tối mượt mà không reload trang. (Ưu tiên: RẤT CAO)
+- [x] `Theme Persistence - Lưu trạng thái chủ đề`:
+  Tự động lưu trạng thái chọn Dark/Light Mode vào `localStorage` và đồng bộ vào API `/api/preferences/theme` lưu trường `User.theme_preference`. (Ưu tiên: Cao)
+- [x] `Custom Themes`, `Color Schemes`, `Font Options`, `Theme Preview`, `Accessibility Themes`:
+  Bảng tùy biến giao diện `partials/_theme_modal.html` hỗ trợ 5 bảng màu chủ đạo (Emerald, Ocean, Sunset, Purple, Rose), 4 kiểu Font chữ (Manrope, System, Serif, Dyslexic), 4 nấc tỉ lệ cỡ chữ (90%-120%), chế độ Độ tương phản cao (High Contrast), Giảm chuyển động (Reduce Motion) và hộp Theme Preview trực tiếp. (Ưu tiên: Thấp)
 
 ----------------------------------------------------------------------------------------------------
 MODULE 14. DATA INTEGRITY & VALIDATION (TOÀN VỆN DỮ LIỆU) — 5 TÍNH NĂNG CHƯA LÀM

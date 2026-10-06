@@ -104,6 +104,8 @@ def create_app(config_object=Config):
                     conn.execute(text('ALTER TABLE "user" ADD COLUMN IF NOT EXISTS vocab_push_subscription TEXT;'))
                     conn.execute(text('ALTER TABLE "user" ADD COLUMN IF NOT EXISTS streak_freeze_count INTEGER DEFAULT 0;'))
                     conn.execute(text("ALTER TABLE lesson_progress ADD COLUMN IF NOT EXISTS duration_seconds INTEGER DEFAULT 0;"))
+                    conn.execute(text('ALTER TABLE "user" ADD COLUMN IF NOT EXISTS theme_preference VARCHAR(10) DEFAULT \'light\' NOT NULL;'))
+                    conn.execute(text('ALTER TABLE "user" ADD COLUMN IF NOT EXISTS onboarding_completed BOOLEAN DEFAULT TRUE NOT NULL;'))
                     conn.commit()
                 elif "sqlite" in str(db.engine.url):
                     insp = inspect(db.engine)
@@ -146,6 +148,13 @@ def create_app(config_object=Config):
                             conn.commit()
                         if "last_daily_goal_reminder_date" not in cols:
                             conn.execute(text('ALTER TABLE "user" ADD COLUMN last_daily_goal_reminder_date DATE;'))
+                            conn.commit()
+                        if "theme_preference" not in cols:
+                            conn.execute(text('ALTER TABLE "user" ADD COLUMN theme_preference VARCHAR(10) DEFAULT \'light\' NOT NULL;'))
+                            conn.commit()
+                        if "onboarding_completed" not in cols:
+                            # Existing accounts are treated as already onboarded (only new users see the tour).
+                            conn.execute(text('ALTER TABLE "user" ADD COLUMN onboarding_completed BOOLEAN DEFAULT 1 NOT NULL;'))
                             conn.commit()
                     if "lesson_progress" in tables:
                         cols = [c["name"] for c in insp.get_columns("lesson_progress")]

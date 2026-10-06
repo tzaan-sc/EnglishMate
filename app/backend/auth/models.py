@@ -70,6 +70,10 @@ class User(UserMixin, db.Model):
     daily_goal_reminder_email = db.Column(db.Boolean, nullable=False, default=True)
     daily_goal_reminder_popup = db.Column(db.Boolean, nullable=False, default=True)
     last_daily_goal_reminder_date = db.Column(db.Date, nullable=True)
+
+    # UI/UX preferences
+    theme_preference = db.Column(db.String(10), nullable=False, default="light")
+    onboarding_completed = db.Column(db.Boolean, nullable=False, default=False)
     
     created_at = db.Column(db.DateTime(timezone=True), default=now, nullable=False)
     updated_at = db.Column(db.DateTime(timezone=True), default=now, onupdate=now, nullable=False)

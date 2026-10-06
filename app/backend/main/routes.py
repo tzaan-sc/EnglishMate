@@ -700,3 +700,34 @@ def track_email_click_route(tracking_id):
     return redirect(target_url)
 
 
+
+
+# ---------------------------------------------------------------------------
+# UI/UX preferences: theme (dark/light) & onboarding tour state
+# ---------------------------------------------------------------------------
+@bp.route("/api/preferences/theme", methods=["POST"])
+@login_required
+def save_theme_preference():
+    data = request.get_json(silent=True) or {}
+    theme = data.get("theme")
+    if theme not in ("light", "dark"):
+        return jsonify({"ok": False, "error": "Invalid theme"}), 400
+    current_user.theme_preference = theme
+    db.session.commit()
+    return jsonify({"ok": True, "theme": theme})
+
+
+@bp.route("/api/onboarding/complete", methods=["POST"])
+@login_required
+def complete_onboarding():
+    current_user.onboarding_completed = True
+    db.session.commit()
+    return jsonify({"ok": True})
+
+
+@bp.route("/api/onboarding/reset", methods=["POST"])
+@login_required
+def reset_onboarding():
+    current_user.onboarding_completed = False
+    db.session.commit()
+    return jsonify({"ok": True})

@@ -17,6 +17,37 @@
   <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.1/src/light/style.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/app.css') }}?v=2.2">
+  <script>
+    (function() {
+      try {
+        var t = localStorage.getItem('em_theme') || '{{ current_user.theme_preference if current_user.is_authenticated and current_user.theme_preference else "light" }}';
+        if (t === 'dark') {
+          document.documentElement.setAttribute('data-theme', 'dark');
+          document.documentElement.setAttribute('data-bs-theme', 'dark');
+        }
+        var sc = localStorage.getItem('em_scheme');
+        if (sc) document.documentElement.setAttribute('data-scheme', sc);
+        var fn = localStorage.getItem('em_font');
+        if (fn) document.documentElement.setAttribute('data-font', fn);
+        var fs = localStorage.getItem('em_font_scale');
+        if (fs) document.documentElement.style.setProperty('--font-scale', (fs / 100).toString());
+        if (localStorage.getItem('em_high_contrast') === 'true') document.documentElement.classList.add('high-contrast');
+        if (localStorage.getItem('em_reduce_motion') === 'true') document.documentElement.classList.add('reduce-motion');
+      } catch(e) {}
+    })();
+  </script>
+  <meta id="ux-config"
+        data-auth="{{ '1' if current_user.is_authenticated else '0' }}"
+        data-admin="{{ '1' if current_user.is_authenticated and current_user.is_admin else '0' }}"
+        data-onboarding="{{ '1' if current_user.is_authenticated and current_user.onboarding_completed else '0' }}"
+        data-csrf="{{ csrf_token() }}"
+        data-theme-url="{{ url_for('main.save_theme_preference') if current_user.is_authenticated else '' }}"
+        data-onboard-done-url="{{ url_for('main.complete_onboarding') if current_user.is_authenticated else '' }}"
+        data-dash-url="{{ url_for('admin.dashboard') if current_user.is_authenticated and current_user.is_admin else (url_for('main.dashboard') if current_user.is_authenticated else url_for('main.index')) }}"
+        data-lessons-url="{{ url_for('learning.lessons') }}"
+        data-vocab-url="{{ url_for('learning.vocabulary') }}"
+        data-quiz-url="{{ url_for('learning.quiz_dashboard') }}"
+        data-exams-url="{{ url_for('exams.exam_list') }}">
 </head>
 <body class="{% block body_class %}{% endblock %}">
   <a class="skip-link" href="#main-content">Nhảy thẳng vào nội dung chính</a>
@@ -79,6 +110,14 @@
             <span class="topbar-pill-value">{{ streak_stat.current_streak }}</span>
           </div>
           {% endif %}
+
+          <!-- Quick Theme Toggle & Theme Settings Buttons -->
+          <button type="button" class="topbar-icon-btn" data-theme-toggle title="Chuyển đổi Chế độ Sáng / Tối (Phím T)" aria-label="Chuyển đổi giao diện sáng tối">
+            <i class="ph-bold ph-moon"></i>
+          </button>
+          <button type="button" class="topbar-icon-btn d-none d-sm-inline-flex" data-bs-toggle="modal" data-bs-target="#themeModal" title="Tùy biến bảng màu & Trợ năng" aria-label="Tùy biến giao diện">
+            <i class="ph-bold ph-palette"></i>
+          </button>
 
           <!-- Notification bell -->
           <div class="dropdown">
@@ -249,6 +288,11 @@
             <li class="nav-item"><a class="nav-link" href="{{ url_for('main.index') }}">Trang chủ</a></li>
             <li class="nav-item"><a class="nav-link" href="{{ url_for('main.how_to_learn') }}">Cách học</a></li>
             <li class="nav-item"><a class="nav-link" href="{{ url_for('main.faq') }}">FAQ</a></li>
+            <li class="nav-item d-flex align-items-center me-lg-2">
+              <button type="button" class="btn btn-light btn-sm rounded-circle p-2 d-flex align-items-center justify-content-center" data-theme-toggle title="Chuyển đổi Chế độ Sáng / Tối (T)" aria-label="Chuyển đổi giao diện">
+                <i class="ph-bold ph-moon"></i>
+              </button>
+            </li>
             <li class="nav-item"><a class="nav-link" href="{{ url_for('auth.login') }}">Đăng nhập</a></li>
             <li class="nav-item"><a class="btn btn-primary btn-sm ms-lg-2 px-3" href="{{ url_for('auth.register') }}">Đăng ký miễn phí</a></li>
           </ul>
@@ -374,6 +418,9 @@
 
   {% include "_session_warning_modal.html" %}
   {% include "partials/_command_palette.html" %}
+  {% include "partials/_shortcuts_modal.html" %}
+  {% include "partials/_user_support_modal.html" %}
+  {% include "partials/_theme_modal.html" %}
   {% if current_user.is_authenticated and not current_user.is_admin %}
   {% include "_streak_modal.html" %}
   {% include "_goal_reminder_modal.html" %}
@@ -383,6 +430,7 @@
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
   <script src="{{ url_for('static', filename='js/app.js') }}"></script>
   <script src="{{ url_for('static', filename='js/a11y.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/ux.js') }}"></script>
   {% if current_user.is_authenticated and not current_user.is_admin %}
   <script src="{{ url_for('static', filename='js/vocab_notifications.js') }}"></script>
   {% endif %}

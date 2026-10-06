@@ -1,0 +1,231 @@
+<!-- Theme Customizer & Preview Modal (Tùy biến chủ đề & Trợ năng) -->
+<div class="modal fade" id="themeModal" tabindex="-1" aria-labelledby="themeModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered" style="max-width: 620px;">
+    <div class="modal-content border-0 rounded-4 shadow-lg overflow-hidden">
+      <div class="modal-header border-0 pb-0 pt-4 px-4 d-flex justify-content-between align-items-center">
+        <div class="d-flex align-items-center gap-2">
+          <div class="rounded-circle bg-primary-subtle text-primary p-2 d-flex align-items-center justify-content-center" style="width: 38px; height: 38px;">
+            <i class="ph-bold ph-palette fs-5"></i>
+          </div>
+          <div>
+            <h5 class="modal-title fw-bold text-dark mb-0" id="themeModalLabel">Tùy biến Giao diện & Chủ đề</h5>
+            <span class="text-muted small" style="font-size: 0.78rem;">Cá nhân hóa trải nghiệm học tập, màu sắc và độ tương phản</span>
+          </div>
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
+      </div>
+
+      <div class="modal-body p-4">
+        <!-- 1. Mode Switch: Light vs Dark -->
+        <div class="mb-4">
+          <label class="fw-bold text-dark small text-uppercase mb-2 d-block" style="font-size: 0.75rem; letter-spacing: 0.05em;">Chế độ Hiển thị</label>
+          <div class="row g-2">
+            <div class="col-6">
+              <button type="button" class="btn w-100 p-3 rounded-3 border text-start d-flex align-items-center justify-content-between theme-mode-card" data-mode-val="light" onclick="setThemeMode('light')">
+                <div class="d-flex align-items-center gap-2.5">
+                  <i class="ph-bold ph-sun text-warning fs-4"></i>
+                  <div>
+                    <strong class="d-block text-dark small">Giao diện Sáng</strong>
+                    <span class="text-muted small" style="font-size: 0.72rem;">Chuẩn ban ngày</span>
+                  </div>
+                </div>
+                <i class="ph-bold ph-check-circle fs-5 text-primary mode-check-icon d-none" id="checkLight"></i>
+              </button>
+            </div>
+            <div class="col-6">
+              <button type="button" class="btn w-100 p-3 rounded-3 border text-start d-flex align-items-center justify-content-between theme-mode-card" data-mode-val="dark" onclick="setThemeMode('dark')">
+                <div class="d-flex align-items-center gap-2.5">
+                  <i class="ph-bold ph-moon-stars text-info fs-4"></i>
+                  <div>
+                    <strong class="d-block text-dark small">Giao diện Tối</strong>
+                    <span class="text-muted small" style="font-size: 0.72rem;">Êm dịu ban đêm</span>
+                  </div>
+                </div>
+                <i class="ph-bold ph-check-circle fs-5 text-primary mode-check-icon d-none" id="checkDark"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- 2. Color Schemes (Màu sắc chủ đạo) -->
+        <div class="mb-4">
+          <label class="fw-bold text-dark small text-uppercase mb-2 d-block" style="font-size: 0.75rem; letter-spacing: 0.05em;">Bảng màu Chủ đạo (Color Scheme)</label>
+          <div class="d-flex gap-2.5 flex-wrap">
+            <button type="button" class="btn rounded-pill px-3 py-1.5 border d-flex align-items-center gap-2 scheme-btn active" data-scheme="emerald" onclick="setScheme('emerald')">
+              <span class="rounded-circle" style="width: 14px; height: 14px; background: #059669;"></span>
+              <span class="small fw-semibold">Emerald (Mặc định)</span>
+            </button>
+            <button type="button" class="btn rounded-pill px-3 py-1.5 border d-flex align-items-center gap-2 scheme-btn" data-scheme="ocean" onclick="setScheme('ocean')">
+              <span class="rounded-circle" style="width: 14px; height: 14px; background: #0284c7;"></span>
+              <span class="small fw-semibold">Ocean Blue</span>
+            </button>
+            <button type="button" class="btn rounded-pill px-3 py-1.5 border d-flex align-items-center gap-2 scheme-btn" data-scheme="sunset" onclick="setScheme('sunset')">
+              <span class="rounded-circle" style="width: 14px; height: 14px; background: #ea580c;"></span>
+              <span class="small fw-semibold">Sunset Orange</span>
+            </button>
+            <button type="button" class="btn rounded-pill px-3 py-1.5 border d-flex align-items-center gap-2 scheme-btn" data-scheme="purple" onclick="setScheme('purple')">
+              <span class="rounded-circle" style="width: 14px; height: 14px; background: #8b5cf6;"></span>
+              <span class="small fw-semibold">Royal Purple</span>
+            </button>
+            <button type="button" class="btn rounded-pill px-3 py-1.5 border d-flex align-items-center gap-2 scheme-btn" data-scheme="rose" onclick="setScheme('rose')">
+              <span class="rounded-circle" style="width: 14px; height: 14px; background: #e11d48;"></span>
+              <span class="small fw-semibold">Rose Pink</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- 3. Font Options & Font Scale -->
+        <div class="row g-3 mb-4">
+          <div class="col-6">
+            <label class="fw-bold text-dark small text-uppercase mb-2 d-block" style="font-size: 0.75rem; letter-spacing: 0.05em;">Kiểu Font chữ</label>
+            <select class="form-select form-select-sm bg-light border fw-medium rounded-3" id="themeFontSelect" onchange="setFontFamily(this.value)">
+              <option value="manrope" selected>Manrope (Hiện đại, sắc nét)</option>
+              <option value="system">System UI (Hệ điều hành)</option>
+              <option value="serif">Serif (Trang nhã)</option>
+              <option value="dyslexic">OpenDyslexic (Dễ đọc chống loạn thị)</option>
+            </select>
+          </div>
+          <div class="col-6">
+            <label class="fw-bold text-dark small text-uppercase mb-2 d-block" style="font-size: 0.75rem; letter-spacing: 0.05em;">Cỡ chữ hiển thị</label>
+            <select class="form-select form-select-sm bg-light border fw-medium rounded-3" id="themeFontScaleSelect" onchange="setFontScale(this.value)">
+              <option value="90">Nhỏ (90%)</option>
+              <option value="100" selected>Chuẩn (100%)</option>
+              <option value="110">Lớn (110%)</option>
+              <option value="120">Rất lớn (120%)</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- 4. Accessibility Options -->
+        <div class="mb-4">
+          <label class="fw-bold text-dark small text-uppercase mb-2 d-block" style="font-size: 0.75rem; letter-spacing: 0.05em;">Trợ năng Nâng cao (Accessibility)</label>
+          <div class="d-flex flex-column gap-2">
+            <div class="d-flex justify-content-between align-items-center p-2.5 rounded-3 bg-light border">
+              <div>
+                <strong class="d-block text-dark small">Độ tương phản cao (High Contrast)</strong>
+                <span class="text-muted small" style="font-size: 0.72rem;">Làm đậm đường viền và tăng độ tương phản chữ</span>
+              </div>
+              <div class="form-check form-switch m-0">
+                <input class="form-check-input fs-5" type="checkbox" id="checkHighContrast" onchange="toggleHighContrast(this.checked)">
+              </div>
+            </div>
+            <div class="d-flex justify-content-between align-items-center p-2.5 rounded-3 bg-light border">
+              <div>
+                <strong class="d-block text-dark small">Giảm chuyển động (Reduce Motion)</strong>
+                <span class="text-muted small" style="font-size: 0.72rem;">Tắt các hoạt ảnh chuyển động phức tạp</span>
+              </div>
+              <div class="form-check form-switch m-0">
+                <input class="form-check-input fs-5" type="checkbox" id="checkReduceMotion" onchange="toggleReduceMotion(this.checked)">
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 5. Theme Preview Card (Xem trước giao diện) -->
+        <div>
+          <label class="fw-bold text-dark small text-uppercase mb-2 d-block" style="font-size: 0.75rem; letter-spacing: 0.05em;">Xem trước Trực tiếp (Theme Preview)</label>
+          <div class="p-3 rounded-3 border preview-card bg-surface">
+            <div class="d-flex align-items-center justify-content-between mb-2">
+              <span class="badge bg-primary text-white rounded-pill px-2.5 py-0.5 small fw-semibold">Flashcard Demo</span>
+              <span class="text-muted small">Cấp độ A1 &bull; Từ vựng</span>
+            </div>
+            <h6 class="fw-bold text-dark mb-1">Perseverance /ˌpɜː.sɪˈvɪə.rəns/</h6>
+            <p class="text-secondary small mb-2">Tính kiên trì, bền bỉ vượt qua khó khăn để đạt mục tiêu.</p>
+            <div class="d-flex gap-2">
+              <button type="button" class="btn btn-primary btn-sm rounded-pill px-3 fw-bold">Đã thuộc</button>
+              <button type="button" class="btn btn-light border btn-sm rounded-pill px-3">Ôn lại sau</button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="modal-footer border-0 p-3 pt-0 bg-light-subtle d-flex justify-content-between">
+        <button type="button" class="btn btn-outline-secondary btn-sm rounded-pill px-3" onclick="resetThemeSettings()">Khôi phục mặc định</button>
+        <button type="button" class="btn btn-primary btn-sm rounded-pill px-4 fw-bold" data-bs-dismiss="modal">Hoàn tất</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+function updateThemeUI() {
+  const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+  document.getElementById('checkLight').classList.toggle('d-none', isDark);
+  document.getElementById('checkDark').classList.toggle('d-none', !isDark);
+
+  const scheme = localStorage.getItem('em_scheme') || 'emerald';
+  document.querySelectorAll('.scheme-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.getAttribute('data-scheme') === scheme);
+  });
+
+  const font = localStorage.getItem('em_font') || 'manrope';
+  document.getElementById('themeFontSelect').value = font;
+
+  const scale = localStorage.getItem('em_font_scale') || '100';
+  document.getElementById('themeFontScaleSelect').value = scale;
+
+  const hc = localStorage.getItem('em_high_contrast') === 'true';
+  document.getElementById('checkHighContrast').checked = hc;
+
+  const rm = localStorage.getItem('em_reduce_motion') === 'true';
+  document.getElementById('checkReduceMotion').checked = rm;
+}
+
+function setThemeMode(mode) {
+  if (window.EnglishMateUX) {
+    window.EnglishMateUX.setTheme(mode);
+  }
+  updateThemeUI();
+}
+
+function setScheme(scheme) {
+  document.documentElement.setAttribute('data-scheme', scheme);
+  try { localStorage.setItem('em_scheme', scheme); } catch(e){}
+  updateThemeUI();
+}
+
+function setFontFamily(font) {
+  document.documentElement.setAttribute('data-font', font);
+  try { localStorage.setItem('em_font', font); } catch(e){}
+}
+
+function setFontScale(scale) {
+  document.documentElement.style.setProperty('--font-scale', (scale / 100).toString());
+  try { localStorage.setItem('em_font_scale', scale); } catch(e){}
+}
+
+function toggleHighContrast(enabled) {
+  document.documentElement.classList.toggle('high-contrast', enabled);
+  try { localStorage.setItem('em_high_contrast', enabled); } catch(e){}
+}
+
+function toggleReduceMotion(enabled) {
+  document.documentElement.classList.toggle('reduce-motion', enabled);
+  try { localStorage.setItem('em_reduce_motion', enabled); } catch(e){}
+}
+
+function resetThemeSettings() {
+  setThemeMode('light');
+  setScheme('emerald');
+  setFontFamily('manrope');
+  setFontScale('100');
+  toggleHighContrast(false);
+  toggleReduceMotion(false);
+  updateThemeUI();
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  try {
+    const scheme = localStorage.getItem('em_scheme');
+    if (scheme) document.documentElement.setAttribute('data-scheme', scheme);
+    const font = localStorage.getItem('em_font');
+    if (font) document.documentElement.setAttribute('data-font', font);
+    const scale = localStorage.getItem('em_font_scale');
+    if (scale) document.documentElement.style.setProperty('--font-scale', (scale / 100).toString());
+    if (localStorage.getItem('em_high_contrast') === 'true') document.documentElement.classList.add('high-contrast');
+    if (localStorage.getItem('em_reduce_motion') === 'true') document.documentElement.classList.add('reduce-motion');
+  } catch(e){}
+  updateThemeUI();
+});
+</script>

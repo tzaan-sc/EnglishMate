@@ -153,7 +153,7 @@
             {% for opt_key, opt_val in [('A', current_question.option_a), ('B', current_question.option_b), ('C', current_question.option_c), ('D', current_question.option_d)] %}
             <label class="card border p-3 rounded-4 cursor-pointer option-pill transition {{ 'border-primary bg-primary-subtle' if curr_ans == opt_key else 'hover-bg-light' }}">
               <div class="d-flex align-items-center gap-3">
-                <input class="form-check-input option-radio fs-5 my-0" type="radio" name="option" value="{{ opt_key }}" {{ 'checked' if curr_ans == opt_key }}>
+                <input class="form-check-input option-radio fs-5 my-0" type="radio" name="option" value="{{ opt_key }}" data-shortcut-option="{{ loop.index }}" {{ 'checked' if curr_ans == opt_key }}>
                 <span class="fw-bold fs-5 text-primary">{{ opt_key }}.</span>
                 <span class="fs-6 text-dark fw-medium">{{ opt_val }}</span>
               </div>
@@ -165,13 +165,13 @@
 
         <!-- Navigation Buttons Bottom Bar -->
         <div class="d-flex justify-content-between align-items-center pt-3 border-top">
-          <a href="{{ url_for('learning.quiz_take', quiz_id=quiz_id, q_idx=current_idx - 1) }}" 
+          <a href="{{ url_for('learning.quiz_take', quiz_id=quiz_id, q_idx=current_idx - 1) }}" data-shortcut="prev" title="Câu trước (←)"
              class="btn btn-outline-secondary rounded-pill px-4 fw-bold {{ 'disabled' if current_idx == 0 }}">
             ← Câu trước
           </a>
 
           {% if current_idx < total_questions - 1 %}
-          <a href="{{ url_for('learning.quiz_take', quiz_id=quiz_id, q_idx=current_idx + 1) }}" 
+          <a href="{{ url_for('learning.quiz_take', quiz_id=quiz_id, q_idx=current_idx + 1) }}" data-shortcut="next" title="Câu tiếp theo (→)"
              class="btn btn-primary rounded-pill px-4 fw-bold">
             Câu tiếp theo →
           </a>
