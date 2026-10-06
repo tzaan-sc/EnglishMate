@@ -7,4 +7,4 @@ from . import routes_system
 from . import routes_errors
 from . import routes_apm
 from . import routes_monitoring
-
+from . import routes_data_quality

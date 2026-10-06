@@ -1,0 +1,523 @@
+{% extends "base.html" %}
+
+{% block title %}Chất lượng Dữ liệu & Data Profiling - EnglishMate Admin{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4 max-w-7xl">
+    <!-- Breadcrumb -->
+    <nav class="app-breadcrumb mb-3" aria-label="breadcrumb">
+        <ol class="breadcrumb mb-0 align-items-center flex-wrap">
+            <li class="breadcrumb-item">
+                <a href="{{ url_for('admin.dashboard') }}" class="d-inline-flex align-items-center gap-1">
+                    <i class="ph ph-house"></i>
+                    <span>Admin</span>
+                </a>
+            </li>
+            <li class="breadcrumb-item active" aria-current="page">
+                <span>Chất lượng Dữ liệu (Data Quality)</span>
+            </li>
+        </ol>
+    </nav>
+
+    <!-- Header & Action Buttons -->
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
+        <div>
+            <h2 class="fw-bold text-dark mb-1 d-flex align-items-center gap-2">
+                <i class="ph-bold ph-seal-check text-success"></i>
+                <span>Chất lượng & Phân tích Dữ liệu</span>
+            </h2>
+            <p class="text-muted small mb-0">
+                Data Profiling, Thước đo tiêu chí chuẩn hóa, Giám sát lỗi và Tự động bổ sung phiên âm / ví dụ.
+            </p>
+        </div>
+        <div class="d-flex gap-2 flex-wrap align-items-center">
+            <a href="{{ url_for('admin.data_quality_report', format='json') }}" target="_blank" class="btn btn-light border rounded-pill px-3 py-2 fw-semibold text-secondary d-flex align-items-center gap-1.5 shadow-2xs">
+                <i class="ph-bold ph-file-code text-primary"></i>
+                <span>Xuất JSON Report</span>
+            </a>
+            <button type="button" class="btn btn-outline-primary rounded-pill px-3.5 py-2 fw-bold d-flex align-items-center gap-1.5 shadow-2xs" id="btnRescan" onclick="triggerQualityScan()">
+                <i class="ph-bold ph-arrows-clockwise"></i>
+                <span>Quét lại toàn bộ CSDL</span>
+            </button>
+            <button type="button" class="btn btn-primary rounded-pill px-4 py-2 fw-bold shadow-xs d-flex align-items-center gap-2" id="btnBatchEnrich" onclick="triggerBatchAutofill()">
+                <i class="ph-bold ph-sparkle"></i>
+                <span>Tự động Cải thiện Hàng loạt</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- 1. KPI Summary Cards -->
+    <div class="row g-3 mb-4">
+        <div class="col-12 col-sm-6 col-xl-3">
+            <div class="card border-0 rounded-4 shadow-sm p-3.5 bg-surface h-100">
+                <div class="d-flex align-items-center justify-content-between mb-2">
+                    <span class="text-muted small fw-bold text-uppercase" style="font-size: 0.72rem; letter-spacing: 0.05em;">Độ Sức Khỏe Dữ liệu</span>
+                    <div class="rounded-circle {% if summary.health_score >= 80 %}bg-success-subtle text-success{% elif summary.health_score >= 60 %}bg-warning-subtle text-warning{% else %}bg-danger-subtle text-danger{% endif %} p-2 d-flex align-items-center justify-content-center" style="width: 36px; height: 36px;">
+                        <i class="ph-bold ph-heartbeat fs-5"></i>
+                    </div>
+                </div>
+                <div class="d-flex align-items-baseline gap-2">
+                    <h2 class="fw-bold text-dark mb-0 fs-2">{{ summary.health_score }}%</h2>
+                    <span class="badge {% if summary.health_score >= 80 %}bg-success{% elif summary.health_score >= 60 %}bg-warning text-dark{% else %}bg-danger{% endif %} rounded-pill small">
+                        {% if summary.health_score >= 80 %}Tuyệt vời{% elif summary.health_score >= 60 %}Khá{% else %}Cần xử lý{% endif %}
+                    </span>
+                </div>
+                <div class="progress mt-2.5 rounded-pill" style="height: 6px;">
+                    <div class="progress-bar {% if summary.health_score >= 80 %}bg-success{% elif summary.health_score >= 60 %}bg-warning{% else %}bg-danger{% endif %}" role="progressbar" style="width: {{ summary.health_score }}%;"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 col-sm-6 col-xl-3">
+            <div class="card border-0 rounded-4 shadow-sm p-3.5 bg-surface h-100">
+                <div class="d-flex align-items-center justify-content-between mb-2">
+                    <span class="text-muted small fw-bold text-uppercase" style="font-size: 0.72rem; letter-spacing: 0.05em;">Tổng Bản ghi Phân tích</span>
+                    <div class="rounded-circle bg-primary-subtle text-primary p-2 d-flex align-items-center justify-content-center" style="width: 36px; height: 36px;">
+                        <i class="ph-bold ph-database fs-5"></i>
+                    </div>
+                </div>
+                <h2 class="fw-bold text-dark mb-1 fs-2">{{ summary.total_records }}</h2>
+                <div class="text-muted small d-flex gap-2 flex-wrap" style="font-size: 0.78rem;">
+                    <span>{{ profiling.vocabulary.total }} Từ vựng</span> &bull;
+                    <span>{{ profiling.questions.total }} Câu hỏi</span> &bull;
+                    <span>{{ profiling.lessons.total }} Bài học</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 col-sm-6 col-xl-3">
+            <div class="card border-0 rounded-4 shadow-sm p-3.5 bg-surface h-100">
+                <div class="d-flex align-items-center justify-content-between mb-2">
+                    <span class="text-muted small fw-bold text-uppercase" style="font-size: 0.72rem; letter-spacing: 0.05em;">Tỉ lệ Khiếm khuyết (Defect)</span>
+                    <div class="rounded-circle {% if summary.defect_rate <= 10 %}bg-success-subtle text-success{% elif summary.defect_rate <= 25 %}bg-warning-subtle text-warning{% else %}bg-danger-subtle text-danger{% endif %} p-2 d-flex align-items-center justify-content-center" style="width: 36px; height: 36px;">
+                        <i class="ph-bold ph-warning-circle fs-5"></i>
+                    </div>
+                </div>
+                <div class="d-flex align-items-baseline gap-2">
+                    <h2 class="fw-bold text-dark mb-0 fs-2">{{ summary.defect_rate }}%</h2>
+                    <span class="text-muted small">({{ summary.total_defective }} mục lỗi)</span>
+                </div>
+                <div class="text-muted small mt-1" style="font-size: 0.76rem;">
+                    {{ summary.counts.vocab_issues }} từ vựng &bull; {{ summary.counts.question_issues }} câu hỏi &bull; {{ summary.counts.lesson_issues }} bài học
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 col-sm-6 col-xl-3">
+            <div class="card border-0 rounded-4 shadow-sm p-3.5 bg-surface h-100">
+                <div class="d-flex align-items-center justify-content-between mb-2">
+                    <span class="text-muted small fw-bold text-uppercase" style="font-size: 0.72rem; letter-spacing: 0.05em;">Chất lượng Từ vựng TB</span>
+                    <div class="rounded-circle bg-info-subtle text-info p-2 d-flex align-items-center justify-content-center" style="width: 36px; height: 36px;">
+                        <i class="ph-bold ph-chart-bar fs-5"></i>
+                    </div>
+                </div>
+                <h2 class="fw-bold text-dark mb-1 fs-2">{{ summary.avg_vocab_quality }}/100</h2>
+                <div class="d-flex gap-1.5 align-items-center flex-wrap" style="font-size: 0.72rem;">
+                    <span class="badge bg-success rounded-pill px-2">Hạng A: {{ summary.vocab_grade_distribution.A }}</span>
+                    <span class="badge bg-primary rounded-pill px-2">Hạng B: {{ summary.vocab_grade_distribution.B }}</span>
+                    <span class="badge bg-warning text-dark rounded-pill px-2">Hạng C: {{ summary.vocab_grade_distribution.C }}</span>
+                    <span class="badge bg-danger rounded-pill px-2">Hạng D: {{ summary.vocab_grade_distribution.D }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 2. Data Profiling Statistics Section -->
+    <div class="row g-3 mb-4">
+        <!-- Vocabulary & Question Profiling Lengths -->
+        <div class="col-12 col-lg-7">
+            <div class="card border-0 rounded-4 shadow-sm p-4 bg-surface h-100">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="fw-bold text-dark mb-0 d-flex align-items-center gap-2">
+                        <i class="ph-bold ph-chart-pie-slice text-primary"></i>
+                        <span>Thống kê Chiều dài & Phân tích Dữ liệu (Profiling)</span>
+                    </h5>
+                    <span class="badge bg-light border text-muted small font-monospace">{{ scanned_at }}</span>
+                </div>
+
+                <div class="row g-3">
+                    <div class="col-6 col-sm-4">
+                        <div class="p-3 rounded-3 bg-light border text-center">
+                            <span class="text-muted small d-block mb-1">Độ dài Từ trung bình</span>
+                            <h4 class="fw-bold text-dark mb-0">{{ profiling.vocabulary.avg_word_length }} <span class="fs-6 fw-normal text-muted">ký tự</span></h4>
+                        </div>
+                    </div>
+                    <div class="col-6 col-sm-4">
+                        <div class="p-3 rounded-3 bg-light border text-center">
+                            <span class="text-muted small d-block mb-1">Độ dài Nghĩa TB</span>
+                            <h4 class="fw-bold text-dark mb-0">{{ profiling.vocabulary.avg_meaning_length }} <span class="fs-6 fw-normal text-muted">ký tự</span></h4>
+                        </div>
+                    </div>
+                    <div class="col-6 col-sm-4">
+                        <div class="p-3 rounded-3 bg-light border text-center">
+                            <span class="text-muted small d-block mb-1">Độ dài Ví dụ EN</span>
+                            <h4 class="fw-bold text-dark mb-0">{{ profiling.vocabulary.avg_example_length }} <span class="fs-6 fw-normal text-muted">ký tự</span></h4>
+                        </div>
+                    </div>
+                    <div class="col-6 col-sm-4">
+                        <div class="p-3 rounded-3 bg-light border text-center">
+                            <span class="text-muted small d-block mb-1">Độ dài Câu hỏi Quiz</span>
+                            <h4 class="fw-bold text-dark mb-0">{{ profiling.questions.avg_question_length }} <span class="fs-6 fw-normal text-muted">ký tự</span></h4>
+                        </div>
+                    </div>
+                    <div class="col-6 col-sm-4">
+                        <div class="p-3 rounded-3 bg-light border text-center">
+                            <span class="text-muted small d-block mb-1">Độ dài Lời giải thích</span>
+                            <h4 class="fw-bold text-dark mb-0">{{ profiling.questions.avg_explanation_length }} <span class="fs-6 fw-normal text-muted">ký tự</span></h4>
+                        </div>
+                    </div>
+                    <div class="col-6 col-sm-4">
+                        <div class="p-3 rounded-3 bg-light border text-center">
+                            <span class="text-muted small d-block mb-1">Độ dài Bài học TB</span>
+                            <h4 class="fw-bold text-dark mb-0">{{ profiling.lessons.avg_content_length }} <span class="fs-6 fw-normal text-muted">ký tự</span></h4>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Top Topics distribution -->
+                <div class="mt-4">
+                    <h6 class="fw-bold text-dark small text-uppercase mb-2.5" style="font-size: 0.74rem; letter-spacing: 0.05em;">Phân bố Từ vựng theo Chủ đề Hàng đầu</h6>
+                    <div class="d-flex flex-wrap gap-2">
+                        {% for topic, count in profiling.vocabulary.by_topic.items() %}
+                        <span class="badge bg-light border text-dark px-3 py-1.5 rounded-pill fw-medium d-inline-flex align-items-center gap-1.5">
+                            <span>{{ topic }}</span>
+                            <span class="badge bg-primary text-white rounded-pill px-1.5">{{ count }}</span>
+                        </span>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Distribution by Level (CEFR) & Skills -->
+        <div class="col-12 col-lg-5">
+            <div class="card border-0 rounded-4 shadow-sm p-4 bg-surface h-100">
+                <h5 class="fw-bold text-dark mb-3 d-flex align-items-center gap-2">
+                    <i class="ph-bold ph-stack text-warning"></i>
+                    <span>Độ phủ theo Cấp độ (CEFR Coverage)</span>
+                </h5>
+
+                <div class="d-flex flex-column gap-3 mb-3">
+                    {% for lvl in ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'] %}
+                    {% set v_cnt = profiling.vocabulary.by_level.get(lvl, 0) %}
+                    {% set q_cnt = profiling.questions.by_level.get(lvl, 0) %}
+                    {% set l_cnt = profiling.lessons.by_level.get(lvl, 0) %}
+                    <div>
+                        <div class="d-flex justify-content-between align-items-center mb-1 small">
+                            <strong class="text-dark">Cấp độ {{ lvl }}</strong>
+                            <span class="text-muted font-monospace" style="font-size: 0.78rem;">
+                                {{ v_cnt }} từ &bull; {{ q_cnt }} câu &bull; {{ l_cnt }} bài học
+                            </span>
+                        </div>
+                        <div class="progress rounded-pill" style="height: 6px;">
+                            {% set total_lvl = v_cnt + q_cnt + l_cnt %}
+                            {% set pct = [100, (total_lvl / (summary.total_records or 1) * 100 * 2.5)|int]|min %}
+                            <div class="progress-bar bg-primary" style="width: {{ pct }}%;"></div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 3. Quality Issue Monitoring & Reports Tabs -->
+    <div class="card border-0 rounded-4 shadow-sm bg-surface overflow-hidden">
+        <div class="card-header bg-surface border-bottom p-3.5">
+            <div class="d-flex flex-column flex-sm-row justify-content-between align-items-sm-center gap-2">
+                <ul class="nav nav-pills gap-2" id="qualityTabs" role="tablist">
+                    <li class="nav-item">
+                        <button class="nav-link active rounded-pill px-3.5 py-1.5 fw-bold small d-flex align-items-center gap-1.5" id="tab-vocab-btn" data-bs-toggle="pill" data-bs-target="#tab-vocab" type="button">
+                            <i class="ph-bold ph-book"></i>
+                            <span>Từ vựng cần chuẩn hóa</span>
+                            <span class="badge bg-danger rounded-pill ms-1">{{ vocab_issues|length }}</span>
+                        </button>
+                    </li>
+                    <li class="nav-item">
+                        <button class="nav-link rounded-pill px-3.5 py-1.5 fw-bold small d-flex align-items-center gap-1.5" id="tab-questions-btn" data-bs-toggle="pill" data-bs-target="#tab-questions" type="button">
+                            <i class="ph-bold ph-question"></i>
+                            <span>Câu hỏi trắc nghiệm lỗi</span>
+                            <span class="badge bg-warning text-dark rounded-pill ms-1">{{ question_issues|length }}</span>
+                        </button>
+                    </li>
+                    <li class="nav-item">
+                        <button class="nav-link rounded-pill px-3.5 py-1.5 fw-bold small d-flex align-items-center gap-1.5" id="tab-lessons-btn" data-bs-toggle="pill" data-bs-target="#tab-lessons" type="button">
+                            <i class="ph-bold ph-article"></i>
+                            <span>Bài học chưa đạt chuẩn</span>
+                            <span class="badge bg-secondary rounded-pill ms-1">{{ lesson_issues|length }}</span>
+                        </button>
+                    </li>
+                </ul>
+                <div class="input-group input-group-sm" style="max-width: 240px;">
+                    <span class="input-group-text bg-light border-0"><i class="ph ph-magnifying-glass"></i></span>
+                    <input type="text" class="form-control bg-light border-0" id="issueSearchInput" placeholder="Lọc từ khóa..." oninput="filterIssueRows(this.value)">
+                </div>
+            </div>
+        </div>
+
+        <div class="tab-content p-0" id="qualityTabContent">
+            <!-- Tab 1: Vocabulary Issues -->
+            <div class="tab-pane fade show active" id="tab-vocab" role="tabpanel">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0" id="vocabIssueTable">
+                        <thead class="table-light">
+                            <tr class="small text-muted text-uppercase">
+                                <th class="ps-4" style="width: 180px;">Từ vựng</th>
+                                <th style="width: 110px;">Cấp độ & Từ loại</th>
+                                <th style="width: 120px;">Điểm Chất lượng</th>
+                                <th>Chi tiết Khiếm khuyết / Thiếu sót</th>
+                                <th class="text-end pe-4" style="width: 180px;">Hành động Cải thiện</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% if vocab_issues %}
+                            {% for v in vocab_issues %}
+                            <tr class="issue-row" data-search-text="{{ v.word }} {{ v.level }} {{ v.missing|join(' ') }}" id="vocab-row-{{ v.id }}">
+                                <td class="ps-4">
+                                    <div class="fw-bold text-dark fs-6">{{ v.word }}</div>
+                                    <div class="text-muted small font-monospace">{{ v.pronunciation or '(chưa có phiên âm)' }}</div>
+                                </td>
+                                <td>
+                                    <span class="badge bg-light border text-dark rounded-pill">{{ v.level }}</span>
+                                    <span class="badge bg-secondary-subtle text-secondary rounded-pill small">{{ v.part_of_speech }}</span>
+                                </td>
+                                <td>
+                                    <span class="badge {{ v.badge_class }} rounded-pill px-2.5 py-1 fw-bold">
+                                        Hạng {{ v.grade }} ({{ v.score }}đ)
+                                    </span>
+                                </td>
+                                <td>
+                                    <div class="d-flex flex-wrap gap-1">
+                                        {% for m in v.missing %}
+                                        <span class="badge bg-danger-subtle text-danger border border-danger-subtle rounded-pill small py-0.5 px-2">
+                                            <i class="ph-bold ph-warning-circle me-0.5"></i> {{ m }}
+                                        </span>
+                                        {% endfor %}
+                                    </div>
+                                </td>
+                                <td class="text-end pe-4">
+                                    <button type="button" class="btn btn-sm btn-primary rounded-pill px-3 fw-bold shadow-2xs d-inline-flex align-items-center gap-1 btn-autofill" onclick="autofillSingleVocab({{ v.id }}, this)">
+                                        <i class="ph-bold ph-magic-wand"></i>
+                                        <span>Tự động điền</span>
+                                    </button>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                            {% else %}
+                            <tr>
+                                <td colspan="5" class="text-center py-5 text-muted">
+                                    <i class="ph-bold ph-check-circle fs-1 text-success d-block mb-2"></i>
+                                    <h6 class="fw-bold text-dark">Toàn bộ từ vựng đã đạt chuẩn chất lượng cao!</h6>
+                                </td>
+                            </tr>
+                            {% endif %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Tab 2: Question Issues -->
+            <div class="tab-pane fade" id="tab-questions" role="tabpanel">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0" id="questionIssueTable">
+                        <thead class="table-light">
+                            <tr class="small text-muted text-uppercase">
+                                <th class="ps-4" style="width: 90px;">ID</th>
+                                <th>Nội dung Câu hỏi</th>
+                                <th style="width: 140px;">Cấp độ & Chủ đề</th>
+                                <th>Các lỗi phát hiện</th>
+                                <th class="text-end pe-4" style="width: 130px;">Đáp án hiện tại</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% if question_issues %}
+                            {% for q in question_issues %}
+                            <tr class="issue-row" data-search-text="{{ q.question_text }} {{ q.level }} {{ q.topic }} {{ q.issues|join(' ') }}">
+                                <td class="ps-4 font-monospace small">#{{ q.id }}</td>
+                                <td>
+                                    <div class="fw-semibold text-dark">{{ q.question_text }}</div>
+                                </td>
+                                <td>
+                                    <span class="badge bg-light border text-dark rounded-pill">{{ q.level }}</span>
+                                    <span class="badge bg-primary-subtle text-primary rounded-pill small">{{ q.topic }}</span>
+                                </td>
+                                <td>
+                                    <div class="d-flex flex-column gap-1">
+                                        {% for iss in q.issues %}
+                                        <span class="badge bg-warning-subtle text-dark-emphasis border border-warning-subtle rounded-pill py-0.5 px-2 small text-start">
+                                            <i class="ph-bold ph-warning text-warning me-1"></i> {{ iss }}
+                                        </span>
+                                        {% endfor %}
+                                    </div>
+                                </td>
+                                <td class="text-end pe-4">
+                                    <span class="badge {% if q.correct_option in ['A', 'B', 'C', 'D'] %}bg-success{% else %}bg-danger{% endif %} rounded-pill px-2.5 py-1 font-monospace fs-6">
+                                        {{ q.correct_option or 'Trống' }}
+                                    </span>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                            {% else %}
+                            <tr>
+                                <td colspan="5" class="text-center py-5 text-muted">
+                                    <i class="ph-bold ph-check-circle fs-1 text-success d-block mb-2"></i>
+                                    <h6 class="fw-bold text-dark">Toàn bộ câu hỏi trắc nghiệm hợp lệ và đầy đủ giải thích!</h6>
+                                </td>
+                            </tr>
+                            {% endif %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Tab 3: Lesson Issues -->
+            <div class="tab-pane fade" id="tab-lessons" role="tabpanel">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0" id="lessonIssueTable">
+                        <thead class="table-light">
+                            <tr class="small text-muted text-uppercase">
+                                <th class="ps-4" style="width: 90px;">ID</th>
+                                <th>Tiêu đề Bài học</th>
+                                <th style="width: 140px;">Kỹ năng & Cấp độ</th>
+                                <th>Các lỗi phát hiện</th>
+                                <th class="text-end pe-4" style="width: 120px;">Thao tác</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% if lesson_issues %}
+                            {% for l in lesson_issues %}
+                            <tr class="issue-row" data-search-text="{{ l.title }} {{ l.skill }} {{ l.level }} {{ l.issues|join(' ') }}">
+                                <td class="ps-4 font-monospace small">#{{ l.id }}</td>
+                                <td>
+                                    <div class="fw-semibold text-dark">{{ l.title }}</div>
+                                </td>
+                                <td>
+                                    <span class="badge bg-primary-subtle text-primary rounded-pill small">{{ l.skill }}</span>
+                                    <span class="badge bg-light border text-dark rounded-pill">{{ l.level }}</span>
+                                </td>
+                                <td>
+                                    <div class="d-flex flex-column gap-1">
+                                        {% for iss in l.issues %}
+                                        <span class="badge bg-danger-subtle text-danger border border-danger-subtle rounded-pill py-0.5 px-2 small text-start">
+                                            <i class="ph-bold ph-warning-circle me-1"></i> {{ iss }}
+                                        </span>
+                                        {% endfor %}
+                                    </div>
+                                </td>
+                                <td class="text-end pe-4">
+                                    <a href="{{ url_for('admin.lessons') }}" class="btn btn-sm btn-light border rounded-pill px-3 text-primary fw-semibold">
+                                        Chỉnh sửa
+                                    </a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                            {% else %}
+                            <tr>
+                                <td colspan="5" class="text-center py-5 text-muted">
+                                    <i class="ph-bold ph-check-circle fs-1 text-success d-block mb-2"></i>
+                                    <h6 class="fw-bold text-dark">Toàn bộ bài học đều đạt chuẩn độ dài và ví dụ!</h6>
+                                </td>
+                            </tr>
+                            {% endif %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function filterIssueRows(query) {
+    const q = (query || '').toLowerCase().trim();
+    document.querySelectorAll('.issue-row').forEach(row => {
+        const text = (row.getAttribute('data-search-text') || '').toLowerCase();
+        row.style.display = (!q || text.includes(q)) ? '' : 'none';
+    });
+}
+
+function triggerQualityScan() {
+    const btn = document.getElementById('btnRescan');
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Đang quét CSDL...';
+
+    fetch('/admin/data-quality/api/scan', {
+        method: 'POST',
+        headers: { 'X-CSRFToken': '{{ csrf_token() }}' }
+    })
+    .then(r => r.json())
+    .then(data => {
+        window.location.reload();
+    })
+    .catch(err => {
+        alert('Lỗi khi quét: ' + err);
+        btn.disabled = false;
+        btn.innerHTML = '<i class="ph-bold ph-arrows-clockwise"></i> <span>Quét lại toàn bộ CSDL</span>';
+    });
+}
+
+function autofillSingleVocab(vocabId, btn) {
+    btn.disabled = true;
+    const oldHTML = btn.innerHTML;
+    btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Đang điền...';
+
+    fetch(`/admin/data-quality/api/autofill/${vocabId}`, {
+        method: 'POST',
+        headers: { 'X-CSRFToken': '{{ csrf_token() }}' }
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.ok) {
+            btn.className = 'btn btn-sm btn-success rounded-pill px-3 fw-bold';
+            btn.innerHTML = '<i class="ph-bold ph-check"></i> Đã điền xong';
+            setTimeout(() => {
+                const row = document.getElementById(`vocab-row-${vocabId}`);
+                if (row) row.remove();
+            }, 1000);
+        } else {
+            alert('Lỗi: ' + (data.error || 'Không thể điền dữ liệu'));
+            btn.disabled = false;
+            btn.innerHTML = oldHTML;
+        }
+    })
+    .catch(err => {
+        alert('Lỗi kết nối: ' + err);
+        btn.disabled = false;
+        btn.innerHTML = oldHTML;
+    });
+}
+
+function triggerBatchAutofill() {
+    if (!confirm('Bạn có chắc chắn muốn chạy tự động bổ sung dữ liệu IPA và ví dụ cho các từ vựng chưa đạt chuẩn?')) return;
+
+    const btn = document.getElementById('btnBatchEnrich');
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Đang cải thiện dữ liệu...';
+
+    fetch('/admin/data-quality/api/batch-autofill', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': '{{ csrf_token() }}'
+        },
+        body: JSON.stringify({ limit: 40 })
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.ok) {
+            alert(`Đã cải thiện thành công ${data.result.improved_count}/${data.result.total_targets} từ vựng!`);
+            window.location.reload();
+        } else {
+            alert('Lỗi: ' + data.error);
+            btn.disabled = false;
+            btn.innerHTML = '<i class="ph-bold ph-sparkle"></i> <span>Tự động Cải thiện Hàng loạt</span>';
+        }
+    })
+    .catch(err => {
+        alert('Lỗi kết nối: ' + err);
+        btn.disabled = false;
+        btn.innerHTML = '<i class="ph-bold ph-sparkle"></i> <span>Tự động Cải thiện Hàng loạt</span>';
+    });
+}
+</script>
+{% endblock %}

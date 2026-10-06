@@ -621,13 +621,12 @@ MODULE 13. UI/UX FEATURES (TÍNH NĂNG GIAO DIỆN) — 14 TÍNH NĂNG CHƯA LÀ
 MODULE 14. DATA INTEGRITY & VALIDATION (TOÀN VỆN DỮ LIỆU) — 5 TÍNH NĂNG CHƯA LÀM
 ----------------------------------------------------------------------------------------------------
 
-14.3. Data Quality (5 tính năng chưa làm):
-- [ ] `Data Profiling - Phân tích dữ liệu`: Chưa có module thống kê độ phủ và độ dài trung bình của câu hỏi, từ vựng.
-- [ ] `Data Quality Metrics - Thước đo chất lượng dữ liệu`: Chưa có bộ tiêu chí tự động đánh giá từ vựng chuẩn (đầy đủ nghĩa, phát âm IPA, ví dụ, collocations).
-- [ ] `Data Quality Monitoring - Giám sát chất lượng dữ liệu`: Chưa có tính năng quét tự động tìm các câu hỏi trắc nghiệm thiếu đáp án đúng hoặc thiếu giải thích.
-- [ ] `Data Quality Reports - Báo cáo chất lượng dữ liệu`: Chưa có màn hình Admin hiển thị danh sách bài học/từ vựng chưa đạt chuẩn.
-- [ ] `Data Quality Improvement - Cải thiện chất lượng dữ liệu`: Chưa có nút bấm tự động điền phiên âm hoặc nghĩa qua API từ điển.
-- Mức độ ưu tiên: Trung bình (Medium)
+14.3. Data Quality (5/5 tính năng đã hoàn thành):
+- [x] `Data Profiling - Phân tích dữ liệu`: Module thống kê toàn diện độ phủ theo cấp độ CEFR, chủ đề, từ loại và độ dài trung bình của câu hỏi, từ vựng, bài học kèm API `/admin/data-quality/api/profile`. (Ưu tiên: Trung bình)
+- [x] `Data Quality Metrics - Thước đo chất lượng dữ liệu`: Bộ tiêu chí tự động chấm điểm và đánh giá từ vựng chuẩn (đầy đủ nghĩa, phát âm IPA, ví dụ EN/VI, collocations, synonyms, antonyms, hình ảnh) phân hạng A/B/C/D qua hàm `evaluate_vocab_quality()`. (Ưu tiên: Trung bình)
+- [x] `Data Quality Monitoring - Giám sát chất lượng dữ liệu`: Công cụ quét tự động quét lỗi toàn CSDL tìm câu hỏi trắc nghiệm thiếu đáp án đúng / giải thích / trùng lặp đáp án, và bài học thiếu nội dung / ví dụ qua API `/admin/data-quality/api/scan`. (Ưu tiên: Trung bình)
+- [x] `Data Quality Reports - Báo cáo chất lượng dữ liệu`: Màn hình Admin `admin/data_quality.html` hiển thị KPI sức khỏe dữ liệu, phân loại tab lỗi trực quan kèm tính năng xuất báo cáo JSON `/admin/data-quality/report?format=json`. (Ưu tiên: Trung bình)
+- [x] `Data Quality Improvement - Cải thiện chất lượng dữ liệu`: Tính năng tự động điền phiên âm IPA, ví dụ và từ đồng nghĩa qua Dictionary API và batch enrich `/admin/data-quality/api/batch-autofill` 1-click. (Ưu tiên: Trung bình)
 
 ----------------------------------------------------------------------------------------------------
 MODULE 15. ERROR HANDLING & RECOVERY (XỬ LÝ LỖI & PHỤC HỒI) — 13 TÍNH NĂNG CHƯA LÀM

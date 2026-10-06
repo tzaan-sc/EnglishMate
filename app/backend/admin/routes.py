@@ -1705,8 +1705,20 @@ from .system_monitor_service import (
 from .alert_service import (
     alert_service,
 )
-from .log_analysis_service import (
-    log_analysis_service,
+from .routes_data_quality import (
+    data_quality_dashboard,
+    data_quality_report,
+    api_data_profiling,
+    api_data_quality_scan,
+    api_autofill_vocab,
+    api_batch_autofill_vocab,
+)
+from .data_quality_service import (
+    get_data_profiling,
+    evaluate_vocab_quality,
+    scan_data_quality_issues,
+    autofill_vocab_data,
+    batch_autofill_substandard_vocab,
 )
 
 
