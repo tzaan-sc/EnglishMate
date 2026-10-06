@@ -149,6 +149,11 @@
             </button>
         </li>
         <li class="nav-item" role="presentation">
+            <button class="nav-link rounded-pill px-4 py-2" id="tab-patterns-btn" data-bs-toggle="pill" data-bs-target="#tab-patterns" type="button" role="tab">
+                <i class="ph ph-tree-structure me-2"></i> Mẫu Lỗi Tương Tự (Patterns)
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
             <button class="nav-link rounded-pill px-4 py-2" id="tab-analytics-btn" data-bs-toggle="pill" data-bs-target="#tab-analytics" type="button" role="tab">
                 <i class="ph ph-chart-pie-slice me-2"></i> Phân tích & Xu hướng (Analytics)
             </button>
@@ -162,6 +167,49 @@
 
     <!-- Tab Contents -->
     <div class="tab-content" id="errorTabsContent">
+        <!-- TAB 0: ERROR PATTERNS (Mục 15.1: Error Patterns) -->
+        <div class="tab-pane fade" id="tab-patterns" role="tabpanel">
+            <div class="card border-0 shadow-sm rounded-4 p-4 bg-white mb-4">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <div>
+                        <h5 class="fw-bold mb-1"><i class="ph ph-tree-structure text-primary me-2"></i>Gom nhóm Mẫu Lỗi Hệ thống (Error Pattern Clusters)</h5>
+                        <p class="text-muted small mb-0">Tự động phân loại các sự cố phát sinh theo nguyên nhân gốc rễ và đề xuất hành động xử lý.</p>
+                    </div>
+                </div>
+
+                <div class="row g-3">
+                    {% if patterns %}
+                        {% for p in patterns %}
+                        <div class="col-md-6 col-xl-4">
+                            <div class="card border rounded-4 p-3 h-100 bg-light-subtle">
+                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                    <span class="badge bg-{{ p.color }}-subtle text-{{ p.color }} rounded-pill small">
+                                        {{ p.name }}
+                                    </span>
+                                    <span class="badge bg-danger rounded-pill fw-bold">{{ p.total_occurrences }}x</span>
+                                </div>
+                                <div class="small text-muted mb-2">
+                                    <i class="ph ph-path me-1"></i> Ảnh hưởng: <strong>{{ p.impacted_routes_count }}</strong> đường dẫn
+                                </div>
+                                <p class="small text-dark fw-semibold mb-2 text-truncate" title="{{ p.sample_message }}">{{ p.sample_message }}</p>
+                                
+                                <div class="bg-body rounded-3 p-2 border small mt-auto">
+                                    <div class="fw-bold text-success small mb-1"><i class="ph ph-lightbulb me-1"></i> Khuyến nghị khắc phục:</div>
+                                    <div class="text-secondary extra-small">{{ p.suggestion }}</div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="col-12 text-center py-4 text-muted">
+                            <i class="ph ph-check-circle fs-2 text-success d-block mb-2"></i>
+                            Không có mẫu lỗi nào phát sinh trong 7 ngày qua. Hệ thống hoạt động rất ổn định!
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
         <!-- TAB 1: INCIDENTS LIST -->
         <div class="tab-pane fade show active" id="tab-incidents" role="tabpanel">
             <!-- Filter Bar -->

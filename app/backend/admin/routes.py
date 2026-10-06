@@ -1720,6 +1720,23 @@ from .data_quality_service import (
     autofill_vocab_data,
     batch_autofill_substandard_vocab,
 )
+from .routes_tickets import (
+    admin_tickets_dashboard,
+    get_ticket_detail_api,
+    reply_ticket_route,
+)
+from .routes_recovery import (
+    system_recovery_dashboard,
+    run_recovery_diagnostics_api,
+    reset_circuit_breaker_route,
+    trip_circuit_breaker_route,
+)
+from .error_recovery_service import (
+    circuit_breaker_registry,
+    run_system_recovery_diagnostics,
+    retry_with_backoff,
+)
+
 
 
 

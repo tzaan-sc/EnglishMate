@@ -185,15 +185,26 @@ def create_app(config_object=Config):
                         from app.backend.admin.models import SystemErrorLog
                         SystemErrorLog.__table__.create(conn)
                         conn.commit()
+                    if "support_ticket" not in tables:
+                        from app.backend.admin.models import SupportTicket
+                        SupportTicket.__table__.create(conn)
+                        conn.commit()
         except Exception:
             pass
 
     @app.before_request
     def check_network_security_and_ip_filtering():
-        """Kiểm tra IP Blacklist, Admin IP Whitelist và Bắt buộc HTTPS (Mục 11.8 - 11.15)."""
+        """Kiểm tra IP Blacklist, Admin IP Whitelist, Request Trace ID và Bắt buộc HTTPS (Mục 11.8 - 15.1)."""
         import time
+        import uuid
         from flask import request, render_template, g
         g._req_start_time = time.time()
+
+        # 15.1. Error Correlation: Assign unique Request Trace ID to correlate logs & errors
+        trace_id = request.headers.get("X-Request-ID") or request.headers.get("X-Correlation-ID")
+        if not trace_id:
+            trace_id = f"REQ-{uuid.uuid4().hex[:10].upper()}"
+        g.request_id = trace_id
 
         from .backend.admin.network_security import (
             get_client_ip,
@@ -339,6 +350,13 @@ def create_app(config_object=Config):
                 g._cached_admin_notif_data = None
         return {"admin_notif_data": g._cached_admin_notif_data}
 
+    @app.context_processor
+    def inject_request_trace_id():
+        from flask import has_request_context, g
+        if not has_request_context():
+            return {"request_id": ""}
+        return {"request_id": getattr(g, "request_id", "")}
+
     # Jinja2 Data Masking Template Filters (Mục 11.3)
     from .backend.admin.data_masking import mask_email, mask_ip_address, mask_phone, mask_text
 
@@ -382,6 +400,10 @@ def create_app(config_object=Config):
             from flask import g
             from .backend.admin.network_security import apply_cors_headers, record_network_traffic, get_client_ip
             response = apply_cors_headers(response, req=request)
+
+            # 15.1. Attach Request Trace ID to HTTP Response Headers
+            if hasattr(g, "request_id") and g.request_id:
+                response.headers["X-Request-ID"] = g.request_id
 
             start_t = getattr(g, "_req_start_time", None)
             duration = ((time.time() - start_t) * 1000) if start_t else 0.0
@@ -574,15 +596,43 @@ def create_app(config_object=Config):
 
     @app.errorhandler(429)
     def ratelimit_error(e):
-        from flask import jsonify, request
+        from flask import jsonify, request, render_template, g
         if request.path.startswith("/api/") or request.is_json:
             return jsonify({
                 "success": False,
                 "error": "Too Many Requests",
+                "request_id": getattr(g, "request_id", ""),
                 "message": f"Bạn đã gửi quá nhiều yêu cầu: {e.description}",
                 "retry_after": getattr(e, "retry_after", 60),
             }), 429
         return render_template("errors/429.html", error=e), 429
+
+    @app.errorhandler(500)
+    def internal_server_error(error):
+        from .backend.admin.error_monitoring_service import record_system_error
+        from flask import jsonify, request, g, render_template
+        record_system_error(
+            exc=getattr(error, "original_exception", error),
+            status_code=500,
+            severity="CRITICAL",
+            custom_message=str(error)
+        )
+        if request.path.startswith("/api/") or request.is_json:
+            return jsonify({
+                "success": False,
+                "error": "InternalServerError",
+                "request_id": getattr(g, "request_id", ""),
+                "message": "Đã xảy ra sự cố nội bộ máy chủ. Đội ngũ kỹ thuật đã được thông báo tự động."
+            }), 500
+        return render_template("errors/500.html", error=error), 500
+
+    @app.cli.command("system-recover")
+    @click.option("--force", is_flag=True, default=False, help="Chạy khôi phục toàn diện tất cả dịch vụ.")
+    def run_system_recover_cli(force):
+        """Tự động kiểm tra và khôi phục hệ thống sau sự cố (Self-Healing Recovery)."""
+        from .backend.admin.error_recovery_service import run_system_recovery_diagnostics
+        res = run_system_recovery_diagnostics(force_recovery=force)
+        click.echo(f"System Recovery Status: {res.get('status')} | DB: {res.get('database', {}).get('status')} | Zombie Tasks Recovered: {res.get('tasks', {}).get('recovered_count', 0)}")
 
     @app.route("/apidocs")
     @app.route("/api/docs")

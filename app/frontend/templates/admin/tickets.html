@@ -1,0 +1,264 @@
+{% extends "base.html" %}
+
+{% block title %}Quản lý Phiếu Hỗ trợ (Tickets) · EnglishMate Admin{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+  <!-- Top Header -->
+  <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3">
+    <div>
+      <span class="badge bg-primary-subtle text-primary px-3 py-2 rounded-pill fw-bold mb-2">
+        <i class="bi bi-ticket-perforated-fill me-1"></i> Helpdesk & User Support
+      </span>
+      <h2 class="fw-bold mb-1">Quản lý Phiếu yêu cầu hỗ trợ</h2>
+      <p class="text-secondary small mb-0">Theo dõi, giải quyết các sự cố kỹ thuật và phản hồi học viên.</p>
+    </div>
+  </div>
+
+  <!-- Metric Overview Cards -->
+  <div class="row g-3 mb-4">
+    <div class="col-sm-6 col-lg-3">
+      <div class="card border-0 shadow-sm rounded-4 p-3 bg-body">
+        <div class="d-flex align-items-center justify-content-between">
+          <div>
+            <span class="text-secondary small fw-semibold">Phiếu Chờ xử lý (OPEN)</span>
+            <h3 class="fw-bold text-warning mb-0 mt-1">{{ open_count }}</h3>
+          </div>
+          <div class="rounded-circle bg-warning-subtle text-warning p-3">
+            <i class="bi bi-clock-history fs-4"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-sm-6 col-lg-3">
+      <div class="card border-0 shadow-sm rounded-4 p-3 bg-body">
+        <div class="d-flex align-items-center justify-content-between">
+          <div>
+            <span class="text-secondary small fw-semibold">Đang xử lý (IN_PROGRESS)</span>
+            <h3 class="fw-bold text-primary mb-0 mt-1">{{ in_progress_count }}</h3>
+          </div>
+          <div class="rounded-circle bg-primary-subtle text-primary p-3">
+            <i class="bi bi-arrow-repeat fs-4"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-sm-6 col-lg-3">
+      <div class="card border-0 shadow-sm rounded-4 p-3 bg-body">
+        <div class="d-flex align-items-center justify-content-between">
+          <div>
+            <span class="text-secondary small fw-semibold">Sự cố Khẩn cấp</span>
+            <h3 class="fw-bold text-danger mb-0 mt-1">{{ urgent_count }}</h3>
+          </div>
+          <div class="rounded-circle bg-danger-subtle text-danger p-3">
+            <i class="bi bi-exclamation-triangle-fill fs-4"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-sm-6 col-lg-3">
+      <div class="card border-0 shadow-sm rounded-4 p-3 bg-body">
+        <div class="d-flex align-items-center justify-content-between">
+          <div>
+            <span class="text-secondary small fw-semibold">Đã hoàn thành</span>
+            <h3 class="fw-bold text-success mb-0 mt-1">{{ resolved_count }}</h3>
+          </div>
+          <div class="rounded-circle bg-success-subtle text-success p-3">
+            <i class="bi bi-check2-all fs-4"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Filter & Search Bar -->
+  <div class="card border-0 shadow-sm rounded-4 p-3 mb-4 bg-body">
+    <form method="GET" action="{{ url_for('admin.admin_tickets_dashboard') }}" class="row g-2 align-items-center">
+      <div class="col-md-4">
+        <div class="input-group">
+          <span class="input-group-text bg-transparent border-end-0"><i class="bi bi-search text-muted"></i></span>
+          <input type="text" class="form-control border-start-0" name="search" value="{{ search or '' }}" placeholder="Tìm theo mã phiếu, email, Trace ID...">
+        </div>
+      </div>
+      <div class="col-md-2">
+        <select class="form-select" name="status">
+          <option value="">-- Trạng thái --</option>
+          <option value="OPEN" {% if status == 'OPEN' %}selected{% endif %}>Chờ xử lý (OPEN)</option>
+          <option value="IN_PROGRESS" {% if status == 'IN_PROGRESS' %}selected{% endif %}>Đang xử lý</option>
+          <option value="RESOLVED" {% if status == 'RESOLVED' %}selected{% endif %}>Đã giải quyết</option>
+          <option value="CLOSED" {% if status == 'CLOSED' %}selected{% endif %}>Đã đóng</option>
+        </select>
+      </div>
+      <div class="col-md-2">
+        <select class="form-select" name="priority">
+          <option value="">-- Mức ưu tiên --</option>
+          <option value="URGENT" {% if priority == 'URGENT' %}selected{% endif %}>Khẩn cấp</option>
+          <option value="HIGH" {% if priority == 'HIGH' %}selected{% endif %}>Cao</option>
+          <option value="MEDIUM" {% if priority == 'MEDIUM' %}selected{% endif %}>Bình thường</option>
+          <option value="LOW" {% if priority == 'LOW' %}selected{% endif %}>Thấp</option>
+        </select>
+      </div>
+      <div class="col-md-2">
+        <select class="form-select" name="category">
+          <option value="">-- Danh mục --</option>
+          <option value="TECHNICAL" {% if category == 'TECHNICAL' %}selected{% endif %}>Lỗi kỹ thuật</option>
+          <option value="ACCOUNT" {% if category == 'ACCOUNT' %}selected{% endif %}>Tài khoản</option>
+          <option value="STUDY_CONTENT" {% if category == 'STUDY_CONTENT' %}selected{% endif %}>Nội dung</option>
+          <option value="BILLING" {% if category == 'BILLING' %}selected{% endif %}>Thanh toán</option>
+        </select>
+      </div>
+      <div class="col-md-2 d-flex gap-2">
+        <button type="submit" class="btn btn-primary w-100 rounded-3">Lọc</button>
+        <a href="{{ url_for('admin.admin_tickets_dashboard') }}" class="btn btn-outline-secondary rounded-3">Xóa</a>
+      </div>
+    </form>
+  </div>
+
+  <!-- Tickets Table -->
+  <div class="card border-0 shadow-sm rounded-4 overflow-hidden bg-body">
+    <div class="table-responsive">
+      <table class="table table-hover align-middle mb-0">
+        <thead class="table-light">
+          <tr>
+            <th class="ps-4">Mã Phiếu</th>
+            <th>Người gửi</th>
+            <th>Tiêu đề & Danh mục</th>
+            <th>Ưu tiên</th>
+            <th>Trace ID</th>
+            <th>Trạng thái</th>
+            <th>Ngày gửi</th>
+            <th class="text-end pe-4">Thao tác</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% if tickets %}
+            {% for t in tickets %}
+            <tr>
+              <td class="ps-4 font-monospace fw-bold text-primary">{{ t.ticket_code }}</td>
+              <td>
+                <div class="fw-semibold">{{ t.name or 'N/A' }}</div>
+                <div class="small text-muted">{{ t.email }}</div>
+              </td>
+              <td>
+                <div class="fw-bold text-dark text-truncate" style="max-width: 260px;">{{ t.title }}</div>
+                <span class="badge bg-secondary-subtle text-secondary small">{{ t.category_label }}</span>
+              </td>
+              <td>
+                <span class="badge {{ t.priority_badge_class }} rounded-pill">{{ t.priority }}</span>
+              </td>
+              <td class="font-monospace small">
+                {% if t.trace_id %}
+                <span class="badge bg-light text-dark border">{{ t.trace_id }}</span>
+                {% else %}
+                <span class="text-muted">-</span>
+                {% endif %}
+              </td>
+              <td>
+                <span class="badge {{ t.status_badge_class }} rounded-pill px-3 py-1">{{ t.status }}</span>
+              </td>
+              <td class="small text-muted">{{ t.created_at_vn.strftime('%d/%m/%Y %H:%M') if t.created_at_vn else 'N/A' }}</td>
+              <td class="text-end pe-4">
+                <button type="button" class="btn btn-sm btn-outline-primary rounded-pill px-3" onclick="openReplyModal({{ t.id }})">
+                  <i class="bi bi-reply-fill me-1"></i> Xử lý
+                </button>
+              </td>
+            </tr>
+            {% endfor %}
+          {% else %}
+          <tr>
+            <td colspan="8" class="text-center py-5 text-muted">
+              <i class="bi bi-inbox fs-1 d-block mb-2 text-secondary"></i>
+              Không tìm thấy phiếu hỗ trợ nào phù hợp với bộ lọc.
+            </td>
+          </tr>
+          {% endif %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Reply Ticket -->
+<div class="modal fade" id="replyTicketModal" tabindex="-1" aria-labelledby="replyModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content rounded-4 border-0 shadow">
+      <div class="modal-header border-0 pb-0 pt-4 px-4">
+        <h5 class="modal-title fw-bold" id="replyModalLabel"><i class="bi bi-ticket-detailed text-primary me-2"></i>Xử lý Phiếu hỗ trợ</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body p-4" id="replyModalBody">
+        <div class="text-center py-4">
+          <span class="spinner-border spinner-border-sm text-primary"></span> Đang tải...
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+function openReplyModal(ticketId) {
+  const modal = new bootstrap.Modal(document.getElementById('replyTicketModal'));
+  const body = document.getElementById('replyModalBody');
+  modal.show();
+
+  fetch(`/admin/tickets/${ticketId}`)
+    .then(res => res.json())
+    .then(data => {
+      if (data.success && data.ticket) {
+        const t = data.ticket;
+        let relatedErrorHtml = '';
+        if (t.related_error) {
+          relatedErrorHtml = `
+            <div class="alert alert-danger rounded-3 p-3 mb-3 small">
+              <div class="fw-bold mb-1"><i class="bi bi-bug-fill me-1"></i> Log lỗi hệ thống tương ứng (Trace ID: ${t.trace_id}):</div>
+              <div><strong>${t.related_error.exception_type}</strong>: ${t.related_error.error_message}</div>
+              <div class="text-muted mt-1">Route: <code>${t.related_error.route || 'N/A'}</code> | Status: ${t.related_error.status_code}</div>
+            </div>
+          `;
+        }
+
+        body.innerHTML = `
+          <div class="bg-light-subtle rounded-3 p-3 border mb-3">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <div>
+                <span class="badge bg-secondary-subtle text-secondary font-monospace me-2">${t.ticket_code}</span>
+                <span class="badge ${t.priority_badge_class} rounded-pill">${t.priority}</span>
+              </div>
+              <span class="badge ${t.status_badge_class} rounded-pill px-3 py-1">${t.status}</span>
+            </div>
+            <h5 class="fw-bold text-dark mb-1">${t.title}</h5>
+            <div class="small text-muted mb-2">Người gửi: <strong>${t.name}</strong> (${t.email}) | ${t.created_at || ''}</div>
+            <div class="p-3 bg-body rounded-2 border text-secondary small">${t.description}</div>
+          </div>
+
+          ${relatedErrorHtml}
+
+          <form action="/admin/tickets/${t.id}/reply" method="POST">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <div class="mb-3">
+              <label class="form-label small fw-bold">Cập nhật Trạng thái phiếu</label>
+              <select class="form-select" name="status">
+                <option value="IN_PROGRESS" ${t.status === 'IN_PROGRESS' ? 'selected' : ''}>Đang xử lý (IN_PROGRESS)</option>
+                <option value="RESOLVED" ${t.status === 'RESOLVED' ? 'selected' : ''}>Đã giải quyết (RESOLVED)</option>
+                <option value="CLOSED" ${t.status === 'CLOSED' ? 'selected' : ''}>Đóng phiếu (CLOSED)</option>
+                <option value="OPEN" ${t.status === 'OPEN' ? 'selected' : ''}>Chờ xử lý (OPEN)</option>
+              </select>
+            </div>
+            <div class="mb-3">
+              <label class="form-label small fw-bold">Nội dung phản hồi (Sẽ gửi email tự động tới người học)</label>
+              <textarea class="form-control" name="admin_reply" rows="4" placeholder="Nhập hướng dẫn khắc phục hoặc xác nhận đã sửa lỗi...">${t.admin_reply || ''}</textarea>
+            </div>
+            <div class="d-flex justify-content-end gap-2">
+              <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">Đóng</button>
+              <button type="submit" class="btn btn-primary rounded-pill px-4 fw-bold">Gửi phản hồi</button>
+            </div>
+          </form>
+        `;
+      }
+    });
+}
+</script>
+{% endblock %}

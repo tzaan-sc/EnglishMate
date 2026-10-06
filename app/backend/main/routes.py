@@ -731,3 +731,17 @@ def reset_onboarding():
     current_user.onboarding_completed = False
     db.session.commit()
     return jsonify({"ok": True})
+
+
+# Re-export support & FAQ routes for backward compatibility
+from .routes_support import (
+    support_center,
+    faq_page,
+    error_tutorials_page,
+    video_tutorials_page,
+    support_tickets_page,
+    create_support_ticket_api,
+    lookup_support_ticket_api,
+    live_chat_assistant_api,
+)
+

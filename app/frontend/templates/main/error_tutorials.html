@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+
+{% block title %}Hướng dẫn Tự Khắc phục Lỗi Kỹ thuật · EnglishMate{% endblock %}
+
+{% block content %}
+<div class="container py-4 py-lg-5">
+  <!-- Header Banner -->
+  <div class="text-center mb-5">
+    <span class="badge bg-danger-subtle text-danger px-3 py-2 rounded-pill fw-bold mb-2">
+      <i class="bi bi-tools me-1"></i> Self-Help Troubleshooting
+    </span>
+    <h1 class="fw-bold display-6 mb-3">Hướng dẫn tự khắc phục lỗi phổ biến</h1>
+    <p class="text-secondary fs-6 max-w-2xl mx-auto">
+      Các bước từng bước chi tiết giúp bạn tự xử lý các vấn đề về quyền Micro, âm thanh, email OTP và kết nối mạng.
+    </p>
+  </div>
+
+  <!-- Tutorial Cards Grid -->
+  <div class="row g-4 mb-5">
+    {% for tut in tutorials %}
+    <div class="col-lg-6" id="{{ tut.slug }}">
+      <div class="card border-0 shadow-sm rounded-4 h-100 p-3 p-md-4 bg-body">
+        <div class="d-flex align-items-start justify-content-between mb-3">
+          <div class="d-flex align-items-center gap-3">
+            <div class="rounded-circle bg-danger-subtle text-danger d-flex align-items-center justify-content-center flex-shrink-0" style="width: 48px; height: 48px;">
+              <i class="bi bi-{{ tut.icon }} fs-4"></i>
+            </div>
+            <div>
+              <span class="badge bg-secondary-subtle text-secondary rounded-pill small mb-1">{{ tut.category }}</span>
+              <h5 class="fw-bold mb-0 text-dark">{{ tut.title }}</h5>
+            </div>
+          </div>
+          <span class="badge bg-{{ tut.badge_color }}-subtle text-{{ tut.badge_color }} rounded-pill small px-2 py-1 flex-shrink-0">
+            {{ tut.badge }}
+          </span>
+        </div>
+
+        <p class="text-secondary small mb-3">{{ tut.summary }}</p>
+
+        <div class="bg-light-subtle rounded-3 p-3 border mb-3">
+          <h6 class="fw-bold small text-dark mb-2"><i class="bi bi-list-check text-primary me-1"></i> Các bước thực hiện:</h6>
+          <ol class="small text-secondary ps-3 mb-0 d-flex flex-column gap-2">
+            {% for step in tut.steps %}
+            <li>{{ step }}</li>
+            {% endfor %}
+          </ol>
+        </div>
+
+        <div class="mt-auto pt-2 d-flex justify-content-between align-items-center">
+          <span class="small text-muted"><i class="bi bi-clock me-1"></i> Thời gian xử lý: ~1 phút</span>
+          <a href="{{ url_for('main.support_center') }}#ticket-form-section" class="btn btn-sm btn-outline-primary rounded-pill">
+            Vẫn bị lỗi? Gửi Ticket <i class="bi bi-arrow-right"></i>
+          </a>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+
+  <!-- Bottom CTA -->
+  <div class="card border-0 rounded-4 shadow-sm p-4 p-md-5 text-center bg-body">
+    <h4 class="fw-bold mb-2">Gặp lỗi lạ khác chưa có trong danh sách?</h4>
+    <p class="text-secondary small mb-4">Bạn có thể gửi ảnh chụp màn hình hoặc mã Trace ID cho đội ngũ kỹ thuật để nhận hỗ trợ trực tiếp.</p>
+    <div class="d-flex justify-content-center gap-3">
+      <a href="{{ url_for('main.support_tickets_page') }}" class="btn btn-primary px-4 py-2 rounded-pill fw-bold">
+        <i class="bi bi-ticket-perforated me-1"></i> Mở phiếu hỗ trợ
+      </a>
+      <a href="{{ url_for('main.video_tutorials_page') }}" class="btn btn-outline-secondary px-4 py-2 rounded-pill fw-medium">
+        <i class="bi bi-play-circle me-1"></i> Xem Video hướng dẫn
+      </a>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,2 +1,45 @@
-{% extends "base.html" %}{% block title %}Không tìm thấy · EnglishMate{% endblock %}{% block content %}<section class="error-page"><div><span>404</span><h1>Trang này đã đi học tiếng Anh rồi.</h1><p>Đường dẫn có thể không tồn tại hoặc đã được thay đổi.</p><a class="btn btn-primary" href="{{ url_for('main.index') }}">Về trang chủ</a></div></section>{% endblock %}
+{% extends "base.html" %}
 
+{% block title %}404 - Không tìm thấy trang · EnglishMate{% endblock %}
+
+{% block content %}
+<section class="container py-5 my-md-5">
+  <div class="row justify-content-center">
+    <div class="col-lg-7 text-center">
+      <div class="mb-4 d-inline-flex align-items-center justify-content-center rounded-circle bg-warning-subtle text-warning p-4 shadow-sm" style="width: 90px; height: 90px;">
+        <i class="bi bi-compass-fill" style="font-size: 2.8rem;"></i>
+      </div>
+
+      <span class="badge bg-warning-subtle text-warning px-3 py-2 rounded-pill fw-bold mb-3 fs-6">
+        Lỗi 404 - Page Not Found
+      </span>
+
+      <h1 class="fw-bold mb-3">Trang này đã đi học tiếng Anh rồi!</h1>
+      <p class="text-secondary fs-6 mb-4 leading-relaxed">
+        Đường dẫn bạn đang tìm kiếm có thể không tồn tại, đã đổi tên hoặc bị di chuyển sang vị trí khác.
+      </p>
+
+      {% if request_id or g.request_id %}
+      {% set tid = request_id or g.request_id %}
+      <div class="card border-0 shadow-sm rounded-4 bg-light-subtle p-3 mb-4 text-start mx-auto" style="max-width: 480px;">
+        <div class="d-flex align-items-center justify-content-between">
+          <span class="small text-muted font-monospace">Trace ID: <strong>{{ tid }}</strong></span>
+          <button type="button" class="btn btn-sm btn-link text-decoration-none p-0" onclick="navigator.clipboard.writeText('{{ tid }}'); this.innerText='Đã sao chép';">
+            <i class="bi bi-clipboard"></i> Sao chép
+          </button>
+        </div>
+      </div>
+      {% endif %}
+
+      <div class="d-flex flex-wrap justify-content-center gap-3">
+        <a href="{{ url_for('main.index') }}" class="btn btn-primary px-4 py-2 rounded-pill fw-medium shadow-sm">
+          <i class="bi bi-house-door me-1"></i> Về Trang chủ
+        </a>
+        <a href="{{ url_for('main.support_center') }}" class="btn btn-outline-secondary px-4 py-2 rounded-pill fw-medium">
+          <i class="bi bi-question-circle me-1"></i> Trung tâm Hỗ trợ
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

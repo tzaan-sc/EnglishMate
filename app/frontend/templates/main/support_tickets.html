@@ -1,0 +1,231 @@
+{% extends "base.html" %}
+
+{% block title %}Hệ thống Phiếu Hỗ trợ (Tickets) · EnglishMate{% endblock %}
+
+{% block content %}
+<div class="container py-4 py-lg-5">
+  <!-- Header -->
+  <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3">
+    <div>
+      <span class="badge bg-primary-subtle text-primary px-3 py-2 rounded-pill fw-semibold mb-2">
+        <i class="bi bi-ticket-perforated me-1"></i> Helpdesk Ticket System
+      </span>
+      <h2 class="fw-bold mb-1">Phiếu yêu cầu hỗ trợ</h2>
+      <p class="text-secondary small mb-0">Quản lý và theo dõi tiến độ giải quyết sự cố của bạn.</p>
+    </div>
+    <div class="d-flex gap-2">
+      <a href="{{ url_for('main.support_center') }}" class="btn btn-outline-secondary rounded-pill px-3">
+        <i class="bi bi-arrow-left me-1"></i> Trung tâm Hỗ trợ
+      </a>
+      <button type="button" class="btn btn-primary rounded-pill px-4 fw-bold shadow-sm" data-bs-toggle="modal" data-bs-target="#newTicketModal">
+        <i class="bi bi-plus-lg me-1"></i> Gửi phiếu mới
+      </button>
+    </div>
+  </div>
+
+  <div class="row g-4">
+    <!-- Left Column: Search & Ticket Lookup -->
+    <div class="col-lg-4">
+      <div class="card border-0 shadow-sm rounded-4 p-4 mb-4 bg-body">
+        <h5 class="fw-bold mb-3"><i class="bi bi-search text-primary me-2"></i>Tra cứu mã phiếu</h5>
+        <p class="text-secondary small mb-3">Nhập mã định danh phiếu (ví dụ: <code>TKT-2610-A1B2</code>) để xem phản hồi từ Admin:</p>
+        
+        <div class="input-group mb-3">
+          <input type="text" class="form-control rounded-start-pill font-monospace" id="lookupCodeInput" placeholder="TKT-XXXX-XXXX">
+          <button class="btn btn-primary rounded-end-pill px-3" type="button" onclick="lookupTicket()">
+            <i class="bi bi-search"></i>
+          </button>
+        </div>
+
+        <div id="lookupResultBox" class="d-none mt-3 p-3 rounded-3 border bg-light-subtle">
+          <!-- Dynamic lookup result -->
+        </div>
+      </div>
+
+      <!-- Quick Contact Card -->
+      <div class="card border-0 bg-primary-subtle text-primary rounded-4 p-4">
+        <h6 class="fw-bold mb-2"><i class="bi bi-headset me-2"></i>Cần giải quyết khẩn?</h6>
+        <p class="small text-primary-emphasis mb-3">Nếu sự cố ảnh hưởng trực tiếp đến bài thi đang làm, bạn có thể gọi hotline:</p>
+        <div class="fw-bold fs-5 text-primary mb-1">1900 6868</div>
+        <div class="small text-muted">Hỗ trợ 8:00 - 22:00 hàng ngày</div>
+      </div>
+    </div>
+
+    <!-- Right Column: My Tickets List -->
+    <div class="col-lg-8">
+      <div class="card border-0 shadow-sm rounded-4 bg-body">
+        <div class="card-header bg-transparent border-0 pt-4 px-4 d-flex justify-content-between align-items-center">
+          <h5 class="fw-bold mb-0">Danh sách phiếu đã gửi</h5>
+          {% if current_user.is_authenticated %}
+          <span class="badge bg-secondary-subtle text-secondary rounded-pill">{{ tickets|length }} phiếu</span>
+          {% endif %}
+        </div>
+        <div class="card-body p-4">
+          {% if current_user.is_authenticated %}
+            {% if tickets %}
+            <div class="d-flex flex-column gap-3">
+              {% for t in tickets %}
+              <div class="card border rounded-3 p-3 hover-card">
+                <div class="d-flex flex-wrap justify-content-between align-items-start gap-2 mb-2">
+                  <div>
+                    <span class="badge bg-secondary-subtle text-secondary font-monospace me-2">{{ t.ticket_code }}</span>
+                    <span class="badge {{ t.category_badge_class if t.category_badge_class else 'bg-info-subtle text-info' }} rounded-pill me-2">{{ t.category_label }}</span>
+                    <span class="badge {{ t.priority_badge_class }} rounded-pill">{{ t.priority }}</span>
+                  </div>
+                  <span class="badge {{ t.status_badge_class }} rounded-pill px-3 py-1">{{ t.status }}</span>
+                </div>
+
+                <h6 class="fw-bold text-dark mb-1">{{ t.title }}</h6>
+                <p class="text-secondary small mb-2">{{ t.description[:180] }}{% if t.description|length > 180 %}...{% endif %}</p>
+
+                {% if t.admin_reply %}
+                <div class="bg-success-subtle border border-success-subtle rounded-3 p-3 my-2 small">
+                  <div class="fw-bold text-success mb-1"><i class="bi bi-chat-quote-fill me-1"></i> Phản hồi từ Kỹ thuật viên:</div>
+                  <p class="mb-0 text-dark">{{ t.admin_reply }}</p>
+                </div>
+                {% endif %}
+
+                <div class="d-flex justify-content-between align-items-center mt-2 pt-2 border-top small text-muted">
+                  <span><i class="bi bi-calendar-event me-1"></i> {{ t.created_at_vn.strftime('%d/%m/%Y %H:%M') if t.created_at_vn else 'N/A' }}</span>
+                  {% if t.trace_id %}
+                  <span class="font-monospace"><i class="bi bi-shield-check me-1"></i> Trace: {{ t.trace_id }}</span>
+                  {% endif %}
+                </div>
+              </div>
+              {% endfor %}
+            </div>
+            {% else %}
+            <div class="text-center py-5">
+              <i class="bi bi-inbox text-muted display-4 mb-3 d-block"></i>
+              <h6 class="fw-bold">Bạn chưa gửi phiếu hỗ trợ nào</h6>
+              <p class="text-secondary small mb-3">Khi gặp lỗi trong quá trình học, hãy nhấn nút bên dưới để tạo phiếu.</p>
+              <button class="btn btn-primary rounded-pill px-4" data-bs-toggle="modal" data-bs-target="#newTicketModal">
+                Gửi phiếu đầu tiên
+              </button>
+            </div>
+            {% endif %}
+          {% else %}
+          <div class="text-center py-5">
+            <i class="bi bi-person-lock text-muted display-4 mb-3 d-block"></i>
+            <h6 class="fw-bold">Đăng nhập để xem lịch sử phiếu của bạn</h6>
+            <p class="text-secondary small mb-3">Hoặc bạn có thể tra cứu nhanh bằng mã phiếu ở khung bên trái.</p>
+            <a href="{{ url_for('auth.login') }}" class="btn btn-primary rounded-pill px-4">
+              Đăng nhập ngay
+            </a>
+          </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: New Ticket -->
+<div class="modal fade" id="newTicketModal" tabindex="-1" aria-labelledby="newTicketModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content rounded-4 border-0 shadow">
+      <div class="modal-header border-0 pb-0">
+        <h5 class="modal-title fw-bold" id="newTicketModalLabel"><i class="bi bi-ticket-perforated text-primary me-2"></i>Gửi phiếu hỗ trợ mới</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body p-4">
+        <form action="{{ url_for('main.create_support_ticket_api') }}" method="POST">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+          <div class="row g-3 mb-3">
+            <div class="col-md-6">
+              <label class="form-label small fw-semibold">Họ và tên <span class="text-danger">*</span></label>
+              <input type="text" class="form-control rounded-3" name="name" value="{{ current_user.username if current_user.is_authenticated else '' }}" required placeholder="Nguyễn Văn A">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label small fw-semibold">Email nhận phản hồi <span class="text-danger">*</span></label>
+              <input type="email" class="form-control rounded-3" name="email" value="{{ current_user.email if current_user.is_authenticated else '' }}" required placeholder="email@domain.com">
+            </div>
+          </div>
+
+          <div class="row g-3 mb-3">
+            <div class="col-md-6">
+              <label class="form-label small fw-semibold">Danh mục sự cố</label>
+              <select class="form-select rounded-3" name="category">
+                <option value="TECHNICAL">Lỗi kỹ thuật (Micro, Âm thanh, Mất kết nối)</option>
+                <option value="ACCOUNT">Tài khoản & Đăng nhập (OTP, Mật khẩu)</option>
+                <option value="STUDY_CONTENT">Nội dung bài học & Từ vựng</option>
+                <option value="BILLING">Gói học & Thanh toán</option>
+                <option value="SUGGESTION">Đóng góp ý kiến</option>
+                <option value="OTHER">Khác</option>
+              </select>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label small fw-semibold">Mức độ ưu tiên</label>
+              <select class="form-select rounded-3" name="priority">
+                <option value="LOW">Thấp</option>
+                <option value="MEDIUM" selected>Bình thường</option>
+                <option value="HIGH">Cao</option>
+                <option value="URGENT">Khẩn cấp</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label small fw-semibold">Tiêu đề ngắn gọn <span class="text-danger">*</span></label>
+            <input type="text" class="form-control rounded-3" name="title" required placeholder="Tóm tắt sự cố trong 1 câu">
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label small fw-semibold">Mô tả chi tiết <span class="text-danger">*</span></label>
+            <textarea class="form-control rounded-3" name="description" rows="4" required placeholder="Mô tả các bước xảy ra lỗi..."></textarea>
+          </div>
+
+          <div class="mb-4">
+            <label class="form-label small fw-semibold">Request Trace ID (nếu có)</label>
+            <input type="text" class="form-control rounded-3 font-monospace" name="trace_id" value="{{ prefilled_trace_id or '' }}" placeholder="REQ-XXXXXXXX">
+          </div>
+
+          <div class="d-flex justify-content-end gap-2">
+            <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">Hủy</button>
+            <button type="submit" class="btn btn-primary rounded-pill px-4 fw-bold">Gửi phiếu hỗ trợ</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+function lookupTicket() {
+  const code = document.getElementById('lookupCodeInput').value.trim();
+  const box = document.getElementById('lookupResultBox');
+  if (!code) return;
+
+  box.classList.remove('d-none');
+  box.innerHTML = '<div class="text-center py-2"><span class="spinner-border spinner-border-sm text-primary"></span> Đang tra cứu...</div>';
+
+  fetch(`/api/support/tickets/${encodeURIComponent(code)}`)
+    .then(res => res.json())
+    .then(data => {
+      if (data.success && data.ticket) {
+        const t = data.ticket;
+        box.innerHTML = `
+          <div class="d-flex justify-content-between align-items-center mb-2">
+            <span class="badge bg-secondary-subtle text-secondary font-monospace">${t.ticket_code}</span>
+            <span class="badge ${t.status_badge_class} rounded-pill">${t.status}</span>
+          </div>
+          <h6 class="fw-bold text-dark mb-1">${t.title}</h6>
+          <p class="small text-secondary mb-2">${t.description}</p>
+          ${t.admin_reply ? `
+            <div class="bg-success-subtle border border-success-subtle rounded-2 p-2 small mt-2">
+              <strong class="text-success"><i class="bi bi-reply-fill"></i> Phản hồi Admin:</strong>
+              <div class="mt-1">${t.admin_reply}</div>
+            </div>
+          ` : '<div class="small text-muted italic mt-2"><i class="bi bi-clock me-1"></i> Đang chờ kỹ thuật viên phản hồi.</div>'}
+        `;
+      } else {
+        box.innerHTML = `<div class="text-danger small"><i class="bi bi-exclamation-triangle me-1"></i> ${data.error || 'Không tìm thấy phiếu.'}</div>`;
+      }
+    })
+    .catch(() => {
+      box.innerHTML = '<div class="text-danger small">Lỗi kết nối máy chủ.</div>';
+    });
+}
+</script>
+{% endblock %}

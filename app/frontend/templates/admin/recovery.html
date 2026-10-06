@@ -1,0 +1,162 @@
+{% extends "base.html" %}
+
+{% block title %}Tự phục hồi & Ngắt mạch (Circuit Breakers) · EnglishMate Admin{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+  <!-- Top Header -->
+  <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3">
+    <div>
+      <span class="badge bg-danger-subtle text-danger px-3 py-2 rounded-pill fw-bold mb-2">
+        <i class="bi bi-shield-slash-fill me-1"></i> System Resilience & Recovery
+      </span>
+      <h2 class="fw-bold mb-1">Tự Khôi phục Hệ thống & Circuit Breakers</h2>
+      <p class="text-secondary small mb-0">Giám sát cơ chế ngắt mạch tự động (Circuit Breakers) và kích hoạt tự chữa lành (Self-Healing).</p>
+    </div>
+    <form action="{{ url_for('admin.run_recovery_diagnostics_api') }}" method="POST">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <input type="hidden" name="force" value="1">
+      <button type="submit" class="btn btn-primary rounded-pill px-4 fw-bold shadow-sm">
+        <i class="bi bi-heart-pulse-fill me-1"></i> Chạy Chẩn đoán & Tự phục hồi
+      </button>
+    </form>
+  </div>
+
+  <!-- Overall Status Banner -->
+  <div class="card border-0 shadow-sm rounded-4 mb-4 bg-body">
+    <div class="card-body p-4">
+      <div class="row align-items-center g-3">
+        <div class="col-md-8">
+          <div class="d-flex align-items-center gap-3">
+            <div class="rounded-circle {% if diagnostics.status == 'OPERATIONAL' %}bg-success-subtle text-success{% else %}bg-warning-subtle text-warning{% endif %} p-3 d-flex align-items-center justify-content-center" style="width: 60px; height: 60px;">
+              <i class="bi bi-activity fs-3"></i>
+            </div>
+            <div>
+              <span class="badge {% if diagnostics.status == 'OPERATIONAL' %}bg-success text-white{% else %}bg-warning text-dark{% endif %} rounded-pill px-3 py-1 mb-1">
+                {{ diagnostics.status }}
+              </span>
+              <h4 class="fw-bold mb-0">Hệ thống đang vận hành tự động</h4>
+              <div class="text-muted small">Kiểm tra lần cuối: {{ diagnostics.timestamp }}</div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-4 text-md-end">
+          <span class="text-secondary small d-block">Tác vụ nền bị treo đã quét:</span>
+          <span class="fw-bold fs-5 text-dark">{{ diagnostics.tasks.recovered_count }} tác vụ</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Circuit Breakers Grid (Mục 15.2: Circuit Breakers) -->
+  <h4 class="fw-bold mb-3"><i class="bi bi-lightning-charge-fill text-warning me-2"></i>Trạng thái Circuit Breakers ngoại vi</h4>
+  <div class="row g-4 mb-5">
+    {% for b in breakers %}
+    <div class="col-md-6 col-xl-3">
+      <div class="card border-0 shadow-sm rounded-4 h-100 p-4 bg-body hover-card">
+        <div class="d-flex justify-content-between align-items-start mb-3">
+          <div>
+            <h5 class="fw-bold mb-0 text-dark">{{ b.name }}</h5>
+            <span class="badge bg-secondary-subtle text-secondary small mt-1">Ngưỡng: {{ b.failure_threshold }} lỗi</span>
+          </div>
+          <span class="badge {{ b.badge_class }} rounded-pill px-3 py-1 fw-bold">{{ b.state }}</span>
+        </div>
+
+        <p class="text-secondary small mb-3 flex-grow-1">{{ b.description }}</p>
+
+        <div class="bg-light-subtle rounded-3 p-3 border small mb-3">
+          <div class="d-flex justify-content-between mb-1">
+            <span class="text-muted">Lỗi liên tiếp:</span>
+            <span class="fw-bold text-danger">{{ b.failure_count }}/{{ b.failure_threshold }}</span>
+          </div>
+          <div class="d-flex justify-content-between mb-1">
+            <span class="text-muted">Tổng yêu cầu:</span>
+            <span class="fw-bold text-dark">{{ b.total_requests }}</span>
+          </div>
+          <div class="d-flex justify-content-between">
+            <span class="text-muted">Số lần ngắt mạch:</span>
+            <span class="fw-bold text-warning">{{ b.total_trips }}</span>
+          </div>
+          {% if b.time_until_retry > 0 %}
+          <div class="d-flex justify-content-between mt-2 pt-2 border-top text-danger fw-bold">
+            <span>Tự thử lại sau:</span>
+            <span>{{ b.time_until_retry }}s</span>
+          </div>
+          {% endif %}
+        </div>
+
+        <div class="d-flex gap-2">
+          {% if b.state != 'CLOSED' %}
+          <form action="/admin/system/recovery/circuit-breakers/{{ b.name }}/reset" method="POST" class="w-100">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <button type="submit" class="btn btn-sm btn-success rounded-pill w-100 fw-bold">
+              <i class="bi bi-arrow-counterclockwise me-1"></i> Đóng mạch (Reset)
+            </button>
+          </form>
+          {% else %}
+          <form action="/admin/system/recovery/circuit-breakers/{{ b.name }}/trip" method="POST" class="w-100">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <button type="submit" class="btn btn-sm btn-outline-danger rounded-pill w-100 fw-semibold">
+              <i class="bi bi-slash-circle me-1"></i> Ngắt khẩn cấp
+            </button>
+          </form>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+
+  <!-- Diagnostics Details Cards (Mục 15.2: Data Recovery & System Recovery) -->
+  <h4 class="fw-bold mb-3"><i class="bi bi-heart-pulse text-danger me-2"></i>Chi tiết Tự phục hồi Hạ tầng</h4>
+  <div class="row g-4">
+    <div class="col-md-4">
+      <div class="card border-0 shadow-sm rounded-4 p-4 bg-body h-100">
+        <div class="d-flex align-items-center gap-3 mb-3">
+          <div class="rounded-circle bg-primary-subtle text-primary p-3">
+            <i class="bi bi-database fs-4"></i>
+          </div>
+          <div>
+            <h5 class="fw-bold mb-0">Cơ sở dữ liệu</h5>
+            <span class="badge bg-success-subtle text-success rounded-pill small">{{ diagnostics.database.status }}</span>
+          </div>
+        </div>
+        <p class="text-secondary small mb-2">{{ diagnostics.database.message }}</p>
+        <div class="small text-muted font-monospace">Độ trễ kết nối: {{ diagnostics.database.latency_ms }}ms</div>
+      </div>
+    </div>
+
+    <div class="col-md-4">
+      <div class="card border-0 shadow-sm rounded-4 p-4 bg-body h-100">
+        <div class="d-flex align-items-center gap-3 mb-3">
+          <div class="rounded-circle bg-warning-subtle text-warning p-3">
+            <i class="bi bi-cpu fs-4"></i>
+          </div>
+          <div>
+            <h5 class="fw-bold mb-0">Tác vụ Nền (Zombie Task)</h5>
+            <span class="badge bg-success-subtle text-success rounded-pill small">{{ diagnostics.tasks.status }}</span>
+          </div>
+        </div>
+        <p class="text-secondary small mb-2">{{ diagnostics.tasks.message }}</p>
+        <div class="small text-muted">Tự động thu hồi các worker treo > 30 phút.</div>
+      </div>
+    </div>
+
+    <div class="col-md-4">
+      <div class="card border-0 shadow-sm rounded-4 p-4 bg-body h-100">
+        <div class="d-flex align-items-center gap-3 mb-3">
+          <div class="rounded-circle bg-info-subtle text-info p-3">
+            <i class="bi bi-memory fs-4"></i>
+          </div>
+          <div>
+            <h5 class="fw-bold mb-0">Bộ nhớ Cache</h5>
+            <span class="badge bg-success-subtle text-success rounded-pill small">{{ diagnostics.cache.status }}</span>
+          </div>
+        </div>
+        <p class="text-secondary small mb-2">{{ diagnostics.cache.message }}</p>
+        <div class="small text-muted">Tự phục hồi và dọn phân mảnh bộ nhớ.</div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

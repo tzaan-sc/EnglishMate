@@ -25,6 +25,8 @@ from .error_monitoring_service import (
     resolve_all_error_incidents,
     purge_old_error_logs,
     trigger_simulated_error,
+    get_error_patterns_analysis,
+    lookup_error_by_trace_or_id,
 )
 
 
@@ -46,6 +48,7 @@ def error_analysis_dashboard():
         is_resolved = True
 
     analytics = get_error_analytics(days=7)
+    patterns = get_error_patterns_analysis(days=7)
     incidents = get_error_incidents_list(
         page=page,
         per_page=15,
@@ -58,6 +61,7 @@ def error_analysis_dashboard():
     return render_template(
         "admin/error_analysis.html",
         analytics=analytics,
+        patterns=patterns,
         incidents=incidents,
         search=search,
         status_code=status_code,
@@ -74,6 +78,37 @@ def get_error_analytics_api():
     days = request.args.get("days", 7, type=int)
     data = get_error_analytics(days=days)
     return jsonify(data)
+
+
+@bp.get("/system/errors/api/patterns")
+@bp.get("/errors/api/patterns")
+@admin_required
+def get_error_patterns_api():
+    """API JSON phân tích các cụm mẫu lỗi (Error Patterns)."""
+    days = request.args.get("days", 7, type=int)
+    patterns = get_error_patterns_analysis(days=days)
+    return jsonify({"success": True, "patterns": patterns})
+
+
+@bp.get("/system/errors/lookup")
+@bp.get("/errors/lookup")
+@admin_required
+def lookup_error_by_trace_route():
+    """Tra cứu nhanh sự cố theo Request Trace ID."""
+    trace_id = request.args.get("trace_id", "").strip()
+    log_item = lookup_error_by_trace_or_id(trace_id)
+    if not log_item:
+        return jsonify({"success": False, "error": f"Không tìm thấy sự cố với Trace ID '{trace_id}'."}), 404
+    return jsonify({
+        "success": True,
+        "error_id": log_item.error_id,
+        "exception_type": log_item.exception_type,
+        "error_message": log_item.error_message,
+        "status_code": log_item.status_code,
+        "severity": log_item.severity,
+        "route": log_item.route,
+        "created_at": log_item.created_at_vn.strftime("%d/%m/%Y %H:%M:%S") if log_item.created_at_vn else None,
+    })
 
 
 @bp.get("/system/errors/<string:error_id>")

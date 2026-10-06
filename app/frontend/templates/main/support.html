@@ -1,0 +1,264 @@
+{% extends "base.html" %}
+
+{% block title %}Trung tâm Hỗ trợ & Trợ giúp Kỹ thuật · EnglishMate{% endblock %}
+
+{% block content %}
+<div class="container py-4 py-lg-5">
+  <!-- Hero Section -->
+  <div class="card border-0 rounded-4 shadow-sm overflow-hidden mb-5" style="background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);">
+    <div class="card-body p-4 p-md-5 text-white position-relative">
+      <div class="row align-items-center">
+        <div class="col-lg-8">
+          <span class="badge bg-white bg-opacity-25 text-white px-3 py-2 rounded-pill fw-semibold mb-3">
+            <i class="bi bi-headset me-1"></i> Trung tâm Trợ giúp EnglishMate 24/7
+          </span>
+          <h1 class="display-6 fw-bold mb-3">Chúng tôi có thể giúp gì cho bạn hôm nay?</h1>
+          <p class="fs-6 text-white text-opacity-85 mb-4 max-w-2xl">
+            Tìm kiếm câu trả lời nhanh chóng cho các thắc mắc về tài khoản, cách học phát âm AI, khắc phục lỗi kỹ thuật hoặc liên hệ trực tiếp với đội ngũ hỗ trợ viên.
+          </p>
+
+          <!-- Quick Search & Actions -->
+          <div class="d-flex flex-wrap gap-2">
+            <a href="#ticket-form-section" class="btn btn-light text-primary fw-bold px-4 py-2 rounded-pill shadow-sm">
+              <i class="bi bi-ticket-perforated-fill me-1"></i> Gửi phiếu hỗ trợ (Ticket)
+            </a>
+            <a href="{{ url_for('main.faq_page') }}" class="btn btn-outline-light px-4 py-2 rounded-pill fw-medium">
+              <i class="bi bi-question-circle me-1"></i> Câu hỏi thường gặp (FAQ)
+            </a>
+            <a href="{{ url_for('main.error_tutorials_page') }}" class="btn btn-outline-light px-4 py-2 rounded-pill fw-medium">
+              <i class="bi bi-tools me-1"></i> Hướng dẫn sửa lỗi
+            </a>
+          </div>
+        </div>
+        <div class="col-lg-4 d-none d-lg-block text-center">
+          <i class="bi bi-chat-heart text-white opacity-25" style="font-size: 8rem;"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Quick Feature Action Cards -->
+  <div class="row g-4 mb-5">
+    <div class="col-md-6 col-lg-3">
+      <div class="card border-0 shadow-sm rounded-4 h-100 hover-card p-3 p-md-4 text-center">
+        <div class="d-inline-flex align-items-center justify-content-center rounded-circle bg-primary-subtle text-primary p-3 mb-3 mx-auto" style="width: 64px; height: 64px;">
+          <i class="bi bi-ticket-detailed fs-3"></i>
+        </div>
+        <h5 class="fw-bold mb-2">Hệ thống Ticket</h5>
+        <p class="text-secondary small mb-3">Gửi báo cáo sự cố hoặc thắc mắc để nhận phản hồi chính thức từ Admin.</p>
+        <a href="{{ url_for('main.support_tickets_page') }}" class="btn btn-sm btn-outline-primary rounded-pill mt-auto fw-medium">
+          Gửi & Tra cứu Ticket <i class="bi bi-arrow-right"></i>
+        </a>
+      </div>
+    </div>
+
+    <div class="col-md-6 col-lg-3">
+      <div class="card border-0 shadow-sm rounded-4 h-100 hover-card p-3 p-md-4 text-center">
+        <div class="d-inline-flex align-items-center justify-content-center rounded-circle bg-warning-subtle text-warning p-3 mb-3 mx-auto" style="width: 64px; height: 64px;">
+          <i class="bi bi-patch-question fs-3"></i>
+        </div>
+        <h5 class="fw-bold mb-2">Câu hỏi Thường gặp</h5>
+        <p class="text-secondary small mb-3">Giải đáp nhanh các câu hỏi về tài khoản, thẻ từ vựng SRS, thi thử TOEIC.</p>
+        <a href="{{ url_for('main.faq_page') }}" class="btn btn-sm btn-outline-warning rounded-pill mt-auto fw-medium">
+          Xem FAQ chi tiết <i class="bi bi-arrow-right"></i>
+        </a>
+      </div>
+    </div>
+
+    <div class="col-md-6 col-lg-3">
+      <div class="card border-0 shadow-sm rounded-4 h-100 hover-card p-3 p-md-4 text-center">
+        <div class="d-inline-flex align-items-center justify-content-center rounded-circle bg-danger-subtle text-danger p-3 mb-3 mx-auto" style="width: 64px; height: 64px;">
+          <i class="bi bi-wrench-adjustable-circle fs-3"></i>
+        </div>
+        <h5 class="fw-bold mb-2">Tự sửa lỗi (Tutorials)</h5>
+        <p class="text-secondary small mb-3">Hướng dẫn cấp quyền Micro, khắc phục chậm email OTP và lỗi phát âm.</p>
+        <a href="{{ url_for('main.error_tutorials_page') }}" class="btn btn-sm btn-outline-danger rounded-pill mt-auto fw-medium">
+          Xem bài hướng dẫn <i class="bi bi-arrow-right"></i>
+        </a>
+      </div>
+    </div>
+
+    <div class="col-md-6 col-lg-3">
+      <div class="card border-0 shadow-sm rounded-4 h-100 hover-card p-3 p-md-4 text-center">
+        <div class="d-inline-flex align-items-center justify-content-center rounded-circle bg-info-subtle text-info p-3 mb-3 mx-auto" style="width: 64px; height: 64px;">
+          <i class="bi bi-play-circle-fill fs-3"></i>
+        </div>
+        <h5 class="fw-bold mb-2">Video Hướng dẫn</h5>
+        <p class="text-secondary small mb-3">Các video ngắn trực quan hướng dẫn cách học hiệu quả trên nền tảng.</p>
+        <a href="{{ url_for('main.video_tutorials_page') }}" class="btn btn-sm btn-outline-info rounded-pill mt-auto fw-medium">
+          Xem Video <i class="bi bi-arrow-right"></i>
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Direct Support Contacts (15.3: Support Contacts) -->
+  <div class="card border-0 shadow-sm rounded-4 mb-5 bg-body">
+    <div class="card-body p-4 p-lg-5">
+      <div class="row align-items-center g-4">
+        <div class="col-lg-5">
+          <span class="badge bg-primary-subtle text-primary px-3 py-2 rounded-pill fw-semibold mb-2">
+            <i class="bi bi-telephone-outbound me-1"></i> Kênh liên hệ trực tiếp
+          </span>
+          <h3 class="fw-bold mb-3">Cần hỗ trợ khẩn cấp?</h3>
+          <p class="text-secondary mb-4">
+            Đội ngũ kỹ thuật viên và cố vấn học tập luôn sẵn sàng hỗ trợ giải đáp mọi khúc mắc của bạn trong suốt quá trình học.
+          </p>
+
+          <div class="d-flex flex-column gap-3">
+            <div class="d-flex align-items-center gap-3">
+              <div class="rounded-circle bg-success-subtle text-success d-flex align-items-center justify-content-center flex-shrink-0" style="width: 44px; height: 44px;">
+                <i class="bi bi-telephone-fill"></i>
+              </div>
+              <div>
+                <div class="small text-secondary">Hotline Kỹ thuật & Tư vấn</div>
+                <div class="fw-bold fs-6 text-dark">1900 6868 (Miễn phí cước)</div>
+              </div>
+            </div>
+
+            <div class="d-flex align-items-center gap-3">
+              <div class="rounded-circle bg-primary-subtle text-primary d-flex align-items-center justify-content-center flex-shrink-0" style="width: 44px; height: 44px;">
+                <i class="bi bi-envelope-fill"></i>
+              </div>
+              <div>
+                <div class="small text-secondary">Hòm thư Hỗ trợ Kỹ thuật</div>
+                <div class="fw-bold fs-6 text-dark">support@englishmate.vn</div>
+              </div>
+            </div>
+
+            <div class="d-flex align-items-center gap-3">
+              <div class="rounded-circle bg-warning-subtle text-warning d-flex align-items-center justify-content-center flex-shrink-0" style="width: 44px; height: 44px;">
+                <i class="bi bi-clock-history"></i>
+              </div>
+              <div>
+                <div class="small text-secondary">Thời gian làm việc</div>
+                <div class="fw-bold fs-6 text-dark">8:00 - 22:00 (Tất cả các ngày trong tuần)</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-lg-7">
+          <div class="bg-light-subtle rounded-4 p-4 border">
+            <h5 class="fw-bold mb-3"><i class="bi bi-chat-dots-fill text-primary me-2"></i>Cộng đồng & Trợ giúp Trực tuyến</h5>
+            <p class="text-secondary small mb-4">Tham gia nhóm học tập để trao đổi kinh nghiệm học từ vựng, ngữ pháp và nhận tài liệu độc quyền:</p>
+            <div class="row g-3">
+              <div class="col-sm-6">
+                <a href="#" class="card border h-100 p-3 text-decoration-none text-body rounded-3 hover-card">
+                  <div class="d-flex align-items-center gap-3">
+                    <i class="bi bi-discord text-primary fs-3"></i>
+                    <div>
+                      <div class="fw-bold">EnglishMate Discord</div>
+                      <div class="small text-muted">2.4k+ Thành viên hoạt động</div>
+                    </div>
+                  </div>
+                </a>
+              </div>
+              <div class="col-sm-6">
+                <a href="#" class="card border h-100 p-3 text-decoration-none text-body rounded-3 hover-card">
+                  <div class="d-flex align-items-center gap-3">
+                    <i class="bi bi-facebook text-primary fs-3"></i>
+                    <div>
+                      <div class="fw-bold">Group Học viên EnglishMate</div>
+                      <div class="small text-muted">Cộng đồng luyện thi TOEIC</div>
+                    </div>
+                  </div>
+                </a>
+              </div>
+            </div>
+            
+            {% if trace_id %}
+            <div class="mt-4 pt-3 border-top d-flex align-items-center justify-content-between">
+              <span class="small text-secondary font-monospace">Request Trace ID phiên hiện tại: <strong>{{ trace_id }}</strong></span>
+              <button class="btn btn-sm btn-outline-secondary rounded-pill" onclick="navigator.clipboard.writeText('{{ trace_id }}'); this.innerText='Đã chép!';">
+                <i class="bi bi-clipboard"></i> Sao chép ID
+              </button>
+            </div>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Ticket Submission Section (15.3: Ticket System) -->
+  <div class="card border-0 shadow-sm rounded-4 mb-5" id="ticket-form-section">
+    <div class="card-body p-4 p-lg-5">
+      <div class="row">
+        <div class="col-lg-8 mx-auto">
+          <div class="text-center mb-4">
+            <span class="badge bg-primary-subtle text-primary px-3 py-2 rounded-pill fw-semibold mb-2">
+              <i class="bi bi-send-check me-1"></i> Helpdesk Ticket
+            </span>
+            <h3 class="fw-bold">Gửi phiếu yêu cầu hỗ trợ</h3>
+            <p class="text-secondary small">Điền thông tin sự cố của bạn. Kỹ thuật viên sẽ kiểm tra log hệ thống và gửi email phản hồi.</p>
+          </div>
+
+          <form action="{{ url_for('main.create_support_ticket_api') }}" method="POST" id="supportTicketForm">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            
+            <div class="row g-3 mb-3">
+              <div class="col-md-6">
+                <label class="form-label small fw-semibold">Họ và tên <span class="text-danger">*</span></label>
+                <input type="text" class="form-control rounded-3" name="name" value="{{ current_user.username if current_user.is_authenticated else '' }}" required placeholder="Nguyễn Văn A">
+              </div>
+              <div class="col-md-6">
+                <label class="form-label small fw-semibold">Email nhận phản hồi <span class="text-danger">*</span></label>
+                <input type="email" class="form-control rounded-3" name="email" value="{{ current_user.email if current_user.is_authenticated else '' }}" required placeholder="email@domain.com">
+              </div>
+            </div>
+
+            <div class="row g-3 mb-3">
+              <div class="col-md-6">
+                <label class="form-label small fw-semibold">Danh mục vấn đề</label>
+                <select class="form-select rounded-3" name="category">
+                  <option value="TECHNICAL">Lỗi kỹ thuật (Micro, Âm thanh, Mất kết nối)</option>
+                  <option value="ACCOUNT">Tài khoản & Đăng nhập (OTP, Đổi mật khẩu)</option>
+                  <option value="STUDY_CONTENT">Nội dung bài học & Đáp án câu hỏi</option>
+                  <option value="BILLING">Gói học & Thanh toán</option>
+                  <option value="SUGGESTION">Đóng góp ý kiến cải tiến</option>
+                  <option value="OTHER">Vấn đề khác</option>
+                </select>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label small fw-semibold">Mức độ ưu tiên</label>
+                <select class="form-select rounded-3" name="priority">
+                  <option value="LOW">Thấp (Góp ý, hỏi thông tin chung)</option>
+                  <option value="MEDIUM" selected>Bình thường (Cần giải đáp trong ngày)</option>
+                  <option value="HIGH">Cao (Ảnh hưởng tiến độ học tập)</option>
+                  <option value="URGENT">Khẩn cấp (Không thể làm bài / Đăng nhập)</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label small fw-semibold">Tiêu đề sự cố <span class="text-danger">*</span></label>
+              <input type="text" class="form-control rounded-3" name="title" required placeholder="Ví dụ: Không ghi âm được micro trong bài phát âm IPA Part 1">
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label small fw-semibold">Mô tả chi tiết sự cố <span class="text-danger">*</span></label>
+              <textarea class="form-control rounded-3" name="description" rows="4" required placeholder="Mô tả các bước bạn đã thực hiện, thông báo lỗi hiển thị trên màn hình..."></textarea>
+            </div>
+
+            <div class="mb-4">
+              <label class="form-label small fw-semibold">Mã tra cứu lỗi sự cố (Request Trace ID - nếu có)</label>
+              <input type="text" class="form-control rounded-3 font-monospace" name="trace_id" value="{{ trace_id or '' }}" placeholder="Ví dụ: REQ-A1B2C3D4">
+              <div class="form-text small text-muted">Nếu bạn vừa gặp trang báo lỗi 500 hoặc 404, hãy dán mã Trace ID hiển thị trên trang lỗi vào đây.</div>
+            </div>
+
+            <div class="d-flex justify-content-between align-items-center">
+              <a href="{{ url_for('main.support_tickets_page') }}" class="btn btn-link text-decoration-none">
+                <i class="bi bi-clock-history me-1"></i> Tra cứu phiếu đã gửi
+              </a>
+              <button type="submit" class="btn btn-primary px-5 py-2 rounded-pill fw-bold shadow-sm">
+                <i class="bi bi-send-fill me-1"></i> Gửi phiếu hỗ trợ ngay
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

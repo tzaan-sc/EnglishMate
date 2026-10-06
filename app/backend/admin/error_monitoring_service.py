@@ -230,8 +230,16 @@ def record_system_error(
             db.session.commit()
             return existing_log
 
-        # 5. Tạo mới Error Log Record
-        error_uuid = str(uuid.uuid4())
+        # 5. Tạo mới Error Log Record (kết hợp Request Trace ID nếu có)
+        trace_id_ctx = None
+        try:
+            from flask import has_request_context, g
+            if has_request_context() and hasattr(g, "request_id") and g.request_id:
+                trace_id_ctx = g.request_id
+        except Exception:
+            pass
+
+        error_uuid = trace_id_ctx or str(uuid.uuid4())
         params_json_str = json.dumps(req_params, ensure_ascii=False, default=str) if req_params else None
 
         new_log = SystemErrorLog(
@@ -452,6 +460,141 @@ def get_error_incidents_list(
         "has_prev": pagination.has_prev,
         "has_next": pagination.has_next
     }
+
+
+def lookup_error_by_trace_or_id(query_str: str) -> Optional[SystemErrorLog]:
+    """Tra cứu nhanh sự cố lỗi theo Request Trace ID hoặc Error ID hoặc Fingerprint."""
+    if not query_str:
+        return None
+    q = query_str.strip()
+    return SystemErrorLog.query.filter(
+        (SystemErrorLog.error_id == q)
+        | (SystemErrorLog.fingerprint == q)
+        | (SystemErrorLog.sentry_event_id == q)
+    ).first()
+
+
+def get_error_patterns_analysis(days: int = 7) -> List[Dict[str, Any]]:
+    """
+    15.1. Error Patterns: Gom nhóm và phân tích các mẫu lỗi tương tự nhau.
+    Phân loại lỗi thành các cụm mẫu hình (Error Pattern Clusters),
+    thống kê tần suất, đường dẫn bị ảnh hưởng và khuyến nghị tự động khắc phục.
+    """
+    cutoff = datetime.now(timezone.utc) - timedelta(days=days)
+    all_logs = SystemErrorLog.query.filter(SystemErrorLog.created_at >= cutoff).all()
+
+    # Định nghĩa các mẫu phân loại lỗi
+    cluster_definitions = [
+        {
+            "code": "DB_CONNECTION_TIMEOUT",
+            "name": "Sự cố Cơ sở dữ liệu & Kết nối Pool",
+            "icon": "database",
+            "color": "danger",
+            "keywords": ["database", "sql", "sqlite", "operationalerror", "timeout", "disconnection", "connection closed", "pool"],
+            "suggestion": "Kiểm tra giới hạn kết nối DB Pool, kích hoạt DB Auto-reconnect hoặc chuyển chế độ WAL SQLite.",
+        },
+        {
+            "code": "EXTERNAL_SERVICE_AI",
+            "name": "Dịch vụ Ngoại vi AI & API Bên Ngoài",
+            "icon": "cpu",
+            "color": "warning",
+            "keywords": ["gemini", "circuitbreaker", "openai", "connectionerror", "httperror", "requests", "timeout", "api"],
+            "suggestion": "Kích hoạt Circuit Breaker cho AI, tự động thử lại (Retry with Backoff) hoặc nạp câu trả lời dự phòng (Fallback cache).",
+        },
+        {
+            "code": "EMAIL_SMTP_DELIVERY",
+            "name": "Lỗi Gửi Email & Xác thực SMTP",
+            "icon": "mail",
+            "color": "warning",
+            "keywords": ["smtp", "email", "mail", "bounce", "sender", "recipient", "auth_error"],
+            "suggestion": "Kiểm tra cấu hình SMTP Server trong Admin System Settings, kiểm tra hạn ngạch Gmail API hoặc danh sách Bounce.",
+        },
+        {
+            "code": "AUTH_SECURITY_FORBIDDEN",
+            "name": "Bảo mật & Quyền truy cập (401/403/CSRF)",
+            "icon": "shield-lock",
+            "color": "info",
+            "keywords": ["forbidden", "unauthorized", "permission", "csrf", "token", "session", "expired", "403", "401"],
+            "suggestion": "Kiểm tra phân quyền vai trò người dùng (RBAC), thời hạn phiên làm việc và mã Token CSRF.",
+        },
+        {
+            "code": "RESOURCE_NOT_FOUND",
+            "name": "Tài nguyên Không tồn tại (404/Missing Keys)",
+            "icon": "search",
+            "color": "secondary",
+            "keywords": ["not found", "keyerror", "attributeerror", "404", "none has no attribute", "missing"],
+            "suggestion": "Kiểm tra các liên kết hỏng (Broken Links), kiểm tra dữ liệu bài học/từ vựng bị xóa hoặc thiếu ID.",
+        },
+        {
+            "code": "VALIDATION_DATA_INTEGRITY",
+            "name": "Xác thực Dữ liệu & Tính toàn vẹn (400/500)",
+            "icon": "check-circle",
+            "color": "primary",
+            "keywords": ["valueerror", "integrityerror", "constraint", "validation", "typeerror", "invalid format"],
+            "suggestion": "Kiểm tra quy chuẩn dữ liệu đầu vào trên Form, kiểm tra ràng buộc khóa ngoại (Foreign Key Constraints).",
+        },
+    ]
+
+    cluster_map = {c["code"]: {**c, "logs": [], "total_occurrences": 0, "routes": set(), "last_seen": None} for c in cluster_definitions}
+    other_cluster = {
+        "code": "GENERIC_RUNTIME_EXCEPTION",
+        "name": "Ngoại lệ Runtime Hệ thống Khác",
+        "icon": "exclamation-triangle",
+        "color": "secondary",
+        "suggestion": "Kiểm tra Stacktrace chi tiết trong Admin Error Analysis để xác định nguyên nhân.",
+        "logs": [],
+        "total_occurrences": 0,
+        "routes": set(),
+        "last_seen": None
+    }
+
+    for log in all_logs:
+        matched = False
+        text_to_search = f"{log.exception_type} {log.error_message} {log.traceback_text or ''}".lower()
+
+        for c in cluster_definitions:
+            if any(kw in text_to_search for kw in c["keywords"]):
+                target = cluster_map[c["code"]]
+                target["logs"].append(log)
+                target["total_occurrences"] += log.occurrence_count
+                if log.route:
+                    target["routes"].add(log.route)
+                if not target["last_seen"] or (log.last_seen_at and log.last_seen_at > target["last_seen"]):
+                    target["last_seen"] = log.last_seen_at
+                matched = True
+                break
+
+        if not matched:
+            other_cluster["logs"].append(log)
+            other_cluster["total_occurrences"] += log.occurrence_count
+            if log.route:
+                other_cluster["routes"].add(log.route)
+            if not other_cluster["last_seen"] or (log.last_seen_at and log.last_seen_at > other_cluster["last_seen"]):
+                other_cluster["last_seen"] = log.last_seen_at
+
+    result = []
+    all_clusters = list(cluster_map.values())
+    if other_cluster["total_occurrences"] > 0:
+        all_clusters.append(other_cluster)
+
+    for c in all_clusters:
+        if c["total_occurrences"] > 0:
+            result.append({
+                "code": c["code"],
+                "name": c["name"],
+                "icon": c["icon"],
+                "color": c["color"],
+                "total_occurrences": c["total_occurrences"],
+                "unique_incidents": len(c["logs"]),
+                "impacted_routes_count": len(c["routes"]),
+                "sample_route": list(c["routes"])[0] if c["routes"] else "N/A",
+                "sample_message": c["logs"][0].error_message[:150] if c["logs"] else "",
+                "suggestion": c["suggestion"],
+                "last_seen_str": c["last_seen"].strftime("%d/%m/%Y %H:%M") if c["last_seen"] else "N/A"
+            })
+
+    result.sort(key=lambda x: x["total_occurrences"], reverse=True)
+    return result
 
 
 # ===========================================================================

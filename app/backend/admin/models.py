@@ -536,6 +536,78 @@ class SystemErrorLog(db.Model):
 
 
 
+# ===========================================================================
+# 15.3. USER SUPPORT & HELPDESK TICKET MODEL
+# ===========================================================================
+class SupportTicket(db.Model):
+    """
+    Hệ thống phiếu yêu cầu hỗ trợ người dùng (Helpdesk Ticket System).
+    Cho phép học viên gửi báo cáo lỗi kỹ thuật (kèm Trace ID), góp ý và thắc mắc học tập.
+    """
+    __tablename__ = "support_ticket"
+
+    id = db.Column(db.Integer, primary_key=True)
+    ticket_code = db.Column(db.String(36), unique=True, nullable=False, index=True)
+    user_id = db.Column(db.Integer, db.ForeignKey("user.id", ondelete="SET NULL"), nullable=True, index=True)
+    name = db.Column(db.String(100), nullable=True)
+    email = db.Column(db.String(120), nullable=False, index=True)
+    phone = db.Column(db.String(20), nullable=True)
+    category = db.Column(db.String(50), default="TECHNICAL", nullable=False, index=True)
+    priority = db.Column(db.String(20), default="MEDIUM", nullable=False, index=True)
+    title = db.Column(db.String(255), nullable=False)
+    description = db.Column(db.Text, nullable=False)
+    trace_id = db.Column(db.String(64), nullable=True, index=True)
+    status = db.Column(db.String(20), default="OPEN", nullable=False, index=True)
+    admin_reply = db.Column(db.Text, nullable=True)
+    admin_id = db.Column(db.Integer, db.ForeignKey("user.id", ondelete="SET NULL"), nullable=True)
+    resolved_at = db.Column(db.DateTime(timezone=True), nullable=True)
+    created_at = db.Column(db.DateTime(timezone=True), default=now, nullable=False, index=True)
+    updated_at = db.Column(db.DateTime(timezone=True), default=now, onupdate=now, nullable=False)
+
+    user = db.relationship("User", foreign_keys=[user_id], backref=db.backref("support_tickets", lazy="dynamic"))
+    admin_user = db.relationship("User", foreign_keys=[admin_id])
+
+    @property
+    def status_badge_class(self) -> str:
+        mapping = {
+            "OPEN": "bg-warning-subtle text-warning border border-warning-subtle",
+            "IN_PROGRESS": "bg-primary-subtle text-primary border border-primary-subtle",
+            "RESOLVED": "bg-success-subtle text-success border border-success-subtle",
+            "CLOSED": "bg-secondary-subtle text-secondary border border-secondary-subtle",
+        }
+        return mapping.get(self.status.upper(), "bg-secondary-subtle text-secondary")
+
+    @property
+    def priority_badge_class(self) -> str:
+        mapping = {
+            "URGENT": "bg-danger text-white",
+            "HIGH": "bg-danger-subtle text-danger border border-danger-subtle",
+            "MEDIUM": "bg-warning-subtle text-warning border border-warning-subtle",
+            "LOW": "bg-info-subtle text-info border border-info-subtle",
+        }
+        return mapping.get(self.priority.upper(), "bg-secondary-subtle text-secondary")
+
+    @property
+    def category_label(self) -> str:
+        mapping = {
+            "TECHNICAL": "Lỗi kỹ thuật",
+            "ACCOUNT": "Tài khoản & Đăng nhập",
+            "STUDY_CONTENT": "Nội dung bài học",
+            "BILLING": "Gói học & Thanh toán",
+            "SUGGESTION": "Đóng góp ý kiến",
+            "OTHER": "Vấn đề khác",
+        }
+        return mapping.get(self.category.upper(), self.category)
+
+    @property
+    def created_at_vn(self):
+        return (self.created_at + timedelta(hours=7)) if self.created_at else None
+
+    @property
+    def resolved_at_vn(self):
+        return (self.resolved_at + timedelta(hours=7)) if self.resolved_at else None
+
+
 # ---------------------------------------------------------------------------
 # AUTOMATIC PERMISSION CACHE INVALIDATION HOOKS (MỤC 11.2)
 # ---------------------------------------------------------------------------

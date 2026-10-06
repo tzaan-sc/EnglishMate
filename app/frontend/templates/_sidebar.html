@@ -110,6 +110,18 @@
                     <span>Giám sát APM & Tải</span>
                 </a>
             </li>
+            <li class="nav-item">
+                <a class="nav-link-modern {% if request.path.startswith('/admin/tickets') %}active{% endif %}" href="{{ url_for('admin.admin_tickets_dashboard') }}" title="Quản lý Phiếu Hỗ trợ">
+                    <i class="ph-bold ph-ticket fs-5 text-primary" style="width: 20px; text-align: center;"></i>
+                    <span>Quản lý Phiếu Hỗ trợ</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link-modern {% if request.path.startswith('/admin/system/recovery') or request.path.startswith('/admin/recovery') %}active{% endif %}" href="{{ url_for('admin.system_recovery_dashboard') }}" title="Tự phục hồi & Circuit Breakers">
+                    <i class="ph-bold ph-heartbeat fs-5 text-danger" style="width: 20px; text-align: center;"></i>
+                    <span>Tự phục hồi & Circuit Breakers</span>
+                </a>
+            </li>
             <li class="nav-item mb-2">
                 <a class="nav-link-modern {% if request.path.startswith('/admin/system/monitoring') or request.path.startswith('/admin/monitoring') %}active{% endif %}" href="{{ url_for('admin.system_monitoring') }}" title="Giám sát Tài nguyên & Log">
                     <i class="ph-bold ph-activity fs-5 text-primary" style="width: 20px; text-align: center;"></i>

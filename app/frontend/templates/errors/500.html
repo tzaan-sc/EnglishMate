@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+
+{% block title %}500 - Sự cố máy chủ · EnglishMate{% endblock %}
+
+{% block content %}
+<section class="container py-5 my-md-5">
+  <div class="row justify-content-center">
+    <div class="col-lg-8 col-xl-7 text-center">
+      <!-- Error Illustration / Icon -->
+      <div class="mb-4 d-inline-flex align-items-center justify-content-center rounded-circle bg-danger-subtle text-danger p-4 shadow-sm" style="width: 100px; height: 100px;">
+        <i class="bi bi-exclamation-octagon-fill" style="font-size: 3rem;"></i>
+      </div>
+
+      <span class="badge bg-danger-subtle text-danger px-3 py-2 rounded-pill fw-bold mb-3 fs-6">
+        Lỗi hệ thống 500 (Internal Server Error)
+      </span>
+
+      <h1 class="fw-bold mb-3">Đã xảy ra sự cố ngoài ý muốn</h1>
+      <p class="text-secondary fs-6 mb-4 leading-relaxed">
+        Hệ thống EnglishMate vừa ghi nhận một lỗi nội bộ bất thường. Đội ngũ kỹ thuật viên đã nhận được cảnh báo tự động và đang tiến hành khắc phục ngay.
+      </p>
+
+      <!-- Request Trace ID Pill (Mục 15.1: Error Correlation) -->
+      {% if request_id or g.request_id %}
+      {% set tid = request_id or g.request_id %}
+      <div class="card border-0 shadow-sm rounded-4 bg-light-subtle p-3 p-md-4 mb-4 text-start">
+        <div class="d-flex align-items-center justify-content-between mb-2">
+          <span class="text-secondary small fw-medium">
+            <i class="bi bi-shield-check text-primary me-1"></i> Mã định danh tra cứu sự cố (Request Trace ID)
+          </span>
+          <span class="badge bg-primary-subtle text-primary rounded-pill px-2 py-1 small">Correlation ID</span>
+        </div>
+        <div class="d-flex align-items-center justify-content-between bg-body p-2 rounded-3 border">
+          <code class="fs-6 fw-bold text-primary font-monospace px-2" id="traceIdText">{{ tid }}</code>
+          <button type="button" class="btn btn-sm btn-outline-primary rounded-pill px-3" onclick="copyTraceId('{{ tid }}')" id="copyTraceBtn">
+            <i class="bi bi-clipboard me-1"></i> Sao chép
+          </button>
+        </div>
+        <p class="small text-muted mb-0 mt-2">
+          <i class="bi bi-info-circle me-1"></i> Bạn hãy gửi mã này cho bộ phận kỹ thuật để được tra cứu log và giải quyết sự cố tức thì.
+        </p>
+      </div>
+      {% endif %}
+
+      <!-- Action Buttons -->
+      <div class="d-flex flex-wrap justify-content-center gap-3">
+        <a href="{{ url_for('main.index') }}" class="btn btn-primary px-4 py-2 rounded-pill fw-medium shadow-sm">
+          <i class="bi bi-house-door me-1"></i> Về Trang chủ
+        </a>
+        <a href="{{ url_for('main.support_center') }}{% if tid %}?trace_id={{ tid }}{% endif %}" class="btn btn-outline-danger px-4 py-2 rounded-pill fw-medium">
+          <i class="bi bi-headset me-1"></i> Trung tâm Hỗ trợ
+        </a>
+        <button type="button" class="btn btn-light border px-4 py-2 rounded-pill fw-medium" onclick="window.location.reload()">
+          <i class="bi bi-arrow-clockwise me-1"></i> Tải lại trang
+        </button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+function copyTraceId(text) {
+  navigator.clipboard.writeText(text).then(function() {
+    const btn = document.getElementById('copyTraceBtn');
+    if (btn) {
+      btn.innerHTML = '<i class="bi bi-check2 me-1"></i> Đã sao chép!';
+      btn.classList.replace('btn-outline-primary', 'btn-success');
+      setTimeout(() => {
+        btn.innerHTML = '<i class="bi bi-clipboard me-1"></i> Sao chép';
+        btn.classList.replace('btn-success', 'btn-outline-primary');
+      }, 2500);
+    }
+  });
+}
+</script>
+{% endblock %}

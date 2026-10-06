@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+
+{% block title %}Video Hướng dẫn Học tập · EnglishMate{% endblock %}
+
+{% block content %}
+<div class="container py-4 py-lg-5">
+  <!-- Header Banner -->
+  <div class="text-center mb-5">
+    <span class="badge bg-info-subtle text-info px-3 py-2 rounded-pill fw-bold mb-2">
+      <i class="bi bi-play-btn-fill me-1"></i> Video Learning Walkthroughs
+    </span>
+    <h1 class="fw-bold display-6 mb-3">Thư viện Video Hướng dẫn</h1>
+    <p class="text-secondary fs-6 max-w-2xl mx-auto">
+      Khám phá các video ngắn trực quan giúp bạn nắm vững mọi tính năng học tập trên EnglishMate từ A đến Z.
+    </p>
+  </div>
+
+  <!-- Video Grid -->
+  <div class="row g-4 mb-5">
+    {% for vid in videos %}
+    <div class="col-md-6 col-lg-6">
+      <div class="card border-0 shadow-sm rounded-4 overflow-hidden h-100 bg-body hover-card">
+        <!-- Thumbnail with play button -->
+        <div class="position-relative" style="height: 220px; background: #1e293b;">
+          <img src="{{ vid.thumbnail }}" alt="{{ vid.title }}" class="w-100 h-100 object-fit-cover opacity-75">
+          <div class="position-absolute top-50 start-50 translate-middle">
+            <button type="button" class="btn btn-danger btn-lg rounded-circle shadow p-0 d-flex align-items-center justify-content-center" style="width: 60px; height: 60px;" onclick="openVideoModal('{{ vid.title }}', '{{ vid.video_url }}')">
+              <i class="bi bi-play-fill fs-2 ps-1"></i>
+            </button>
+          </div>
+          <span class="position-absolute bottom-0 end-0 m-3 badge bg-dark bg-opacity-75 text-white font-monospace">
+            <i class="bi bi-clock me-1"></i> {{ vid.duration }}
+          </span>
+          <span class="position-absolute top-0 start-0 m-3 badge bg-primary text-white">
+            {{ vid.badge }}
+          </span>
+        </div>
+
+        <div class="card-body p-4 d-flex flex-column">
+          <span class="small text-muted fw-semibold mb-1">{{ vid.category }}</span>
+          <h5 class="fw-bold mb-2 text-dark">{{ vid.title }}</h5>
+          <p class="text-secondary small mb-3 flex-grow-1">{{ vid.description }}</p>
+          <button type="button" class="btn btn-outline-primary rounded-pill w-100 fw-medium" onclick="openVideoModal('{{ vid.title }}', '{{ vid.video_url }}')">
+            <i class="bi bi-play-circle me-1"></i> Xem video ngay
+          </button>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+
+<!-- Video Player Modal -->
+<div class="modal fade" id="videoPlayerModal" tabindex="-1" aria-labelledby="videoModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content rounded-4 border-0 shadow overflow-hidden bg-dark text-white">
+      <div class="modal-header border-0 pb-0">
+        <h5 class="modal-title fs-6 fw-bold" id="videoModalLabel">Video Player</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close" onclick="closeVideoModal()"></button>
+      </div>
+      <div class="modal-body p-3">
+        <div class="ratio ratio-16x9 rounded-3 overflow-hidden bg-black">
+          <iframe id="videoIframe" src="" title="Video tutorial" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+function openVideoModal(title, url) {
+  document.getElementById('videoModalLabel').innerText = title;
+  document.getElementById('videoIframe').src = url + '?autoplay=1';
+  const modal = new bootstrap.Modal(document.getElementById('videoPlayerModal'));
+  modal.show();
+}
+
+function closeVideoModal() {
+  document.getElementById('videoIframe').src = '';
+}
+
+document.getElementById('videoPlayerModal').addEventListener('hidden.bs.modal', function () {
+  closeVideoModal();
+});
+</script>
+{% endblock %}
