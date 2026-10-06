@@ -190,3 +190,13 @@
 [2026-10-06 20:17:30] [560.0ms] SELECT * FROM vocabulary WHERE topic = 'Topic_2' AND id > 80
 [2026-10-06 20:17:30] [580.0ms] SELECT * FROM vocabulary WHERE topic = 'Topic_0' AND id > 90
 [2026-10-06 20:17:30] [600.0ms] SELECT * FROM vocabulary WHERE topic = 'Topic_1' AND id > 100
+[2026-10-06 20:21:15] [420.0ms] SELECT * FROM vocabulary WHERE topic = 'Topic_1' AND id > 10
+[2026-10-06 20:21:15] [440.0ms] SELECT * FROM vocabulary WHERE topic = 'Topic_2' AND id > 20
+[2026-10-06 20:21:15] [460.0ms] SELECT * FROM vocabulary WHERE topic = 'Topic_0' AND id > 30
+[2026-10-06 20:21:15] [480.0ms] SELECT * FROM vocabulary WHERE topic = 'Topic_1' AND id > 40
+[2026-10-06 20:21:15] [500.0ms] SELECT * FROM vocabulary WHERE topic = 'Topic_2' AND id > 50
+[2026-10-06 20:21:15] [520.0ms] SELECT * FROM vocabulary WHERE topic = 'Topic_0' AND id > 60
+[2026-10-06 20:21:15] [540.0ms] SELECT * FROM vocabulary WHERE topic = 'Topic_1' AND id > 70
+[2026-10-06 20:21:15] [560.0ms] SELECT * FROM vocabulary WHERE topic = 'Topic_2' AND id > 80
+[2026-10-06 20:21:15] [580.0ms] SELECT * FROM vocabulary WHERE topic = 'Topic_0' AND id > 90
+[2026-10-06 20:21:15] [600.0ms] SELECT * FROM vocabulary WHERE topic = 'Topic_1' AND id > 100

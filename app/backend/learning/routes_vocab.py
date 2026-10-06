@@ -859,7 +859,7 @@ def flashcard_set_create():
 @login_required
 def flashcard_set_edit(set_id):
     from .models import FlashcardSet, FlashcardItem
-    fset = FlashcardSet.query.get_or_404(set_id)
+    fset = db.get_or_404(FlashcardSet, set_id)
     if fset.user_id != current_user.id:
         abort(403)
         
@@ -927,7 +927,7 @@ def flashcard_set_edit(set_id):
 @login_required
 def flashcard_set_view(set_id):
     from .models import FlashcardSet
-    fset = FlashcardSet.query.get_or_404(set_id)
+    fset = db.get_or_404(FlashcardSet, set_id)
     # Check permissions
     if not fset.is_public and fset.user_id != current_user.id:
         abort(403)
@@ -938,7 +938,7 @@ def flashcard_set_view(set_id):
 @login_required
 def flashcard_set_sync(set_id):
     from .models import FlashcardSet, FlashcardProgress
-    fset = FlashcardSet.query.get_or_404(set_id)
+    fset = db.get_or_404(FlashcardSet, set_id)
     if not fset.is_public and fset.user_id != current_user.id:
         abort(403)
 
@@ -1000,7 +1000,7 @@ def flashcard_set_sync(set_id):
 @login_required
 def flashcard_set_delete(set_id):
     from .models import FlashcardSet
-    fset = FlashcardSet.query.get_or_404(set_id)
+    fset = db.get_or_404(FlashcardSet, set_id)
     if fset.user_id != current_user.id:
         abort(403)
         
@@ -1045,7 +1045,7 @@ def _clone_flashcard_set(share_code=None, set_id=None):
     from .models import FlashcardSet, FlashcardItem
     fset = None
     if set_id is not None:
-        fset = FlashcardSet.query.get_or_404(set_id)
+        fset = db.get_or_404(FlashcardSet, set_id)
     elif share_code:
         fset = FlashcardSet.query.filter_by(share_code=share_code).first()
         if not fset and share_code.isdigit():
@@ -1092,7 +1092,7 @@ def _clone_flashcard_set(share_code=None, set_id=None):
 @login_required
 def flashcard_set_toggle_privacy(set_id):
     from .models import FlashcardSet
-    fset = FlashcardSet.query.get_or_404(set_id)
+    fset = db.get_or_404(FlashcardSet, set_id)
     if fset.user_id != current_user.id:
         abort(403)
 
