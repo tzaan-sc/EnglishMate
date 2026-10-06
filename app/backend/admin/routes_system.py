@@ -972,6 +972,215 @@ def run_auto_restore_route():
     return jsonify(res)
 
 
+# ---------------------------------------------------------------------------
+# EMAIL SYSTEM MANAGEMENT & ANALYTICS ROUTES (MỤC 12.4)
+# ---------------------------------------------------------------------------
+from .models import EmailLog, EmailTemplate, EmailBounce
+from .email_service import (
+    init_default_email_templates,
+    get_email_analytics,
+    enqueue_email,
+    send_templated_email,
+    process_scheduled_email_queue,
+)
+
+
+@bp.get("/system/email")
+@bp.get("/email")
+@admin_required
+def email_system_dashboard():
+    """Giao diện Quản trị Hệ thống Email: Mẫu HTML, Analytics, Hàng đợi & Lịch sử gửi, Bounces."""
+    init_default_email_templates()
+    templates = EmailTemplate.query.order_by(EmailTemplate.id.asc()).all()
+    recent_logs = EmailLog.query.order_by(EmailLog.created_at.desc()).limit(50).all()
+    bounces = EmailBounce.query.order_by(EmailBounce.created_at.desc()).all()
+    analytics = get_email_analytics(days=30)
+
+    return render_template(
+        "admin/email_system.html",
+        templates=templates,
+        recent_logs=recent_logs,
+        bounces=bounces,
+        analytics=analytics
+    )
+
+
+@bp.get("/system/email/analytics")
+@bp.get("/email/analytics")
+@admin_required
+def email_analytics_api():
+    """API lấy dữ liệu thống kê phân tích hiệu suất email (Open rate, Bounce, timeline)."""
+    days = request.args.get("days", default=30, type=int)
+    analytics = get_email_analytics(days=days)
+    return jsonify({"success": True, "analytics": analytics})
+
+
+@bp.post("/system/email/templates/<int:template_id>")
+@bp.post("/email/templates/<int:template_id>")
+@admin_required
+def update_email_template_route(template_id):
+    """Cập nhật nội dung tiêu đề và mã HTML của mẫu email."""
+    tpl = db.session.get(EmailTemplate, template_id)
+    if not tpl:
+        return jsonify({"success": False, "error": "Mẫu email không tồn tại."}), 404
+
+    data = request.get_json(silent=True) or request.form
+    if "subject" in data and data["subject"].strip():
+        tpl.subject = data["subject"].strip()
+    if "html_content" in data:
+        tpl.html_content = data["html_content"]
+    if "is_active" in data:
+        val = data["is_active"]
+        tpl.is_active = val if isinstance(val, bool) else str(val).lower() in ("true", "1", "yes")
+
+    db.session.commit()
+
+    log_audit_action(
+        user_id=current_user.id,
+        action="UPDATE_EMAIL_TEMPLATE",
+        target_type="EMAIL_TEMPLATE",
+        target_id=str(tpl.id),
+        details=f"Cập nhật mẫu email '{tpl.name}' ({tpl.key})"
+    )
+
+    if request.is_json:
+        return jsonify({"success": True, "message": f"Đã lưu mẫu email '{tpl.name}' thành công!"})
+
+    flash(f"Đã lưu mẫu email '{tpl.name}' thành công!", "success")
+    return redirect(url_for("admin.email_system_dashboard"))
+
+
+@bp.post("/system/email/templates/preview")
+@bp.post("/email/templates/preview")
+@admin_required
+def preview_email_template_route():
+    """Render HTML xem trước của mẫu email với dữ liệu thử nghiệm."""
+    data = request.get_json(silent=True) or request.form
+    subject_raw = data.get("subject", "")
+    html_raw = data.get("html_content", "")
+    variables_map = data.get("variables") or {}
+    if isinstance(variables_map, str):
+        try:
+            variables_map = json.loads(variables_map)
+        except Exception:
+            variables_map = {}
+
+    rendered_subject = subject_raw
+    rendered_html = html_raw
+    for k, v in variables_map.items():
+        rendered_subject = rendered_subject.replace("{{" + f" {k} " + "}}", str(v)).replace("{{" + k + "}}", str(v))
+        rendered_html = rendered_html.replace("{{" + f" {k} " + "}}", str(v)).replace("{{" + k + "}}", str(v))
+
+    return jsonify({
+        "success": True,
+        "subject": rendered_subject,
+        "html_content": rendered_html
+    })
+
+
+@bp.post("/system/email/send-test")
+@bp.post("/email/send-test")
+@admin_required
+def send_test_email_route():
+    """Gửi email thử nghiệm hoặc hẹn giờ gửi email từ Admin."""
+    data = request.get_json(silent=True) or request.form
+    to_email = data.get("recipient", "").strip()
+    template_key = data.get("template_key", "").strip()
+    subject = data.get("subject", "").strip()
+    html_content = data.get("html_content", "").strip()
+    schedule_iso = data.get("scheduled_at", "").strip()
+
+    if not to_email:
+        return jsonify({"success": False, "error": "Vui lòng nhập email người nhận."}), 400
+
+    scheduled_at_dt = None
+    if schedule_iso:
+        try:
+            scheduled_at_dt = datetime.fromisoformat(schedule_iso.replace("Z", "+00:00"))
+        except Exception:
+            pass
+
+    if template_key:
+        context = data.get("context") or {
+            "username": "Học viên Test",
+            "otp_code": "888999",
+            "expire_minutes": 15,
+            "reset_url": "https://englishmate.vn/auth/reset-password?token=sample",
+            "target_goal": "50 XP",
+            "study_url": "https://englishmate.vn/learning/vocabulary",
+            "dashboard_url": "https://englishmate.vn/dashboard",
+            "title": "Thông báo kiểm thử hệ thống",
+            "message_content": "Đây là email kiểm tra tính năng hàng đợi và tracking.",
+            "cta_text": "Xem ngay",
+            "cta_url": "https://englishmate.vn"
+        }
+        res = send_templated_email(
+            to_email=to_email,
+            template_key=template_key,
+            context=context,
+            scheduled_at=scheduled_at_dt,
+            admin_id=current_user.id
+        )
+    else:
+        res = enqueue_email(
+            to_email=to_email,
+            subject=subject or "[EnglishMate] Test Email",
+            html_content=html_content or "<p>Nội dung kiểm tra hệ thống email EnglishMate.</p>",
+            email_type="ADMIN_TEST",
+            scheduled_at=scheduled_at_dt,
+            admin_id=current_user.id
+        )
+
+    log_audit_action(
+        user_id=current_user.id,
+        action="SEND_ADMIN_EMAIL",
+        target_type="EMAIL_LOG",
+        details=f"Admin gửi email tới {to_email} (Type: {template_key or 'CUSTOM'}, Status: {res.get('status')})"
+    )
+
+    if request.is_json:
+        return jsonify(res)
+
+    flash("Đã đưa email vào hàng đợi gửi thành công!", "success")
+    return redirect(url_for("admin.email_system_dashboard"))
+
+
+@bp.post("/system/email/process-queue")
+@bp.post("/email/process-queue")
+@admin_required
+def process_email_queue_route():
+    """Kích hoạt quét và gửi các email hẹn giờ đến hạn trong hàng đợi."""
+    processed = process_scheduled_email_queue()
+    msg = f"Đã xử lý gửi {processed} email hẹn giờ thành công." if processed > 0 else "Không có email hẹn giờ nào đến hạn."
+    if request.is_json:
+        return jsonify({"success": True, "processed_count": processed, "message": msg})
+    flash(msg, "info")
+    return redirect(url_for("admin.email_system_dashboard"))
+
+
+@bp.post("/system/email/bounces/delete/<int:bounce_id>")
+@bp.post("/email/bounces/delete/<int:bounce_id>")
+@admin_required
+def delete_email_bounce_route(bounce_id):
+    """Gỡ bỏ địa chỉ email khỏi danh sách Bounce để cho phép gửi lại."""
+    bounce = db.session.get(EmailBounce, bounce_id)
+    if bounce:
+        email_str = bounce.email
+        db.session.delete(bounce)
+        db.session.commit()
+        log_audit_action(
+            user_id=current_user.id,
+            action="UNBLOCK_EMAIL_BOUNCE",
+            target_type="EMAIL_BOUNCE",
+            target_id=str(bounce_id),
+            details=f"Gỡ bỏ email khỏi Bounce blocklist: {email_str}"
+        )
+    if request.is_json:
+        return jsonify({"success": True, "message": "Đã gỡ bỏ email khỏi danh sách chặn Bounce."})
+    flash("Đã gỡ bỏ email khỏi danh sách chặn Bounce.", "success")
+    return redirect(url_for("admin.email_system_dashboard"))
+
+
 
 
 

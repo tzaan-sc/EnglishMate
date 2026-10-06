@@ -5,6 +5,8 @@ __pycache__/
 .pytest_cache/
 .env
 instance/*.db
+instance/backups/
+app/frontend/static/uploads/avatars/avatar_*
 htmlcov/
 .coverage
 .env.example

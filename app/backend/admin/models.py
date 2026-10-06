@@ -270,6 +270,106 @@ class DatabaseBackup(db.Model):
 
 
 # ---------------------------------------------------------------------------
+# EMAIL SYSTEM MODELS (MỤC 12.4)
+# ---------------------------------------------------------------------------
+
+class EmailLog(db.Model):
+    """Lưu vết tất cả email được gửi đi, tracking trạng thái mở/click và bounce."""
+    id = db.Column(db.Integer, primary_key=True)
+    tracking_id = db.Column(db.String(64), unique=True, nullable=False, index=True)
+    recipient = db.Column(db.String(255), nullable=False, index=True)
+    subject = db.Column(db.String(255), nullable=False)
+    email_type = db.Column(db.String(50), default="NOTIFICATION", nullable=False, index=True)
+    status = db.Column(db.String(50), default="QUEUED", nullable=False, index=True)  # QUEUED, SENDING, SENT, OPENED, CLICKED, BOUNCED, FAILED
+    error_message = db.Column(db.Text, nullable=True)
+    bounce_reason = db.Column(db.String(255), nullable=True)
+    open_count = db.Column(db.Integer, default=0, nullable=False)
+    click_count = db.Column(db.Integer, default=0, nullable=False)
+    opened_at = db.Column(db.DateTime(timezone=True), nullable=True)
+    clicked_at = db.Column(db.DateTime(timezone=True), nullable=True)
+    scheduled_at = db.Column(db.DateTime(timezone=True), nullable=True, index=True)
+    sent_at = db.Column(db.DateTime(timezone=True), nullable=True, index=True)
+    created_by_id = db.Column(db.Integer, db.ForeignKey("user.id", ondelete="SET NULL"), nullable=True, index=True)
+    created_at = db.Column(db.DateTime(timezone=True), default=now, nullable=False, index=True)
+
+    created_by = db.relationship("User", backref=db.backref("sent_emails", lazy="dynamic"))
+
+    @property
+    def created_at_vn(self):
+        if not self.created_at:
+            return None
+        return self.created_at + timedelta(hours=7)
+
+    @property
+    def sent_at_vn(self):
+        if not self.sent_at:
+            return None
+        return self.sent_at + timedelta(hours=7)
+
+    @property
+    def opened_at_vn(self):
+        if not self.opened_at:
+            return None
+        return self.opened_at + timedelta(hours=7)
+
+
+class EmailTemplate(db.Model):
+    """Mẫu HTML email có thể tùy chỉnh động qua giao diện quản trị Admin."""
+    id = db.Column(db.Integer, primary_key=True)
+    key = db.Column(db.String(100), unique=True, nullable=False, index=True)
+    name = db.Column(db.String(150), nullable=False)
+    subject = db.Column(db.String(255), nullable=False)
+    html_content = db.Column(db.Text, nullable=False)
+    text_content = db.Column(db.Text, nullable=True)
+    variables_json = db.Column(db.Text, nullable=True)  # JSON list string e.g. ["username", "otp_code"]
+    description = db.Column(db.String(255), nullable=True)
+    is_active = db.Column(db.Boolean, default=True, nullable=False)
+    updated_at = db.Column(db.DateTime(timezone=True), default=now, onupdate=now, nullable=False)
+
+    @property
+    def variables_list(self) -> list:
+        if not self.variables_json:
+            return []
+        try:
+            parsed = json.loads(self.variables_json)
+            return parsed if isinstance(parsed, list) else []
+        except Exception:
+            return []
+
+    def render(self, context: dict = None) -> tuple:
+        """Render tiêu đề và nội dung HTML email với các biến context truyền vào."""
+        ctx = context or {}
+        rendered_subject = self.subject
+        rendered_html = self.html_content
+        rendered_text = self.text_content or ""
+
+        for k, v in ctx.items():
+            placeholder = "{{" + f" {k} " + "}}"
+            placeholder_no_space = "{{" + k + "}}"
+            rendered_subject = rendered_subject.replace(placeholder, str(v)).replace(placeholder_no_space, str(v))
+            rendered_html = rendered_html.replace(placeholder, str(v)).replace(placeholder_no_space, str(v))
+            rendered_text = rendered_text.replace(placeholder, str(v)).replace(placeholder_no_space, str(v))
+
+        return rendered_subject, rendered_html, rendered_text
+
+
+class EmailBounce(db.Model):
+    """Danh sách các địa chỉ email không tồn tại hoặc bị từ chối (Bounce List)."""
+    id = db.Column(db.Integer, primary_key=True)
+    email = db.Column(db.String(255), unique=True, nullable=False, index=True)
+    bounce_type = db.Column(db.String(50), default="HARD_BOUNCE", nullable=False)  # HARD_BOUNCE, SOFT_BOUNCE, SYNTAX_ERROR
+    reason = db.Column(db.String(255), nullable=True)
+    is_blocked = db.Column(db.Boolean, default=True, nullable=False)
+    created_at = db.Column(db.DateTime(timezone=True), default=now, nullable=False, index=True)
+
+    @property
+    def created_at_vn(self):
+        if not self.created_at:
+            return None
+        return self.created_at + timedelta(hours=7)
+
+
+# ---------------------------------------------------------------------------
 # AUTOMATIC PERMISSION CACHE INVALIDATION HOOKS (MỤC 11.2)
 # ---------------------------------------------------------------------------
 from sqlalchemy import event

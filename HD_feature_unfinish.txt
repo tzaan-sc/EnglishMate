@@ -543,13 +543,13 @@ MODULE 12. SYSTEM FEATURES (TÍNH NĂNG HỆ THỐNG) — 46 TÍNH NĂNG CHƯA L
 - [x] `Audio Processing`: Module xử lý chuẩn hóa âm lượng audio (`normalize_audio_volume`) cân chỉnh biên độ âm thanh đạt mức peak dBFS tiêu chuẩn (hỗ trợ Pydub & Pure Python WAV). (Ưu tiên: Thấp)
 - [x] `File Backup`: Đóng gói nén ZIP thư mục `static/uploads/` và sao lưu an toàn lên Cloud Storage (AWS S3 / Cloudinary / Local Archive) kèm giao diện quản trị Admin. (Ưu tiên: Cao)
 
-12.4. Email System (6 tính năng chưa làm):
-- [ ] `Email Queue`: Hiện tại gửi email bằng `smtplib` đồng bộ, nếu mạng chậm sẽ gây đơ trang web. Cần hàng đợi gửi mail bất đồng bộ. (Ưu tiên: Cao)
-- [ ] `Email Tracking`: Chưa theo dõi tỷ lệ người dùng mở email kích hoạt / reset mật khẩu. (Ưu tiên: Thấp)
-- [ ] `Email Bounce Handling`: Chưa xử lý các trường hợp hòm thư người nhận không tồn tại. (Ưu tiên: Thấp)
-- [ ] `Email Analytics`: Chưa có biểu đồ thống kê số lượng email gửi đi mỗi ngày. (Ưu tiên: Thấp)
-- [ ] `Email Scheduling`: Chưa có tính năng hẹn giờ gửi email. (Ưu tiên: Thấp)
-- [ ] `Email Templates Management`: Chưa có giao diện Admin để sửa nội dung mẫu HTML email. (Ưu tiên: Trung bình)
+12.4. Email System (6/6 tính năng hoàn thành):
+- [x] `Email Queue`: Hàng đợi gửi email bất đồng bộ non-blocking bằng ThreadPoolExecutor ngầm và lưu vết EmailLog chi tiết, tránh đơ trang khi mạng chậm/SMTP trễ. (Ưu tiên: Cao)
+- [x] `Email Tracking`: Theo dõi lượt mở email thông qua tracking pixel 1px và lượt click liên kết trong email qua endpoint `/email/track/click/<tracking_id>`. (Ưu tiên: Thấp)
+- [x] `Email Bounce Handling`: Tự động nhận diện lỗi SMTP hard bounce / soft bounce / hòm thư không tồn tại và đưa vào danh sách chặn EmailBounce để tránh gửi lại. (Ưu tiên: Thấp)
+- [x] `Email Analytics`: Biểu đồ thống kê số lượng email gửi đi mỗi ngày, tỷ lệ mở (Open rate), tỷ lệ click (CTR), tỷ lệ bounce và phân bổ theo loại email. (Ưu tiên: Thấp)
+- [x] `Email Scheduling`: Hỗ trợ đặt lịch hẹn giờ gửi email trong tương lai (`scheduled_at`) và API/worker quét xử lý hàng đợi tự động. (Ưu tiên: Thấp)
+- [x] `Email Templates Management`: Giao diện Admin quản trị nội dung mẫu HTML email (`EmailTemplate`), hỗ trợ xem trước (Preview), chỉnh sửa linh hoạt với placeholder variables. (Ưu tiên: Trung bình)
 
 12.5. Background Processing (6 tính năng chưa làm):
 - [ ] `Task Queue`: Chưa cài đặt Celery hoặc Redis Queue (RQ) làm hàng đợi tác vụ nền chuẩn. (Ưu tiên: Cao)

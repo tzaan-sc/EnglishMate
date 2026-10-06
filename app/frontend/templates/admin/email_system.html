@@ -1,0 +1,706 @@
+{% extends "base.html" %}
+{% block title %}Hệ thống Email & Phân tích Tương tác · EnglishMate Admin{% endblock %}
+
+{% block content %}
+<div class="container-fluid max-w-7xl py-4">
+
+  <!-- Breadcrumb Navigation -->
+  <nav class="app-breadcrumb mb-3" aria-label="breadcrumb">
+    <ol class="breadcrumb mb-0 align-items-center flex-wrap">
+      <li class="breadcrumb-item">
+        <a href="{{ url_for('admin.dashboard') }}" class="d-inline-flex align-items-center gap-1">
+          <i class="ph-bold ph-shield-check"></i>
+          <span>Quản trị Hệ thống</span>
+        </a>
+      </li>
+      <li class="breadcrumb-item active" aria-current="page">
+        <span>Hệ thống Email & Phân tích</span>
+      </li>
+    </ol>
+  </nav>
+
+  <!-- Page Header -->
+  <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
+    <div class="d-flex align-items-center gap-3">
+      <div class="rounded-3 bg-warning-subtle text-warning border border-warning-subtle d-inline-flex align-items-center justify-content-center flex-shrink-0" style="width: 48px; height: 48px; font-size: 1.45rem;">
+        <i class="ph-bold ph-envelope-simple"></i>
+      </div>
+      <div>
+        <h3 class="fw-bold text-dark mb-0.5" style="letter-spacing: -0.01em;">Quản lý Hệ thống Email (Email System)</h3>
+        <p class="text-secondary small mb-0">Hàng đợi gửi bất đồng bộ, theo dõi Open/Click Rate, xử lý Bounce, hẹn giờ và tùy chỉnh mẫu HTML</p>
+      </div>
+    </div>
+    <div class="d-flex align-items-center gap-2 flex-wrap">
+      <button type="button" class="btn btn-outline-secondary fw-semibold px-3 py-2 rounded-3 shadow-2xs d-inline-flex align-items-center gap-1.5" onclick="processScheduledQueue()" title="Quét hàng đợi hẹn giờ">
+        <i class="ph-bold ph-clock-counter-clockwise fs-5"></i>
+        <span>Xử lý Hàng đợi</span>
+      </button>
+      <button type="button" class="btn btn-primary fw-bold px-3.5 py-2 rounded-3 shadow-xs d-inline-flex align-items-center gap-1.5" data-bs-toggle="modal" data-bs-target="#sendEmailModal">
+        <i class="ph-bold ph-paper-plane-tilt fs-5"></i>
+        <span>Gửi / Hẹn giờ Email</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Metric Overview Cards -->
+  <div class="row g-3 mb-4">
+    <div class="col-12 col-sm-6 col-lg-3">
+      <div class="card-modern p-3.5 h-100 d-flex align-items-center gap-3 border shadow-2xs">
+        <div class="rounded-circle bg-primary-subtle text-primary d-inline-flex align-items-center justify-content-center flex-shrink-0" style="width: 46px; height: 46px;">
+          <i class="ph-bold ph-paper-plane fs-4"></i>
+        </div>
+        <div>
+          <span class="text-secondary small fw-semibold d-block">Tổng số đã gửi</span>
+          <h4 class="fw-bold text-dark mb-0">{{ analytics.sent_count }} <small class="text-muted fw-normal" style="font-size: 0.75rem;">/ {{ analytics.total_count }} tổng</small></h4>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-12 col-sm-6 col-lg-3">
+      <div class="card-modern p-3.5 h-100 d-flex align-items-center gap-3 border shadow-2xs">
+        <div class="rounded-circle bg-success-subtle text-success d-inline-flex align-items-center justify-content-center flex-shrink-0" style="width: 46px; height: 46px;">
+          <i class="ph-bold ph-envelope-open fs-4"></i>
+        </div>
+        <div>
+          <span class="text-secondary small fw-semibold d-block">Tỷ lệ Mở (Open Rate)</span>
+          <h4 class="fw-bold text-success mb-0">{{ analytics.open_rate }}% <small class="text-muted fw-normal" style="font-size: 0.75rem;">({{ analytics.opened_count }} lượt)</small></h4>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-12 col-sm-6 col-lg-3">
+      <div class="card-modern p-3.5 h-100 d-flex align-items-center gap-3 border shadow-2xs">
+        <div class="rounded-circle bg-info-subtle text-info d-inline-flex align-items-center justify-content-center flex-shrink-0" style="width: 46px; height: 46px;">
+          <i class="ph-bold ph-cursor-click fs-4"></i>
+        </div>
+        <div>
+          <span class="text-secondary small fw-semibold d-block">Tỷ lệ Click (Click Rate)</span>
+          <h4 class="fw-bold text-info mb-0">{{ analytics.click_rate }}% <small class="text-muted fw-normal" style="font-size: 0.75rem;">({{ analytics.clicked_count }} lượt)</small></h4>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-12 col-sm-6 col-lg-3">
+      <div class="card-modern p-3.5 h-100 d-flex align-items-center gap-3 border shadow-2xs">
+        <div class="rounded-circle bg-danger-subtle text-danger d-inline-flex align-items-center justify-content-center flex-shrink-0" style="width: 46px; height: 46px;">
+          <i class="ph-bold ph-warning-circle fs-4"></i>
+        </div>
+        <div>
+          <span class="text-secondary small fw-semibold d-block">Tỷ lệ Lỗi / Bounce</span>
+          <h4 class="fw-bold text-danger mb-0">{{ analytics.bounce_rate }}% <small class="text-muted fw-normal" style="font-size: 0.75rem;">({{ analytics.bounced_count }} bounce)</small></h4>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Navigation Tabs -->
+  <ul class="nav nav-pills gap-2 mb-4 bg-white p-2 rounded-3 border shadow-2xs" id="emailTabs" role="tablist">
+    <li class="nav-item" role="presentation">
+      <button class="nav-link active fw-bold px-3.5 py-2 rounded-2 d-flex align-items-center gap-2" id="tab-analytics-btn" data-bs-toggle="pill" data-bs-target="#tab-analytics" type="button" role="tab">
+        <i class="ph-bold ph-chart-line-up"></i>
+        <span>Phân tích & Thống kê</span>
+      </button>
+    </li>
+    <li class="nav-item" role="presentation">
+      <button class="nav-link fw-bold px-3.5 py-2 rounded-2 d-flex align-items-center gap-2" id="tab-templates-btn" data-bs-toggle="pill" data-bs-target="#tab-templates" type="button" role="tab">
+        <i class="ph-bold ph-code"></i>
+        <span>Mẫu Email HTML (Templates)</span>
+        <span class="badge bg-primary-subtle text-primary rounded-pill px-2 py-0.5 small">{{ templates|length }}</span>
+      </button>
+    </li>
+    <li class="nav-item" role="presentation">
+      <button class="nav-link fw-bold px-3.5 py-2 rounded-2 d-flex align-items-center gap-2" id="tab-logs-btn" data-bs-toggle="pill" data-bs-target="#tab-logs" type="button" role="tab">
+        <i class="ph-bold ph-list-dashes"></i>
+        <span>Hàng đợi & Lịch sử gửi</span>
+        <span class="badge bg-secondary-subtle text-secondary rounded-pill px-2 py-0.5 small">{{ recent_logs|length }}</span>
+      </button>
+    </li>
+    <li class="nav-item" role="presentation">
+      <button class="nav-link fw-bold px-3.5 py-2 rounded-2 d-flex align-items-center gap-2" id="tab-bounces-btn" data-bs-toggle="pill" data-bs-target="#tab-bounces" type="button" role="tab">
+        <i class="ph-bold ph-prohibit"></i>
+        <span>Danh sách Bounce</span>
+        <span class="badge bg-danger-subtle text-danger rounded-pill px-2 py-0.5 small">{{ bounces|length }}</span>
+      </button>
+    </li>
+  </ul>
+
+  <!-- Tab Contents -->
+  <div class="tab-content" id="emailTabsContent">
+
+    <!-- ================================================================= -->
+    <!-- TAB 1: EMAIL ANALYTICS -->
+    <!-- ================================================================= -->
+    <div class="tab-pane fade show active" id="tab-analytics" role="tabpanel">
+      <div class="row g-4">
+        <!-- Daily Timeline Table / Chart -->
+        <div class="col-12 col-lg-8">
+          <div class="card-modern p-4 h-100">
+            <div class="d-flex align-items-center justify-content-between mb-3 pb-2 border-bottom">
+              <div>
+                <h5 class="fw-bold text-dark mb-0.5">Xu hướng gửi Email theo ngày (30 ngày qua)</h5>
+                <span class="text-secondary small">Theo dõi số lượng email gửi đi và lượt mở hàng ngày</span>
+              </div>
+            </div>
+
+            <!-- Visual Bar Summary -->
+            <div class="table-responsive border rounded-3 overflow-hidden">
+              <table class="table table-hover align-middle mb-0" style="font-size: 0.88rem;">
+                <thead class="table-light">
+                  <tr>
+                    <th class="ps-3 py-2.5">Ngày</th>
+                    <th class="text-center py-2.5">Đã gửi</th>
+                    <th class="text-center py-2.5">Đã mở</th>
+                    <th class="text-center py-2.5">Bounced</th>
+                    <th class="text-end pe-3 py-2.5">Tỷ lệ mở</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% set displayed = 0 %}
+                  {% for i in range(analytics.chart_labels|length - 1, -1, -1) %}
+                    {% set lbl = analytics.chart_labels[i] %}
+                    {% set s = analytics.chart_sent[i] %}
+                    {% set o = analytics.chart_opened[i] %}
+                    {% set b = analytics.chart_bounced[i] %}
+                    {% if s > 0 or o > 0 or b > 0 or displayed < 7 %}
+                    {% set displayed = displayed + 1 %}
+                    <tr>
+                      <td class="ps-3 font-monospace small fw-semibold text-dark">{{ lbl }}</td>
+                      <td class="text-center"><span class="badge bg-primary-subtle text-primary rounded-pill px-2.5 py-0.5 font-semibold">{{ s }}</span></td>
+                      <td class="text-center"><span class="badge bg-success-subtle text-success rounded-pill px-2.5 py-0.5 font-semibold">{{ o }}</span></td>
+                      <td class="text-center"><span class="badge {% if b > 0 %}bg-danger-subtle text-danger{% else %}bg-light text-muted{% endif %} rounded-pill px-2.5 py-0.5 font-semibold">{{ b }}</span></td>
+                      <td class="text-end pe-3">
+                        {% if s > 0 %}
+                          <span class="fw-bold text-success">{{ (o / s * 100)|round(1) }}%</span>
+                        {% else %}
+                          <span class="text-muted">—</span>
+                        {% endif %}
+                      </td>
+                    </tr>
+                    {% endif %}
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- Breakdown by Email Type -->
+        <div class="col-12 col-lg-4">
+          <div class="card-modern p-4 h-100">
+            <div class="d-flex align-items-center gap-2 mb-3 pb-2 border-bottom">
+              <i class="ph-bold ph-chart-pie-slice fs-5 text-primary"></i>
+              <h5 class="fw-bold text-dark mb-0">Phân bố Loại Email</h5>
+            </div>
+
+            <div class="d-flex flex-column gap-2.5">
+              {% for k, v in analytics.type_stats.items() %}
+              <div class="p-3 bg-light rounded-3 border">
+                <div class="d-flex justify-content-between align-items-center mb-1">
+                  <strong class="text-dark small">{{ k }}</strong>
+                  <span class="badge bg-primary text-white rounded-pill px-2 py-0.5 font-semibold">{{ v }} email</span>
+                </div>
+                <div class="progress" style="height: 6px;">
+                  <div class="progress-bar bg-primary" style="width: {{ (v / analytics.total_count * 100)|round if analytics.total_count > 0 else 0 }}%;"></div>
+                </div>
+              </div>
+              {% else %}
+              <div class="text-center py-4 text-muted small">Chưa có dữ liệu email loại nào.</div>
+              {% endfor %}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ================================================================= -->
+    <!-- TAB 2: EMAIL TEMPLATES MANAGEMENT -->
+    <!-- ================================================================= -->
+    <div class="tab-pane fade" id="tab-templates" role="tabpanel">
+      <div class="row g-4">
+        {% for t in templates %}
+        <div class="col-12 col-lg-6">
+          <div class="card-modern p-4 h-100 d-flex flex-column justify-content-between border">
+            <div>
+              <div class="d-flex align-items-start justify-content-between gap-2 mb-2">
+                <div class="d-flex align-items-center gap-2.5">
+                  <div class="rounded-3 bg-primary-subtle text-primary p-2 d-flex align-items-center justify-content-center" style="width: 38px; height: 38px;">
+                    <i class="ph-bold ph-code fs-5"></i>
+                  </div>
+                  <div>
+                    <h5 class="fw-bold text-dark mb-0" style="font-size: 1rem;">{{ t.name }}</h5>
+                    <span class="badge bg-secondary-subtle text-secondary border font-monospace small px-2 py-0.5">{{ t.key }}</span>
+                  </div>
+                </div>
+                <span class="badge {% if t.is_active %}bg-success-subtle text-success border border-success-subtle{% else %}bg-secondary-subtle text-secondary border{% endif %} rounded-pill px-2.5 py-1">
+                  {% if t.is_active %}Hoạt động{% else %}Đã tắt{% endif %}
+                </span>
+              </div>
+
+              <p class="text-secondary small mb-3">{{ t.description or 'Mẫu email hệ thống.' }}</p>
+
+              <div class="mb-3 p-2.5 bg-light rounded-3 border">
+                <span class="text-muted small d-block mb-1">Tiêu đề mẫu:</span>
+                <strong class="text-dark small d-block font-monospace text-truncate" title="{{ t.subject }}">{{ t.subject }}</strong>
+              </div>
+
+              {% if t.variables_json %}
+              <div class="mb-3">
+                <span class="text-muted small d-block mb-1">Các biến dynamic hỗ trợ:</span>
+                <div class="d-flex flex-wrap gap-1">
+                  {% for var_name in t.variables_list %}
+                  <code class="badge bg-info-subtle text-info border border-info-subtle font-monospace px-2 py-1" style="font-size: 0.75rem;">{% raw %}{{{% endraw %} {{ var_name }} {% raw %}}}{% endraw %}</code>
+                  {% endfor %}
+                </div>
+              </div>
+              {% endif %}
+            </div>
+
+            <div class="pt-3 border-top d-flex gap-2 justify-content-end">
+              <button type="button" class="btn btn-sm btn-outline-secondary px-3 py-1.5 rounded-3 fw-semibold" onclick="previewTemplate({{ t.id }}, '{{ t.name }}', {{ t.subject|tojson }}, {{ t.html_content|tojson }})">
+                <i class="ph-bold ph-eye me-1"></i> Xem trước
+              </button>
+              <button type="button" class="btn btn-sm btn-primary px-3 py-1.5 rounded-3 fw-bold shadow-xs" onclick="editTemplate({{ t.id }}, '{{ t.name }}', {{ t.subject|tojson }}, {{ t.html_content|tojson }}, {{ t.is_active|tojson }})">
+                <i class="ph-bold ph-pencil-simple me-1"></i> Sửa mẫu HTML
+              </button>
+            </div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+
+    <!-- ================================================================= -->
+    <!-- TAB 3: EMAIL LOGS & QUEUE -->
+    <!-- ================================================================= -->
+    <div class="tab-pane fade" id="tab-logs" role="tabpanel">
+      <div class="card-modern p-4">
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-3 pb-2 border-bottom">
+          <div>
+            <h5 class="fw-bold text-dark mb-0.5">Lịch sử gửi & Hàng đợi Email</h5>
+            <span class="text-secondary small">Theo dõi chi tiết thời gian gửi, số lần mở và trạng thái tương tác</span>
+          </div>
+
+          <div class="input-group input-group-sm" style="max-width: 260px;">
+            <span class="input-group-text bg-white border-end-0 text-muted ps-2.5">
+              <i class="ph-bold ph-magnifying-glass"></i>
+            </span>
+            <input type="text" id="emailLogsSearch" class="form-control border-start-0 ps-1" placeholder="Tìm theo email/tiêu đề...">
+          </div>
+        </div>
+
+        {% if recent_logs %}
+        <div class="table-responsive border rounded-3 overflow-hidden">
+          <table class="table table-hover align-middle mb-0" id="emailLogsTable" style="font-size: 0.88rem;">
+            <thead class="table-light">
+              <tr>
+                <th class="ps-3 py-3">Người nhận & Tiêu đề</th>
+                <th class="py-3 text-center" style="width: 130px;">Loại email</th>
+                <th class="py-3 text-center" style="width: 120px;">Trạng thái</th>
+                <th class="py-3 text-center" style="width: 120px;">Lượt Mở / Click</th>
+                <th class="py-3 text-center" style="width: 160px;">Thời gian gửi</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for l in recent_logs %}
+              <tr class="email-log-row">
+                <td class="ps-3">
+                  <div class="d-flex align-items-center gap-2.5">
+                    <div class="rounded-3 {% if l.status == 'OPENED' or l.status == 'CLICKED' %}bg-success-subtle text-success{% elif l.status == 'BOUNCED' %}bg-danger-subtle text-danger{% else %}bg-primary-subtle text-primary{% endif %} p-2 d-flex align-items-center justify-content-center flex-shrink-0" style="width: 34px; height: 34px;">
+                      <i class="ph-bold {% if l.status == 'OPENED' or l.status == 'CLICKED' %}ph-envelope-open{% elif l.status == 'BOUNCED' %}ph-warning-circle{% else %}ph-envelope-simple{% endif %}"></i>
+                    </div>
+                    <div class="overflow-hidden">
+                      <span class="fw-bold text-dark d-block text-truncate" style="max-width: 260px;" title="{{ l.recipient }}">{{ l.recipient }}</span>
+                      <small class="text-muted d-block text-truncate font-monospace" style="font-size: 0.74rem; max-width: 260px;" title="{{ l.subject }}">{{ l.subject }}</small>
+                    </div>
+                  </div>
+                </td>
+                <td class="text-center">
+                  <span class="badge bg-secondary-subtle text-secondary border font-monospace small px-2 py-0.5">{{ l.email_type }}</span>
+                </td>
+                <td class="text-center">
+                  {% if l.status == 'OPENED' %}
+                    <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-2.5 py-1">Đã mở</span>
+                  {% elif l.status == 'CLICKED' %}
+                    <span class="badge bg-info-subtle text-info border border-info-subtle rounded-pill px-2.5 py-1">Đã click</span>
+                  {% elif l.status == 'SENT' %}
+                    <span class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill px-2.5 py-1">Đã gửi</span>
+                  {% elif l.status == 'QUEUED' %}
+                    <span class="badge bg-warning-subtle text-warning border border-warning-subtle rounded-pill px-2.5 py-1">Hàng đợi</span>
+                  {% elif l.status == 'BOUNCED' %}
+                    <span class="badge bg-danger-subtle text-danger border border-danger-subtle rounded-pill px-2.5 py-1" title="{{ l.bounce_reason }}">Bounced</span>
+                  {% else %}
+                    <span class="badge bg-secondary-subtle text-secondary border rounded-pill px-2.5 py-1">{{ l.status }}</span>
+                  {% endif %}
+                </td>
+                <td class="text-center font-monospace small">
+                  <span class="text-success fw-bold">{{ l.open_count }}</span> mở / <span class="text-info fw-bold">{{ l.click_count }}</span> click
+                </td>
+                <td class="text-center small text-secondary">
+                  {{ l.sent_at_vn.strftime('%H:%M %d/%m/%Y') if l.sent_at_vn else (l.created_at_vn.strftime('%H:%M %d/%m/%Y') if l.created_at_vn else '—') }}
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        {% else %}
+        <div class="text-center py-5 text-muted small">Chưa có bản ghi email nào trong hàng đợi.</div>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- ================================================================= -->
+    <!-- TAB 4: BOUNCE LIST -->
+    <!-- ================================================================= -->
+    <div class="tab-pane fade" id="tab-bounces" role="tabpanel">
+      <div class="card-modern p-4">
+        <div class="d-flex align-items-center justify-content-between mb-3 pb-2 border-bottom">
+          <div>
+            <h5 class="fw-bold text-dark mb-0.5">Danh sách Email Bị Chặn (Bounce Blocklist)</h5>
+            <span class="text-secondary small">Các địa chỉ hòm thư không tồn tại hoặc từ chối nhận email để bảo vệ danh tiếng gửi thư (Sender Reputation)</span>
+          </div>
+        </div>
+
+        {% if bounces %}
+        <div class="table-responsive border rounded-3 overflow-hidden">
+          <table class="table table-hover align-middle mb-0" style="font-size: 0.88rem;">
+            <thead class="table-light">
+              <tr>
+                <th class="ps-3 py-3">Địa chỉ Email</th>
+                <th class="py-3 text-center" style="width: 150px;">Loại Bounce</th>
+                <th class="py-3">Lý do từ chối</th>
+                <th class="py-3 text-center" style="width: 160px;">Thời gian ghi nhận</th>
+                <th class="py-3 text-end pe-3" style="width: 120px;">Hành động</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for b in bounces %}
+              <tr>
+                <td class="ps-3 fw-bold text-dark font-monospace small">{{ b.email }}</td>
+                <td class="text-center">
+                  <span class="badge bg-danger-subtle text-danger border border-danger-subtle rounded-pill px-2.5 py-1">{{ b.bounce_type }}</span>
+                </td>
+                <td class="small text-secondary text-truncate" style="max-width: 300px;">{{ b.reason or 'Recipient mailbox refused' }}</td>
+                <td class="text-center small text-secondary">
+                  {{ b.created_at_vn.strftime('%H:%M %d/%m/%Y') if b.created_at_vn else b.created_at.strftime('%H:%M %d/%m/%Y') }}
+                </td>
+                <td class="text-end pe-3">
+                  <button type="button" class="btn btn-sm btn-outline-danger px-2.5 py-1 rounded-2" onclick="unblockBounce({{ b.id }}, '{{ b.email }}')">
+                    <i class="ph-bold ph-arrow-counter-clockwise me-1"></i> Mở khóa
+                  </button>
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        {% else %}
+        <div class="text-center py-5">
+          <i class="ph-bold ph-shield-check text-success fs-1 mb-2"></i>
+          <h6 class="fw-bold text-dark">Tuyệt vời! Không có email nào bị bounce</h6>
+          <p class="text-muted small mb-0">Tất cả địa chỉ hòm thư gửi đi đều hoạt động tốt và có tỷ lệ giao thư 100%.</p>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+
+  </div>
+
+</div>
+
+<!-- MODAL: SEND / SCHEDULE TEST EMAIL -->
+<div class="modal fade" id="sendEmailModal" tabindex="-1" aria-labelledby="sendEmailModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered" style="max-width: 520px;">
+    <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
+      <div class="modal-header bg-primary text-white p-4 pb-3 border-0">
+        <div class="d-flex align-items-center gap-2.5">
+          <div class="rounded-circle bg-white text-primary p-2 d-flex align-items-center justify-content-center" style="width: 36px; height: 36px;">
+            <i class="ph-bold ph-paper-plane-tilt fs-5"></i>
+          </div>
+          <h5 class="modal-title fw-bold text-white mb-0" id="sendEmailModalLabel">Gửi hoặc Hẹn giờ Email</h5>
+        </div>
+        <button type="button" class="btn-close btn-close-white shadow-none" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+
+      <form id="sendEmailForm" onsubmit="submitSendEmail(event)">
+        <div class="modal-body p-4">
+          <div class="mb-3">
+            <label class="form-label fw-semibold text-dark small mb-1">Email người nhận</label>
+            <input type="email" class="form-control form-control-sm rounded-3" id="sendRecipient" placeholder="student@example.com" required>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label fw-semibold text-dark small mb-1">Mẫu Email (Template)</label>
+            <select class="form-select form-select-sm rounded-3" id="sendTemplateKey">
+              <option value="">-- Soạn nội dung tùy chỉnh --</option>
+              {% for t in templates %}
+              <option value="{{ t.key }}">{{ t.name }} ({{ t.key }})</option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div id="customEmailFields">
+            <div class="mb-3">
+              <label class="form-label fw-semibold text-dark small mb-1">Tiêu đề email</label>
+              <input type="text" class="form-control form-control-sm rounded-3" id="sendSubject" placeholder="[EnglishMate] Thông báo quan trọng">
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label fw-semibold text-dark small mb-1">Nội dung HTML</label>
+              <textarea class="form-control form-control-sm rounded-3 font-monospace" id="sendHtmlContent" rows="4" placeholder="<p>Xin chào học viên...</p>"></textarea>
+            </div>
+          </div>
+
+          <div class="mb-3 p-3 bg-light rounded-3 border">
+            <label class="form-label fw-semibold text-dark small mb-1">
+              <i class="ph-bold ph-clock me-1 text-primary"></i> Hẹn giờ gửi (Email Scheduling - Tùy chọn)
+            </label>
+            <input type="datetime-local" class="form-control form-control-sm rounded-3" id="sendScheduleAt">
+            <span class="text-muted small d-block mt-1" style="font-size: 0.74rem;">Để trống để gửi ngay lập tức qua hàng đợi bất đồng bộ.</span>
+          </div>
+        </div>
+
+        <div class="modal-footer p-3 bg-light border-top d-flex justify-content-end gap-2">
+          <button type="button" class="btn btn-light rounded-3 px-3 fw-semibold small" data-bs-dismiss="modal">Hủy</button>
+          <button type="submit" class="btn btn-primary rounded-3 px-4 fw-bold shadow-xs" id="btnSubmitSend">
+            <i class="ph-bold ph-paper-plane-tilt me-1"></i> Bắt đầu gửi
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: EDIT EMAIL TEMPLATE -->
+<div class="modal fade" id="editTemplateModal" tabindex="-1" aria-labelledby="editTemplateModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
+      <div class="modal-header bg-dark text-white p-4 pb-3 border-0">
+        <div class="d-flex align-items-center gap-2.5">
+          <div class="rounded-circle bg-white text-dark p-2 d-flex align-items-center justify-content-center" style="width: 36px; height: 36px;">
+            <i class="ph-bold ph-code fs-5"></i>
+          </div>
+          <div>
+            <h5 class="modal-title fw-bold text-white mb-0" id="editTemplateModalLabel">Chỉnh sửa Mẫu Email</h5>
+            <small class="text-white-50" id="editTemplateSubTitle"></small>
+          </div>
+        </div>
+        <button type="button" class="btn-close btn-close-white shadow-none" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+
+      <form id="editTemplateForm" onsubmit="submitSaveTemplate(event)">
+        <input type="hidden" id="editTemplateId">
+        <div class="modal-body p-4">
+          <div class="mb-3">
+            <label class="form-label fw-semibold text-dark small mb-1">Tiêu đề email (Subject)</label>
+            <input type="text" class="form-control rounded-3" id="editTemplateSubject" required>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label fw-semibold text-dark small mb-1">Mã HTML Email</label>
+            <textarea class="form-control rounded-3 font-monospace small" id="editTemplateHtml" rows="12" required style="line-height: 1.45;"></textarea>
+          </div>
+
+          <div class="form-check form-switch mb-0">
+            <input class="form-check-input" type="checkbox" role="switch" id="editTemplateActive">
+            <label class="form-check-label fw-semibold text-dark small" for="editTemplateActive">Kích hoạt sử dụng mẫu email này</label>
+          </div>
+        </div>
+
+        <div class="modal-footer p-3 bg-light border-top d-flex justify-content-between">
+          <button type="button" class="btn btn-outline-secondary rounded-3 px-3 fw-semibold small" onclick="previewCurrentEdit()">
+            <i class="ph-bold ph-eye me-1"></i> Xem trước HTML
+          </button>
+          <div class="d-flex gap-2">
+            <button type="button" class="btn btn-light rounded-3 px-3 fw-semibold small" data-bs-dismiss="modal">Hủy</button>
+            <button type="submit" class="btn btn-primary rounded-3 px-4 fw-bold shadow-xs" id="btnSaveTemplate">
+              <i class="ph-bold ph-floppy-disk me-1"></i> Lưu thay đổi
+            </button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: PREVIEW TEMPLATE -->
+<div class="modal fade" id="previewModal" tabindex="-1" aria-labelledby="previewModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
+      <div class="modal-header bg-light p-3 border-bottom">
+        <div>
+          <span class="badge bg-primary-subtle text-primary rounded-pill px-2.5 py-0.5 small mb-1">Xem trước Mẫu Email</span>
+          <h6 class="fw-bold text-dark mb-0 font-monospace" id="previewSubjectText"></h6>
+        </div>
+        <button type="button" class="btn-close shadow-none" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body p-4 bg-light">
+        <div class="bg-white p-4 rounded-3 border shadow-sm" id="previewHtmlContainer"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  const searchInput = document.getElementById("emailLogsSearch");
+  if (searchInput) {
+    let timer = null;
+    searchInput.addEventListener("input", (e) => {
+      clearTimeout(timer);
+      timer = setTimeout(() => {
+        const query = e.target.value.toLowerCase().trim();
+        document.querySelectorAll(".email-log-row").forEach(row => {
+          row.style.display = row.textContent.toLowerCase().includes(query) ? "" : "none";
+        });
+      }, 200);
+    });
+  }
+});
+
+function editTemplate(id, name, subject, html, isActive) {
+  document.getElementById("editTemplateId").value = id;
+  document.getElementById("editTemplateSubTitle").innerText = name;
+  document.getElementById("editTemplateSubject").value = subject;
+  document.getElementById("editTemplateHtml").value = html;
+  document.getElementById("editTemplateActive").checked = isActive;
+  const modal = new bootstrap.Modal(document.getElementById("editTemplateModal"));
+  modal.show();
+}
+
+async function submitSaveTemplate(e) {
+  e.preventDefault();
+  const id = document.getElementById("editTemplateId").value;
+  const btn = document.getElementById("btnSaveTemplate");
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Đang lưu...';
+
+  const data = {
+    subject: document.getElementById("editTemplateSubject").value,
+    html_content: document.getElementById("editTemplateHtml").value,
+    is_active: document.getElementById("editTemplateActive").checked
+  };
+
+  try {
+    const res = await fetch(`/admin/system/email/templates/${id}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "X-CSRFToken": "{{ csrf_token() }}" },
+      body: JSON.stringify(data)
+    });
+    const json = await res.json();
+    if (json.success) {
+      alert("✓ " + json.message);
+      window.location.reload();
+    } else {
+      alert("Lỗi: " + json.error);
+    }
+  } catch (err) {
+    alert("Lỗi kết nối khi lưu mẫu email.");
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '<i class="ph-bold ph-floppy-disk me-1"></i> Lưu thay đổi';
+  }
+}
+
+function previewTemplate(id, name, subject, html) {
+  // Sample test context
+  const sampleContext = {
+    username: "Nguyễn Văn A",
+    otp_code: "654321",
+    expire_minutes: "15",
+    reset_url: "https://englishmate.vn/auth/reset-password?token=sample123",
+    target_goal: "50 XP",
+    study_url: "https://englishmate.vn/learning/vocabulary",
+    dashboard_url: "https://englishmate.vn/dashboard",
+    title: "Thông báo nâng cấp hệ thống",
+    message_content: "Hệ thống EnglishMate sẽ bảo trì định kỳ lúc 00:00 ngày mai.",
+    cta_text: "Xem chi tiết",
+    cta_url: "https://englishmate.vn"
+  };
+
+  let renderedSubj = subject;
+  let renderedHtml = html;
+  for (const [k, v] of Object.entries(sampleContext)) {
+    const p1 = "{{" + " " + k + " " + "}}";
+    const p2 = "{{" + k + "}}";
+    renderedSubj = renderedSubj.split(p1).join(v).split(p2).join(v);
+    renderedHtml = renderedHtml.split(p1).join(v).split(p2).join(v);
+  }
+
+  document.getElementById("previewSubjectText").innerText = renderedSubj;
+  document.getElementById("previewHtmlContainer").innerHTML = renderedHtml;
+  const modal = new bootstrap.Modal(document.getElementById("previewModal"));
+  modal.show();
+}
+
+function previewCurrentEdit() {
+  const subj = document.getElementById("editTemplateSubject").value;
+  const html = document.getElementById("editTemplateHtml").value;
+  previewTemplate(0, "Xem trước", subj, html);
+}
+
+async function submitSendEmail(e) {
+  e.preventDefault();
+  const btn = document.getElementById("btnSubmitSend");
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Đang gửi...';
+
+  const data = {
+    recipient: document.getElementById("sendRecipient").value,
+    template_key: document.getElementById("sendTemplateKey").value,
+    subject: document.getElementById("sendSubject").value,
+    html_content: document.getElementById("sendHtmlContent").value,
+    scheduled_at: document.getElementById("sendScheduleAt").value
+  };
+
+  try {
+    const res = await fetch("{{ url_for('admin.send_test_email_route') }}", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "X-CSRFToken": "{{ csrf_token() }}" },
+      body: JSON.stringify(data)
+    });
+    const json = await res.json();
+    if (json.success) {
+      alert("✓ Đã đưa email vào hàng đợi gửi thành công (Status: " + json.status + ")!");
+      window.location.reload();
+    } else {
+      alert("Lỗi: " + (json.error || "Không thể gửi email."));
+    }
+  } catch (err) {
+    alert("Lỗi kết nối khi gửi email.");
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '<i class="ph-bold ph-paper-plane-tilt me-1"></i> Bắt đầu gửi';
+  }
+}
+
+async function processScheduledQueue() {
+  try {
+    const res = await fetch("{{ url_for('admin.process_email_queue_route') }}", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "X-CSRFToken": "{{ csrf_token() }}" }
+    });
+    const json = await res.json();
+    alert("✓ " + json.message);
+    window.location.reload();
+  } catch (err) {
+    alert("Lỗi khi quét hàng đợi email.");
+  }
+}
+
+async function unblockBounce(bounceId, email) {
+  if (!confirm(`Bạn có chắc muốn mở khóa hòm thư ${email}?`)) return;
+  try {
+    const res = await fetch(`/admin/system/email/bounces/delete/${bounceId}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "X-CSRFToken": "{{ csrf_token() }}" }
+    });
+    const json = await res.json();
+    alert("✓ " + json.message);
+    window.location.reload();
+  } catch (err) {
+    alert("Lỗi kết nối.");
+  }
+}
+</script>
+{% endblock %}

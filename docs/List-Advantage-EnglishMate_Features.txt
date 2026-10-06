@@ -897,14 +897,14 @@ NỀN TẢNG HỌC TIẾNG ANH TRỰC TUYẾN THÔNG MINH
 12.4. Email System (Hệ thống email)
 [x] - SMTP Configuration - Cấu hình SMTP
 [x] - Email Templates - Mẫu email
-[ ] - Email Queue - Hàng đợi email
+[x] - Email Queue - Hàng đợi email
 [x] - Email Sending - Gửi email
-[ ] - Email Tracking - Theo dõi email
-[ ] - Email Bounce Handling - Xử lý bounce
-[ ] - Email Analytics - Phân tích email
+[x] - Email Tracking - Theo dõi email
+[x] - Email Bounce Handling - Xử lý bounce
+[x] - Email Analytics - Phân tích email
 [x] - Email Delivery - Giao hàng email
-[ ] - Email Scheduling - Lên lịch email
-[ ] - Email Templates Management - Quản lý mẫu email
+[x] - Email Scheduling - Lên lịch email
+[x] - Email Templates Management - Quản lý mẫu email
 
 12.5. Background Processing (Xử lý nền)
 [ ] - Task Queue - Hàng đợi tác vụ

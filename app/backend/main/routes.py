@@ -662,3 +662,41 @@ def quick_search_api():
     return jsonify({"results": results})
 
 
+# ---------------------------------------------------------------------------
+# EMAIL TRACKING ROUTES (MỤC 12.4)
+# ---------------------------------------------------------------------------
+TRANSPARENT_1PX_PNG = (
+    b'\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00\x00\x01\x00\x00\x00\x01\x08\x06\x00\x00\x00\x1f\x15c4'
+    b'\x00\x00\x00\rIDATx\x9cc`\x00\x00\x00\x02\x00\x01H\xaf\xa4q\x00\x00\x00\x00IEND\xaeB`\x82'
+)
+
+
+@bp.get("/email/track/open/<tracking_id>.png")
+def track_email_open_route(tracking_id):
+    """Tracking pixel endpoint ghi nhận lượt mở email."""
+    try:
+        from app.backend.admin.email_service import track_email_open
+        track_email_open(tracking_id)
+    except Exception:
+        pass
+
+    response = current_app.response_class(TRANSPARENT_1PX_PNG, mimetype="image/png")
+    response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate, max-age=0"
+    response.headers["Pragma"] = "no-cache"
+    response.headers["Expires"] = "0"
+    return response
+
+
+@bp.get("/email/track/click/<tracking_id>")
+def track_email_click_route(tracking_id):
+    """Tracking click endpoint ghi nhận lượt click liên kết trong email."""
+    target_url = request.args.get("url", "/")
+    try:
+        from app.backend.admin.email_service import track_email_click
+        track_email_click(tracking_id, target_url)
+    except Exception:
+        pass
+
+    return redirect(target_url)
+
+

@@ -469,37 +469,37 @@ MODULE: 12. SYSTEM FEATURES (TÍNH NĂNG HỆ THỐNG) (46 tính năng chưa là
    - Đối chiếu hiện trạng: Đã tích hợp file_backup_service.py đóng gói nén ZIP thư mục uploads và sao lưu lên AWS S3 / Cloudinary / Local Archive.
 
 
-### 12.4. Email System (Hệ thống email) (6 tính năng):
+### 12.4. Email System (Hệ thống email) (6 tính năng - Đã hoàn thành 6/6):
 ----------------------------------------------------------------------------------------------------
-60. [ ] Email Queue - Hàng đợi email
+60. [x] Email Queue - Hàng đợi email
    - Mức độ ưu tiên: Trung bình
-   - Mô tả yêu cầu: Hàng đợi gửi email bất đồng bộ (Email Queue) bằng Celery hoặc Redis để không làm chậm request của người dùng khi gửi OTP/Reset.
-   - Đối chiếu hiện trạng: Đang gửi email trực tiếp qua SMTP và in log Terminal trong môi trường dev.
+   - Mô tả yêu cầu: Hàng đợi gửi email bất đồng bộ (Email Queue) bằng ThreadPoolExecutor ngầm và lưu vết EmailLog chi tiết, tránh đơ trang web khi mạng chậm.
+   - Đối chiếu hiện trạng: Đã hoàn thành (app/backend/admin/email_service.py).
 
-61. [ ] Email Tracking - Theo dõi email
+61. [x] Email Tracking - Theo dõi email
    - Mức độ ưu tiên: Thấp
-   - Mô tả yêu cầu: Theo dõi trạng thái học viên đã mở email (Open rate) hoặc bấm vào link trong email (Click-through rate).
-   - Đối chiếu hiện trạng: Chưa tích hợp pixel tracking email.
+   - Mô tả yêu cầu: Theo dõi trạng thái học viên đã mở email (Open rate) qua tracking pixel 1px và click link (Click-through rate) qua tracking link.
+   - Đối chiếu hiện trạng: Đã hoàn thành (endpoint /email/track/open/<tracking_id>.png và /email/track/click/<tracking_id>).
 
-62. [ ] Email Bounce Handling - Xử lý bounce
+62. [x] Email Bounce Handling - Xử lý bounce
    - Mức độ ưu tiên: Thấp
-   - Mô tả yêu cầu: Tự động xử lý và đánh dấu các địa chỉ email không tồn tại hoặc bị từ chối gửi (Bounced Emails).
-   - Đối chiếu hiện trạng: Chưa có xử lý webhooks nhận phản hồi bounce từ máy chủ mail.
+   - Mô tả yêu cầu: Tự động xử lý và đánh dấu các địa chỉ email không tồn tại hoặc bị từ chối gửi (Bounced Emails) vào danh sách EmailBounce.
+   - Đối chiếu hiện trạng: Đã hoàn thành (xử lý HARD_BOUNCE, SOFT_BOUNCE, SYNTAX_ERROR và tự động chặn gửi).
 
-63. [ ] Email Analytics - Phân tích email
+63. [x] Email Analytics - Phân tích email
    - Mức độ ưu tiên: Thấp
-   - Mô tả yêu cầu: Thống kê tổng số email đã gửi, tỷ lệ gửi thành công, thất bại trên trang Quản trị.
-   - Đối chiếu hiện trạng: Chưa có báo cáo thống kê email riêng.
+   - Mô tả yêu cầu: Thống kê tổng số email đã gửi, tỷ lệ gửi thành công, thất bại, tỷ lệ mở, tỷ lệ click trên trang Quản trị.
+   - Đối chiếu hiện trạng: Đã hoàn thành (giao diện và API /admin/system/email/analytics).
 
-64. [ ] Email Scheduling - Lên lịch email
+64. [x] Email Scheduling - Lên lịch email
    - Mức độ ưu tiên: Thấp
-   - Mô tả yêu cầu: Lên lịch gửi email thông báo học tập hoặc bản tin tổng kết tiến độ hàng tuần vào một giờ định trước.
-   - Đối chiếu hiện trạng: Chưa có bộ lập lịch email định kỳ.
+   - Mô tả yêu cầu: Lên lịch gửi email thông báo học tập hoặc bản tin tổng kết tiến độ vào một giờ định trước (scheduled_at).
+   - Đối chiếu hiện trạng: Đã hoàn thành (enqueue_email với scheduled_at và API /admin/system/email/process-queue).
 
-65. [ ] Email Templates Management - Quản lý mẫu email
+65. [x] Email Templates Management - Quản lý mẫu email
    - Mức độ ưu tiên: Thấp
    - Mô tả yêu cầu: Giao diện CMS trong trang Quản trị viên cho phép chỉnh sửa nội dung các mẫu email (OTP, Reset mật khẩu, Chào mừng) trực quan.
-   - Đối chiếu hiện trạng: Các mẫu email đang được viết cố định trong thư mục app/templates/emails/.
+   - Đối chiếu hiện trạng: Đã hoàn thành (model EmailTemplate, CRUD API và giao diện quản trị HTML Email).
 
 
 ### 12.5. Background Processing (Xử lý nền) (6 tính năng):
