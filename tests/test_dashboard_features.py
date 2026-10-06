@@ -62,7 +62,6 @@ def test_dashboard_renders_all_section_6_1_features(client, dashboard_setup):
 
 
 def test_dashboard_streak_colors_gray_when_not_learned_and_orange_when_learned(client, app):
-    login(client)
     today = date.today()
     with app.app_context():
         user = User.query.filter_by(username="student").first()
@@ -72,6 +71,7 @@ def test_dashboard_streak_colors_gray_when_not_learned_and_orange_when_learned(c
         user.last_activity_date = today - timedelta(days=1)
         user.current_streak = 3
         db.session.commit()
+    login(client)
 
     # Request dashboard: should show gray / inactive state
     res = client.get("/dashboard")

@@ -1,4 +1,4 @@
-﻿from app.extensions import db
+from app.extensions import db
 from app.backend.auth.models import User
 from app.backend.exams.models import Exam
 from app.backend.learning.models import Question
@@ -6,12 +6,7 @@ from tests.conftest import login
 
 
 def ensure_admin_user(client):
-    login(client)
-    with client.application.app_context():
-        user = User.query.filter_by(email="student@test.com").first()
-        if user:
-            user.role = "ADMIN"
-            db.session.commit()
+    return login(client, "admin@test.com", "admin123")
 
 
 def ensure_sample_exam():

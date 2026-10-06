@@ -407,7 +407,11 @@ def login():
     form = LoginForm()
     if form.validate_on_submit():
         email = form.email.data.strip().lower()
-        user = User.query.filter_by(email=email).first()
+        try:
+            user = User.query.filter_by(email=email).first()
+        except Exception:
+            db.session.rollback()
+            user = User.query.filter_by(email=email).first()
 
         if user:
             try:

@@ -93,104 +93,69 @@ def create_app(config_object=Config):
 
     with app.app_context():
         try:
+            from .backend.auth import models as _auth_models
+            from .backend.learning import models as _learning_models
+            from .backend.exams import models as _exams_models
+            from .backend.admin import models as _admin_models
+            db.create_all()
+        except Exception:
+            try:
+                db.session.rollback()
+            except Exception:
+                pass
+
+        try:
             from sqlalchemy import inspect, text
             with db.engine.connect() as conn:
+                insp = inspect(db.engine)
+                existing_tables = set(insp.get_table_names())
                 is_pg = "postgresql" in str(db.engine.url)
-                if is_pg:
-                    conn.execute(text("ALTER TABLE exam ADD COLUMN IF NOT EXISTS part_distribution JSON;"))
-                    conn.execute(text("ALTER TABLE lesson ADD COLUMN IF NOT EXISTS skill_data JSON;"))
-                    conn.execute(text('ALTER TABLE "user" ADD COLUMN IF NOT EXISTS vocab_reminder_enabled BOOLEAN DEFAULT TRUE;'))
-                    conn.execute(text('ALTER TABLE "user" ADD COLUMN IF NOT EXISTS vocab_reminder_time VARCHAR(10) DEFAULT \'09:00\';'))
-                    conn.execute(text('ALTER TABLE "user" ADD COLUMN IF NOT EXISTS vocab_push_subscription TEXT;'))
-                    conn.execute(text('ALTER TABLE "user" ADD COLUMN IF NOT EXISTS streak_freeze_count INTEGER DEFAULT 0;'))
-                    conn.execute(text("ALTER TABLE lesson_progress ADD COLUMN IF NOT EXISTS duration_seconds INTEGER DEFAULT 0;"))
-                    conn.execute(text('ALTER TABLE "user" ADD COLUMN IF NOT EXISTS theme_preference VARCHAR(10) DEFAULT \'light\' NOT NULL;'))
-                    conn.execute(text('ALTER TABLE "user" ADD COLUMN IF NOT EXISTS onboarding_completed BOOLEAN DEFAULT TRUE NOT NULL;'))
-                    conn.commit()
-                elif "sqlite" in str(db.engine.url):
-                    insp = inspect(db.engine)
-                    tables = insp.get_table_names()
-                    if "exam" in tables:
-                        cols = [c["name"] for c in insp.get_columns("exam")]
-                        if "part_distribution" not in cols:
-                            conn.execute(text("ALTER TABLE exam ADD COLUMN part_distribution JSON;"))
-                            conn.commit()
-                    if "lesson" in tables:
-                        cols = [c["name"] for c in insp.get_columns("lesson")]
-                        if "skill_data" not in cols:
-                            conn.execute(text("ALTER TABLE lesson ADD COLUMN skill_data JSON;"))
-                            conn.commit()
-                    if "user" in tables:
-                        cols = [c["name"] for c in insp.get_columns("user")]
-                        if "streak_freeze_count" not in cols:
-                            conn.execute(text('ALTER TABLE "user" ADD COLUMN streak_freeze_count INTEGER DEFAULT 0;'))
-                            conn.commit()
-                        if "vocab_reminder_enabled" not in cols:
-                            conn.execute(text('ALTER TABLE "user" ADD COLUMN vocab_reminder_enabled BOOLEAN DEFAULT 1;'))
-                            conn.commit()
-                        if "vocab_reminder_time" not in cols:
-                            conn.execute(text('ALTER TABLE "user" ADD COLUMN vocab_reminder_time VARCHAR(10) DEFAULT \'09:00\';'))
-                            conn.commit()
-                        if "vocab_push_subscription" not in cols:
-                            conn.execute(text('ALTER TABLE "user" ADD COLUMN vocab_push_subscription TEXT;'))
-                            conn.commit()
-                        if "daily_goal_reminder_enabled" not in cols:
-                            conn.execute(text('ALTER TABLE "user" ADD COLUMN daily_goal_reminder_enabled BOOLEAN DEFAULT 1;'))
-                            conn.commit()
-                        if "daily_goal_reminder_time" not in cols:
-                            conn.execute(text('ALTER TABLE "user" ADD COLUMN daily_goal_reminder_time VARCHAR(10) DEFAULT \'20:00\';'))
-                            conn.commit()
-                        if "daily_goal_reminder_email" not in cols:
-                            conn.execute(text('ALTER TABLE "user" ADD COLUMN daily_goal_reminder_email BOOLEAN DEFAULT 1;'))
-                            conn.commit()
-                        if "daily_goal_reminder_popup" not in cols:
-                            conn.execute(text('ALTER TABLE "user" ADD COLUMN daily_goal_reminder_popup BOOLEAN DEFAULT 1;'))
-                            conn.commit()
-                        if "last_daily_goal_reminder_date" not in cols:
-                            conn.execute(text('ALTER TABLE "user" ADD COLUMN last_daily_goal_reminder_date DATE;'))
-                            conn.commit()
-                        if "theme_preference" not in cols:
-                            conn.execute(text('ALTER TABLE "user" ADD COLUMN theme_preference VARCHAR(10) DEFAULT \'light\' NOT NULL;'))
-                            conn.commit()
-                        if "onboarding_completed" not in cols:
-                            # Existing accounts are treated as already onboarded (only new users see the tour).
-                            conn.execute(text('ALTER TABLE "user" ADD COLUMN onboarding_completed BOOLEAN DEFAULT 1 NOT NULL;'))
-                            conn.commit()
-                    if "lesson_progress" in tables:
-                        cols = [c["name"] for c in insp.get_columns("lesson_progress")]
-                        if "duration_seconds" not in cols:
-                            conn.execute(text("ALTER TABLE lesson_progress ADD COLUMN duration_seconds INTEGER DEFAULT 0;"))
-                            conn.commit()
-                    if "lesson_rating" not in tables:
-                        from app.backend.learning.models import LessonRating
-                        LessonRating.__table__.create(conn)
-                        conn.commit()
-                    if "system_setting" not in tables:
-                        from app.backend.admin.models import SystemSetting
-                        SystemSetting.__table__.create(conn)
-                        conn.commit()
-                    if "system_config" not in tables:
-                        from app.backend.admin.models import SystemConfig
-                        SystemConfig.__table__.create(conn)
-                        conn.commit()
-                    if "database_backup" not in tables:
-                        from app.backend.admin.models import DatabaseBackup
-                        DatabaseBackup.__table__.create(conn)
-                        conn.commit()
-                    if "background_task" not in tables:
-                        from app.backend.admin.models import BackgroundTask
-                        BackgroundTask.__table__.create(conn)
-                        conn.commit()
-                    if "system_error_log" not in tables:
-                        from app.backend.admin.models import SystemErrorLog
-                        SystemErrorLog.__table__.create(conn)
-                        conn.commit()
-                    if "support_ticket" not in tables:
-                        from app.backend.admin.models import SupportTicket
-                        SupportTicket.__table__.create(conn)
-                        conn.commit()
+
+                for table_key, table in db.metadata.tables.items():
+                    t_name = table.name
+                    matched_table = None
+                    for et in existing_tables:
+                        if et.lower() == t_name.lower():
+                            matched_table = et
+                            break
+                    if not matched_table:
+                        continue
+
+                    existing_cols = {c["name"].lower() for c in insp.get_columns(matched_table)}
+                    for col in table.columns:
+                        if col.name.lower() not in existing_cols:
+                            try:
+                                col_type = col.type.compile(db.engine.dialect)
+                                default_sql = ""
+                                if col.default is not None and hasattr(col.default, "arg") and not callable(col.default.arg):
+                                    default_val = col.default.arg
+                                    if isinstance(default_val, bool):
+                                        default_sql = f" DEFAULT {'TRUE' if default_val else 'FALSE' if is_pg else '1' if default_val else '0'}"
+                                    elif isinstance(default_val, (int, float)):
+                                        default_sql = f" DEFAULT {default_val}"
+                                    elif isinstance(default_val, str):
+                                        default_sql = f" DEFAULT '{default_val}'"
+
+                                if is_pg:
+                                    conn.execute(text(f'ALTER TABLE "{matched_table}" ADD COLUMN IF NOT EXISTS "{col.name}" {col_type}{default_sql};'))
+                                else:
+                                    conn.execute(text(f'ALTER TABLE "{matched_table}" ADD COLUMN "{col.name}" {col_type}{default_sql};'))
+                                conn.commit()
+                            except Exception:
+                                pass
         except Exception:
-            pass
+            try:
+                db.session.rollback()
+            except Exception:
+                pass
+
+    @app.teardown_request
+    def cleanup_db_session(exc=None):
+        if exc is not None:
+            try:
+                db.session.rollback()
+            except Exception:
+                pass
 
     @app.before_request
     def check_network_security_and_ip_filtering():
@@ -287,7 +252,10 @@ def create_app(config_object=Config):
                     estimated_end=g._maintenance_estimated_end
                 ), 503
         except Exception:
-            pass
+            try:
+                db.session.rollback()
+            except Exception:
+                pass
 
     @app.context_processor
     def inject_maintenance_mode():
@@ -299,6 +267,10 @@ def create_app(config_object=Config):
                 from .backend.admin.models import SystemSetting
                 g._is_maintenance_mode = SystemSetting.get_bool_setting("MAINTENANCE_MODE", default=False)
             except Exception:
+                try:
+                    db.session.rollback()
+                except Exception:
+                    pass
                 g._is_maintenance_mode = False
         return {"is_system_in_maintenance": g._is_maintenance_mode}
 
@@ -324,6 +296,10 @@ def create_app(config_object=Config):
             try:
                 g._cached_daily_goal_stat = current_user.get_daily_goal_info()
             except Exception:
+                try:
+                    db.session.rollback()
+                except Exception:
+                    pass
                 g._cached_daily_goal_stat = None
         return {"daily_goal_stat": g._cached_daily_goal_stat}
 
@@ -347,6 +323,10 @@ def create_app(config_object=Config):
                     "latest_audit": latest_audit,
                 }
             except Exception:
+                try:
+                    db.session.rollback()
+                except Exception:
+                    pass
                 g._cached_admin_notif_data = None
         return {"admin_notif_data": g._cached_admin_notif_data}
 
