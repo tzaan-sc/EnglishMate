@@ -75,10 +75,16 @@
                     <span>Sao lưu CSDL</span>
                 </a>
             </li>
-            <li class="nav-item mb-2">
+            <li class="nav-item">
                 <a class="nav-link-modern {% if request.path.startswith('/admin/system/email') or request.path.startswith('/admin/email') %}active{% endif %}" href="{{ url_for('admin.email_system_dashboard') }}" title="Hệ thống Email">
                     <i class="ph-bold ph-envelope-simple fs-5 text-warning" style="width: 20px; text-align: center;"></i>
                     <span>Hệ thống Email</span>
+                </a>
+            </li>
+            <li class="nav-item mb-2">
+                <a class="nav-link-modern {% if request.path.startswith('/admin/system/background-tasks') or request.path.startswith('/admin/background-tasks') %}active{% endif %}" href="{{ url_for('admin.background_tasks_dashboard') }}" title="Tác vụ nền & Lập lịch">
+                    <i class="ph-bold ph-cpu fs-5 text-primary" style="width: 20px; text-align: center;"></i>
+                    <span>Tác vụ nền & Lập lịch</span>
                 </a>
             </li>
 

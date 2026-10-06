@@ -1,0 +1,721 @@
+{% extends "base.html" %}
+
+{% block title %}Quản lý Tác vụ Nền & Lập lịch | EnglishMate Admin{% endblock %}
+
+{% block extra_css %}
+<style>
+  .metric-card-gradient {
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(248, 250, 252, 0.9) 100%);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(226, 232, 240, 0.8);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+  .metric-card-gradient:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.02);
+  }
+  .table-responsive {
+    border-radius: 0.75rem;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+  <!-- Header -->
+  <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3 mb-4">
+    <div>
+      <div class="d-flex align-items-center gap-2 mb-1">
+        <span class="badge bg-primary-subtle text-primary border border-primary-subtle px-2.5 py-1 rounded-pill small fw-semibold">
+          <i class="ph-bold ph-gear-six me-1"></i> Mục 12.5: Background Processing
+        </span>
+      </div>
+      <h3 class="fw-bold text-dark mb-1">Quản lý Tác vụ Nền & Lập lịch Tự động</h3>
+      <p class="text-secondary small mb-0">Hàng đợi tác vụ ngầm (Task Queue), xếp hạng ưu tiên (Priority), cơ chế thử lại Exponential Backoff và bộ lập lịch Cron APScheduler.</p>
+    </div>
+
+    <div class="d-flex flex-wrap gap-2">
+      <button type="button" class="btn btn-outline-primary rounded-3 px-3 py-2 fw-semibold shadow-xs" onclick="processPendingQueue()">
+        <i class="ph-bold ph-play-circle me-1.5"></i> Phân phối hàng đợi
+      </button>
+      <button type="button" class="btn btn-primary rounded-3 px-3.5 py-2 fw-bold shadow-sm" data-bs-toggle="modal" data-bs-target="#enqueueTaskModal">
+        <i class="ph-bold ph-plus-circle me-1.5"></i> Tạo tác vụ mới
+      </button>
+    </div>
+  </div>
+
+  <!-- Metric KPI Cards -->
+  <div class="row g-3 mb-4">
+    <div class="col-12 col-sm-6 col-xl-3">
+      <div class="card border-0 rounded-4 p-3.5 metric-card-gradient shadow-xs h-100">
+        <div class="d-flex align-items-center justify-content-between mb-2">
+          <span class="text-secondary small fw-semibold">Tổng số tác vụ</span>
+          <div class="rounded-3 bg-primary-subtle text-primary p-2 d-flex align-items-center justify-content-center" style="width: 36px; height: 36px;">
+            <i class="ph-bold ph-stack fs-5"></i>
+          </div>
+        </div>
+        <div class="d-flex align-items-baseline gap-2">
+          <h3 class="fw-bold text-dark mb-0">{{ analytics.total_count }}</h3>
+          <span class="badge bg-primary-subtle text-primary rounded-pill small">Jobs</span>
+        </div>
+        <div class="d-flex gap-2 mt-2 pt-2 border-top small text-muted">
+          <span>Đang chạy: <strong class="text-info">{{ analytics.running_count }}</strong></span>
+          <span>• Chờ: <strong class="text-warning">{{ analytics.pending_count }}</strong></span>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-12 col-sm-6 col-xl-3">
+      <div class="card border-0 rounded-4 p-3.5 metric-card-gradient shadow-xs h-100">
+        <div class="d-flex align-items-center justify-content-between mb-2">
+          <span class="text-secondary small fw-semibold">Tỷ lệ Thành công</span>
+          <div class="rounded-3 bg-success-subtle text-success p-2 d-flex align-items-center justify-content-center" style="width: 36px; height: 36px;">
+            <i class="ph-bold ph-check-circle fs-5"></i>
+          </div>
+        </div>
+        <div class="d-flex align-items-baseline gap-2">
+          <h3 class="fw-bold text-success mb-0">{{ analytics.success_rate }}%</h3>
+          <span class="badge bg-success-subtle text-success rounded-pill small">{{ analytics.completed_count }} xong</span>
+        </div>
+        <div class="mt-2 pt-2 border-top small text-muted">
+          <span>Thất bại: <strong class="text-danger">{{ analytics.failed_count }}</strong></span>
+          <span>• Hủy: <strong class="text-secondary">{{ analytics.cancelled_count }}</strong></span>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-12 col-sm-6 col-xl-3">
+      <div class="card border-0 rounded-4 p-3.5 metric-card-gradient shadow-xs h-100">
+        <div class="d-flex align-items-center justify-content-between mb-2">
+          <span class="text-secondary small fw-semibold">Thời gian Thực thi TB</span>
+          <div class="rounded-3 bg-info-subtle text-info p-2 d-flex align-items-center justify-content-center" style="width: 36px; height: 36px;">
+            <i class="ph-bold ph-timer fs-5"></i>
+          </div>
+        </div>
+        <div class="d-flex align-items-baseline gap-2">
+          <h3 class="fw-bold text-dark mb-0">{{ analytics.avg_duration_ms }}</h3>
+          <span class="text-muted small">ms/job</span>
+        </div>
+        <div class="mt-2 pt-2 border-top small text-muted">
+          <span>Tối đa: <strong class="text-dark">{{ analytics.max_duration_ms }} ms</strong></span>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-12 col-sm-6 col-xl-3">
+      <div class="card border-0 rounded-4 p-3.5 metric-card-gradient shadow-xs h-100">
+        <div class="d-flex align-items-center justify-content-between mb-2">
+          <span class="text-secondary small fw-semibold">Tài nguyên RAM / CPU</span>
+          <div class="rounded-3 bg-warning-subtle text-warning p-2 d-flex align-items-center justify-content-center" style="width: 36px; height: 36px;">
+            <i class="ph-bold ph-cpu fs-5"></i>
+          </div>
+        </div>
+        <div class="d-flex align-items-baseline gap-2">
+          <h3 class="fw-bold text-dark mb-0">{{ analytics.system_metrics.process_ram_mb }}</h3>
+          <span class="text-muted small">MB RAM</span>
+        </div>
+        <div class="mt-2 pt-2 border-top small text-muted d-flex justify-content-between">
+          <span>Hệ thống: <strong>{{ analytics.system_metrics.system_ram_percent }}%</strong></span>
+          <span>CPU: <strong>{{ analytics.system_metrics.cpu_percent }}%</strong></span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Tabs Navigation -->
+  <div class="card border-0 rounded-4 shadow-sm overflow-hidden mb-4">
+    <div class="card-header bg-white border-bottom p-3">
+      <ul class="nav nav-pills card-header-pills gap-2" id="bgTaskTabs" role="tablist">
+        <li class="nav-item" role="presentation">
+          <button class="nav-link active rounded-3 fw-semibold px-3 py-2 small d-flex align-items-center gap-2" id="tab-queue-btn" data-bs-toggle="tab" data-bs-target="#tab-queue" type="button" role="tab">
+            <i class="ph-bold ph-list-dashes"></i> Hàng đợi Tác vụ (Task Queue)
+            <span class="badge bg-primary text-white rounded-pill px-2 py-0.5" style="font-size: 0.72rem;">{{ tasks|length }}</span>
+          </button>
+        </li>
+        <li class="nav-item" role="presentation">
+          <button class="nav-link rounded-3 fw-semibold px-3 py-2 small d-flex align-items-center gap-2" id="tab-scheduler-btn" data-bs-toggle="tab" data-bs-target="#tab-scheduler" type="button" role="tab">
+            <i class="ph-bold ph-calendar-check"></i> Lập lịch Định kỳ (APScheduler)
+            <span class="badge bg-secondary-subtle text-secondary rounded-pill px-2 py-0.5" style="font-size: 0.72rem;">{{ scheduled_jobs|length }}</span>
+          </button>
+        </li>
+        <li class="nav-item" role="presentation">
+          <button class="nav-link rounded-3 fw-semibold px-3 py-2 small d-flex align-items-center gap-2" id="tab-metrics-btn" data-bs-toggle="tab" data-bs-target="#tab-metrics" type="button" role="tab">
+            <i class="ph-bold ph-chart-line-up"></i> Giám sát Hiệu năng & Tài nguyên
+          </button>
+        </li>
+      </ul>
+    </div>
+
+    <div class="card-body p-4">
+      <div class="tab-content" id="bgTaskTabContent">
+        <!-- ================================================================= -->
+        <!-- TAB 1: TASK QUEUE & PRIORITY -->
+        <!-- ================================================================= -->
+        <div class="tab-pane fade show active" id="tab-queue" role="tabpanel">
+          <!-- Filter and Search Bar -->
+          <div class="row g-3 align-items-center justify-content-between mb-3 pb-3 border-bottom">
+            <div class="col-12 col-md-auto d-flex flex-wrap gap-1.5">
+              <a href="{{ url_for('admin.background_tasks_dashboard') }}" class="btn btn-sm {% if not status_filter %}btn-primary{% else %}btn-outline-secondary{% endif %} rounded-pill px-3 py-1 fw-semibold">Tất cả</a>
+              <a href="{{ url_for('admin.background_tasks_dashboard', status='RUNNING') }}" class="btn btn-sm {% if status_filter == 'RUNNING' %}btn-info text-white{% else %}btn-outline-info{% endif %} rounded-pill px-3 py-1 fw-semibold">Đang chạy</a>
+              <a href="{{ url_for('admin.background_tasks_dashboard', status='PENDING') }}" class="btn btn-sm {% if status_filter == 'PENDING' %}btn-warning text-dark{% else %}btn-outline-warning{% endif %} rounded-pill px-3 py-1 fw-semibold">Đang chờ</a>
+              <a href="{{ url_for('admin.background_tasks_dashboard', status='COMPLETED') }}" class="btn btn-sm {% if status_filter == 'COMPLETED' %}btn-success{% else %}btn-outline-success{% endif %} rounded-pill px-3 py-1 fw-semibold">Hoàn thành</a>
+              <a href="{{ url_for('admin.background_tasks_dashboard', status='FAILED') }}" class="btn btn-sm {% if status_filter == 'FAILED' %}btn-danger{% else %}btn-outline-danger{% endif %} rounded-pill px-3 py-1 fw-semibold">Thất bại</a>
+            </div>
+
+            <div class="col-12 col-md-auto d-flex gap-2">
+              <form method="GET" action="{{ url_for('admin.background_tasks_dashboard') }}" class="d-flex gap-2">
+                {% if status_filter %}<input type="hidden" name="status" value="{{ status_filter }}">{% endif %}
+                <div class="input-group input-group-sm">
+                  <span class="input-group-text bg-light border-end-0"><i class="ph-bold ph-magnifying-glass"></i></span>
+                  <input type="text" name="name" class="form-control bg-light border-start-0" placeholder="Tìm kiếm tên tác vụ..." value="{{ name_filter or '' }}">
+                </div>
+                <button type="submit" class="btn btn-sm btn-secondary rounded-3 px-3">Lọc</button>
+              </form>
+              <button type="button" class="btn btn-sm btn-outline-secondary rounded-3 px-2.5" onclick="purgeOldTasks()" title="Dọn dẹp tác vụ cũ">
+                <i class="ph-bold ph-trash"></i>
+              </button>
+            </div>
+          </div>
+
+          <!-- Tasks Table -->
+          <div class="table-responsive border rounded-3 overflow-hidden">
+            <table class="table table-hover align-middle mb-0" style="font-size: 0.88rem;">
+              <thead class="table-light">
+                <tr>
+                  <th class="ps-3 py-2.5">Tác vụ & Task ID</th>
+                  <th class="py-2.5">Loại</th>
+                  <th class="py-2.5">Mức ưu tiên</th>
+                  <th class="py-2.5">Trạng thái</th>
+                  <th class="py-2.5">Thời gian</th>
+                  <th class="py-2.5">RAM chênh lệch</th>
+                  <th class="py-2.5">Thử lại</th>
+                  <th class="py-2.5">Tạo lúc</th>
+                  <th class="text-end pe-3 py-2.5">Thao tác</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for t in tasks %}
+                <tr>
+                  <td class="ps-3">
+                    <strong class="text-dark d-block">{{ t.name }}</strong>
+                    <span class="font-monospace small text-muted" style="font-size: 0.75rem;">{{ t.task_id[:12] }}...</span>
+                  </td>
+                  <td>
+                    <span class="badge bg-light text-secondary border font-monospace small px-2 py-0.5">{{ t.task_type }}</span>
+                  </td>
+                  <td>
+                    <span class="badge {{ t.priority_badge_class }} rounded-pill px-2.5 py-1 fw-semibold small">
+                      {{ t.priority_label }}
+                    </span>
+                  </td>
+                  <td>
+                    <span class="badge {{ t.status_badge_class }} rounded-pill px-2.5 py-1 fw-semibold small">
+                      {% if t.status == 'RUNNING' %}
+                        <span class="spinner-grow spinner-grow-sm me-1" style="width: 0.6rem; height: 0.6rem;"></span>
+                      {% endif %}
+                      {{ t.status }}
+                    </span>
+                  </td>
+                  <td>
+                    {% if t.duration_ms > 0 %}
+                      <span class="fw-semibold text-dark">{{ t.duration_formatted }}</span>
+                    {% else %}
+                      <span class="text-muted">—</span>
+                    {% endif %}
+                  </td>
+                  <td>
+                    {% if t.memory_diff_mb > 0 %}
+                      <span class="badge bg-warning-subtle text-dark border border-warning-subtle font-monospace small">+{{ t.memory_diff_mb }} MB</span>
+                    {% else %}
+                      <span class="text-muted small">0 MB</span>
+                    {% endif %}
+                  </td>
+                  <td>
+                    <span class="badge bg-light text-muted border small">{{ t.retry_count }} / {{ t.max_retries }}</span>
+                  </td>
+                  <td>
+                    <span class="small text-muted">{{ t.created_at_vn.strftime('%H:%M:%S %d/%m') if t.created_at_vn else '—' }}</span>
+                  </td>
+                  <td class="text-end pe-3">
+                    <div class="btn-group btn-group-sm">
+                      <button type="button" class="btn btn-outline-secondary px-2.5 py-1" onclick="viewTaskDetail({{ t.id }}, '{{ t.name }}', '{{ t.task_id }}', '{{ t.status }}', {{ t.params_json|tojson }}, {{ t.result_json|tojson }}, {{ (t.error_message or '')|tojson }}, '{{ t.duration_formatted }}', '{{ t.memory_start_mb }}', '{{ t.memory_end_mb }}')" title="Xem chi tiết">
+                        <i class="ph-bold ph-eye"></i>
+                      </button>
+                      {% if t.status in ('FAILED', 'CANCELLED') %}
+                      <button type="button" class="btn btn-outline-success px-2.5 py-1" onclick="retryTask('{{ t.task_id }}')" title="Chạy lại ngay">
+                        <i class="ph-bold ph-arrow-clockwise"></i>
+                      </button>
+                      {% endif %}
+                      {% if t.status in ('PENDING', 'RUNNING', 'RETRYING') %}
+                      <button type="button" class="btn btn-outline-danger px-2.5 py-1" onclick="cancelTask('{{ t.task_id }}')" title="Hủy tác vụ">
+                        <i class="ph-bold ph-x"></i>
+                      </button>
+                      {% endif %}
+                    </div>
+                  </td>
+                </tr>
+                {% else %}
+                <tr>
+                  <td colspan="9" class="text-center py-5 text-muted">
+                    <i class="ph-bold ph-tray fs-2 d-block mb-2 text-secondary"></i>
+                    Không có tác vụ nền nào phù hợp với bộ lọc.
+                  </td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Pagination -->
+          {% if pagination.pages > 1 %}
+          <div class="d-flex justify-content-between align-items-center mt-3 pt-2">
+            <span class="small text-muted">Trang {{ pagination.page }} / {{ pagination.pages }}</span>
+            <ul class="pagination pagination-sm mb-0">
+              {% if pagination.has_prev %}
+              <li class="page-item"><a class="page-link" href="{{ url_for('admin.background_tasks_dashboard', page=pagination.prev_num, status=status_filter, name=name_filter) }}">Trước</a></li>
+              {% endif %}
+              {% for p in pagination.iter_pages(left_edge=2, right_edge=2, left_current=2, right_current=2) %}
+                {% if p %}
+                  <li class="page-item {% if p == pagination.page %}active{% endif %}">
+                    <a class="page-link" href="{{ url_for('admin.background_tasks_dashboard', page=p, status=status_filter, name=name_filter) }}">{{ p }}</a>
+                  </li>
+                {% else %}
+                  <li class="page-item disabled"><span class="page-link">…</span></li>
+                {% endif %}
+              {% endfor %}
+              {% if pagination.has_next %}
+              <li class="page-item"><a class="page-link" href="{{ url_for('admin.background_tasks_dashboard', page=pagination.next_num, status=status_filter, name=name_filter) }}">Sau</a></li>
+              {% endif %}
+            </ul>
+          </div>
+          {% endif %}
+        </div>
+
+        <!-- ================================================================= -->
+        <!-- TAB 2: SCHEDULED CRON TASKS (APSCHEDULER) -->
+        <!-- ================================================================= -->
+        <div class="tab-pane fade" id="tab-scheduler" role="tabpanel">
+          <div class="row g-3 mb-3">
+            {% for job in scheduled_jobs %}
+            <div class="col-12 col-md-6">
+              <div class="card border rounded-4 p-3.5 h-100 d-flex flex-column justify-content-between shadow-xs">
+                <div>
+                  <div class="d-flex align-items-start justify-content-between gap-2 mb-2">
+                    <div class="d-flex align-items-center gap-2.5">
+                      <div class="rounded-3 bg-primary-subtle text-primary p-2 d-flex align-items-center justify-content-center" style="width: 38px; height: 38px;">
+                        <i class="ph-bold ph-calendar-check fs-5"></i>
+                      </div>
+                      <div>
+                        <h6 class="fw-bold text-dark mb-0">{{ job.name }}</h6>
+                        <span class="badge bg-secondary-subtle text-secondary font-monospace small px-2 py-0.5">{{ job.task_name }}</span>
+                      </div>
+                    </div>
+                    <span class="badge {% if job.is_enabled %}bg-success-subtle text-success border border-success-subtle{% else %}bg-secondary-subtle text-secondary border{% endif %} rounded-pill px-2.5 py-1">
+                      {% if job.is_enabled %}Đang chạy{% else %}Tạm dừng{% endif %}
+                    </span>
+                  </div>
+
+                  <p class="text-secondary small mb-3">{{ job.description }}</p>
+
+                  <div class="p-2.5 bg-light rounded-3 border mb-3">
+                    <div class="d-flex justify-content-between small text-muted mb-1">
+                      <span>Chu kỳ lặp:</span>
+                      <strong class="text-dark font-monospace">{{ job.trigger_desc }}</strong>
+                    </div>
+                    <div class="d-flex justify-content-between small text-muted">
+                      <span>Lần chạy kế tiếp:</span>
+                      <strong class="text-primary font-monospace">{{ job.next_run_time or 'Theo lịch daemon' }}</strong>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="d-flex gap-2 justify-content-end pt-2 border-top">
+                  <button type="button" class="btn btn-sm btn-outline-secondary rounded-3 px-3 py-1.5 fw-semibold" onclick="toggleJobSchedule('{{ job.id }}', {{ 'false' if job.is_enabled else 'true' }})">
+                    <i class="ph-bold {% if job.is_enabled %}ph-pause{% else %}ph-play{% endif %} me-1"></i>
+                    {% if job.is_enabled %}Tạm dừng{% else %}Bật lại{% endif %}
+                  </button>
+                  <button type="button" class="btn btn-sm btn-primary rounded-3 px-3 py-1.5 fw-bold shadow-xs" onclick="triggerScheduledJob('{{ job.id }}')">
+                    <i class="ph-bold ph-lightning me-1"></i> Chạy ngay
+                  </button>
+                </div>
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+
+        <!-- ================================================================= -->
+        <!-- TAB 3: PERFORMANCE & RESOURCE METRICS -->
+        <!-- ================================================================= -->
+        <div class="tab-pane fade" id="tab-metrics" role="tabpanel">
+          <div class="row g-4">
+            <!-- Execution Stats by Task Type -->
+            <div class="col-12 col-lg-7">
+              <div class="border rounded-4 p-3.5 h-100">
+                <h6 class="fw-bold text-dark mb-3 d-flex align-items-center gap-2">
+                  <i class="ph-bold ph-chart-bar text-primary"></i> Thống kê Thời gian Hoàn thành theo Tác vụ
+                </h6>
+                <div class="table-responsive">
+                  <table class="table table-hover align-middle mb-0 small">
+                    <thead class="table-light">
+                      <tr>
+                        <th>Tên tác vụ</th>
+                        <th class="text-center">Tổng lượt</th>
+                        <th class="text-center">Thành công</th>
+                        <th class="text-center">Thất bại</th>
+                        <th class="text-end pe-2">Thời gian TB (ms)</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {% for k, v in analytics.task_name_stats.items() %}
+                      <tr>
+                        <td class="fw-semibold text-dark font-monospace">{{ k }}</td>
+                        <td class="text-center"><span class="badge bg-light text-dark border">{{ v.total }}</span></td>
+                        <td class="text-center"><span class="badge bg-success-subtle text-success">{{ v.completed }}</span></td>
+                        <td class="text-center"><span class="badge {% if v.failed > 0 %}bg-danger-subtle text-danger{% else %}bg-light text-muted{% endif %}">{{ v.failed }}</span></td>
+                        <td class="text-end pe-2 font-monospace fw-bold text-primary">{{ v.avg_duration_ms }} ms</td>
+                      </tr>
+                      {% else %}
+                      <tr>
+                        <td colspan="5" class="text-center py-4 text-muted">Chưa có dữ liệu thống kê tác vụ.</td>
+                      </tr>
+                      {% endfor %}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+
+            <!-- 7-Day Timeline -->
+            <div class="col-12 col-lg-5">
+              <div class="border rounded-4 p-3.5 h-100">
+                <h6 class="fw-bold text-dark mb-3 d-flex align-items-center gap-2">
+                  <i class="ph-bold ph-chart-line text-primary"></i> Tiến trình 7 ngày gần nhất
+                </h6>
+                <div class="table-responsive">
+                  <table class="table table-hover align-middle mb-0 small">
+                    <thead class="table-light">
+                      <tr>
+                        <th>Ngày</th>
+                        <th class="text-center">Hoàn thành</th>
+                        <th class="text-center">Lỗi</th>
+                        <th class="text-end pe-2">Tỷ lệ đạt</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {% for i in range(analytics.chart_labels|length - 1, -1, -1) %}
+                      {% set lbl = analytics.chart_labels[i] %}
+                      {% set c = analytics.chart_completed[i] %}
+                      {% set f = analytics.chart_failed[i] %}
+                      <tr>
+                        <td class="font-monospace fw-semibold text-dark">{{ lbl }}</td>
+                        <td class="text-center"><span class="badge bg-success-subtle text-success">{{ c }}</span></td>
+                        <td class="text-center"><span class="badge {% if f > 0 %}bg-danger-subtle text-danger{% else %}bg-light text-muted{% endif %}">{{ f }}</span></td>
+                        <td class="text-end pe-2">
+                          {% if (c + f) > 0 %}
+                            <strong class="text-success">{{ (c / (c + f) * 100)|round(1) }}%</strong>
+                          {% else %}
+                            <span class="text-muted">—</span>
+                          {% endif %}
+                        </td>
+                      </tr>
+                      {% endfor %}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ========================================================================= -->
+<!-- MODAL: ENQUEUE NEW TASK -->
+<!-- ========================================================================= -->
+<div class="modal fade" id="enqueueTaskModal" tabindex="-1" aria-labelledby="enqueueTaskModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
+      <div class="modal-header bg-light p-3.5 border-bottom">
+        <h6 class="modal-title fw-bold text-dark d-flex align-items-center gap-2">
+          <i class="ph-bold ph-plus-circle text-primary fs-5"></i> Tạo tác vụ nền mới (Task Queue)
+        </h6>
+        <button type="button" class="btn-close shadow-none" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+
+      <form id="enqueueTaskForm" onsubmit="submitEnqueueTask(event)">
+        <div class="modal-body p-4">
+          <div class="mb-3">
+            <label class="form-label fw-semibold text-dark small mb-1">Tên tác vụ (Handler đã đăng ký)</label>
+            <select class="form-select rounded-3" id="taskNameSelect" required>
+              <option value="" disabled selected>-- Chọn tác vụ cần thực thi --</option>
+              {% for h in available_handlers %}
+                <option value="{{ h }}">{{ h }}</option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div class="row g-3 mb-3">
+            <div class="col-6">
+              <label class="form-label fw-semibold text-dark small mb-1">Mức ưu tiên (Priority)</label>
+              <select class="form-select rounded-3" id="taskPriority">
+                <option value="10">Cao (High Priority - 10)</option>
+                <option value="5" selected>Trung bình (Normal - 5)</option>
+                <option value="1">Thấp (Low Priority - 1)</option>
+              </select>
+            </div>
+            <div class="col-6">
+              <label class="form-label fw-semibold text-dark small mb-1">Số lần thử lại (Max retries)</label>
+              <input type="number" class="form-control rounded-3" id="taskMaxRetries" value="3" min="0" max="10">
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label fw-semibold text-dark small mb-1">Thời gian Timeout tối đa (giây)</label>
+            <input type="number" class="form-control rounded-3" id="taskTimeout" value="300" min="5" max="3600">
+          </div>
+
+          <div class="mb-0">
+            <label class="form-label fw-semibold text-dark small mb-1">Tham số đầu vào (JSON Params - tuỳ chọn)</label>
+            <textarea class="form-control font-monospace small rounded-3" id="taskParamsJson" rows="3" placeholder='{"echo": "EnglishMate Worker", "sleep_sec": 0.1}'></textarea>
+          </div>
+        </div>
+
+        <div class="modal-footer p-3 bg-light border-top d-flex justify-content-end gap-2">
+          <button type="button" class="btn btn-light rounded-3 px-3 fw-semibold small" data-bs-dismiss="modal">Hủy</button>
+          <button type="submit" class="btn btn-primary rounded-3 px-4 fw-bold shadow-xs" id="btnSubmitEnqueue">
+            <i class="ph-bold ph-paper-plane-tilt me-1"></i> Đưa vào hàng đợi
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- ========================================================================= -->
+<!-- MODAL: TASK DETAIL -->
+<!-- ========================================================================= -->
+<div class="modal fade" id="taskDetailModal" tabindex="-1" aria-labelledby="taskDetailModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
+      <div class="modal-header bg-light p-3.5 border-bottom d-flex justify-content-between">
+        <div>
+          <span class="badge bg-primary-subtle text-primary rounded-pill px-2.5 py-0.5 small mb-1" id="detailStatusBadge"></span>
+          <h6 class="modal-title fw-bold text-dark mb-0 font-monospace" id="detailTaskName"></h6>
+        </div>
+        <button type="button" class="btn-close shadow-none" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+
+      <div class="modal-body p-4">
+        <div class="row g-3 mb-3">
+          <div class="col-4">
+            <div class="p-2.5 bg-light rounded-3 border">
+              <span class="text-muted small d-block mb-0.5">Task ID:</span>
+              <span class="font-monospace small fw-semibold text-dark" id="detailTaskId"></span>
+            </div>
+          </div>
+          <div class="col-4">
+            <div class="p-2.5 bg-light rounded-3 border">
+              <span class="text-muted small d-block mb-0.5">Thời gian chạy:</span>
+              <span class="fw-bold text-primary" id="detailDuration"></span>
+            </div>
+          </div>
+          <div class="col-4">
+            <div class="p-2.5 bg-light rounded-3 border">
+              <span class="text-muted small d-block mb-0.5">RAM sử dụng:</span>
+              <span class="font-monospace small text-dark" id="detailMemory"></span>
+            </div>
+          </div>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label fw-semibold text-dark small mb-1">Tham số đầu vào (Params)</label>
+          <pre class="bg-light p-3 rounded-3 border font-monospace small mb-0" id="detailParams" style="max-height: 120px; overflow-y: auto;"></pre>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label fw-semibold text-dark small mb-1">Kết quả đầu ra (Result)</label>
+          <pre class="bg-light p-3 rounded-3 border font-monospace small mb-0" id="detailResult" style="max-height: 150px; overflow-y: auto;"></pre>
+        </div>
+
+        <div id="detailErrorContainer" style="display: none;">
+          <label class="form-label fw-semibold text-danger small mb-1">Nhật ký lỗi (Traceback)</label>
+          <pre class="bg-danger-subtle text-danger p-3 rounded-3 border border-danger-subtle font-monospace small mb-0" id="detailError" style="max-height: 150px; overflow-y: auto;"></pre>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+async function submitEnqueueTask(e) {
+  e.preventDefault();
+  const btn = document.getElementById("btnSubmitEnqueue");
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Đang tạo...';
+
+  let params = {};
+  const rawParams = document.getElementById("taskParamsJson").value.trim();
+  if (rawParams) {
+    try {
+      params = JSON.parse(rawParams);
+    } catch (err) {
+      alert("Lỗi cú pháp JSON ở ô tham số đầu vào.");
+      btn.disabled = false;
+      btn.innerHTML = '<i class="ph-bold ph-paper-plane-tilt me-1"></i> Đưa vào hàng đợi';
+      return;
+    }
+  }
+
+  const payload = {
+    name: document.getElementById("taskNameSelect").value,
+    priority: parseInt(document.getElementById("taskPriority").value),
+    max_retries: parseInt(document.getElementById("taskMaxRetries").value),
+    timeout_seconds: parseInt(document.getElementById("taskTimeout").value),
+    params: params
+  };
+
+  try {
+    const res = await fetch("{{ url_for('admin.enqueue_background_task_route') }}", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "X-CSRFToken": "{{ csrf_token() }}" },
+      body: JSON.stringify(payload)
+    });
+    const json = await res.json();
+    if (json.success) {
+      alert("✓ Đã đưa tác vụ vào hàng đợi thành công!");
+      window.location.reload();
+    } else {
+      alert("Lỗi: " + (json.error || "Không thể tạo tác vụ."));
+    }
+  } catch (err) {
+    alert("Lỗi kết nối khi gửi yêu cầu.");
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '<i class="ph-bold ph-paper-plane-tilt me-1"></i> Đưa vào hàng đợi';
+  }
+}
+
+async function cancelTask(taskId) {
+  if (!confirm("Bạn có chắc muốn hủy bỏ tác vụ này?")) return;
+  try {
+    const res = await fetch(`/admin/system/background-tasks/cancel/${taskId}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "X-CSRFToken": "{{ csrf_token() }}" }
+    });
+    const json = await res.json();
+    alert(json.success ? "✓ " + json.message : "Lỗi: " + json.error);
+    window.location.reload();
+  } catch (err) {
+    alert("Lỗi kết nối.");
+  }
+}
+
+async function retryTask(taskId) {
+  try {
+    const res = await fetch(`/admin/system/background-tasks/retry/${taskId}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "X-CSRFToken": "{{ csrf_token() }}" }
+    });
+    const json = await res.json();
+    alert(json.success ? "✓ " + json.message : "Lỗi: " + json.error);
+    window.location.reload();
+  } catch (err) {
+    alert("Lỗi kết nối.");
+  }
+}
+
+async function processPendingQueue() {
+  try {
+    const res = await fetch("{{ url_for('admin.process_pending_tasks_route') }}", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "X-CSRFToken": "{{ csrf_token() }}" }
+    });
+    const json = await res.json();
+    alert("✓ " + json.message);
+    window.location.reload();
+  } catch (err) {
+    alert("Lỗi khi phân phối hàng đợi.");
+  }
+}
+
+async function purgeOldTasks() {
+  if (!confirm("Bạn có chắc muốn dọn dẹp các tác vụ hoàn thành/lỗi cũ hơn 7 ngày?")) return;
+  try {
+    const res = await fetch("{{ url_for('admin.purge_background_tasks_route') }}", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "X-CSRFToken": "{{ csrf_token() }}" }
+    });
+    const json = await res.json();
+    alert("✓ " + json.message);
+    window.location.reload();
+  } catch (err) {
+    alert("Lỗi dọn dẹp.");
+  }
+}
+
+async function triggerScheduledJob(jobId) {
+  try {
+    const res = await fetch(`/admin/system/scheduler/trigger/${jobId}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "X-CSRFToken": "{{ csrf_token() }}" }
+    });
+    const json = await res.json();
+    alert(json.success ? "✓ " + json.message : "Lỗi: " + json.error);
+    window.location.reload();
+  } catch (err) {
+    alert("Lỗi kích hoạt tác vụ định kỳ.");
+  }
+}
+
+async function toggleJobSchedule(jobId, enable) {
+  try {
+    const res = await fetch(`/admin/system/scheduler/toggle/${jobId}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "X-CSRFToken": "{{ csrf_token() }}" },
+      body: JSON.stringify({ enable: enable })
+    });
+    const json = await res.json();
+    alert(json.success ? "✓ " + json.message : "Lỗi: " + json.error);
+    window.location.reload();
+  } catch (err) {
+    alert("Lỗi thay đổi trạng thái.");
+  }
+}
+
+function viewTaskDetail(id, name, taskId, status, paramsJson, resultJson, errorMsg, duration, memStart, memEnd) {
+  document.getElementById("detailTaskName").innerText = name;
+  document.getElementById("detailTaskId").innerText = taskId;
+  document.getElementById("detailStatusBadge").innerText = status;
+  document.getElementById("detailDuration").innerText = duration || "0 ms";
+  document.getElementById("detailMemory").innerText = `${memStart || 0} MB -> ${memEnd || 0} MB`;
+
+  try {
+    const p = typeof paramsJson === 'string' ? JSON.parse(paramsJson) : paramsJson;
+    document.getElementById("detailParams").innerText = JSON.stringify(p, null, 2);
+  } catch (e) {
+    document.getElementById("detailParams").innerText = paramsJson || "{}";
+  }
+
+  try {
+    const r = typeof resultJson === 'string' ? JSON.parse(resultJson) : resultJson;
+    document.getElementById("detailResult").innerText = JSON.stringify(r, null, 2);
+  } catch (e) {
+    document.getElementById("detailResult").innerText = resultJson || "{}";
+  }
+
+  const errCont = document.getElementById("detailErrorContainer");
+  if (errorMsg) {
+    document.getElementById("detailError").innerText = errorMsg;
+    errCont.style.display = "block";
+  } else {
+    errCont.style.display = "none";
+  }
+
+  const modal = new bootstrap.Modal(document.getElementById("taskDetailModal"));
+  modal.show();
+}
+</script>
+{% endblock %}

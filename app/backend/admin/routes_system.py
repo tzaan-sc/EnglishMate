@@ -1181,6 +1181,224 @@ def delete_email_bounce_route(bounce_id):
     return redirect(url_for("admin.email_system_dashboard"))
 
 
+# ===========================================================================
+# BACKGROUND TASKS & SCHEDULER MANAGEMENT ROUTES (MỤC 12.5)
+# ===========================================================================
+from .models import BackgroundTask
+from .task_queue_service import (
+    enqueue_background_task,
+    cancel_background_task,
+    retry_background_task_now,
+    purge_old_background_tasks,
+    process_pending_background_tasks,
+    get_background_processing_analytics,
+    TASK_HANDLERS
+)
+from .scheduler_service import scheduler
+
+
+@bp.get("/system/background-tasks")
+@bp.get("/background-tasks")
+@admin_required
+def background_tasks_dashboard():
+    """Giao diện quản trị Hàng đợi Tác vụ nền & Bộ lập lịch Cron (Mục 12.5)."""
+    status_filter = request.args.get("status", "").strip()
+    name_filter = request.args.get("name", "").strip()
+    page = request.args.get("page", 1, type=int)
+
+    query = BackgroundTask.query
+    if status_filter:
+        query = query.filter_by(status=status_filter)
+    if name_filter:
+        query = query.filter(BackgroundTask.name.ilike(f"%{name_filter}%"))
+
+    tasks_pagination = query.order_by(BackgroundTask.created_at.desc()).paginate(page=page, per_page=20, error_out=False)
+    analytics = get_background_processing_analytics()
+    scheduled_jobs = scheduler.get_jobs_status()
+
+    return render_template(
+        "admin/background_tasks.html",
+        tasks=tasks_pagination.items,
+        pagination=tasks_pagination,
+        analytics=analytics,
+        scheduled_jobs=scheduled_jobs,
+        status_filter=status_filter,
+        name_filter=name_filter,
+        available_handlers=list(TASK_HANDLERS.keys())
+    )
+
+
+@bp.get("/system/background-tasks/analytics")
+@bp.get("/background-tasks/analytics")
+@admin_required
+def background_tasks_analytics_api():
+    """API lấy toàn bộ chỉ số hiệu năng và tài nguyên RAM/CPU của worker."""
+    analytics = get_background_processing_analytics()
+    return jsonify({"success": True, "analytics": analytics})
+
+
+@bp.post("/system/background-tasks/enqueue")
+@bp.post("/background-tasks/enqueue")
+@admin_required
+def enqueue_background_task_route():
+    """API đưa tác vụ mới vào hàng đợi (Task Queue)."""
+    data = request.get_json(silent=True) or request.form.to_dict()
+    name = (data.get("name") or "").strip()
+    if not name:
+        return jsonify({"success": False, "error": "Vui lòng chọn hoặc nhập tên tác vụ."}), 400
+
+    priority = int(data.get("priority", 5))
+    params = data.get("params") or {}
+    if isinstance(params, str):
+        try:
+            params = json.loads(params)
+        except Exception:
+            params = {}
+
+    max_retries = int(data.get("max_retries", 3))
+    retry_delay = int(data.get("retry_delay_seconds", 5))
+    timeout = int(data.get("timeout_seconds", 300))
+
+    res = enqueue_background_task(
+        name=name,
+        params=params,
+        priority=priority,
+        max_retries=max_retries,
+        retry_delay_seconds=retry_delay,
+        timeout_seconds=timeout,
+        user_id=current_user.id,
+        async_exec=True
+    )
+
+    log_audit_action(
+        user_id=current_user.id,
+        action="ENQUEUE_BACKGROUND_TASK",
+        target_type="BACKGROUND_TASK",
+        target_id=res.get("task_id", ""),
+        details=f"Tạo tác vụ nền: {name} (Priority {priority})"
+    )
+
+    if request.is_json:
+        return jsonify(res)
+
+    flash(f"Đã đưa tác vụ '{name}' vào hàng đợi xử lý ngầm.", "success")
+    return redirect(url_for("admin.background_tasks_dashboard"))
+
+
+@bp.post("/system/background-tasks/cancel/<string:task_id>")
+@bp.post("/background-tasks/cancel/<string:task_id>")
+@admin_required
+def cancel_background_task_route(task_id):
+    """API hủy tác vụ đang chờ hoặc đang chạy."""
+    res = cancel_background_task(task_id)
+    if res["success"]:
+        log_audit_action(
+            user_id=current_user.id,
+            action="CANCEL_BACKGROUND_TASK",
+            target_type="BACKGROUND_TASK",
+            target_id=task_id,
+            details=f"Hủy tác vụ {task_id}"
+        )
+    if request.is_json:
+        return jsonify(res)
+    if res["success"]:
+        flash(res["message"], "info")
+    else:
+        flash(res["error"], "danger")
+    return redirect(url_for("admin.background_tasks_dashboard"))
+
+
+@bp.post("/system/background-tasks/retry/<string:task_id>")
+@bp.post("/background-tasks/retry/<string:task_id>")
+@admin_required
+def retry_background_task_route(task_id):
+    """API kích hoạt chạy lại ngay một tác vụ đã thất bại."""
+    res = retry_background_task_now(task_id)
+    if res["success"]:
+        log_audit_action(
+            user_id=current_user.id,
+            action="RETRY_BACKGROUND_TASK",
+            target_type="BACKGROUND_TASK",
+            target_id=task_id,
+            details=f"Chạy lại tác vụ {task_id}"
+        )
+    if request.is_json:
+        return jsonify(res)
+    if res["success"]:
+        flash(res["message"], "success")
+    else:
+        flash(res["error"], "danger")
+    return redirect(url_for("admin.background_tasks_dashboard"))
+
+
+@bp.post("/system/background-tasks/purge")
+@bp.post("/background-tasks/purge")
+@admin_required
+def purge_background_tasks_route():
+    """API dọn dẹp các tác vụ cũ đã hoàn tất."""
+    days = request.form.get("days", 7, type=int)
+    deleted = purge_old_background_tasks(days_to_keep=days)
+    msg = f"Đã dọn dẹp {deleted} tác vụ cũ hoàn tất/thất bại trước {days} ngày."
+    if request.is_json:
+        return jsonify({"success": True, "deleted_count": deleted, "message": msg})
+    flash(msg, "info")
+    return redirect(url_for("admin.background_tasks_dashboard"))
+
+
+@bp.post("/system/background-tasks/process-pending")
+@bp.post("/background-tasks/process-pending")
+@admin_required
+def process_pending_tasks_route():
+    """Kích hoạt quét hàng đợi và phân phối tác vụ PENDING theo mức độ ưu tiên."""
+    count = process_pending_background_tasks(limit=20)
+    msg = f"Đã phân phối {count} tác vụ theo thứ tự ưu tiên." if count > 0 else "Không có tác vụ nào đang chờ xử lý."
+    if request.is_json:
+        return jsonify({"success": True, "dispatched_count": count, "message": msg})
+    flash(msg, "info")
+    return redirect(url_for("admin.background_tasks_dashboard"))
+
+
+@bp.post("/system/scheduler/trigger/<string:job_id>")
+@bp.post("/scheduler/trigger/<string:job_id>")
+@admin_required
+def trigger_scheduled_job_route(job_id):
+    """Kích hoạt chạy ngay lập tức một tác vụ định kỳ."""
+    res = scheduler.trigger_job_now(job_id)
+    if res["success"]:
+        log_audit_action(
+            user_id=current_user.id,
+            action="TRIGGER_SCHEDULED_JOB",
+            target_type="SCHEDULER_JOB",
+            target_id=job_id,
+            details=f"Kích hoạt thủ công tác vụ định kỳ {job_id}"
+        )
+    if request.is_json:
+        return jsonify(res)
+    if res["success"]:
+        flash(res["message"], "success")
+    else:
+        flash(res["error"], "danger")
+    return redirect(url_for("admin.background_tasks_dashboard"))
+
+
+@bp.post("/system/scheduler/toggle/<string:job_id>")
+@bp.post("/scheduler/toggle/<string:job_id>")
+@admin_required
+def toggle_scheduled_job_route(job_id):
+    """Bật / Tạm dừng tác vụ định kỳ."""
+    data = request.get_json(silent=True) or request.form
+    enable = data.get("enable", True)
+    if isinstance(enable, str):
+        enable = enable.lower() in ("true", "1", "yes", "on")
+
+    res = scheduler.toggle_job_enabled(job_id, bool(enable))
+    if request.is_json:
+        return jsonify(res)
+    flash(res["message"], "success")
+    return redirect(url_for("admin.background_tasks_dashboard"))
+
+
+
 
 
 

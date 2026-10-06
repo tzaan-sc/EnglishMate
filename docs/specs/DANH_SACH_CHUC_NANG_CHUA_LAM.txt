@@ -546,13 +546,13 @@ MODULE 12. SYSTEM FEATURES (TÍNH NĂNG HỆ THỐNG) — 46 TÍNH NĂNG CHƯA L
 - [x] `Email Scheduling`: Hỗ trợ đặt lịch hẹn giờ gửi email trong tương lai (`scheduled_at`) và API/worker quét xử lý hàng đợi tự động. (Ưu tiên: Thấp)
 - [x] `Email Templates Management`: Giao diện Admin quản trị nội dung mẫu HTML email (`EmailTemplate`), hỗ trợ xem trước (Preview), chỉnh sửa linh hoạt với placeholder variables. (Ưu tiên: Trung bình)
 
-12.5. Background Processing (6 tính năng chưa làm):
-- [ ] `Task Queue`: Chưa cài đặt Celery hoặc Redis Queue (RQ) làm hàng đợi tác vụ nền chuẩn. (Ưu tiên: Cao)
-- [ ] `Scheduled Tasks`: Chưa cài đặt APScheduler cho các tác vụ định kỳ tự động. (Ưu tiên: Cao)
-- [ ] `Retry Logic`: Chưa có cơ chế tự động thử lại tác vụ ngầm khi lỗi mạng. (Ưu tiên: Trung bình)
-- [ ] `Job Prioritization`: Chưa phân cấp độ ưu tiên cho các tác vụ nền. (Ưu tiên: Thấp)
-- [ ] `Resource Management`: Chưa kiểm soát mức tiêu thụ RAM của worker ngầm. (Ưu tiên: Thấp)
-- [ ] `Performance Monitoring`: Chưa đo thời gian hoàn thành từng job ngầm. (Ưu tiên: Thấp)
+12.5. Background Processing (6/6 tính năng hoàn thành):
+- [x] `Task Queue`: Hàng đợi tác vụ nền chuẩn (`BackgroundTask`), hỗ trợ đăng ký handler động (`register_task_handler`), điều phối worker pool đa luồng phi chặn và ghi nhận nhật ký chi tiết. (Ưu tiên: Cao)
+- [x] `Scheduled Tasks`: Tích hợp bộ lập lịch `APScheduler` (`BackgroundScheduler`) và daemon scheduler tự động cho các tác vụ định kỳ (dọn dẹp token hết hạn, đồng bộ email queue, cache warming, sao lưu CSDL tự động). (Ưu tiên: Cao)
+- [x] `Retry Logic`: Cơ chế tự động thử lại tác vụ ngầm khi lỗi ngoại lệ với khoảng thời gian lùi dần Exponential Backoff (`retry_delay * 2^(retry-1)`), giới hạn `max_retries` và ghi log lỗi đầy đủ. (Ưu tiên: Trung bình)
+- [x] `Job Prioritization`: Phân cấp độ ưu tiên cho tác vụ nền (`1: LOW`, `5: NORMAL`, `10: HIGH`), hàng đợi ưu tiên phân phối và thực thi các tác vụ mức Cao trước. (Ưu tiên: Thấp)
+- [x] `Resource Management`: Giám sát mức tiêu thụ RAM tiến trình (MB) trước/sau mỗi job, tự động kích hoạt Garbage Collection (`gc.collect()`) và kiểm soát thời gian ngắt Execution Timeout. (Ưu tiên: Thấp)
+- [x] `Performance Monitoring`: Đo lường chính xác thời gian thực thi từng job (Duration ms), tỷ lệ thành công, thống kê hiệu năng theo từng loại tác vụ và Dashboard quản trị trực quan. (Ưu tiên: Thấp)
 
 12.6. Caching System (10 tính năng chưa làm - Toàn bộ module Cache):
 - [ ] `Response Caching`, `Data Caching`, `Query Caching`, `Cache Invalidation`, `Cache Management`, `Cache Statistics`, `Cache Warming`, `Distributed Caching`, `Cache Security`, `Cache Optimization`:

@@ -111,5 +111,6 @@ def log_audit_action(user_id, action, target_type=None, target_id=None, details=
         db.session.commit()
         return log
     except Exception as exc:
+        db.session.rollback()
         print(f"Error writing audit log: {exc}")
         return None

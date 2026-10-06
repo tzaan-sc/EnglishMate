@@ -502,37 +502,37 @@ MODULE: 12. SYSTEM FEATURES (TÍNH NĂNG HỆ THỐNG) (46 tính năng chưa là
    - Đối chiếu hiện trạng: Đã hoàn thành (model EmailTemplate, CRUD API và giao diện quản trị HTML Email).
 
 
-### 12.5. Background Processing (Xử lý nền) (6 tính năng):
+### 12.5. Background Processing (Xử lý nền) (6 tính năng - Đã hoàn thành 6/6):
 ----------------------------------------------------------------------------------------------------
-66. [ ] Task Queue - Hàng đợi tác vụ
+66. [x] Task Queue - Hàng đợi tác vụ
    - Mức độ ưu tiên: Trung bình
-   - Mô tả yêu cầu: Hệ thống hàng đợi tác vụ nền chuyên nghiệp (Task Queue Worker) sử dụng Celery hoặc RQ với Redis/RabbitMQ.
-   - Đối chiếu hiện trạng: Hiện tại tác vụ chấm điểm AI bài thi đang chạy qua thread nền riêng biệt (threading.Thread), chưa dùng message broker chuyên dụng.
+   - Mô tả yêu cầu: Hệ thống hàng đợi tác vụ nền chuyên nghiệp (Task Queue Worker) bằng ThreadPoolExecutor ngầm, lưu vết CSDL BackgroundTask chi tiết.
+   - Đối chiếu hiện trạng: Đã hoàn thành (app/backend/admin/task_queue_service.py).
 
-67. [ ] Scheduled Tasks - Tác vụ định kỳ
+67. [x] Scheduled Tasks - Tác vụ định kỳ
    - Mức độ ưu tiên: Trung bình
-   - Mô tả yêu cầu: Hệ thống lập lịch tác vụ định kỳ tự động (Cron / Scheduled Jobs) sử dụng APScheduler hoặc Celery Beat.
-   - Đối chiếu hiện trạng: Chưa có scheduler chạy nền trong tiến trình ứng dụng.
+   - Mô tả yêu cầu: Hệ thống lập lịch tác vụ định kỳ tự động (Cron / Scheduled Jobs) sử dụng APScheduler và daemon scheduler dự phòng.
+   - Đối chiếu hiện trạng: Đã hoàn thành (app/backend/admin/scheduler_service.py).
 
-68. [ ] Retry Logic - Logic thử lại
+68. [x] Retry Logic - Logic thử lại
    - Mức độ ưu tiên: Thấp
-   - Mô tả yêu cầu: Cơ chế tự động thử lại (Retry) tác vụ nền với khoảng thời gian lùi dần (Exponential backoff) khi gặp sự cố mạng hoặc lỗi API.
-   - Đối chiếu hiện trạng: Tác vụ AI grading ghi nhận trạng thái lỗi FAILED khi ngoại lệ phát sinh nhưng chưa có vòng lặp tự động retry.
+   - Mô tả yêu cầu: Cơ chế tự động thử lại (Retry) tác vụ nền với khoảng thời gian lùi dần (Exponential backoff) khi gặp sự cố mạng hoặc ngoại lệ.
+   - Đối chiếu hiện trạng: Đã hoàn thành (cơ chế Exponential Backoff retry_delay * 2^(retry-1)).
 
-69. [ ] Job Prioritization - Ưu tiên tác vụ
+69. [x] Job Prioritization - Ưu tiên tác vụ
    - Mức độ ưu tiên: Thấp
-   - Mô tả yêu cầu: Phân chia độ ưu tiên cho các tác vụ nền (ví dụ: OTP khẩn cấp ưu tiên cao hơn chấm bài luận dài).
-   - Đối chiếu hiện trạng: Các thread nền thực thi tuần tự theo yêu cầu.
+   - Mô tả yêu cầu: Phân chia độ ưu tiên cho các tác vụ nền (1: LOW, 5: NORMAL, 10: HIGH), hàng đợi ưu tiên phân phối job khẩn cấp trước.
+   - Đối chiếu hiện trạng: Đã hoàn thành (process_pending_background_tasks theo priority DESC).
 
-70. [ ] Resource Management - Quản lý tài nguyên
+70. [x] Resource Management - Quản lý tài nguyên
    - Mức độ ưu tiên: Thấp
-   - Mô tả yêu cầu: Giới hạn số lượng worker và tài nguyên CPU/RAM tối đa dành cho các tiến trình xử lý nền.
-   - Đối chiếu hiện trạng: Chưa có bộ điều phối tài nguyên tiến trình con.
+   - Mô tả yêu cầu: Giới hạn số lượng worker, đo lường RAM/CPU tiêu thụ và tự động kích hoạt gc.collect(), kiểm soát timeout.
+   - Đối chiếu hiện trạng: Đã hoàn thành (theo dõi RAM psutil trước/sau job, gc.collect() và timeout supervision).
 
-71. [ ] Performance Monitoring - Giám sát hiệu suất
+71. [x] Performance Monitoring - Giám sát hiệu suất
    - Mức độ ưu tiên: Thấp
    - Mô tả yêu cầu: Bảng theo dõi thời gian thực hiện trung bình và tỷ lệ hoàn thành của các tác vụ chạy nền.
-   - Đối chiếu hiện trạng: Chưa có bảng dashboard giám sát worker.
+   - Đối chiếu hiện trạng: Đã hoàn thành (Dashboard quản trị /admin/system/background-tasks và API analytics).
 
 
 ### 12.6. Caching System (Hệ thống cache) (10 tính năng):

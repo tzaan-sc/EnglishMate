@@ -907,16 +907,16 @@ NỀN TẢNG HỌC TIẾNG ANH TRỰC TUYẾN THÔNG MINH
 [x] - Email Templates Management - Quản lý mẫu email
 
 12.5. Background Processing (Xử lý nền)
-[ ] - Task Queue - Hàng đợi tác vụ
+[x] - Task Queue - Hàng đợi tác vụ
 [x] - Async Processing - Xử lý async
 [x] - Background Jobs - Tác vụ nền
-[ ] - Scheduled Tasks - Tác vụ định kỳ
+[x] - Scheduled Tasks - Tác vụ định kỳ
 [x] - Job Monitoring - Giám sát tác vụ
 [x] - Error Handling - Xử lý lỗi
-[ ] - Retry Logic - Logic thử lại
-[ ] - Job Prioritization - Ưu tiên tác vụ
-[ ] - Resource Management - Quản lý tài nguyên
-[ ] - Performance Monitoring - Giám sát hiệu suất
+[x] - Retry Logic - Logic thử lại
+[x] - Job Prioritization - Ưu tiên tác vụ
+[x] - Resource Management - Quản lý tài nguyên
+[x] - Performance Monitoring - Giám sát hiệu suất
 
 12.6. Caching System (Hệ thống cache)
 [ ] - Response Caching - Cache phản hồi

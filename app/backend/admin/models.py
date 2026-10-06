@@ -369,6 +369,101 @@ class EmailBounce(db.Model):
         return self.created_at + timedelta(hours=7)
 
 
+class BackgroundTask(db.Model):
+    """Bảng ghi nhận và quản lý tiến trình tác vụ nền (Task Queue & Scheduled Jobs - Mục 12.5)."""
+    id = db.Column(db.Integer, primary_key=True)
+    task_id = db.Column(db.String(64), unique=True, nullable=False, index=True)
+    name = db.Column(db.String(150), nullable=False, index=True)
+    task_type = db.Column(db.String(50), default="ASYNC_JOB", nullable=False, index=True)  # ASYNC_JOB, SCHEDULED_CRON, MAINTENANCE
+    priority = db.Column(db.Integer, default=5, nullable=False, index=True)  # 1: LOW, 5: NORMAL, 10: HIGH
+    status = db.Column(db.String(50), default="PENDING", nullable=False, index=True)  # PENDING, RUNNING, COMPLETED, FAILED, RETRYING, CANCELLED
+    params_json = db.Column(db.Text, nullable=True)
+    result_json = db.Column(db.Text, nullable=True)
+    error_message = db.Column(db.Text, nullable=True)
+    retry_count = db.Column(db.Integer, default=0, nullable=False)
+    max_retries = db.Column(db.Integer, default=3, nullable=False)
+    retry_delay_seconds = db.Column(db.Integer, default=5, nullable=False)
+    timeout_seconds = db.Column(db.Integer, default=300, nullable=False)
+    scheduled_at = db.Column(db.DateTime(timezone=True), nullable=True, index=True)
+    started_at = db.Column(db.DateTime(timezone=True), nullable=True)
+    completed_at = db.Column(db.DateTime(timezone=True), nullable=True)
+    duration_ms = db.Column(db.Float, default=0.0, nullable=False)
+    memory_start_mb = db.Column(db.Float, default=0.0, nullable=False)
+    memory_end_mb = db.Column(db.Float, default=0.0, nullable=False)
+    memory_peak_mb = db.Column(db.Float, default=0.0, nullable=False)
+    created_by_id = db.Column(db.Integer, db.ForeignKey("user.id", ondelete="SET NULL"), nullable=True, index=True)
+    created_at = db.Column(db.DateTime(timezone=True), default=now, nullable=False, index=True)
+
+    @property
+    def priority_label(self) -> str:
+        if self.priority >= 10:
+            return "Cao (High)"
+        elif self.priority >= 5:
+            return "Trung bình (Normal)"
+        return "Thấp (Low)"
+
+    @property
+    def priority_badge_class(self) -> str:
+        if self.priority >= 10:
+            return "bg-danger-subtle text-danger border border-danger-subtle"
+        elif self.priority >= 5:
+            return "bg-primary-subtle text-primary border border-primary-subtle"
+        return "bg-secondary-subtle text-secondary border border-secondary-subtle"
+
+    @property
+    def status_badge_class(self) -> str:
+        mapping = {
+            "COMPLETED": "bg-success-subtle text-success border border-success-subtle",
+            "RUNNING": "bg-info-subtle text-info border border-info-subtle",
+            "PENDING": "bg-warning-subtle text-warning border border-warning-subtle",
+            "RETRYING": "bg-warning-subtle text-warning border border-warning-subtle",
+            "FAILED": "bg-danger-subtle text-danger border border-danger-subtle",
+            "CANCELLED": "bg-secondary-subtle text-secondary border border-secondary-subtle",
+        }
+        return mapping.get(self.status, "bg-light text-dark")
+
+    @property
+    def duration_formatted(self) -> str:
+        if self.duration_ms < 1000:
+            return f"{round(self.duration_ms, 1)} ms"
+        return f"{round(self.duration_ms / 1000, 2)} s"
+
+    @property
+    def memory_diff_mb(self) -> float:
+        return round(max(0.0, (self.memory_end_mb or 0.0) - (self.memory_start_mb or 0.0)), 2)
+
+    @property
+    def created_at_vn(self):
+        return (self.created_at + timedelta(hours=7)) if self.created_at else None
+
+    @property
+    def started_at_vn(self):
+        return (self.started_at + timedelta(hours=7)) if self.started_at else None
+
+    @property
+    def completed_at_vn(self):
+        return (self.completed_at + timedelta(hours=7)) if self.completed_at else None
+
+    @property
+    def params_dict(self) -> dict:
+        if not self.params_json:
+            return {}
+        try:
+            return json.loads(self.params_json)
+        except Exception:
+            return {}
+
+    @property
+    def result_dict(self) -> dict:
+        if not self.result_json:
+            return {}
+        try:
+            return json.loads(self.result_json)
+        except Exception:
+            return {}
+
+
+
 # ---------------------------------------------------------------------------
 # AUTOMATIC PERMISSION CACHE INVALIDATION HOOKS (MỤC 11.2)
 # ---------------------------------------------------------------------------
