@@ -629,25 +629,26 @@ MODULE 14. DATA INTEGRITY & VALIDATION (TOÀN VỆN DỮ LIỆU) — 5 TÍNH NĂ
 - [x] `Data Quality Improvement - Cải thiện chất lượng dữ liệu`: Tính năng tự động điền phiên âm IPA, ví dụ và từ đồng nghĩa qua Dictionary API và batch enrich `/admin/data-quality/api/batch-autofill` 1-click. (Ưu tiên: Trung bình)
 
 ----------------------------------------------------------------------------------------------------
-MODULE 15. ERROR HANDLING & RECOVERY (XỬ LÝ LỖI & PHỤC HỒI) — 13 TÍNH NĂNG CHƯA LÀM
+MODULE 15. ERROR HANDLING & RECOVERY (XỬ LÝ LỖI & PHỤC HỒI) — 13/13 TÍNH NĂNG ĐÃ HOÀN THÀNH (100%)
 ----------------------------------------------------------------------------------------------------
 
-15.1. Error Detection (2 tính năng chưa làm):
-- [ ] `Error Correlation`: Chưa tạo mã lỗi định danh duy nhất (Request Trace ID) để người dùng gửi cho Admin tra cứu nhanh nguyên nhân lỗi trong log. (Ưu tiên: Trung bình)
-- [ ] `Error Patterns`: Chưa có công cụ gom nhóm các mẫu lỗi tương tự nhau. (Ưu tiên: Thấp)
+15.1. Error Detection (2/2 tính năng đã hoàn thành):
+- [x] `Error Correlation`: Tự động gán mã lỗi định danh duy nhất (Request Trace ID / `X-Request-ID` header) cho mọi yêu cầu HTTP, tự động lưu vào SystemErrorLog, hiển thị Trace ID kèm nút sao chép 1 chạm trên các trang lỗi 500, 404, 403, 429, 503 và cung cấp API tra cứu `/admin/system/errors/lookup?trace_id=...`. (Ưu tiên: Trung bình)
+- [x] `Error Patterns`: Công cụ tự động gom nhóm lỗi theo cụm mẫu hình (Error Pattern Clusters: CSDL Timeout, AI/API ngoại vi, SMTP Mail, Xác thực 401/403, Broken Link 404, Data Validation), thống kê tần suất, số đường dẫn bị ảnh hưởng và gợi ý khuyến nghị khắc phục trong tab Patterns `/admin/system/errors`. (Ưu tiên: Thấp)
 
-15.2. Error Recovery (5 tính năng chưa làm):
-- [ ] `Automatic Retry`: Chưa tự động gọi lại các API bên ngoài (như AI Gemini, SMTP gửi mail) nếu gặp lỗi mạng chập chờn. (Ưu tiên: Cao)
-- [ ] `Circuit Breakers`: Chưa có cơ chế tự ngắt mạch để tránh làm treo ứng dụng khi dịch vụ AI bên ngoài bị sập. (Ưu tiên: Trung bình)
-- [ ] `Data Recovery`, `Service Recovery`, `System Recovery`: Quy trình tự động khôi phục dịch vụ sau khi crash. (Ưu tiên: Trung bình)
+15.2. Error Recovery (5/5 tính năng đã hoàn thành):
+- [x] `Automatic Retry`: Decorator và hàm `retry_with_backoff()` tự động gọi lại các API bên ngoài (AI Gemini, SMTP gửi mail, từ điển) sử dụng thuật toán Exponential Backoff kết hợp Full Jitter ngẫu nhiên tránh nghẽn mạng. (Ưu tiên: Cao)
+- [x] `Circuit Breakers`: Cơ chế tự ngắt mạch bảo vệ hệ thống (`CircuitBreaker` với 3 trạng thái CLOSED, OPEN, HALF_OPEN) cho Gemini AI, SMTP Email, Dictionary API, Web Push kèm giao diện quản trị Admin `/admin/system/recovery`. (Ưu tiên: Trung bình)
+- [x] `Data Recovery`, `Service Recovery`, `System Recovery`: Quy trình tự động chẩn đoán và tự phục hồi toàn diện (Self-Healing) kiểm tra kết nối CSDL, tự động thu hồi tác vụ nền bị treo (Zombie Tasks), làm sạch cache và lệnh CLI `flask system-recover`. (Ưu tiên: Trung bình)
 
-15.3. User Error Handling & Support (6 tính năng chưa làm):
-- [ ] `Support Contacts`: Chưa có trang thông tin liên hệ hỗ trợ kỹ thuật rõ ràng. (Ưu tiên: Cao)
-- [ ] `Error Tutorials`: Chưa có bài viết hướng dẫn người dùng tự khắc phục các lỗi phổ biến (lỗi không cấp quyền micro, lỗi không nhận email OTP...). (Ưu tiên: Trung bình)
-- [ ] `FAQ Integration`: Chưa xây dựng trang Câu hỏi thường gặp (Frequently Asked Questions). (Ưu tiên: Cao)
-- [ ] `Video Tutorials`: Chưa có các video clip ngắn hướng dẫn cách học trên nền tảng. (Ưu tiên: Thấp)
-- [ ] `Chat Support`: Chưa tích hợp tiện ích Chat trực tuyến (Live Chat Widget như Tawk.to / Crisp) để hỗ trợ học viên thời gian thực. (Ưu tiên: Cao)
-- [ ] `Ticket System`: Chưa có hệ thống gửi phiếu hỗ trợ (Helpdesk Ticket) cho phép học viên gửi báo cáo lỗi và theo dõi phản hồi của Admin. (Ưu tiên: Cao)
+15.3. User Error Handling & Support (6/6 tính năng đã hoàn thành):
+- [x] `Support Contacts`: Trang thông tin liên hệ và trung tâm hỗ trợ kỹ thuật rõ ràng tại `/support` với hotline 1900 6868, email hỗ trợ, giờ làm việc và liên kết cộng đồng. (Ưu tiên: Cao)
+- [x] `Error Tutorials`: Trang bài viết và hướng dẫn chi tiết từng bước tự khắc phục các lỗi phổ biến (lỗi cấp quyền micro, lỗi không nhận email OTP, lỗi offline flashcard, lỗi âm thanh mobile) tại `/tutorials/errors`. (Ưu tiên: Trung bình)
+- [x] `FAQ Integration`: Trang Câu hỏi thường gặp (Frequently Asked Questions) tại `/faq` với thanh tìm kiếm thời gian thực và phân loại theo chủ đề. (Ưu tiên: Cao)
+- [x] `Video Tutorials`: Thư viện video clip ngắn hướng dẫn cách học phát âm IPA, tạo thẻ flashcard SRS, luyện thi TOEIC kèm modal trình phát video tại `/tutorials/videos`. (Ưu tiên: Thấp)
+- [x] `Chat Support`: Tiện ích Live Chat Bot tương tác thời gian thực tại `_user_support_modal.html` tích hợp AI Assistant `/api/support/chat` nhận diện từ khóa và đưa ra giải pháp tức thì. (Ưu tiên: Cao)
+- [x] `Ticket System`: Hệ thống gửi và quản lý phiếu hỗ trợ kỹ thuật (Helpdesk Ticket) cho phép học viên gửi báo cáo lỗi kèm Trace ID tại `/support/tickets`, API tra cứu `/api/support/tickets/<code_id>` và màn hình Admin xử lý `/admin/tickets`. (Ưu tiên: Cao)
+
 
 ====================================================================================================
 PHẦN III: PHÂN LOẠI THEO LỘ TRÌNH PHÁT TRIỂN THỰC TẾ (4 PHASES ROADMAP)
