@@ -255,7 +255,7 @@ class LogAnalysisService:
                 try:
                     stat = os.stat(fpath)
                     mtime = datetime.fromtimestamp(stat.st_mtime)
-                    if mtime < cutoff_date:
+                    if mtime <= cutoff_date:
                         freed_bytes += stat.st_size
                         os.remove(fpath)
                         deleted_files.append(fname)
